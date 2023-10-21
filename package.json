@@ -1,0 +1,23 @@
+{
+  "name": "similarstr",
+  "description": "calculate string similarity",
+  "author": "komed3 <webmaster@komed3.de> (https://komed3.de)",
+  "homepage": "https://github.com/komed3/similarstr#readme",
+  "version": "1.0.0",
+  "license": "MIT",
+  "keywords": [
+    "string",
+    "similarity"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/komed3/similarstr.git"
+  },
+  "bugs": {
+    "url": "https://github.com/komed3/similarstr/issues"
+  },
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  }
+}
