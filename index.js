@@ -15,7 +15,7 @@
  * @param {String} str2 string 2
  * @returns similarity 0..1
  */
-module.exports.levenshtein = ( str1, str2 ) => {
+const levenshtein = ( str1, str2 ) => {
 
     /* convert input to string */
 
@@ -38,7 +38,7 @@ module.exports.levenshtein = ( str1, str2 ) => {
 
         /* get levenshtein distance */
 
-        let distance = this.levenshteinDistance( str1, str2 );
+        let distance = levenshteinDistance( str1, str2 );
 
         /* return percentage */
 
@@ -59,7 +59,7 @@ module.exports.levenshtein = ( str1, str2 ) => {
  * @param {String} str2 string 2
  * @returns distance
  */
-module.exports.levenshteinDistance = ( str1, str2 ) => {
+const levenshteinDistance = ( str1, str2 ) => {
 
     /* convert input to string */
 
@@ -135,4 +135,45 @@ module.exports.levenshteinDistance = ( str1, str2 ) => {
 
     }
 
+};
+
+/**
+ * search for closest target to test string
+ * @param {String} test test string
+ * @param  {Array} target string targets to test
+ * @returns closest target
+ */
+const levenshteinClosest = ( test, target ) => {
+
+    let min = Infinity,
+        idx = 0;
+
+    /* search for closest target */
+
+    target.forEach( ( str, i ) => {
+
+        let dist = levenshteinDistance( test, str );
+
+        if( dist < min ) {
+
+            min = dist;
+            idx = i;
+
+        }
+
+    } );
+
+    /* return closest target */
+
+    return target[ idx ];
+
+};
+
+/**
+ * export functions
+ */
+module.exports = {
+    levenshtein,
+    levenshteinDistance,
+    levenshteinClosest
 };
