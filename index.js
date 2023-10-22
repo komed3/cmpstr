@@ -3,7 +3,7 @@
  * lightweight npm package to calculate string similarity
  * 
  * @author komed3 (Paul Köhler)
- * @version 1.0.0
+ * @version 1.0.1
  * @license MIT
  */
 
@@ -30,7 +30,7 @@ const normalize = ( str ) => {
  * @param {String} str string
  * @returns bigrams
  */
-const bbigrams = ( str ) => {
+const str2bigrams = ( str ) => {
 
     let bigrams = new Set();
 
@@ -47,10 +47,34 @@ const bbigrams = ( str ) => {
 };
 
 /**
+ * 
+ * @param {String} algo algorithm to use
+ * @param {String} a string 1
+ * @param {String} b string 2
+ * @returns similarity
+ */
+const cpmByAlgo = ( algo, a, b ) => {
+
+    switch( algo ) {
+
+        case 'levenshtein':
+            return levenshtein( a, b );
+
+        case 'diceCoefficient':
+            return diceCoefficient( a, b );
+
+        default:
+            return 0;
+
+    }
+
+};
+
+/**
  * search for closest string
  * @param {String} algo algorithm to use
  * @param {String} test test string
- * @param  {Array} arr targets to test
+ * @param {Array} arr targets to test
  * @returns closest target
  */
 const findClosest = ( algo, test, arr ) => {
@@ -63,21 +87,7 @@ const findClosest = ( algo, test, arr ) => {
 
     arr.forEach( ( str, i ) => {
 
-        switch( algo ) {
-
-            case 'levenshtein':
-                pct = levenshtein( test, str );
-                break;
-
-            case 'diceCoefficient':
-                pct = diceCoefficient( test, str );
-                break;
-
-            default:
-                pct = 0;
-                break;
-
-        }
+        pct = cpmByAlgo( algo, test, str );
 
         if( pct > best ) {
 
@@ -93,6 +103,43 @@ const findClosest = ( algo, test, arr ) => {
     /* return closest target */
 
     return arr[ idx ];
+
+};
+
+/**
+ * sort best matches to test string
+ * @param {String} algo algorithm to use
+ * @param {String} test test string
+ * @param {Array} arr targets to test
+ * @returns sorted matches
+ */
+const bestMatch = ( algo, test, arr ) => {
+
+    let matches = [],
+        pct;
+
+    /* calculate similarity for each arr items */
+
+    arr.forEach( ( str ) => {
+
+        pct = cpmByAlgo( algo, test, str );
+
+        matches.push( {
+            target: str,
+            match: pct
+        } );
+
+    } );
+
+    /* sort by highest similarity */
+
+    let sorted = matches.sort( ( a, b ) => {
+        return b.match - a.match;
+    } );
+
+    /* return sorted matches */
+
+    return sorted;
 
 };
 
@@ -233,12 +280,24 @@ const levenshteinDistance = ( a, b ) => {
 /**
  * search for closest target to test string
  * @param {String} test test string
- * @param  {Array} arr targets to test
+ * @param {Array} arr targets to test
  * @returns closest target
  */
 const levenshteinClosest = ( test, arr ) => {
 
     return findClosest( 'levenshtein', test, arr );
+
+};
+
+/**
+ * sort best matches to test string
+ * @param {String} test test string
+ * @param {Array} arr targets to test
+ * @returns sorted matches
+ */
+const levenshteinMatch = ( test, arr ) => {
+
+    return bestMatch( 'levenshtein', test, arr );
 
 };
 
@@ -271,8 +330,8 @@ const diceCoefficient = ( a, b ) => {
 
         /* get bigrams */
 
-        let setA = bbigrams( a ),
-            setB = bbigrams( b );
+        let setA = str2bigrams( a ),
+            setB = str2bigrams( b );
 
         /* calculate dice coefficient */
 
@@ -292,12 +351,24 @@ const diceCoefficient = ( a, b ) => {
 /**
  * search for closest target to test string
  * @param {String} test test string
- * @param  {Array} arr targets to test
+ * @param {Array} arr targets to test
  * @returns closest target
  */
 const diceClosest = ( test, arr ) => {
 
     return findClosest( 'diceCoefficient', test, arr );
+
+};
+
+/**
+ * sort best matches to test string
+ * @param {String} test test string
+ * @param {Array} arr targets to test
+ * @returns sorted matches
+ */
+const diceMatch = ( test, arr ) => {
+
+    return bestMatch( 'diceCoefficient', test, arr );
 
 };
 
@@ -308,6 +379,8 @@ module.exports = {
     levenshtein,
     levenshteinDistance,
     levenshteinClosest,
+    levenshteinMatch,
     diceCoefficient,
-    diceClosest
+    diceClosest,
+    diceMatch
 };
