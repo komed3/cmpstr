@@ -30,7 +30,7 @@ const normalize = ( str ) => {
  * @param {String} str string
  * @returns bigrams
  */
-const str2bigrams = ( str ) => {
+const bbigrams = ( str ) => {
 
     let bigrams = new Set();
 
@@ -103,24 +103,24 @@ const findClosest = ( algo, test, arr ) => {
 
 /**
  * calculate levenshtein similarity (in percent)
- * @param {String} str1 string 1
- * @param {String} str2 string 2
+ * @param {String} a string 1
+ * @param {String} b string 2
  * @returns similarity 0..1
  */
-const levenshtein = ( str1, str2 ) => {
+const levenshtein = ( a, b ) => {
 
     /* normalize string */
 
-    str1 = normalize( str1 );
-    str2 = normalize( str2 );
+    a = normalize( a );
+    b = normalize( b );
 
-    if( str1 == str2 ) {
+    if( a == b ) {
 
         /* both string are similar or empty */
 
         return 1;
 
-    } else if( str1.length < 2 || str2.length < 2 ) {
+    } else if( a.length < 2 || b.length < 2 ) {
 
         /* for 0-letter or 1-letter strings */
 
@@ -130,14 +130,14 @@ const levenshtein = ( str1, str2 ) => {
 
         /* get levenshtein distance */
 
-        let distance = levenshteinDistance( str1, str2 );
+        let distance = levenshteinDistance( a, b );
 
         /* return percentage */
 
         return 1 - (
             distance / Math.max(
-                str1.length,
-                str2.length
+                a.length,
+                b.length
             )
         );
 
@@ -147,34 +147,34 @@ const levenshtein = ( str1, str2 ) => {
 
 /**
  * get levenshtein distance
- * @param {String} str1 string 1
- * @param {String} str2 string 2
+ * @param {String} a string 1
+ * @param {String} b string 2
  * @returns distance
  */
-const levenshteinDistance = ( str1, str2 ) => {
+const levenshteinDistance = ( a, b ) => {
 
     /* normalize string */
 
-    str1 = normalize( str1 );
-    str2 = normalize( str2 );
+    a = normalize( a );
+    b = normalize( b );
 
-    if( str1 == str2 ) {
+    if( a == b ) {
 
         /* both string are similar or empty */
 
         return 0;
 
-    } else if( str1.length == 0 ) {
+    } else if( a.length == 0 ) {
 
         /* empty string 1 */
 
-        return str2.length;
+        return b.length;
 
-    } else if( str2.length == 0 ) {
+    } else if( b.length == 0 ) {
 
         /* empty string 2 */
 
-        return str1.length;
+        return a.length;
 
     } else {
 
@@ -182,11 +182,11 @@ const levenshteinDistance = ( str1, str2 ) => {
 
         const matrix = [];
 
-        for( let i = 0; i <= str1.length; i++ ) {
+        for( let i = 0; i <= a.length; i++ ) {
 
             const row = [];
 
-            for( let j = 0; j <= str2.length; j++ ) {
+            for( let j = 0; j <= b.length; j++ ) {
 
                 row.push( j );
 
@@ -200,11 +200,11 @@ const levenshteinDistance = ( str1, str2 ) => {
 
         /* calculate distance */
 
-        for( let i = 1; i <= str1.length; i++ ) {
+        for( let i = 1; i <= a.length; i++ ) {
 
-            for( let j = 1; j <= str2.length; j++ ) {
+            for( let j = 1; j <= b.length; j++ ) {
 
-                if( str1[ i - 1 ] === str2[ j - 1 ] ) {
+                if( a[ i - 1 ] === b[ j - 1 ] ) {
 
                     matrix[ i ][ j ] = matrix[ i - 1 ][ j - 1 ];
 
@@ -224,7 +224,7 @@ const levenshteinDistance = ( str1, str2 ) => {
 
         /* return levenshtein distance */
 
-        return matrix[ str1.length ][ str2.length ];
+        return matrix[ a.length ][ b.length ];
 
     }
 
@@ -244,24 +244,24 @@ const levenshteinClosest = ( test, arr ) => {
 
 /**
  * calculate dice coefficient
- * @param {String} str1 string 1
- * @param {String} str2 string 2
+ * @param {String} a string 1
+ * @param {String} b string 2
  * @returns dice coefficient
  */
-const diceCoefficient = ( str1, str2 ) => {
+const diceCoefficient = ( a, b ) => {
 
     /* normalize string */
 
-    str1 = normalize( str1 );
-    str2 = normalize( str2 );
+    a = normalize( a );
+    b = normalize( b );
 
-    if( str1 == str2 ) {
+    if( a == b ) {
 
         /* both string are similar or empty */
 
         return 1;
 
-    } else if( str1.length < 2 || str2.length < 2 ) {
+    } else if( a.length < 2 || b.length < 2 ) {
 
         /* for 0-letter or 1-letter strings */
 
@@ -271,18 +271,18 @@ const diceCoefficient = ( str1, str2 ) => {
 
         /* get bigrams */
 
-        let set1 = str2bigrams( str1 ),
-            set2 = str2bigrams( str2 );
+        let setA = bbigrams( a ),
+            setB = bbigrams( b );
 
         /* calculate dice coefficient */
 
         return (
-            ( new Set( [ ...set1 ].filter( ( x ) => {
-                return set2.has( x );
+            ( new Set( [ ...setA ].filter( ( x ) => {
+                return setB.has( x );
             } ) ) ).size * 2
         ) / (
-            set1.size +
-            set2.size
+            setA.size +
+            setB.size
         );
 
     }
