@@ -1,13 +1,13 @@
-# str-similar
+# cmpstr
 
-This lightweight npm package can be used to calculate the similarity of strings. It supports both the best known Levenshtein distance and the slightly more accurate Sørensen dice coefficient.
+This lightweight npm package can be used to __calculate the similarity of strings__. It supports both the best known __Levenshtein distance__ and the slightly more accurate __Sørensen dice coefficient__.
 
 ## Install
 
 Using Node.js install the package using shell command:
 
 ```sh
-npm install str-similar
+npm install cmpstr
 ```
 
 ## Usage
@@ -15,7 +15,7 @@ npm install str-similar
 Load the package into your project:
 
 ```js
-const strsimilar = require( 'str-similar' );
+const cmpstr = require( 'cmpstr' );
 ```
 
 Sample of how to use the package in your code:
@@ -24,13 +24,13 @@ Sample of how to use the package in your code:
 let str1 = 'kitten';
 let str2 = 'sitting';
 
-let distance = strsimilar.levenshteinDistance( str1, str2 );
+let distance = cmpstr.levenshteinDistance( str1, str2 );
 // expected 3
 
-let dice = strsimilar.diceCoefficient( str1, str2 );
+let dice = cmpstr.diceCoefficient( str1, str2 );
 // expected 0.3636363636363636
 
-let closest = strsimilar.diceClosest( 'best', [
+let closest = cmpstr.diceClosest( 'best', [
   'better', 'bestest', 'well', 'good'
 ] );
 // expected bestest
@@ -38,7 +38,7 @@ let closest = strsimilar.diceClosest( 'best', [
 
 ## API
 
-The npm package ``str-similar`` supports two different methods for determining the similarity of two strings. The __Levenshtein distance__, as the minimum number of inserting, deleting and replacing operations to convert one string into another, and the __Sørensen-Dice coefficient__ to measure the similarity of two samples.
+The npm package ``cmpstr`` supports two different methods for determining the similarity of two strings. The __Levenshtein distance__, as the minimum number of inserting, deleting and replacing operations to convert one string into another, and the __Sørensen-Dice coefficient__ to measure the similarity of two samples.
 
 Learn more about both by visiting these links:
 
