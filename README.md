@@ -42,8 +42,8 @@ The npm package ``similarstr`` supports two different methods for determining th
 
 Learn more about both by visiting these links:
 
-* [https://en.wikipedia.org/wiki/Levenshtein_distance](Levenshtein distance)
-* [https://en.wikipedia.org/wiki/Sørensen–Dice_coefficient](Sørensen-Dice coefficient)
+* [Levenshtein distance](https://en.wikipedia.org/wiki/Levenshtein_distance)
+* [Sørensen-Dice coefficient](https://en.wikipedia.org/wiki/Sørensen–Dice_coefficient)
 
 ### Levenshtein distance
 
