@@ -1,4 +1,4 @@
-# similarstr
+# strsimilar
 
 This lightweight npm package can be used to calculate the similarity of strings. It supports both the best known Levenshtein distance and the slightly more accurate Sørensen dice coefficient.
 
@@ -7,7 +7,7 @@ This lightweight npm package can be used to calculate the similarity of strings.
 Using Node.js install the package using shell command:
 
 ```sh
-npm install similarstr
+npm install strsimilar
 ```
 
 ## Usage
@@ -15,7 +15,7 @@ npm install similarstr
 Load the package into your project:
 
 ```js
-const similarstr = require( 'similarstr' );
+const strsimilar = require( 'strsimilar' );
 ```
 
 Sample of how to use the package in your code:
@@ -24,13 +24,13 @@ Sample of how to use the package in your code:
 let str1 = 'kitten';
 let str2 = 'sitting';
 
-let distance = similarstr.levenshteinDistance( str1, str2 );
+let distance = strsimilar.levenshteinDistance( str1, str2 );
 // expected 3
 
-let dice = similarstr.diceCoefficient( str1, str2 );
+let dice = strsimilar.diceCoefficient( str1, str2 );
 // expected 0.3636363636363636
 
-let closest = similarstr.diceClosest( 'best', [
+let closest = strsimilar.diceClosest( 'best', [
   'better', 'bestest', 'well', 'good'
 ] );
 // expected bestest
@@ -38,7 +38,7 @@ let closest = similarstr.diceClosest( 'best', [
 
 ## API
 
-The npm package ``similarstr`` supports two different methods for determining the similarity of two strings. The __Levenshtein distance__, as the minimum number of inserting, deleting and replacing operations to convert one string into another, and the __Sørensen-Dice coefficient__ to measure the similarity of two samples.
+The npm package ``strsimilar`` supports two different methods for determining the similarity of two strings. The __Levenshtein distance__, as the minimum number of inserting, deleting and replacing operations to convert one string into another, and the __Sørensen-Dice coefficient__ to measure the similarity of two samples.
 
 Learn more about both by visiting these links:
 
