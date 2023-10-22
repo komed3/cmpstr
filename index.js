@@ -47,7 +47,7 @@ const str2bigrams = ( str ) => {
 };
 
 /**
- * 
+ * compare strings by given algorithm
  * @param {String} algo algorithm to use
  * @param {String} a string 1
  * @param {String} b string 2
