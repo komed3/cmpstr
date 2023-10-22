@@ -1,5 +1,5 @@
 /**
- * strsimilar
+ * str-similar
  * lightweight npm package to calculate string similarity
  * 
  * @author komed3 (Paul Köhler)
