@@ -24,16 +24,38 @@ Sample of how to use the package in your code:
 let str1 = 'kitten';
 let str2 = 'sitting';
 
+/**
+ * levenshteinDistance
+ * expected: 3
+ */
 let distance = cmpstr.levenshteinDistance( str1, str2 );
-// expected 3
 
+/**
+ * diceCoefficient
+ * expected: 0.3636363636363636
+ */
 let dice = cmpstr.diceCoefficient( str1, str2 );
-// expected 0.3636363636363636
 
+/**
+ * diceClosest
+ * expected: bestest
+ */
 let closest = cmpstr.diceClosest( 'best', [
   'better', 'bestest', 'well', 'good'
 ] );
-// expected bestest
+
+/**
+ * levenshteinMatch
+ * expected: [
+ *   { target: 'bestest', match: 0.5714285714285714 },
+ *   { target: 'better', match: 0.5 },
+ *   { target: 'well', match: 0.25 },
+ *   { target: 'good', match: 0 }
+ * ]
+ */
+let matches = cmpstr.levenshteinMatch( 'best', [
+  'better', 'bestest', 'well', 'good'
+] );
 ```
 
 ## API
@@ -59,6 +81,10 @@ Returns the match percentage of two strings ``a`` and ``b``. The output value is
 
 Returns the best match of the string ``str`` against the array ``arr`` of passed strings. The function returns the most closely matched string found in the array.
 
+#### ``levenshteinMatch( str, arr )``
+
+Calculates the similarity of all strings contained in the array ``arr`` according to Levenshtein compared to ``str`` and returns an array of all samples sorted by matching in descending order.
+
 ### Sørensen-Dice coefficient
 
 #### ``diceCoefficient( a, b )``
@@ -68,3 +94,7 @@ This function evaluates the similarity of two given strings ``a`` and ``b`` as p
 #### ``diceClosest( str, arr )``
 
 As another way to find the best match between the string ``str`` and a given array ``arr`` of samples, this function uses the Sørensen-Dice coefficient. It returns the most matching string as well.
+
+#### ``diceMatch( str, arr )``
+
+Calculates the similarity of all strings contained in the array ``arr`` according to Sørensen-Dice coefficient compared to ``str`` and returns an array of all samples sorted by matching in descending order.
