@@ -15,11 +15,22 @@
  */
 
 /**
+ * normalize string
+ * @param {String} str string
+ * @returns normalized string
+ */
+const normalize = ( str ) => {
+
+    return str.toString();
+
+};
+
+/**
  * get bigrams from string
  * @param {String} str string
  * @returns bigrams
  */
-var getBigrams = ( str ) => {
+const str2bigrams = ( str ) => {
 
     let bigrams = new Set();
 
@@ -42,7 +53,7 @@ var getBigrams = ( str ) => {
  * @param  {Array} arr targets to test
  * @returns closest target
  */
-var findClosest = ( algo, test, arr ) => {
+const findClosest = ( algo, test, arr ) => {
 
     let best = -Infinity,
         idx = 0,
@@ -98,10 +109,10 @@ var findClosest = ( algo, test, arr ) => {
  */
 const levenshtein = ( str1, str2 ) => {
 
-    /* convert input to string */
+    /* normalize string */
 
-    str1 = str1.toString();
-    str2 = str2.toString();
+    str1 = normalize( str1 );
+    str2 = normalize( str2 );
 
     if( str1 == str2 ) {
 
@@ -142,10 +153,10 @@ const levenshtein = ( str1, str2 ) => {
  */
 const levenshteinDistance = ( str1, str2 ) => {
 
-    /* convert input to string */
+    /* normalize string */
 
-    str1 = str1.toString();
-    str2 = str2.toString();
+    str1 = normalize( str1 );
+    str2 = normalize( str2 );
 
     if( str1 == str2 ) {
 
@@ -237,12 +248,12 @@ const levenshteinClosest = ( test, arr ) => {
  * @param {String} str2 string 2
  * @returns dice coefficient
  */
-var diceCoefficient = ( str1, str2 ) => {
+const diceCoefficient = ( str1, str2 ) => {
 
-    /* convert input to string */
+    /* normalize string */
 
-    str1 = str1.toString();
-    str2 = str2.toString();
+    str1 = normalize( str1 );
+    str2 = normalize( str2 );
 
     if( str1 == str2 ) {
 
@@ -260,18 +271,18 @@ var diceCoefficient = ( str1, str2 ) => {
 
         /* get bigrams */
 
-        let bigrams1 = getBigrams( str1 ),
-            bigrams2 = getBigrams( str2 );
+        let set1 = str2bigrams( str1 ),
+            set2 = str2bigrams( str2 );
 
         /* calculate dice coefficient */
 
         return (
-            ( new Set( [ ...bigrams1 ].filter( ( x ) => {
-                return bigrams2.has( x );
+            ( new Set( [ ...set1 ].filter( ( x ) => {
+                return set2.has( x );
             } ) ) ).size * 2
         ) / (
-            bigrams1.size +
-            bigrams2.size
+            set1.size +
+            set2.size
         );
 
     }
