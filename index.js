@@ -3,7 +3,7 @@
  * lightweight npm package to calculate string similarity
  * 
  * @author komed3 (Paul Köhler)
- * @version 1.0.1
+ * @version 1.0.2
  * @license MIT
  */
 
@@ -17,11 +17,40 @@
 /**
  * normalize string
  * @param {String} str string
+ * @param {Null|String} flags options
  * @returns normalized string
  */
-const normalize = ( str ) => {
+const normalize = ( str, flags = null ) => {
 
-    return str.toString();
+    str = str.toString();
+
+    ( flags || '' ).toString().split( '' ).forEach( ( f ) => {
+
+        /**
+         * normalize options
+         * i    case insensitive
+         * s    non-whitespace
+         */
+
+        switch( f.toLowerCase() ) {
+
+            case 'i':
+                str = str.toLowerCase();
+                break;
+
+            case 's':
+                str = str.replace( /[^\S]+/g, '' );
+                break;
+
+            default:
+                /* do nothing */
+                break;
+
+        }
+
+    } );
+
+    return str;
 
 };
 
@@ -51,17 +80,18 @@ const str2bigrams = ( str ) => {
  * @param {String} algo algorithm to use
  * @param {String} a string 1
  * @param {String} b string 2
+ * @param {Null|String} flags options
  * @returns similarity
  */
-const cpmByAlgo = ( algo, a, b ) => {
+const cpmByAlgo = ( algo, a, b, flags ) => {
 
     switch( algo ) {
 
         case 'levenshtein':
-            return levenshtein( a, b );
+            return levenshtein( a, b, flags );
 
         case 'diceCoefficient':
-            return diceCoefficient( a, b );
+            return diceCoefficient( a, b, flags );
 
         default:
             return 0;
@@ -75,9 +105,10 @@ const cpmByAlgo = ( algo, a, b ) => {
  * @param {String} algo algorithm to use
  * @param {String} test test string
  * @param {Array} arr targets to test
+ * @param {Null|String} flags options
  * @returns closest target
  */
-const findClosest = ( algo, test, arr ) => {
+const findClosest = ( algo, test, arr, flags ) => {
 
     let best = -Infinity,
         idx = 0,
@@ -85,9 +116,9 @@ const findClosest = ( algo, test, arr ) => {
 
     /* search for closest element in arr */
 
-    arr.forEach( ( str, i ) => {
+    [ ...arr ].forEach( ( str, i ) => {
 
-        pct = cpmByAlgo( algo, test, str );
+        pct = cpmByAlgo( algo, test, str, flags );
 
         if( pct > best ) {
 
@@ -111,18 +142,19 @@ const findClosest = ( algo, test, arr ) => {
  * @param {String} algo algorithm to use
  * @param {String} test test string
  * @param {Array} arr targets to test
+ * @param {Null|String} flags options
  * @returns sorted matches
  */
-const bestMatch = ( algo, test, arr ) => {
+const bestMatch = ( algo, test, arr, flags = null ) => {
 
     let matches = [],
         pct;
 
     /* calculate similarity for each arr items */
 
-    arr.forEach( ( str ) => {
+    [ ...arr ].forEach( ( str ) => {
 
-        pct = cpmByAlgo( algo, test, str );
+        pct = cpmByAlgo( algo, test, str, flags );
 
         matches.push( {
             target: str,
@@ -152,14 +184,15 @@ const bestMatch = ( algo, test, arr ) => {
  * calculate levenshtein similarity (in percent)
  * @param {String} a string 1
  * @param {String} b string 2
+ * @param {Null|String} flags options
  * @returns similarity 0..1
  */
-const levenshtein = ( a, b ) => {
+const levenshtein = ( a, b, flags = null ) => {
 
     /* normalize string */
 
-    a = normalize( a );
-    b = normalize( b );
+    a = normalize( a, flags );
+    b = normalize( b, flags );
 
     if( a == b ) {
 
@@ -196,14 +229,15 @@ const levenshtein = ( a, b ) => {
  * get levenshtein distance
  * @param {String} a string 1
  * @param {String} b string 2
+ * @param {Null|String} flags options
  * @returns distance
  */
-const levenshteinDistance = ( a, b ) => {
+const levenshteinDistance = ( a, b, flags = null ) => {
 
     /* normalize string */
 
-    a = normalize( a );
-    b = normalize( b );
+    a = normalize( a, flags );
+    b = normalize( b, flags );
 
     if( a == b ) {
 
@@ -281,11 +315,12 @@ const levenshteinDistance = ( a, b ) => {
  * search for closest target to test string
  * @param {String} test test string
  * @param {Array} arr targets to test
+ * @param {Null|String} flags options
  * @returns closest target
  */
-const levenshteinClosest = ( test, arr ) => {
+const levenshteinClosest = ( test, arr, flags = null ) => {
 
-    return findClosest( 'levenshtein', test, arr );
+    return findClosest( 'levenshtein', test, arr, flags );
 
 };
 
@@ -293,11 +328,12 @@ const levenshteinClosest = ( test, arr ) => {
  * sort best matches to test string
  * @param {String} test test string
  * @param {Array} arr targets to test
+ * @param {Null|String} flags options
  * @returns sorted matches
  */
-const levenshteinMatch = ( test, arr ) => {
+const levenshteinMatch = ( test, arr, flags = null ) => {
 
-    return bestMatch( 'levenshtein', test, arr );
+    return bestMatch( 'levenshtein', test, arr, flags );
 
 };
 
@@ -305,14 +341,15 @@ const levenshteinMatch = ( test, arr ) => {
  * calculate dice coefficient
  * @param {String} a string 1
  * @param {String} b string 2
+ * @param {Null|String} flags options
  * @returns dice coefficient
  */
-const diceCoefficient = ( a, b ) => {
+const diceCoefficient = ( a, b, flags = null ) => {
 
     /* normalize string */
 
-    a = normalize( a );
-    b = normalize( b );
+    a = normalize( a, flags );
+    b = normalize( b, flags );
 
     if( a == b ) {
 
@@ -352,11 +389,12 @@ const diceCoefficient = ( a, b ) => {
  * search for closest target to test string
  * @param {String} test test string
  * @param {Array} arr targets to test
+ * @param {Null|String} flags options
  * @returns closest target
  */
-const diceClosest = ( test, arr ) => {
+const diceClosest = ( test, arr, flags = null ) => {
 
-    return findClosest( 'diceCoefficient', test, arr );
+    return findClosest( 'diceCoefficient', test, arr, flags );
 
 };
 
@@ -364,11 +402,12 @@ const diceClosest = ( test, arr ) => {
  * sort best matches to test string
  * @param {String} test test string
  * @param {Array} arr targets to test
+ * @param {Null|String} flags options
  * @returns sorted matches
  */
-const diceMatch = ( test, arr ) => {
+const diceMatch = ( test, arr, flags = null ) => {
 
-    return bestMatch( 'diceCoefficient', test, arr );
+    return bestMatch( 'diceCoefficient', test, arr, flags );
 
 };
 
