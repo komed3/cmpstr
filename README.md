@@ -69,32 +69,56 @@ Learn more about both by visiting these links:
 
 ### Levenshtein distance
 
-#### ``levenshteinDistance( a, b )``
+#### ``levenshteinDistance( a, b [, flags = null ] )``
 
 Calculates the difference between two strings ``a`` and ``b`` and returns the Levenshtein distance as an integer value.
 
-#### ``levenshtein( a, b )``
+#### ``levenshtein( a, b [, flags = null ] )``
 
 Returns the match percentage of two strings ``a`` and ``b``. The output value is in the range ``0..1`` as a floating point number.
 
-#### ``levenshteinClosest( str, arr )``
+#### ``levenshteinClosest( str, arr [, flags = null ] )``
 
 Returns the best match of the string ``str`` against the array ``arr`` of passed strings. The function returns the most closely matched string found in the array.
 
-#### ``levenshteinMatch( str, arr )``
+#### ``levenshteinMatch( str, arr [, flags = null ] )``
 
 Calculates the similarity of all strings contained in the array ``arr`` according to Levenshtein compared to ``str`` and returns an array of all samples sorted by matching in descending order.
 
 ### Sørensen-Dice coefficient
 
-#### ``diceCoefficient( a, b )``
+#### ``diceCoefficient( a, b [, flags = null ] )``
 
 This function evaluates the similarity of two given strings ``a`` and ``b`` as percentage value according to the Sørensen-Dice coefficient and returns the result as floating point number.
 
-#### ``diceClosest( str, arr )``
+#### ``diceClosest( str, arr [, flags = null ] )``
 
 As another way to find the best match between the string ``str`` and a given array ``arr`` of samples, this function uses the Sørensen-Dice coefficient. It returns the most matching string as well.
 
-#### ``diceMatch( str, arr )``
+#### ``diceMatch( str, arr [, flags = null ] )``
 
 Calculates the similarity of all strings contained in the array ``arr`` according to Sørensen-Dice coefficient compared to ``str`` and returns an array of all samples sorted by matching in descending order.
+
+### Flags
+
+Each method can be passed the ``flags`` options listed below:
+
+| Flag  | Option                         |
+| ----- | ------------------------------ |
+| ``i`` | case insensitive               |
+| ``s`` | non-whitespace characters only |
+
+## Patch notes
+
+### 1.0.2
+
+* Add normalize options ``i`` and ``s``
+* Minor fixes
+
+### 1.0.1
+
+* Minor fixes
+
+### 1.0.0
+
+* Initial release
