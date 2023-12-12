@@ -58,6 +58,16 @@ let matches = cmpstr.levenshteinMatch( 'best', [
 ] );
 ```
 
+### JavaScript
+
+Using JavaScript load this package by embed this file via [jsDelivr](https://www.jsdelivr.com/package/npm/cmpstr):
+
+```js
+import cmpstr from "https://cdn.jsdelivr.net/npm/cmpstr@1.0.2/+esm";
+```
+
+Remember: To use ``import`` you need to load your JavaScript file as ``type="module"``.
+
 ## API
 
 The npm package ``cmpstr`` supports two different methods for determining the similarity of two strings. The __Levenshtein distance__, as the minimum number of inserting, deleting and replacing operations to convert one string into another, and the __Sørensen-Dice coefficient__ to measure the similarity of two samples.
