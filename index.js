@@ -3,11 +3,11 @@
  * lightweight npm package to calculate string similarity
  * 
  * @author komed3 (Paul Köhler)
- * @version 1.0.2
+ * @version 1.0.3
  * @license MIT
  */
 
-'use strict'
+'use strict';
 
 /**
  * basic functions
@@ -83,7 +83,7 @@ const str2bigrams = ( str ) => {
  * @param {Null|String} flags options
  * @returns similarity
  */
-const cpmByAlgo = ( algo, a, b, flags ) => {
+const cpmByAlgo = ( algo, a, b, flags = null ) => {
 
     switch( algo ) {
 
@@ -108,7 +108,7 @@ const cpmByAlgo = ( algo, a, b, flags ) => {
  * @param {Null|String} flags options
  * @returns closest target
  */
-const findClosest = ( algo, test, arr, flags ) => {
+const findClosest = ( algo, test, arr, flags = null ) => {
 
     let best = -Infinity,
         idx = 0,
@@ -143,9 +143,10 @@ const findClosest = ( algo, test, arr, flags ) => {
  * @param {String} test test string
  * @param {Array} arr targets to test
  * @param {Null|String} flags options
+ * @param {Float} threshold required similarity
  * @returns sorted matches
  */
-const bestMatch = ( algo, test, arr, flags = null ) => {
+const bestMatch = ( algo, test, arr, flags = null, threshold = 0 ) => {
 
     let matches = [],
         pct;
@@ -156,10 +157,14 @@ const bestMatch = ( algo, test, arr, flags = null ) => {
 
         pct = cpmByAlgo( algo, test, str, flags );
 
-        matches.push( {
-            target: str,
-            match: pct
-        } );
+        if( pct >= threshold ) {
+
+            matches.push( {
+                target: str,
+                match: pct
+            } );
+
+        }
 
     } );
 
@@ -329,11 +334,12 @@ const levenshteinClosest = ( test, arr, flags = null ) => {
  * @param {String} test test string
  * @param {Array} arr targets to test
  * @param {Null|String} flags options
+ * @param {Float} threshold required similarity
  * @returns sorted matches
  */
-const levenshteinMatch = ( test, arr, flags = null ) => {
+const levenshteinMatch = ( test, arr, flags = null, threshold = 0 ) => {
 
-    return bestMatch( 'levenshtein', test, arr, flags );
+    return bestMatch( 'levenshtein', test, arr, flags, threshold );
 
 };
 
@@ -403,11 +409,12 @@ const diceClosest = ( test, arr, flags = null ) => {
  * @param {String} test test string
  * @param {Array} arr targets to test
  * @param {Null|String} flags options
+ * @param {Float} threshold required similarity
  * @returns sorted matches
  */
-const diceMatch = ( test, arr, flags = null ) => {
+const diceMatch = ( test, arr, flags = null, threshold = 0 ) => {
 
-    return bestMatch( 'diceCoefficient', test, arr, flags );
+    return bestMatch( 'diceCoefficient', test, arr, flags, threshold );
 
 };
 

@@ -4,7 +4,7 @@ This lightweight npm package can be used to __calculate the similarity of string
 
 ## Install
 
-Using Node.js install the package using shell command:
+Using __Node.js__, install the package with the following shell command:
 
 ```sh
 npm install cmpstr
@@ -63,7 +63,7 @@ let matches = cmpstr.levenshteinMatch( 'best', [
 Using JavaScript load this package by embed this file via [jsDelivr](https://www.jsdelivr.com/package/npm/cmpstr):
 
 ```js
-import cmpstr from "https://cdn.jsdelivr.net/npm/cmpstr@1.0.2/+esm";
+import cmpstr from "https://cdn.jsdelivr.net/npm/cmpstr@1.0.3/+esm";
 ```
 
 Remember: To use ``import`` you need to load your JavaScript file as ``type="module"``.
@@ -91,9 +91,9 @@ Returns the match percentage of two strings ``a`` and ``b``. The output value is
 
 Returns the best match of the string ``str`` against the array ``arr`` of passed strings. The function returns the most closely matched string found in the array.
 
-#### ``levenshteinMatch( str, arr [, flags = null ] )``
+#### ``levenshteinMatch( str, arr [, flags = null [, threshold = 0 ] ] )``
 
-Calculates the similarity of all strings contained in the array ``arr`` according to Levenshtein compared to ``str`` and returns an array of all samples sorted by matching in descending order.
+Calculates the similarity of all strings contained in the array ``arr`` according to Levenshtein compared to ``str`` and returns an array of all samples sorted by matching in descending order. The ``threshold`` specifies the minimum required similarity.
 
 ### Sørensen-Dice coefficient
 
@@ -105,9 +105,9 @@ This function evaluates the similarity of two given strings ``a`` and ``b`` as p
 
 As another way to find the best match between the string ``str`` and a given array ``arr`` of samples, this function uses the Sørensen-Dice coefficient. It returns the most matching string as well.
 
-#### ``diceMatch( str, arr [, flags = null ] )``
+#### ``diceMatch( str, arr [, flags = null [, threshold = 0 ] ] )``
 
-Calculates the similarity of all strings contained in the array ``arr`` according to Sørensen-Dice coefficient compared to ``str`` and returns an array of all samples sorted by matching in descending order.
+Calculates the similarity of all strings contained in the array ``arr`` according to Sørensen-Dice coefficient compared to ``str`` and returns an array of all samples sorted by matching in descending order. The ``threshold`` specifies the minimum required similarity.
 
 ### Flags
 
@@ -119,6 +119,10 @@ Each method can be passed the ``flags`` options listed below:
 | ``s`` | non-whitespace characters only |
 
 ## Patch notes
+
+### 1.0.3
+
+* Add ``threshold`` to specify the minimum required similarity
 
 ### 1.0.2
 
