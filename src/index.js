@@ -22,7 +22,7 @@ module.exports = class CmpStr {
      * @type {Object}
      */
     #register = {
-        levenshtein: require('./algorithms/levenshtein')
+        levenshtein: require( './algorithms/levenshtein' )
     };
 
     /**
@@ -39,7 +39,30 @@ module.exports = class CmpStr {
      * 
      * @type {String}
      */
-    string;
+    str;
+
+    /**
+     * initializes a CmpStr instance
+     * algorithm and base string can be set by initialization
+     * 
+     * @param {String} algo name of the algorithm
+     * @param {String} str string to set as the base
+     */
+    constructor ( algo = undefined, str = undefined ) {
+
+        if ( algo !== undefined ) {
+
+            this.setAlgo( algo );
+
+        }
+
+        if ( str != undefined ) {
+
+            this.setStr( str );
+
+        }
+
+    };
 
     /**
      * checks whether string and algorithm are set correctly
@@ -49,8 +72,8 @@ module.exports = class CmpStr {
     isReady () {
 
         return (
-            typeof this.string === 'string' &&
-            this.string.length &&
+            typeof this.str === 'string' &&
+            this.str.length &&
             typeof this.algo === 'string' &&
             this.isAlgo( this.algo )
         );
@@ -136,7 +159,7 @@ module.exports = class CmpStr {
      */
     setStr ( str ) {
 
-        this.string = String( str );
+        this.str = String( str );
 
         return true;
 
@@ -153,7 +176,7 @@ module.exports = class CmpStr {
         if ( this.isReady() ) {
 
             return this.#register[ this.algo ].apply(
-                null, [ this.string, String( str ) ]
+                null, [ this.str, String( str ) ]
             );
 
         }
