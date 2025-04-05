@@ -117,7 +117,7 @@ module.exports = class CmpStr {
      */
     setStr ( str ) {
 
-        this.str = String( str );
+        this.str = String ( str );
 
         return true;
 
@@ -365,7 +365,7 @@ module.exports = class CmpStr {
      */
     normalize ( str, flags = '' ) {
 
-        let res = String( str );
+        let res = String ( str );
 
         /* use normalized string from cache to increase performance */
 
