@@ -1,22 +1,22 @@
 'use strict';
 
 /**
- * calculate levenshtein distance between two given strings as a
+ * calculate Levenshtein distance between two given strings as
  * percentage value between 0 and 1
  * 
  * @param {String} a string a
  * @param {String} b string b
- * @returns {Number} levenshtein distance as value between 0 and 1
+ * @returns {Number} Levenshtein distance as value between 0 and 1
  */
 module.exports = ( a, b ) => {
 
-    if( a === b ) {
+    if ( a === b ) {
 
         /* both string are similar or empty */
 
         return 1;
 
-    } else if( a.length < 2 || b.length < 2 ) {
+    } else if ( a.length < 2 || b.length < 2 ) {
 
         /* for not similar 0- or 1-letter strings */
 
@@ -24,10 +24,10 @@ module.exports = ( a, b ) => {
 
     } else {
 
-        /*
-         * for all other strings calculate levenshtein distance as a
+        /**
+         * for all other strings calculate Levenshtein distance as
          * percentage value between 0 and 1
-         **/
+         */
 
         /* step 1: create matrix */
 

@@ -3,7 +3,7 @@
  * 
  * This lightweight npm package can be used to calculate the similarity of strings,
  * find best matches in arrays and much more. The package supports a number of built-in
- * algorithms, e.g. Levenshtein distance and Sørensen dice coefficient. Additional
+ * algorithms, e.g. Levenshtein distance and Dice-Sørensen coefficient. Additional
  * custom algorithms can be added.
  * 
  * @author komed3 (Paul Köhler)
@@ -22,7 +22,8 @@ module.exports = class CmpStr {
      * @type {Object}
      */
     #register = {
-        levenshtein: require( './algorithms/levenshtein' )
+        levenshtein: require( './algorithms/levenshtein' ),
+        dice: require( './algorithms/dice' )
     };
 
     /**
