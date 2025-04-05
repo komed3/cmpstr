@@ -191,6 +191,7 @@ module.exports = class CmpStr {
     };
 
     /**
+     * @private
      * normalize a string
      * 
      * @param {String} string to normalize
@@ -203,45 +204,36 @@ module.exports = class CmpStr {
      * - collapse whitespaces (w)
      * @returns {String} normalized string
      */
-    normalize ( str, flags = '' ) {
+    #normalize ( str, flags = '' ) {
 
-        if ( flags.includes( 'i' ) ) {
+        return [ ...flags ].reduce( ( res, flag ) => {
 
-            str = str.toLowerCase();
+            switch ( flag ) {
 
-        }
+                case 'i':
+                    return res.toLowerCase();
 
-        if ( flags.includes( 't' ) ) {
+                case 't':
+                    return res.trim();
 
-            str = str.trim();
+                case 's':
+                    return res.replace( /[^a-z0-9]/gi, '' );
 
-        }
+                case 'u':
+                    return res.normalize( 'NFC' );
 
-        if ( flags.includes( 's' ) ) {
+                case 'n':
+                    return res.replace( /[0-9]/g, '' );
 
-            str = str.replace( /[^a-z0-9]/gi, '' );
+                case 'w':
+                    return res.replace( /\s+/g, ' ' );
 
-        }
+                default:
+                    return res;
 
-        if ( flags.includes( 'u' ) ) {
+            }
 
-            str = str.normalize( 'NFC' );
-
-        }
-
-        if ( flags.includes( 'n' ) ) {
-
-            str = str.replace( /[0-9]/g, '' );
-
-        }
-
-        if ( flags.includes( 'w' ) ) {
-
-            str = str.replace( /\s+/g, ' ' );
-
-        }
-
-        return str;
+        }, String( str ) );
 
     };
 
@@ -258,8 +250,8 @@ module.exports = class CmpStr {
         if ( this.isReady() ) {
 
             return this.#algorithms[ this.algo ].apply( null, [
-                this.normalize( this.str, flags ),
-                this.normalize( String( str ), flags ),
+                this.#normalize( this.str, flags ),
+                this.#normalize( String( str ), flags ),
                 ...args
             ] );
 
