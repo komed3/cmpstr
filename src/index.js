@@ -32,6 +32,14 @@ module.exports = class CmpStr {
     };
 
     /**
+     * normalized strings cache
+     * 
+     * @private
+     * @type {Map<String, String>}
+     */
+    #cache = new Map();
+
+    /**
      * current algorithm to use for similarity calculations
      * set by setAlgo(), addAlgo() or constructor()
      * 
@@ -145,6 +153,8 @@ module.exports = class CmpStr {
 
     };
 
+    rmvAlgo ( algo ) {};
+
     /**
      * sets the current algorithm to use for similarity calculations
      * 
@@ -206,36 +216,67 @@ module.exports = class CmpStr {
      */
     #normalize ( str, flags = '' ) {
 
-        return [ ...flags ].reduce( ( res, flag ) => {
+        let cacheKey = str + '::' + flags;
+
+        if ( this.#cache.has( cacheKey ) ) {
+
+            /* use normalized string from cache */
+
+            return this.#cache.get( cacheKey );
+
+        }
+
+        let res = [ ...flags ].reduce( ( s, flag ) => {
 
             switch ( flag ) {
 
                 case 'i':
-                    return res.toLowerCase();
+                    return s.toLowerCase();
 
                 case 't':
-                    return res.trim();
+                    return s.trim();
 
                 case 's':
-                    return res.replace( /[^a-z0-9]/gi, '' );
+                    return s.replace( /[^a-z0-9]/gi, '' );
 
                 case 'u':
-                    return res.normalize( 'NFC' );
+                    return s.normalize( 'NFC' );
 
                 case 'n':
-                    return res.replace( /[0-9]/g, '' );
+                    return s.replace( /[0-9]/g, '' );
 
                 case 'w':
-                    return res.replace( /\s+/g, ' ' );
+                    return s.replace( /\s+/g, ' ' );
 
                 default:
-                    return res;
+                    return s;
 
             }
 
         }, String( str ) );
 
+        /* store the normalized string in the cache */
+
+        this.#cache.set( cacheKey, res );
+
+        return res;
+
     };
+
+    /**
+     * clears the normalization cache
+     * 
+     * @returns {Boolean} always returns true
+     */
+    clearCache () {
+
+        this.#cache.clear();
+
+        return true;
+
+    };
+
+    compare ( a, b, flags = '', ...args ) {};
 
     /**
      * tests the similarity between the base string and a target string using the current algorithm
@@ -271,21 +312,12 @@ module.exports = class CmpStr {
 
         if ( this.isReady() ) {
 
-            let baseStr = this.str;
-
-            this.str = this.#normalize( this.str, flags );
-
-            let res = [ ...arr ].map( ( str ) => ( {
+            return [ ...arr ].map( ( str ) => ( {
                 target: str,
                 match: this.test(
-                    this.#normalize( str, flags ),
-                    '', ...args
+                    str, flags, ...args
                 )
             } ) );
-
-            this.str = baseStr;
-
-            return res;
 
         }
 
@@ -350,18 +382,14 @@ module.exports = class CmpStr {
 
         if ( this.setAlgo( algo ) ) {
 
-            return [ ...arr ].map(
-                ( str ) => this.#normalize( str, flags )
-            ).map( ( a, i ) => {
+            return [ ...arr ].map( ( a, i ) => {
 
                 this.setStr( a );
 
                 return [ ...arr ].map(
-                    ( b, j ) => i === j
-                        ? null
-                        : this.test(
-                            b, '', ...args
-                        )
+                    ( b, j ) => i === j ? 1 : this.test(
+                        b, flags, ...args
+                    )
                 );
 
             } );
