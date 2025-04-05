@@ -160,15 +160,7 @@ module.exports = class CmpStr {
 
                 /* lazy load modules */
 
-                try {
-
-                    this.#algorithms[ algo ] = require( this.#algorithms[ algo ] );
-
-                } catch ( err ) {
-
-                    throw new Error ( err );
-
-                }
+                this.#algorithms[ algo ] = require( this.#algorithms[ algo ] );
 
             }
 
