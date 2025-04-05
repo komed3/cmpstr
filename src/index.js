@@ -16,7 +16,7 @@
 module.exports = class CmpStr {
 
     /**
-     * private object with all defined similarity algorithms
+     * all pre-defined similarity algorithms
      * 
      * @private
      * @type {Object}
@@ -38,6 +38,14 @@ module.exports = class CmpStr {
      * @type {Map<String, String>}
      */
     #cache = new Map();
+
+    /**
+     * added filters for string normalization
+     * 
+     * @private
+     * @type {Map<Function, Function>}
+     */
+    #filter = new Map();
 
     /**
      * base string for comparison
@@ -70,25 +78,11 @@ module.exports = class CmpStr {
 
         }
 
-        if ( str != undefined ) {
+        if ( str !== undefined ) {
 
             this.setStr( str );
 
         }
-
-    };
-
-    /**
-     * sets the base string for comparison
-     * 
-     * @param {String} str string to set as the base
-     * @returns {Boolean} always returns true
-     */
-    setStr ( str ) {
-
-        this.str = String( str );
-
-        return true;
 
     };
 
@@ -105,6 +99,20 @@ module.exports = class CmpStr {
             typeof this.str === 'string' &&
             this.str.length != 0
         );
+
+    };
+
+    /**
+     * sets the base string for comparison
+     * 
+     * @param {String} str string to set as the base
+     * @returns {Boolean} always returns true
+     */
+    setStr ( str ) {
+
+        this.str = String( str );
+
+        return true;
 
     };
 
@@ -259,8 +267,72 @@ module.exports = class CmpStr {
     };
 
     /**
+     * add a new string normalization filter
+     * clears also the normalization cache
+     * 
+     * @param {String} ident filter name / identification
+     * @param {Function} callback custom normalization filter that accepts a string and returns a normalized string
+     * @returns {Boolean} returns true if the filter was added successfully
+     * @throws {Error} if the filter cannot be added
+     */
+    addFilter ( ident, callback ) {
+
+        if (
+            !this.#filter.has( ident ) &&
+            typeof callback === 'function' &&
+            callback.length == 1 &&
+            typeof callback.apply( null, [ 'abc' ] ) === 'string' &&
+            this.#filter.set( ident, callback )
+        ) {
+
+            this.clearCache();
+
+            return true;
+
+        } else {
+
+            throw new Error ( 'filter could not be added' );
+
+        }
+
+    };
+
+    /**
+     * removes a string normalization filter
+     * clears also the normalization cache
+     * 
+     * @param {String} ident filter name / identification
+     * @returns {Boolean} true if the filter was removed successfully
+     */
+    rmvFilter ( ident ) {
+
+        this.clearCache();
+
+        return this.#filter.delete( ident );
+
+    };
+
+    /**
+     * clears normalization filters (remove all of them)
+     * clears also the normalization cache
+     * 
+     * @returns {Boolean} always returns true
+     */
+    clearFilter () {
+
+        this.#filter.clear();
+
+        this.clearCache();
+
+        return true;
+
+    };
+
+    /**
      * @private
-     * normalize a string, options can be chained;
+     * normalizes a string by chainable options; uses cache to increase
+     * performance and custom filters for advanced behavior
+     * 
      * list of all supported flags:
      * - case insensitivity (i)
      * - trim whitespaces (t)
@@ -275,48 +347,64 @@ module.exports = class CmpStr {
      */
     #normalize ( str, flags = '' ) {
 
-        let cacheKey = str + '::' + flags;
+        let res = String( str );
 
-        if ( this.#cache.has( cacheKey ) ) {
+        /* use normalized string from cache to increase performance */
 
-            /* use normalized string from cache */
+        let key = res + '::' + flags;
 
-            return this.#cache.get( cacheKey );
+        if ( this.#cache.has( key ) ) {
+
+            return this.#cache.get( key );
 
         }
 
-        let res = [ ...flags ].reduce( ( s, flag ) => {
+        /* apply filters */
 
-            switch ( flag ) {
+        this.#filter.forEach( ( filter ) => {
 
-                case 'i':
-                    return s.toLowerCase();
+            res = filter.apply( null, [ res ] );
 
-                case 't':
-                    return s.trim();
+        } );
 
-                case 's':
-                    return s.replace( /[^a-z0-9]/gi, '' );
+        /* normalize using flags */
 
-                case 'u':
-                    return s.normalize( 'NFC' );
+        if ( flags.length ) {
 
-                case 'n':
-                    return s.replace( /[0-9]/g, '' );
+            res = [ ...flags ].reduce( ( s, flag ) => {
 
-                case 'w':
-                    return s.replace( /\s+/g, ' ' );
+                switch ( flag ) {
 
-                default:
-                    return s;
+                    case 'i':
+                        return s.toLowerCase();
 
-            }
+                    case 't':
+                        return s.trim();
 
-        }, String( str ) );
+                    case 's':
+                        return s.replace( /[^a-z0-9]/gi, '' );
+
+                    case 'u':
+                        return s.normalize( 'NFC' );
+
+                    case 'n':
+                        return s.replace( /[0-9]/g, '' );
+
+                    case 'w':
+                        return s.replace( /\s+/g, ' ' );
+
+                    default:
+                        return s;
+
+                }
+
+            }, res );
+
+        }
 
         /* store the normalized string in the cache */
 
-        this.#cache.set( cacheKey, res );
+        this.#cache.set( key, res );
 
         return res;
 
