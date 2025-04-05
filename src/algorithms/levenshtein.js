@@ -28,8 +28,7 @@ module.exports = ( a, b ) => {
     } else {
 
         /**
-         * for all other strings calculate Levenshtein distance as
-         * percentage value between 0 and 1
+         * for all other strings calculate Levenshtein distance
          */
 
         /* step 1: create matrix */

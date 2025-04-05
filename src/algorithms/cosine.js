@@ -28,8 +28,7 @@ module.exports = ( a, b, delimiter = ' ' ) => {
     } else {
 
         /**
-         * for all other strings calculate Cosine similarity as
-         * percentage value between 0 and 1
+         * for all other strings calculate Cosine similarity
          */
 
         /**

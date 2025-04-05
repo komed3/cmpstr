@@ -29,8 +29,7 @@ module.exports = ( a, b ) => {
     } else {
 
         /**
-         * for all other strings calculate Dice-Sørensen coefficient distance
-         * as percentage value between 0 and 1
+         * for all other strings calculate Dice-Sørensen coefficient
          */
 
         /**

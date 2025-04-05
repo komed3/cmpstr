@@ -27,8 +27,7 @@ module.exports = ( a, b ) => {
     } else {
 
         /**
-         * for all other strings calculate Jaccard index as
-         * percentage value between 0 and 1
+         * for all other strings calculate Jaccard Index
          */
 
         let setA = new Set( a ),

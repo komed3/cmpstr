@@ -26,6 +26,7 @@ module.exports = class CmpStr {
         dice: require( './algorithms/dice' ),
         hamming: require( './algorithms/hamming' ),
         jaccard: require( './algorithms/jaccard' ),
+        lcs: require( './algorithms/lcs' ),
         levenshtein: require( './algorithms/levenshtein' )
     };
 
@@ -97,11 +98,11 @@ module.exports = class CmpStr {
     };
 
     /**
-     * get all registered similarity algorithm modules
+     * list all registered similarity algorithms
      * 
      * @returns {String[]} array of registered algorithms
      */
-    getAlgorithms () {
+    listAlgo () {
 
         return Object.keys( this.#algorithms );
 
