@@ -21,7 +21,7 @@ module.exports = class CmpStr {
      * @private
      * @type {Object}
      */
-    #register = {
+    #algorithms = {
         cosine: require( './algorithms/cosine' ),
         dice: require( './algorithms/dice' ),
         hamming: require( './algorithms/hamming' ),
@@ -92,7 +92,18 @@ module.exports = class CmpStr {
      */
     isAlgo ( algo ) {
 
-        return algo in this.#register;
+        return algo in this.#algorithms;
+
+    };
+
+    /**
+     * get all registered similarity algorithm modules
+     * 
+     * @returns {String[]} array of registered algorithms
+     */
+    getAlgorithms () {
+
+        return Object.keys( this.#algorithms );
 
     };
 
@@ -114,7 +125,7 @@ module.exports = class CmpStr {
             typeof callback.apply( null, [ 'abc', 'abc' ] ) === 'number'
         ) {
 
-            this.#register[ algo ] = callback;
+            this.#algorithms[ algo ] = callback;
 
             if ( useIt ) {
 
@@ -235,7 +246,7 @@ module.exports = class CmpStr {
 
         if ( this.isReady() ) {
 
-            return this.#register[ this.algo ].apply( null, [
+            return this.#algorithms[ this.algo ].apply( null, [
                 this.normalize( this.str, flags ),
                 this.normalize( String( str ), flags )
             ] );
