@@ -45,7 +45,7 @@ module.exports = class CmpStr {
      * initializes a CmpStr instance
      * algorithm and base string can be set by initialization
      * 
-     * @param {String} algo name of the algorithm
+     * @param {String} algo name of the algorithm to use for calculation
      * @param {String} str string to set as the base
      */
     constructor ( algo = undefined, str = undefined ) {
@@ -72,10 +72,10 @@ module.exports = class CmpStr {
     isReady () {
 
         return (
-            typeof this.str === 'string' &&
-            this.str.length &&
             typeof this.algo === 'string' &&
-            this.isAlgo( this.algo )
+            this.isAlgo( this.algo ) &&
+            typeof this.str === 'string' &&
+            this.str.length
         );
 
     };
@@ -83,7 +83,7 @@ module.exports = class CmpStr {
     /**
      * checks if an algorithm is registered
      * 
-     * @param {String} algo name of the algorithm
+     * @param {String} algo name of the algorithm to use for calculation
      * @returns {Boolean} true if the algorithm is registered, false otherwise
      */
     isAlgo ( algo ) {
@@ -95,7 +95,7 @@ module.exports = class CmpStr {
     /**
      * adds a new similarity algorithm to the class
      * 
-     * @param {String} algo name of the algorithm
+     * @param {String} algo name of the algorithm to use for calculation
      * @param {Function} callback function implementing the algorithm (must accept two strings and return a number)
      * @param {Boolean} [useIt=true] whether to set this algorithm as the current one
      * @returns {Boolean} returns true if the algorithms was added successfully
@@ -131,7 +131,7 @@ module.exports = class CmpStr {
     /**
      * sets the current algorithm to use for similarity calculations
      * 
-     * @param {String} algo name of the algorithm
+     * @param {String} algo name of the algorithm to use for calculation
      * @returns {Boolean} true if the algorithm has been set
      * @throws {Error} if the algorithm is not defined
      */
@@ -235,6 +235,31 @@ module.exports = class CmpStr {
         if ( this.isReady() ) {
 
             return this.match( arr )[ 0 ].target;
+
+        }
+
+    };
+
+    /**
+     * generate a similarity matrix for an array of strings
+     * 
+     * @param {String} algo name of the algorithm to use for calculation
+     * @param {String[]} arr array of strings to compare
+     * @returns {Number[][]} 2D array representing the similarity matrix
+     */
+    similarityMatrix ( algo, arr ) {
+
+        if ( this.setAlgo( algo ) ) {
+
+            return [ ...arr ].map( ( a, i ) => {
+
+                this.setStr( a );
+
+                return [ ...arr ].map(
+                    ( b, j ) => i === j ? null : this.test( b )
+                );
+
+            } );
 
         }
 
