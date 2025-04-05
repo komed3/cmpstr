@@ -169,6 +169,7 @@ module.exports = class CmpStr {
     /**
      * normalize a string
      * 
+     * @param {String} string to normalize
      * @param {String} [flags=''] flags for normalization
      * - case insensitivity (i)
      * - trim whitespaces (t)
