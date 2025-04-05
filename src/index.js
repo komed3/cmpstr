@@ -167,18 +167,74 @@ module.exports = class CmpStr {
     };
 
     /**
+     * normalize a string
+     * 
+     * @param {String} [flags=''] flags for normalization
+     * - case insensitivity (i)
+     * - trim whitespaces (t)
+     * - remove special chars (s)
+     * - normalize unicode (u)
+     * - ignore numbers (n)
+     * - collapse whitespace (w)
+     * @returns {String} normalized string
+     */
+    normalize ( str, flags = '' ) {
+
+        if ( flags.includes( 'i' ) ) {
+
+            str = str.toLowerCase();
+
+        }
+
+        if ( flags.includes( 't' ) ) {
+
+            str = str.trim();
+
+        }
+
+        if ( flags.includes( 's' ) ) {
+
+            str = str.replace( /[^a-z0-9]/gi, '' );
+
+        }
+
+        if ( flags.includes( 'u' ) ) {
+
+            str = str.normalize( 'NFC' );
+
+        }
+
+        if ( flags.includes( 'n' ) ) {
+
+            str = str.replace( /[0-9]/g, '' );
+
+        }
+
+        if ( flags.includes( 'w' ) ) {
+
+            str = str.replace( /\s+/g, ' ' );
+
+        }
+
+        return str;
+
+    };
+
+    /**
      * tests the similarity between the base string and a target string using the current algorithm
      * 
      * @param {String} str target string to compare
+     * @param {String} [flags=''] flags for normalization
      * @returns {Number} similarity score between 0 and 1
      */
-    test ( str ) {
+    test ( str, flags = '' ) {
 
         if ( this.isReady() ) {
 
-            return this.#register[ this.algo ].apply(
-                null, [ this.str, String( str ) ]
-            );
+            return this.#register[ this.algo ].apply( null, [
+                this.normalize( this.str, flags ),
+                this.normalize( String( str ), flags )
+            ] );
 
         }
 
@@ -188,15 +244,16 @@ module.exports = class CmpStr {
      * tests the similarity of multiple strings against the base string
      * 
      * @param {String[]} arr array of strings to compare
+     * @param {String} [flags=''] flags for normalization
      * @returns {Object[]} array of objects, each containing the target string and its similarity score
      */
-    batchTest ( arr ) {
+    batchTest ( arr, flags = '' ) {
 
         if ( this.isReady() ) {
 
             return [ ...arr ].map( ( str ) => ( {
                 target: str,
-                match: this.test( str )
+                match: this.test( str, flags )
             } ) );
 
         }
@@ -208,14 +265,15 @@ module.exports = class CmpStr {
      * returns the array sorted by highest similarity
      * 
      * @param {String[]} arr array of strings to compare
+     * @param {String} [flags=''] flags for normalization
      * @param {Number} [threshold=0] minimum similarity score to consider a match
      * @returns {Object[]} array of objects, each containing the target string and its similarity score
      */
-    match ( arr, threshold = 0 ) {
+    match ( arr, flags = '', threshold = 0 ) {
 
         if ( this.isReady() ) {
 
-            return this.batchTest( arr ).filter(
+            return this.batchTest( arr, flags ).filter(
                 ( r ) => r.match >= threshold
             ).sort(
                 ( a, b ) => b.match - a.match
@@ -229,13 +287,14 @@ module.exports = class CmpStr {
      * finds the closest matching string from an array of strings
      * 
      * @param {String[]} arr array of strings to compare
+     * @param {String} [flags=''] flags for normalization
      * @returns {String} closest matching string
      */
-    closest ( arr ) {
+    closest ( arr, flags = '' ) {
 
         if ( this.isReady() ) {
 
-            return this.match( arr )[ 0 ].target;
+            return this.match( arr, flags )[ 0 ].target;
 
         }
 
@@ -246,9 +305,10 @@ module.exports = class CmpStr {
      * 
      * @param {String} algo name of the algorithm to use for calculation
      * @param {String[]} arr array of strings to compare
+     * @param {String} [flags=''] flags for normalization
      * @returns {Number[][]} 2D array representing the similarity matrix
      */
-    similarityMatrix ( algo, arr ) {
+    similarityMatrix ( algo, arr, flags ) {
 
         if ( this.setAlgo( algo ) ) {
 
@@ -257,7 +317,7 @@ module.exports = class CmpStr {
                 this.setStr( a );
 
                 return [ ...arr ].map(
-                    ( b, j ) => i === j ? null : this.test( b )
+                    ( b, j ) => i === j ? null : this.test( b, flags )
                 );
 
             } );
