@@ -250,15 +250,17 @@ module.exports = class CmpStr {
      * 
      * @param {String} str target string to compare
      * @param {String} [flags=''] flags for normalization
+     * @param {...any} args additional arguments to pass to the algorithm
      * @returns {Number} similarity score between 0 and 1
      */
-    test ( str, flags = '' ) {
+    test ( str, flags = '', ...args ) {
 
         if ( this.isReady() ) {
 
             return this.#algorithms[ this.algo ].apply( null, [
                 this.normalize( this.str, flags ),
-                this.normalize( String( str ), flags )
+                this.normalize( String( str ), flags ),
+                ...args
             ] );
 
         }
@@ -270,15 +272,16 @@ module.exports = class CmpStr {
      * 
      * @param {String[]} arr array of strings to compare
      * @param {String} [flags=''] flags for normalization
+     * @param {...any} args additional arguments to pass to the algorithm
      * @returns {Object[]} array of objects, each containing the target string and its similarity score
      */
-    batchTest ( arr, flags = '' ) {
+    batchTest ( arr, flags = '', ...args ) {
 
         if ( this.isReady() ) {
 
             return [ ...arr ].map( ( str ) => ( {
                 target: str,
-                match: this.test( str, flags )
+                match: this.test( str, flags, ...args )
             } ) );
 
         }
@@ -292,13 +295,14 @@ module.exports = class CmpStr {
      * @param {String[]} arr array of strings to compare
      * @param {String} [flags=''] flags for normalization
      * @param {Number} [threshold=0] minimum similarity score to consider a match
+     * @param {...any} args additional arguments to pass to the algorithm
      * @returns {Object[]} array of objects, each containing the target string and its similarity score
      */
-    match ( arr, flags = '', threshold = 0 ) {
+    match ( arr, flags = '', threshold = 0, ...args ) {
 
         if ( this.isReady() ) {
 
-            return this.batchTest( arr, flags ).filter(
+            return this.batchTest( arr, flags, ...args ).filter(
                 ( r ) => r.match >= threshold
             ).sort(
                 ( a, b ) => b.match - a.match
@@ -313,13 +317,14 @@ module.exports = class CmpStr {
      * 
      * @param {String[]} arr array of strings to compare
      * @param {String} [flags=''] flags for normalization
+     * @param {...any} args additional arguments to pass to the algorithm
      * @returns {String} closest matching string
      */
-    closest ( arr, flags = '' ) {
+    closest ( arr, flags = '', ...args ) {
 
         if ( this.isReady() ) {
 
-            return this.match( arr, flags )[ 0 ].target;
+            return this.match( arr, flags, ...args )[ 0 ].target;
 
         }
 
@@ -331,9 +336,10 @@ module.exports = class CmpStr {
      * @param {String} algo name of the algorithm to use for calculation
      * @param {String[]} arr array of strings to compare
      * @param {String} [flags=''] flags for normalization
+     * @param {...any} args additional arguments to pass to the algorithm
      * @returns {Number[][]} 2D array representing the similarity matrix
      */
-    similarityMatrix ( algo, arr, flags = '' ) {
+    similarityMatrix ( algo, arr, flags = '', ...args ) {
 
         if ( this.setAlgo( algo ) ) {
 
@@ -342,7 +348,7 @@ module.exports = class CmpStr {
                 this.setStr( a );
 
                 return [ ...arr ].map(
-                    ( b, j ) => i === j ? null : this.test( b, flags )
+                    ( b, j ) => i === j ? null : this.test( b, flags, ...args )
                 );
 
             } );
