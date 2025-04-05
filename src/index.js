@@ -22,8 +22,9 @@ module.exports = class CmpStr {
      * @type {Object}
      */
     #register = {
-        levenshtein: require( './algorithms/levenshtein' ),
-        dice: require( './algorithms/dice' )
+        dice: require( './algorithms/dice' ),
+        jaccard: require( './algorithms/jaccard' ),
+        levenshtein: require( './algorithms/levenshtein' )
     };
 
     /**
@@ -176,7 +177,7 @@ module.exports = class CmpStr {
      * - remove special chars (s)
      * - normalize unicode (u)
      * - ignore numbers (n)
-     * - collapse whitespace (w)
+     * - collapse whitespaces (w)
      * @returns {String} normalized string
      */
     normalize ( str, flags = '' ) {
