@@ -1,7 +1,7 @@
 'use strict';
 
 /**
- * Levenshtein distance
+ * Levenshtein Distance
  * 
  * The Levenshtein distance between two strings is the minimum number of
  * single-character edits (i.e. insertions, deletions or substitutions)

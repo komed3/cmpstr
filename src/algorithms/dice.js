@@ -1,7 +1,7 @@
 'use strict';
 
 /**
- * Dice-Sørensen coefficient
+ * Dice-Sørensen Coefficient
  * 
  * The Sørensen index equals twice the number of elements common to both sets
  * divided by the sum of the number of elements in each set. Equivalently,

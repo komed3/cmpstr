@@ -24,6 +24,7 @@ module.exports = class CmpStr {
     #register = {
         cosine: require( './algorithms/cosine' ),
         dice: require( './algorithms/dice' ),
+        hamming: require( './algorithms/hamming' ),
         jaccard: require( './algorithms/jaccard' ),
         levenshtein: require( './algorithms/levenshtein' )
     };
