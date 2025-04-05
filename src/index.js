@@ -147,13 +147,42 @@ module.exports = class CmpStr {
 
         } else {
 
-            throw new Error( 'the algorithm could not be added' );
+            throw new Error ( 'algorithm could not be added' );
 
         }
 
     };
 
-    rmvAlgo ( algo ) {};
+    /**
+     * removes a similarity algorithm from the class
+     * 
+     * @param {String} algo name of the algorithm to remove
+     * @returns {Boolean} true if the algorithm was removed successfully
+     * @throws {Error} if the algorithm is not defined
+     */
+    rmvAlgo ( algo ) {
+
+        if ( this.isAlgo( algo ) ) {
+
+            delete this.#algorithms[ algo ];
+
+            if ( this.algo === algo ) {
+
+                /* reset current algorithm if it was removed */
+
+                this.algo = undefined;
+
+            }
+
+            return true;
+
+        } else {
+
+            throw new Error ( algo + ' is not defined' );
+
+        }
+
+    };
 
     /**
      * sets the current algorithm to use for similarity calculations
@@ -180,7 +209,7 @@ module.exports = class CmpStr {
 
         } else {
 
-            throw new Error( algo + ' is not defined' );
+            throw new Error ( algo + ' is not defined' );
 
         }
 
