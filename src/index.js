@@ -22,13 +22,13 @@ module.exports = class CmpStr {
      * @type {Object}
      */
     #algorithms = {
-        cosine: require( './algorithms/cosine' ),
-        dice: require( './algorithms/dice' ),
-        hamming: require( './algorithms/hamming' ),
-        jaccard: require( './algorithms/jaccard' ),
-        jaro: require( './algorithms/jaroWinkler' ),
-        lcs: require( './algorithms/lcs' ),
-        levenshtein: require( './algorithms/levenshtein' )
+        cosine: './algorithms/cosine',
+        dice: './algorithms/dice',
+        hamming: './algorithms/hamming',
+        jaccard: './algorithms/jaccard',
+        jaro: './algorithms/jaroWinkler',
+        lcs: './algorithms/lcs',
+        levenshtein: './algorithms/levenshtein'
     };
 
     /**
@@ -155,6 +155,22 @@ module.exports = class CmpStr {
     setAlgo ( algo ) {
 
         if ( this.isAlgo( algo ) ) {
+
+            if ( typeof this.#algorithms[ algo ] === 'string' ) {
+
+                /* lazy load modules */
+
+                try {
+
+                    this.#algorithms[ algo ] = require( this.#algorithms[ algo ] );
+
+                } catch ( err ) {
+
+                    throw new Error ( err );
+
+                }
+
+            }
 
             this.algo = algo;
 
