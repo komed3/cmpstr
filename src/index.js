@@ -22,6 +22,7 @@ module.exports = class CmpStr {
      * @type {Object}
      */
     #register = {
+        cosine: require( './algorithms/cosine' ),
         dice: require( './algorithms/dice' ),
         jaccard: require( './algorithms/jaccard' ),
         levenshtein: require( './algorithms/levenshtein' )
@@ -77,7 +78,7 @@ module.exports = class CmpStr {
             typeof this.algo === 'string' &&
             this.isAlgo( this.algo ) &&
             typeof this.str === 'string' &&
-            this.str.length
+            this.str.length != 0
         );
 
     };
@@ -108,7 +109,7 @@ module.exports = class CmpStr {
         if (
             !this.isAlgo( algo ) &&
             typeof callback === 'function' &&
-            callback.length == 2 &&
+            callback.length >= 2 &&
             typeof callback.apply( null, [ 'abc', 'abc' ] ) === 'number'
         ) {
 
