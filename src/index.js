@@ -26,6 +26,7 @@ module.exports = class CmpStr {
         dice: require( './algorithms/dice' ),
         hamming: require( './algorithms/hamming' ),
         jaccard: require( './algorithms/jaccard' ),
+        jaro: require( './algorithms/jaroWinkler' ),
         lcs: require( './algorithms/lcs' ),
         levenshtein: require( './algorithms/levenshtein' )
     };

@@ -51,7 +51,7 @@ module.exports = ( a, b ) => {
 
         }
 
-        /* step 2: calculate distance */
+        /* step 2: calculate Levenshtein distance */
 
         for ( let i = 1; i <= a.length; i++ ) {
 
@@ -75,7 +75,7 @@ module.exports = ( a, b ) => {
 
         }
 
-        /* step 3: get levenshtein distance as percentage */
+        /* step 3: get Levenshtein distance as percentage */
 
         return 1 - (
             matrix[ a.length ][ b.length ] /
