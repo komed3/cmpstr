@@ -251,7 +251,7 @@ module.exports = class CmpStr {
 
             return this.#algorithms[ this.algo ].apply( null, [
                 this.#normalize( this.str, flags ),
-                this.#normalize( String( str ), flags ),
+                this.#normalize( str, flags ),
                 ...args
             ] );
 
@@ -271,10 +271,21 @@ module.exports = class CmpStr {
 
         if ( this.isReady() ) {
 
-            return [ ...arr ].map( ( str ) => ( {
+            let baseStr = this.str;
+
+            this.str = this.#normalize( this.str, flags );
+
+            let res = [ ...arr ].map( ( str ) => ( {
                 target: str,
-                match: this.test( str, flags, ...args )
+                match: this.test(
+                    this.#normalize( str, flags ),
+                    '', ...args
+                )
             } ) );
+
+            this.str = baseStr;
+
+            return res;
 
         }
 
@@ -294,7 +305,9 @@ module.exports = class CmpStr {
 
         if ( this.isReady() ) {
 
-            return this.batchTest( arr, flags, ...args ).filter(
+            return this.batchTest(
+                arr, flags, ...args
+            ).filter(
                 ( r ) => r.match >= threshold
             ).sort(
                 ( a, b ) => b.match - a.match
@@ -316,7 +329,9 @@ module.exports = class CmpStr {
 
         if ( this.isReady() ) {
 
-            return this.match( arr, flags, ...args )[ 0 ].target;
+            return this.match(
+                arr, flags, ...args
+            )[ 0 ].target;
 
         }
 
@@ -335,12 +350,18 @@ module.exports = class CmpStr {
 
         if ( this.setAlgo( algo ) ) {
 
-            return [ ...arr ].map( ( a, i ) => {
+            return [ ...arr ].map(
+                ( str ) => this.#normalize( str, flags )
+            ).map( ( a, i ) => {
 
                 this.setStr( a );
 
                 return [ ...arr ].map(
-                    ( b, j ) => i === j ? null : this.test( b, flags, ...args )
+                    ( b, j ) => i === j
+                        ? null
+                        : this.test(
+                            b, '', ...args
+                        )
                 );
 
             } );
