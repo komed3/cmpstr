@@ -128,7 +128,7 @@ module.exports = class CmpStr {
 
             } else if ( typeOf === 'string' ) {
 
-                /* lazy load modules */
+                /* lazy-load algorithm module */
 
                 this.#algorithms[ algo ] = require(
                     this.#algorithms[ algo ]
@@ -203,7 +203,7 @@ module.exports = class CmpStr {
 
         } else {
 
-            throw new Error ( 'algorithm could not be added' );
+            throw new Error ( algo + ' could not be added' );
 
         }
 
