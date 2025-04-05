@@ -531,9 +531,13 @@ module.exports = class CmpStr {
 
         if ( this.isReady() ) {
 
-            return this.match(
+            let res = this.match(
                 arr, flags, ...args
-            )[ 0 ].target;
+            );
+
+            return res.length
+                ? res[ 0 ].target
+                : undefined;
 
         }
 
