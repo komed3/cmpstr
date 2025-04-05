@@ -323,7 +323,7 @@ module.exports = class CmpStr {
      * @param {String} [flags=''] flags for normalization
      * @returns {Number[][]} 2D array representing the similarity matrix
      */
-    similarityMatrix ( algo, arr, flags ) {
+    similarityMatrix ( algo, arr, flags = '' ) {
 
         if ( this.setAlgo( algo ) ) {
 
