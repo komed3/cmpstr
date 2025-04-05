@@ -135,35 +135,39 @@ module.exports = class CmpStrAsync extends CmpStr {
 
     similarityMatrixAsync ( algo, arr, flags = '', ...args ) {
 
-        let tasks = [ ...arr ].map( ( a, i ) => {
+        if ( this.loadAlgo( algo ) ) {
 
-            return Promise.all( [ ...arr ].map( ( b, j ) => {
+            let tasks = [ ...arr ].map( ( a, i ) => {
 
-                return new Promise ( ( resolve, reject ) => {
+                return Promise.all( [ ...arr ].map( ( b, j ) => {
 
-                    setImmediate( () => {
+                    return new Promise ( ( resolve, reject ) => {
 
-                        try {
+                        setImmediate( () => {
 
-                            resolve( i === j ? 1 : this.compare(
-                                algo, a, b, flags, ...args
-                            ) );
+                            try {
 
-                        } catch ( err ) {
+                                resolve( i === j ? 1 : this.compare(
+                                    algo, a, b, flags, ...args
+                                ) );
 
-                            reject( err );
+                            } catch ( err ) {
 
-                        }
+                                reject( err );
+
+                            }
+
+                        } );
 
                     } );
 
-                } );
+                } ) );
 
-            } ) );
+            } );
 
-        } );
+            return Promise.all( tasks );
 
-        return Promise.all( tasks );
+        }
 
     };
 

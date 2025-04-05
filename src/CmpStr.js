@@ -117,14 +117,13 @@ module.exports = class CmpStr {
     };
 
     /**
-     * @private
      * (save) lazy-load algorithm module
      * 
      * @param {String} algo name of the similarity algorithm
      * @returns {Boolean} true if the algorithm is loaded
      * @throws {Error} if the algorithm cannot be loaded or is not defined
      */
-    #loadAlgo( algo ) {
+    loadAlgo( algo ) {
 
         if ( this.isAlgo( algo ) ) {
 
@@ -256,7 +255,7 @@ module.exports = class CmpStr {
      */
     setAlgo ( algo ) {
 
-        if ( this.#loadAlgo( algo ) ) {
+        if ( this.loadAlgo( algo ) ) {
 
             this.algo = algo;
 
@@ -435,7 +434,7 @@ module.exports = class CmpStr {
      */
     compare ( algo, a, b, flags = '', ...args ) {
 
-        if ( this.#loadAlgo( algo ) ) {
+        if ( this.loadAlgo( algo ) ) {
 
             return this.#algorithms[ algo ].apply( null, [
                 this.#normalize( a, flags ),
@@ -554,7 +553,7 @@ module.exports = class CmpStr {
      */
     similarityMatrix ( algo, arr, flags = '', ...args ) {
 
-        if ( this.#loadAlgo( algo ) ) {
+        if ( this.loadAlgo( algo ) ) {
 
             return [ ...arr ].map( ( a, i ) => {
 
