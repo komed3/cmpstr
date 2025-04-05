@@ -184,38 +184,19 @@ module.exports = class CmpStr {
     };
 
     /**
-     * finds the closest matching string from an array of strings
+     * tests the similarity of multiple strings against the base string
      * 
      * @param {String[]} arr array of strings to compare
-     * @returns {String} closest matching string
+     * @returns {Object[]} array of objects, each containing the target string and its similarity score
      */
-    closest ( arr ) {
+    batchTest ( arr ) {
 
         if ( this.isReady() ) {
 
-            let best = -Infinity,
-                idx = 0, pct;
-
-            /* search for closest element in arr */
-
-            [ ...arr ].forEach( ( str, i ) => {
-
-                pct = this.test( str );
-
-                if ( pct > best ) {
-
-                    /* save closest target */
-
-                    best = pct;
-                    idx = i;
-
-                }
-
-            } );
-
-            /* return closest target */
-
-            return arr[ idx ];
+            return [ ...arr ].map( ( str ) => ( {
+                target: str,
+                match: this.test( str )
+            } ) );
 
         }
 
@@ -227,41 +208,33 @@ module.exports = class CmpStr {
      * 
      * @param {String[]} arr array of strings to compare
      * @param {Number} [threshold=0] minimum similarity score to consider a match
-     * @returns {Object[]} array of match objects, each containing the target string, match score, and difference from the threshold
+     * @returns {Object[]} array of objects, each containing the target string and its similarity score
      */
     match ( arr, threshold = 0 ) {
 
         if ( this.isReady() ) {
 
-            let matches = [],
-                pct;
-
-            /* calculate similarity for each item in arr */
-
-            [ ...arr ].forEach( ( str ) => {
-
-                pct = this.test( str );
-
-                if ( pct >= threshold ) {
-
-                    matches.push( {
-                        target: str, match: pct,
-                        fromTh: pct - threshold
-                    } );
-
-                }
-
-            } );
-
-            /* sort by highest similarity */
-
-            let sorted = matches.sort(
+            return this.batchTest( arr ).filter(
+                ( r ) => r.match >= threshold
+            ).sort(
                 ( a, b ) => b.match - a.match
             );
 
-            /* return sorted matches */
+        }
 
-            return sorted;
+    };
+
+    /**
+     * finds the closest matching string from an array of strings
+     * 
+     * @param {String[]} arr array of strings to compare
+     * @returns {String} closest matching string
+     */
+    closest ( arr ) {
+
+        if ( this.isReady() ) {
+
+            return this.match( arr )[ 0 ].target;
 
         }
 
