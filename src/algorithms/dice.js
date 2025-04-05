@@ -1,12 +1,16 @@
 'use strict';
 
 /**
- * calculate Dice-Sørensen coefficient between two given strings as
- * percentage value between 0 and 1
+ * Dice-Sørensen coefficient
+ * 
+ * The Sørensen index equals twice the number of elements common to both sets
+ * divided by the sum of the number of elements in each set. Equivalently,
+ * the index is the size of the intersection as a fraction of the average
+ * size of the two sets.
  * 
  * @param {String} a string a
  * @param {String} b string b
- * @returns {Number} Dice-Sørensen coefficient as value between 0 and 1
+ * @returns {Number} similarity (0..1)
  */
 module.exports = ( a, b ) => {
 

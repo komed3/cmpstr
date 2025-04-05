@@ -1,12 +1,14 @@
 'use strict';
 
 /**
- * calculate Jaccard index between two given strings as
- * percentage value between 0 and 1
+ * Jaccard Index
+ * 
+ * The Jaccard Index measures the similarity between two sets by dividing
+ * the size of their intersection by the size of their union.
  * 
  * @param {String} a string a
  * @param {String} b string b
- * @returns {Number} Jaccard index as value between 0 and 1
+ * @returns {Number} similarity (0..1)
  */
 module.exports = ( a, b ) => {
 

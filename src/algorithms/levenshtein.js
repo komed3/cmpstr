@@ -1,12 +1,15 @@
 'use strict';
 
 /**
- * calculate Levenshtein distance between two given strings as
- * percentage value between 0 and 1
+ * Levenshtein distance
+ * 
+ * The Levenshtein distance between two strings is the minimum number of
+ * single-character edits (i.e. insertions, deletions or substitutions)
+ * required to change one word into the other.
  * 
  * @param {String} a string a
  * @param {String} b string b
- * @returns {Number} Levenshtein distance as value between 0 and 1
+ * @returns {Number} similarity (0..1)
  */
 module.exports = ( a, b ) => {
 
