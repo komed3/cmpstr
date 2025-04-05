@@ -1,17 +1,22 @@
 /**
- * CmpStr
+ * class CmpStr
  * 
- * This lightweight npm package can be used to calculate the similarity of strings,
- * find best matches in arrays and much more. The package supports a number of built-in
- * algorithms, e.g. Levenshtein distance and Dice-Sørensen coefficient. Additional
- * custom algorithms can be added.
+ * The CmpStr class is the core of the cmpstr package. It provides methods to calculate
+ * string similarity, find the closest matches in arrays, and generate similarity
+ * matrices. The class supports built-in algorithms (e.g., Levenshtein, Dice-Sørensen)
+ * and allows users to add custom algorithms. It also includes features like string
+ * normalization, caching, and extensibility.
  * 
  * @author komed3 (Paul Köhler)
- * @version 2.0.0
  * @license MIT
  */
 
 'use strict';
+
+/**
+ * module exports
+ * @public
+ */
 
 module.exports = class CmpStr {
 
@@ -37,7 +42,7 @@ module.exports = class CmpStr {
      * @private
      * @type {Map<String, String>}
      */
-    #cache = new Map();
+    #cache = new Map ();
 
     /**
      * added filters for string normalization
@@ -45,12 +50,13 @@ module.exports = class CmpStr {
      * @private
      * @type {Map<Function, Function>}
      */
-    #filter = new Map();
+    #filter = new Map ();
 
     /**
      * base string for comparison
      * set by setStr or constructor()
      * 
+     * @public
      * @type {String}
      */
     str;
@@ -59,6 +65,7 @@ module.exports = class CmpStr {
      * current algorithm to use for similarity calculations
      * set by setAlgo(), addAlgo() or constructor()
      * 
+     * @public
      * @type {String}
      */
     algo;
@@ -89,7 +96,7 @@ module.exports = class CmpStr {
     /**
      * checks whether string and algorithm are set correctly
      * 
-     * @returns {Boolean} is ready state
+     * @returns {Boolean} true if ready, false otherwise
      */
     isReady () {
 
@@ -117,13 +124,13 @@ module.exports = class CmpStr {
     };
 
     /**
-     * (save) lazy-load algorithm module
+     * lazy-loads the specified algorithm module
      * 
      * @param {String} algo name of the similarity algorithm
      * @returns {Boolean} true if the algorithm is loaded
      * @throws {Error} if the algorithm cannot be loaded or is not defined
      */
-    loadAlgo( algo ) {
+    loadAlgo ( algo ) {
 
         if ( this.isAlgo( algo ) ) {
 
@@ -160,7 +167,7 @@ module.exports = class CmpStr {
     /**
      * list all registered similarity algorithms
      * 
-     * @returns {String[]} array of registered algorithms
+     * @returns {String[]} array of algorithm names
      */
     listAlgo () {
 
@@ -171,7 +178,7 @@ module.exports = class CmpStr {
     /**
      * checks if an algorithm is registered
      * 
-     * @param {String} algo name of the algorithm to use for calculation
+     * @param {String} algo name of the algorithm
      * @returns {Boolean} true if the algorithm is registered, false otherwise
      */
     isAlgo ( algo ) {
@@ -181,7 +188,7 @@ module.exports = class CmpStr {
     };
 
     /**
-     * adds a new similarity algorithm to the class
+     * adds a new similarity algorithm
      * 
      * @param {String} algo name of the algorithm
      * @param {Function} callback function implementing the algorithm (must accept two strings and return a number)
@@ -217,7 +224,7 @@ module.exports = class CmpStr {
     };
 
     /**
-     * removes a similarity algorithm from the class
+     * removes a registered similarity algorithm
      * 
      * @param {String} algo name of the algorithm
      * @returns {Boolean} true if the algorithm was removed successfully
@@ -250,7 +257,7 @@ module.exports = class CmpStr {
     /**
      * sets the current algorithm to use for similarity calculations
      * 
-     * @param {String} algo name of the algorithm to use for calculation
+     * @param {String} algo name of the algorithm
      * @returns {Boolean} true if the algorithm has been set
      */
     setAlgo ( algo ) {
@@ -267,14 +274,14 @@ module.exports = class CmpStr {
 
     /**
      * add a new string normalization filter
-     * clears also the normalization cache
      * 
-     * @param {String} ident filter name / identification
-     * @param {Function} callback custom normalization filter that accepts a string and returns a normalized string
+     * @param {String} ident filter name / identifier
+     * @param {Function} callback function implementing the filter (must accept a string and returns a normalized one)
+     * @param {Boolean} [clearCache=true] clears the normalization cache if true
      * @returns {Boolean} returns true if the filter was added successfully
      * @throws {Error} if the filter cannot be added
      */
-    addFilter ( ident, callback ) {
+    addFilter ( ident, callback, clearCache = true ) {
 
         if (
             !this.#filter.has( ident ) &&
@@ -284,7 +291,11 @@ module.exports = class CmpStr {
             this.#filter.set( ident, callback )
         ) {
 
-            this.clearCache();
+            if ( clearCache ) {
+
+                this.clearCache();
+
+            }
 
             return true;
 
@@ -298,14 +309,18 @@ module.exports = class CmpStr {
 
     /**
      * removes a string normalization filter
-     * clears also the normalization cache
      * 
-     * @param {String} ident filter name / identification
+     * @param {String} ident filter name / identifier
+     * @param {Boolean} [clearCache=true] clears the normalization cache if true
      * @returns {Boolean} true if the filter was removed successfully
      */
-    rmvFilter ( ident ) {
+    rmvFilter ( ident, clearCache = true ) {
 
-        this.clearCache();
+        if ( clearCache ) {
+
+            this.clearCache();
+
+        }
 
         return this.#filter.delete( ident );
 
@@ -313,38 +328,42 @@ module.exports = class CmpStr {
 
     /**
      * clears normalization filters (remove all of them)
-     * clears also the normalization cache
      * 
+     * @param {Boolean} [clearCache=true] clears the normalization cache if true
      * @returns {Boolean} always returns true
      */
-    clearFilter () {
+    clearFilter ( clearCache = true ) {
 
         this.#filter.clear();
 
-        this.clearCache();
+        if ( clearCache ) {
+
+            this.clearCache();
+
+        }
 
         return true;
 
     };
 
     /**
-     * @private
      * normalizes a string by chainable options; uses cache to increase
      * performance and custom filters for advanced behavior
      * 
      * list of all supported flags:
-     * - case insensitivity (i)
-     * - trim whitespaces (t)
-     * - remove special chars (s)
-     * - normalize unicode (u)
-     * - ignore numbers (n)
-     * - collapse whitespaces (w)
      * 
-     * @param {String} string to normalize
-     * @param {String} [flags=''] flags for normalization
+     * i :: case insensitivity
+     * t :: trim whitespaces
+     * s :: remove special chars
+     * u :: normalize unicode
+     * n :: ignore numbers
+     * w :: collapse whitespaces
+     * 
+     * @param {String} string string to normalize
+     * @param {String} [flags=''] normalization flags
      * @returns {String} normalized string
      */
-    #normalize ( str, flags = '' ) {
+    normalize ( str, flags = '' ) {
 
         let res = String( str );
 
@@ -423,22 +442,22 @@ module.exports = class CmpStr {
     };
 
     /**
-     * compares two string a and b using the given algorithm
+     * compares two string a and b using the passed algorithm
      * 
      * @param {String} algo name of the algorithm
      * @param {String} a string a
      * @param {String} b string b
-     * @param {String} flags [flags=''] flags for normalization
+     * @param {String} [flags=''] normalization flags
      * @param {...any} args additional arguments to pass to the algorithm
-     * @returns {Number} similarity score between 0 and 1
+     * @returns {Number} similarity score (0..1)
      */
     compare ( algo, a, b, flags = '', ...args ) {
 
         if ( this.loadAlgo( algo ) ) {
 
             return this.#algorithms[ algo ].apply( null, [
-                this.#normalize( a, flags ),
-                this.#normalize( b, flags ),
+                this.normalize( a, flags ),
+                this.normalize( b, flags ),
                 ...args
             ] );
 
@@ -450,10 +469,10 @@ module.exports = class CmpStr {
      * tests the similarity between the base string and a target string
      * using the current algorithm
      * 
-     * @param {String} str target string to compare
-     * @param {String} [flags=''] flags for normalization
+     * @param {String} str target string
+     * @param {String} [flags=''] normalization flags
      * @param {...any} args additional arguments to pass to the algorithm
-     * @returns {Number} similarity score between 0 and 1
+     * @returns {Number} similarity score (0..1)
      */
     test ( str, flags = '', ...args ) {
 
@@ -472,8 +491,8 @@ module.exports = class CmpStr {
     /**
      * tests the similarity of multiple strings against the base string
      * 
-     * @param {String[]} arr array of strings to compare
-     * @param {String} [flags=''] flags for normalization
+     * @param {String[]} arr array of strings
+     * @param {String} [flags=''] normalization flags
      * @param {...any} args additional arguments to pass to the algorithm
      * @returns {Object[]} array of objects, each containing the target string and its similarity score
      */
@@ -493,14 +512,14 @@ module.exports = class CmpStr {
     };
 
     /**
-     * finds all strings in an array that exceed a similarity threshold
+     * finds strings in an array that exceed a similarity threshold
      * returns the array sorted by highest similarity
      * 
-     * @param {String[]} arr array of strings to compare
-     * @param {String} [flags=''] flags for normalization
+     * @param {String[]} arr array of strings
+     * @param {String} [flags=''] normalization flags
      * @param {Number} [threshold=0] minimum similarity score to consider a match
      * @param {...any} args additional arguments to pass to the algorithm
-     * @returns {Object[]} array of objects, each containing the target string and its similarity score
+     * @returns {Object[]} array of objects, sorted by highest similarity
      */
     match ( arr, flags = '', threshold = 0, ...args ) {
 
@@ -519,10 +538,10 @@ module.exports = class CmpStr {
     };
 
     /**
-     * finds the closest matching string from an array of strings
+     * finds the closest matching string from an array
      * 
-     * @param {String[]} arr array of strings to compare
-     * @param {String} [flags=''] flags for normalization
+     * @param {String[]} arr array of strings
+     * @param {String} [flags=''] normalization flags
      * @param {...any} args additional arguments to pass to the algorithm
      * @returns {String} closest matching string
      */
@@ -547,7 +566,7 @@ module.exports = class CmpStr {
      * 
      * @param {String} algo name of the algorithm
      * @param {String[]} arr array of strings to cross-compare
-     * @param {String} [flags=''] flags for normalization
+     * @param {String} [flags=''] normalization flags
      * @param {...any} args additional arguments to pass to the algorithm
      * @returns {Number[][]} 2D array representing the similarity matrix
      */
