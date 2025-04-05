@@ -11,10 +11,18 @@
   "main": "src/index.js",
   "license": "MIT",
   "keywords": [
-    "string",
     "similarity",
+    "string",
+    "asynchronous",
+    "cosine-similarity",
+    "dice-coefficient",
+    "hamming-distance",
+    "jaccard-index",
+    "jaro-winkler-distance",
+    "lcs",
+    "longest-common-subsequence",
     "levenshtein-distance",
-    "dice-coefficient"
+    "similarity-matrix"
   ],
   "repository": {
     "type": "git",
