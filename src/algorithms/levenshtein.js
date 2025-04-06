@@ -18,9 +18,10 @@
  * 
  * @param {String} a string a
  * @param {String} b string b
- * @returns {Number} similarity score (0..1)
+ * @param {Boolean} [raw=false] if true the raw distance is returned
+ * @returns {Number} similarity score (0..1) or distance
  */
-module.exports = ( a, b ) => {
+module.exports = ( a, b, raw = false ) => {
 
     if ( a === b ) {
 
@@ -38,23 +39,13 @@ module.exports = ( a, b ) => {
 
         /* step 1: create matrix */
 
-        let matrix = [];
-
-        for ( let i = 0; i <= a.length; i++ ) {
-
-            let row = [];
-
-            for ( let j = 0; j <= b.length; j++ ) {
-
-                row.push( j );
-
-            }
-
-            row[ 0 ] = i;
-
-            matrix.push( row );
-
-        }
+        let matrix = Array.from(
+            { length: a.length + 1 },
+            ( _, i ) => Array.from(
+                { length: b.length + 1 },
+                ( _, j ) => j
+            ).fill( i, 0, 1 )
+        );
 
         /* step 2: calculate Levenshtein distance */
 
@@ -82,7 +73,7 @@ module.exports = ( a, b ) => {
 
         /* step 3: get Levenshtein distance as value between 0..1 */
 
-        return 1 - (
+        return raw ? matrix[ a.length ][ b.length ] : 1 - (
             matrix[ a.length ][ b.length ] /
             Math.max( a.length, b.length )
         );
