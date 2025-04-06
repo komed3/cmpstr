@@ -86,11 +86,11 @@ module.exports = class CmpStrAsync extends CmpStr {
      */
     testAsync ( str, config = {} ) {
 
-        if ( this.isReady() ) {
+        return new Promise ( ( resolve, reject ) => {
 
-            return new Promise ( ( resolve, reject ) => {
+            setImmediate( () => {
 
-                setImmediate( () => {
+                if ( this.isReady() ) {
 
                     try {
 
@@ -104,11 +104,15 @@ module.exports = class CmpStrAsync extends CmpStr {
 
                     }
 
-                } );
+                } else {
+
+                    reject( new Error ( 'not ready, set algorithm and base string first' ) );
+
+                }
 
             } );
 
-        }
+        } );
 
     };
 
@@ -154,6 +158,12 @@ module.exports = class CmpStrAsync extends CmpStr {
 
             return Promise.all( tasks );
 
+        } else {
+
+            return Promise.reject(
+                new Error ( 'not ready, set algorithm and base string first' )
+            );
+
         }
 
     };
@@ -170,23 +180,19 @@ module.exports = class CmpStrAsync extends CmpStr {
      */
     async matchAsync ( arr, config = {} ) {
 
-        if ( this.isReady() ) {
+        const { threshold = 0 } = config;
 
-            const { threshold = 0 } = config;
+        delete config?.options?.raw;
 
-            delete config?.options?.raw;
+        let res = await this.batchTestAsync(
+            arr, config
+        );
 
-            let res = await this.batchTestAsync(
-                arr, config
-            );
-
-            return res.filter(
-                ( r ) => r.match >= threshold
-            ).sort(
-                ( a, b ) => b.match - a.match
-            );
-
-        }
+        return res.filter(
+            ( r ) => r.match >= threshold
+        ).sort(
+            ( a, b ) => b.match - a.match
+        );
 
     };
 
@@ -201,17 +207,13 @@ module.exports = class CmpStrAsync extends CmpStr {
      */
     async closestAsync ( arr, config = {} ) {
 
-        if ( this.isReady() ) {
+        let res = await this.matchAsync(
+            arr, config
+        );
 
-            let res = await this.matchAsync(
-                arr, config
-            );
-
-            return res.length
-                ? res[0].target
-                : undefined;
-
-        }
+        return res.length && res[ 0 ].match > 0
+            ? res[ 0 ].target
+            : undefined;
 
     };
 
@@ -260,6 +262,12 @@ module.exports = class CmpStrAsync extends CmpStr {
             } );
 
             return Promise.all( tasks );
+
+        } else {
+
+            return Promise.reject(
+                new Error ( algo + ' cannot be loaded' )
+            );
 
         }
 
