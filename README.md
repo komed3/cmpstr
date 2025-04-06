@@ -313,6 +313,31 @@ console.log( cmp.similarityMatrix( 'levenshtein', [
 // Output: [ [ 1, 0.8, 0.4 ], [ 0.8, 1, 0.4 ], [ 0.4, 0.4, 1 ] ]
 ```
 
+## Normalization
+
+The `CmpStr` package allows strings to be normalized before the similarity comparison. Options listed below are available for this and can either be set globally via `setFlags` or passed using the config object, which will overwrite the global flags. Flags are passed as a chained string in any order. For improved performance, normalized strings are stored in the cache, which can be freed using the `clearCache` method. Modifying custom filters automatically deletes the cache.
+
+Supported flags:
+
+- `s` remove special chars
+- `w` collapse whitespaces
+- `r` remove repeated chars
+- `k` keep only letters
+- `n` ignore numbers
+- `t` trim whitespaces
+- `i` case insensitivity
+- `d` decompose unicode
+- `u` normalize unicode
+
+Example:
+
+```js
+const cmp = new CmpStr( 'levenshtein', 'hello' );
+
+console.log( cmp.test( '   he123LLo  ', { flags: 'nti' } ) );
+// Output: 1
+```
+
 ## Asynchronous Support
 
 The `CmpStrAsync` class provides asynchronous versions of all comparison methods. It is ideal for large datasets or non-blocking workflows.
