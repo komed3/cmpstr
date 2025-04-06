@@ -47,55 +47,39 @@ const _termFreq = ( str, delimiter ) => {
  */
 module.exports = ( a, b, { delimiter = ' ' } = {} ) => {
 
-    if ( a === b ) {
+    /* step 1: count the frequency of chars per string */
 
-        /* both string are similar or empty */
+    let termsA = _termFreq( a, delimiter ),
+        termsB = _termFreq( b, delimiter );
 
-        return 1;
+    let allTerms = new Set ( [
+        ...Object.keys( termsA ),
+        ...Object.keys( termsB )
+    ] );
 
-    } else if ( a.length < 2 || b.length < 2 ) {
+    /* step 2: calculate the dot product */
 
-        /* for not similar 0- or 1-letter strings */
+    let dotProduct = [ ...allTerms ].reduce(
+        ( sum, char ) => sum + ( termsA[ char ] || 0 ) * ( termsB[ char ] || 0 ),
+        0
+    );
 
-        return 0;
+    /* step 3: calculate the vector magnitudes */
 
-    } else {
+    let magnitudeA = Math.sqrt( [ ...allTerms ].reduce(
+        ( sum, char ) => sum + ( termsA[ char ] || 0 ) ** 2,
+        0
+    ) );
 
-        /* step 1: count the frequency of chars per string */
+    let magnitudeB = Math.sqrt( [ ...allTerms ].reduce(
+        ( sum, char ) => sum + ( termsB[ char ] || 0 ) ** 2,
+        0
+    ) );
 
-        let termsA = _termFreq( a, delimiter ),
-            termsB = _termFreq( b, delimiter );
+    /* step 4: calculate Cosine similarity */
 
-        let allTerms = new Set ( [
-            ...Object.keys( termsA ),
-            ...Object.keys( termsB )
-        ] );
-
-        /* step 2: calculate the dot product */
-
-        let dotProduct = [ ...allTerms ].reduce(
-            ( sum, char ) => sum + ( termsA[ char ] || 0 ) * ( termsB[ char ] || 0 ),
-            0
-        );
-
-        /* step 3: calculate the vector magnitudes */
-
-        let magnitudeA = Math.sqrt( [ ...allTerms ].reduce(
-            ( sum, char ) => sum + ( termsA[ char ] || 0 ) ** 2,
-            0
-        ) );
-
-        let magnitudeB = Math.sqrt( [ ...allTerms ].reduce(
-            ( sum, char ) => sum + ( termsB[ char ] || 0 ) ** 2,
-            0
-        ) );
-
-        /* step 4: calculate Cosine similarity */
-
-        return magnitudeA && magnitudeB
-            ? dotProduct / ( magnitudeA * magnitudeB )
-            : 0;
-
-    }
+    return magnitudeA && magnitudeB
+        ? dotProduct / ( magnitudeA * magnitudeB )
+        : 0;
 
 };

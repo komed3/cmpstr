@@ -45,36 +45,20 @@ const _str2bigrams = ( str ) => {
  */
 module.exports = ( a, b ) => {
 
-    if ( a === b ) {
+    /* step 1: generate bigrams from strings */
 
-        /* both string are similar or empty */
+    let setA = _str2bigrams( a ),
+        setB = _str2bigrams( b );
 
-        return 1;
+    /* step 2: calculate coefficient */
 
-    } else if ( a.length < 2 || b.length < 2 ) {
-
-        /* for not similar 0- or 1-letter strings */
-
-        return 0;
-
-    } else {
-
-        /* step 1: generate bigrams from strings */
-
-        let setA = _str2bigrams( a ),
-            setB = _str2bigrams( b );
-
-        /* step 2: calculate coefficient */
-
-        return (
-            ( new Set ( [ ...setA ].filter( ( x ) => {
-                return setB.has( x );
-            } ) ) ).size * 2
-        ) / (
-            setA.size +
-            setB.size
-        );
-
-    }
+    return (
+        ( new Set ( [ ...setA ].filter( ( test ) => {
+            return setB.has( test );
+        } ) ) ).size * 2
+    ) / (
+        setA.size +
+        setB.size
+    );
 
 };

@@ -48,29 +48,15 @@ const _qGrams = ( str, q ) => {
  */
 module.exports = ( a, b, { q = 2 } = {} ) => {
 
-    if ( a === b ) {
+    let setA = new Set ( _qGrams( a, q ) ),
+        setB = new Set ( _qGrams( b, q ) );
 
-        /* both string are similar or empty */
-
-        return 1;
-
-    } else if ( a.length < 2 || b.length < 2 ) {
-
-        /* for not similar 0- or 1-letter strings */
-
-        return 0;
-
-    } else {
-
-        let setA = new Set ( _qGrams( a, q ) ),
-            setB = new Set ( _qGrams( b, q ) );
-
-        return (
-            new Set( [ ...setA ].filter( x => setB.has( x ) ) )
-        ).size / Math.max(
-            setA.size, setB.size
-        );
-
-    }
+    return (
+        new Set( [ ...setA ].filter(
+            test => setB.has( test )
+        ) )
+    ).size / Math.max(
+        setA.size, setB.size
+    );
 
 };

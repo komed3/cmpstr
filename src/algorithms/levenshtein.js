@@ -25,61 +25,45 @@
  */
 module.exports = ( a, b, { raw = false } = {} ) => {
 
-    if ( a === b ) {
+    /* step 1: initialize scoring matrix */
 
-        /* both string are similar or empty */
+    let matrix = Array.from(
+        { length: a.length + 1 },
+        ( _, i ) => Array.from(
+            { length: b.length + 1 },
+            ( _, j ) => j
+        ).fill( i, 0, 1 )
+    );
 
-        return 1;
+    /* step 2: calculate Levenshtein distance */
 
-    } else if ( a.length < 2 || b.length < 2 ) {
+    for ( let i = 1; i <= a.length; i++ ) {
 
-        /* for not similar 0- or 1-letter strings */
+        for ( let j = 1; j <= b.length; j++ ) {
 
-        return 0;
+            if ( a[ i - 1 ] === b[ j - 1 ] ) {
 
-    } else {
+                matrix[ i ][ j ] = matrix[ i - 1 ][ j - 1 ];
 
-        /* step 1: initialize scoring matrix */
+            } else {
 
-        let matrix = Array.from(
-            { length: a.length + 1 },
-            ( _, i ) => Array.from(
-                { length: b.length + 1 },
-                ( _, j ) => j
-            ).fill( i, 0, 1 )
-        );
-
-        /* step 2: calculate Levenshtein distance */
-
-        for ( let i = 1; i <= a.length; i++ ) {
-
-            for ( let j = 1; j <= b.length; j++ ) {
-
-                if ( a[ i - 1 ] === b[ j - 1 ] ) {
-
-                    matrix[ i ][ j ] = matrix[ i - 1 ][ j - 1 ];
-
-                } else {
-
-                    matrix[ i ][ j ] = 1 + Math.min(
-                        matrix[ i ][ j - 1 ],
-                        matrix[ i - 1 ][ j - 1 ], 
-                        matrix[ i - 1 ][ j ]
-                    );
-
-                }
+                matrix[ i ][ j ] = 1 + Math.min(
+                    matrix[ i ][ j - 1 ],
+                    matrix[ i - 1 ][ j - 1 ], 
+                    matrix[ i - 1 ][ j ]
+                );
 
             }
 
         }
 
-        /* step 3: get Levenshtein distance as value between 0..1 */
-
-        return raw ? matrix[ a.length ][ b.length ] : 1 - (
-            matrix[ a.length ][ b.length ] /
-            Math.max( a.length, b.length )
-        );
-
     }
+
+    /* step 3: get Levenshtein distance as value between 0..1 */
+
+    return raw ? matrix[ a.length ][ b.length ] : 1 - (
+        matrix[ a.length ][ b.length ] /
+        Math.max( a.length, b.length )
+    );
 
 };

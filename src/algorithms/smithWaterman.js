@@ -25,64 +25,53 @@
  * }
  * @returns {Number} similarity score (0..1)
  */
-module.exports = ( a, b, { match = 2, mismatch = -1, gap = -1 } = {} ) => {
+module.exports = ( a, b, {
+    match = 2, mismatch = -1, gap = -1
+} = {} ) => {
 
-    if ( a === b ) {
+    let rows = a.length + 1,
+        cols = b.length + 1;
 
-        /* both string are similar or empty */
+    /* step 1: initialize scoring matrix */
 
-        return 1;
+    let matrix = Array.from(
+        { length: rows },
+        () => Array( cols ).fill( 0 )
+    );
 
-    } else if ( a.length < 2 || b.length < 2 ) {
+    /* step 2: fill the scoring matrix */
 
-        /* for not similar 0- or 1-letter strings */
+    let maxScore = 0;
 
-        return 0;
+    for ( let i = 1; i < rows; i++ ) {
 
-    } else {
+        for ( let j = 1; j < cols; j++ ) {
 
-        /* step 1: initialize scoring matrix */
+            let matchScore = a[ i - 1 ] === b[ j - 1 ] ? match : mismatch;
 
-        let matrix = Array.from(
-            { length: a.length + 1 },
-            () => Array( b.length + 1 ).fill( 0 )
-        );
+            matrix[ i ][ j ] = Math.max(
+                0,
+                matrix[ i - 1 ][ j - 1 ] + matchScore,
+                matrix[ i - 1 ][ j ] + gap,
+                matrix[ i ][ j - 1 ] + gap
+            );
 
-        /* step 2: fill the scoring matrix */
-
-        let maxScore = 0;
-
-        for ( let i = 1; i < a.length + 1; i++ ) {
-
-            for ( let j = 1; j < b.length + 1; j++ ) {
-
-                let matchScore = a[ i - 1 ] === b[ j - 1 ] ? match : mismatch;
-
-                matrix[ i ][ j ] = Math.max(
-                    0,
-                    matrix[ i - 1 ][ j - 1 ] + matchScore,
-                    matrix[ i - 1 ][ j ] + gap,
-                    matrix[ i ][ j - 1 ] + gap
-                );
-
-                maxScore = Math.max(
-                    maxScore,
-                    matrix[ i ][ j ]
-                );
-
-            }
+            maxScore = Math.max(
+                maxScore,
+                matrix[ i ][ j ]
+            );
 
         }
 
-        /* step 3: normalize the score to a value between 0..1 */
-
-        return Math.max( 0, Math.min( 1,
-            maxScore / Math.min(
-                a.length * match,
-                b.length * match
-            )
-        ) );
-
     }
+
+    /* step 3: normalize the score to a value between 0..1 */
+
+    return Math.max( 0, Math.min( 1,
+        maxScore / Math.min(
+            a.length * match,
+            b.length * match
+        )
+    ) );
 
 };

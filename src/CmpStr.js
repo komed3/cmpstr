@@ -204,7 +204,7 @@ module.exports = class CmpStr {
      * adds a new similarity algorithm
      * 
      * @param {String} algo name of the algorithm
-     * @param {Function} callback function implementing the algorithm (must accept two strings, config object and return a number)
+     * @param {Function} callback function implementing the algorithm (must accept two strings and return a number)
      * @param {Boolean} [useIt=true] whether to set this algorithm as the current one
      * @returns {Boolean} returns true if the algorithms was added successfully
      * @throws {Error} if the algorithm cannot be added
@@ -214,7 +214,7 @@ module.exports = class CmpStr {
         if (
             !this.isAlgo( algo ) &&
             typeof callback === 'function' &&
-            callback.length == 3 &&
+            callback.length >= 2 &&
             typeof callback.apply( null, [ 'abc', 'abc' ] ) === 'number'
         ) {
 
@@ -478,6 +478,13 @@ module.exports = class CmpStr {
     compare ( algo, a, b, config = {} ) {
 
         if ( this.loadAlgo( algo ) ) {
+
+            /* handle trivial cases */
+
+            if ( a === b ) return 1; // strings are identical
+            if ( a.length < 2 || b.length < 2 ) return 0; // too short to compare
+
+            /* apply similarity algorithm */
 
             const {
                 flags = this.flags,

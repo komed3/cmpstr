@@ -26,68 +26,52 @@
  */
 module.exports = ( a, b, { raw = false } = {} ) => {
 
-    if ( a === b ) {
+    /* step 1: initialize scoring matrix */
 
-        /* both string are similar or empty */
+    let matrix = Array.from(
+        { length: a.length + 1 },
+        ( _, i ) => Array.from(
+            { length: b.length + 1 },
+            ( _, j ) => i && j ? 0 : i || j
+        )
+    );
 
-        return 1;
+    /* step 2: calculate Damerau-Levenshtein distance */
 
-    } else if ( a.length < 2 || b.length < 2 ) {
+    for ( let i = 1; i <= a.length; i++ ) {
 
-        /* for not similar 0- or 1-letter strings */
+        for ( let j = 1; j <= b.length; j++ ) {
 
-        return 0;
+            let cost = a[ i - 1 ] === b[ j - 1 ] ? 0 : 1;
 
-    } else {
+            matrix[ i ][ j ] = Math.min(
+                matrix[ i - 1 ][ j ] + 1,
+                matrix[ i ][ j - 1 ] + 1,
+                matrix[ i - 1 ][ j - 1 ] + cost
+            );
 
-        /* step 1: initialize scoring matrix */
-
-        let matrix = Array.from(
-            { length: a.length + 1 },
-            ( _, i ) => Array.from(
-                { length: b.length + 1 },
-                ( _, j ) => i && j ? 0 : i || j
-            )
-        );
-
-        /* step 2: calculate Damerau-Levenshtein distance */
-
-        for ( let i = 1; i <= a.length; i++ ) {
-
-            for ( let j = 1; j <= b.length; j++ ) {
-
-                let cost = a[ i - 1 ] === b[ j - 1 ] ? 0 : 1;
+            if (
+                i > 1 && j > 1 &&
+                a[ i - 1 ] === b[ j - 2 ] &&
+                a[ i - 2 ] === b[ j - 1 ]
+            ) {
 
                 matrix[ i ][ j ] = Math.min(
-                    matrix[ i - 1 ][ j ] + 1,
-                    matrix[ i ][ j - 1 ] + 1,
-                    matrix[ i - 1 ][ j - 1 ] + cost
+                    matrix[ i ][ j ],
+                    matrix[ i - 2 ][ j - 2 ] + cost
                 );
-
-                if (
-                    i > 1 && j > 1 &&
-                    a[ i - 1 ] === b[ j - 2 ] &&
-                    a[ i - 2 ] === b[ j - 1 ]
-                ) {
-
-                    matrix[ i ][ j ] = Math.min(
-                        matrix[ i ][ j ],
-                        matrix[ i - 2 ][ j - 2 ] + cost
-                    );
-
-                }
 
             }
 
         }
 
-        /* step 3: get Damerau-Levenshtein distance as value between 0..1 */
-
-        return raw ? matrix[ a.length ][ b.length ] : 1 - (
-            matrix[ a.length ][ b.length ] /
-            Math.max( a.length, b.length )
-        );
-
     }
+
+    /* step 3: get Damerau-Levenshtein distance as value between 0..1 */
+
+    return raw ? matrix[ a.length ][ b.length ] : 1 - (
+        matrix[ a.length ][ b.length ] /
+        Math.max( a.length, b.length )
+    );
 
 };
