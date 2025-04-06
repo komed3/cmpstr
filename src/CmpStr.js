@@ -33,7 +33,8 @@ module.exports = class CmpStr {
         jaccard: './algorithms/jaccard',
         jaro: './algorithms/jaroWinkler',
         lcs: './algorithms/lcs',
-        levenshtein: './algorithms/levenshtein'
+        levenshtein: './algorithms/levenshtein',
+        qGram: './algorithms/qGram'
     };
 
     /**
