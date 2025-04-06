@@ -35,7 +35,9 @@ module.exports = class CmpStr {
         jaro: './algorithms/jaroWinkler',
         lcs: './algorithms/lcs',
         levenshtein: './algorithms/levenshtein',
-        qGram: './algorithms/qGram'
+        needlemanWunsch: './algorithms/needlemanWunsch',
+        qGram: './algorithms/qGram',
+        smithWaterman: './algorithms/smithWaterman'
     };
 
     /**
