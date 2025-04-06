@@ -2,10 +2,10 @@
  * Dice-Sørensen Coefficient
  * CmpStr module
  * 
- * The Sørensen index equals twice the number of elements common to both sets
- * divided by the sum of the number of elements in each set. Equivalently,
- * the index is the size of the intersection as a fraction of the average
- * size of the two sets.
+ * The Dice-Sørensen index equals twice the number of elements common to
+ * both sets divided by the sum of the number of elements in each set.
+ * Equivalently, the index is the size of the intersection as a fraction
+ * of the average size of the two sets.
  * 
  * @author Paul Köhler (komed3)
  * @license MIT

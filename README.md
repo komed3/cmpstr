@@ -1,8 +1,8 @@
 # CmpStr v2.0
 
-`CmpStr` is a lightweight and powerful npm package for calculating string similarity, finding the closest matches in arrays, performing phonetic searches, and more. It supports a variety of built-in algorithms (e.g., Levenshtein, Dice-Sørensen, Damerau-Levenshtein, Soundex) and allows users to add custom algorithms and normalization filters.
+CmpStr is a lightweight and powerful npm package for calculating string similarity, finding the closest matches in arrays, performing phonetic searches, and more. It supports a variety of built-in algorithms (e.g., Levenshtein, Dice-Sørensen, Damerau-Levenshtein, Soundex) and allows users to add custom algorithms and normalization filters.
 
-### Key Features
+#### Key Features
 
 - Built-in support for multiple similarity algorithms.
 - Phonetic search with language-specific configurations (e.g., Soundex).
@@ -10,26 +10,6 @@
 - Customizable normalization with global flags and caching.
 - Asynchronous support for non-blocking workflows.
 - Extensible with custom algorithms and filters.
-
-## Supported Algorithms
-
-### Similarity Algorithms
-
-- **Levenshtein Distance** Measures the minimum number of edits required to transform one string into another.
-- **Damerau-Levenshtein** Extends Levenshtein by including transpositions.
-- **Jaro-Winkler** Measures similarity with a focus on matching prefixes.
-- **Cosine Similarity** Measures the cosine of the angle between two vectors.
-- **Dice Coefficient** Measures the overlap between two sets.
-- **Jaccard Index** Measures the intersection over the union of two sets.
-- **Hamming Distance** Measures the number of differing characters (for equal-length strings).
-- **Longest Common Subsequence (LCS)** Finds the longest subsequence common to both strings.
-- **Needleman-Wunsch** Global alignment algorithm.
-- **Smith-Waterman** Local alignment algorithm.
-- **q-Gram** Measures similarity based on overlapping substrings.
-
-### Phonetic Algorithms
-
-- **Soundex** Generates a phonetic representation of a string. Supports language-specific configurations (e.g., English, German).
 
 ## Installation
 
@@ -71,45 +51,45 @@ Creating a new instance of `CmpStr` or `CmpStrAsync` allows passing the algorith
 
 ### Basics
 
-#### ``isReady()``
+#### `isReady()`
 
 Checks whether string and algorithm are set correctly. Returns `true`, if the class is ready to perform similarity checks, false otherwise.
 
-#### ``setStr( str )``
+#### `setStr( str )`
 
 Sets the base string for comparison.
 
 Parameters:
 
-- `<String> str` string to set as the base
+- `<String> str` – string to set as the base
 
-#### ``setFlags( [ flags = '' ] )``
+#### `setFlags( [ flags = '' ] )`
 
 Set default normalization flags. They will be overwritten by passing `flags` through the configuration object. See description of available flags / normalization options below in the documentation.
 
 Parameters:
 
-- `<String> flags` normalization flags
+- `<String> flags` – normalization flags
 
-#### ``clearCache()``
+#### `clearCache()`
 
 Clears the normalization cache.
 
 ### Algorithms
 
-#### ``listAlgo()``
+#### `listAlgo()`
 
 List all registered similarity algorithms.
 
-#### ``isAlgo( algo )``
+#### `isAlgo( algo )`
 
 Checks if an algorithm is registered. Returns `true` if so, `false` otherwise.
 
 Parameters:
 
-- `<String> algo` name of the algorithm
+- `<String> algo` – name of the algorithm
 
-#### ``setAlgo( algo )``
+#### `setAlgo( algo )`
 
 Sets the current algorithm to use for similarity calculations.
 
@@ -117,17 +97,17 @@ Allowed options for build-in althorithms are `cosine`, `damerau`, `dice`, `hammi
 
 Parameters:
 
-- `<String> algo` name of the algorithm
+- `<String> algo` – name of the algorithm
 
-#### ``addAlgo( algo, callback [, useIt = true ] )``
+#### `addAlgo( algo, callback [, useIt = true ] )`
 
 Adding a new similarity algorithm by using the `addAlgo()` method passing the name and a callback function, that must accept at least two strings and return a number. If `useIt` is `true`, the new algorithm will automatically be set as the current one.
 
 Parameters:
 
-- `<String> algo` name of the algorithm
-- `<Function> callback` callback function implementing the algorithm
-- `<Boolean> useIt` whether to set this algorithm as the current one
+- `<String> algo` – name of the algorithm
+- `<Function> callback` – callback function implementing the algorithm
+- `<Boolean> useIt` – whether to set this algorithm as the current one
 
 Example:
 
@@ -142,25 +122,25 @@ console.log( cmp.compare( 'customAlgo', 'hello', 'hello' ) );
 // Output: 1
 ```
 
-#### ``rmvAlgo( algo )``
+#### `rmvAlgo( algo )`
 
 Removing a registered similarity algorithm.
 
 Parameters:
 
-- `<String> algo` name of the algorithm
+- `<String> algo` – name of the algorithm
 
 ### Filters
 
-#### ``addFilter( name, callback [, priority = 10 ] )``
+#### `addFilter( name, callback [, priority = 10 ] )`
 
 Adds a custom normalization filter. Needs to be passed a unique name and callback function accepting a string and returns a normalized one. Prioritizing filters by setting higher priority (default is `10`).
 
 Parameters:
 
-- `<String> name` filter name
-- `<Function> callback` callback function implementing the filter
-- `<Number> priority` priority of the filter
+- `<String> name` – filter name
+- `<Function> callback` – callback function implementing the filter
+- `<Int> priority` – priority of the filter
 
 Example:
 
@@ -170,46 +150,46 @@ const cmp = new CmpStr();
 cmp.addFilter( 'prefix', ( str ) => `prefix_${str}` );
 ```
 
-#### ``rmvFilter( name )``
+#### `rmvFilter( name )`
 
 Removes a custom normalization filter.
 
 Parameters:
 
-- `<String> name` filter name
+- `<String> name` – filter name
 
-#### ``pauseFilter( name )``
+#### `pauseFilter( name )`
 
 Pauses a custom normalization filter.
 
 Parameters:
 
-- `<String> name` filter name
+- `<String> name` – filter name
 
-#### ``resumeFilter( name )``
+#### `resumeFilter( name )`
 
 Resumes a custom normalization filter.
 
 Parameters:
 
-- `<String> name` filter name
+- `<String> name` – filter name
 
-#### ``clearFilter( name )``
+#### `clearFilter( name )`
 
 Clears normalization filters (removing all of them).
 
 ### Similarity Comparison
 
-#### ``compare( algo, a, b [, config = {} ] )``
+#### `compare( algo, a, b [, config = {} ] )`
 
 Compares two strings using the specified algorithm. The method returns either the similarity score as a floating point number between 0 and 1 or raw output, if the algorithm supports it and the user passes `raw=true` through the config options.
 
 Parameters:
 
-- `<String> algo` name of the algorithm
-- `<String> a` first string
-- `<String> b` second string
-- `<Object> config` configuration object
+- `<String> algo` – name of the algorithm
+- `<String> a` – first string
+- `<String> b` – second string
+- `<Object> config` – configuration object
 
 Example:
 
@@ -220,14 +200,14 @@ console.log( cmp.compare( 'levenshtein', 'hello', 'hallo' ) );
 // Output: 0.8
 ```
 
-#### ``test( str [, config = {} ] )``
+#### `test( str [, config = {} ] )`
 
 Tests the similarity between the base string and a given target string. Returns the same as ``compare``.
 
 Parameters:
 
-- `<String> str` target string
-- `<Object> config` configuration object
+- `<String> str` – target string
+- `<Object> config` – configuration object
 
 Example:
 
@@ -238,14 +218,14 @@ console.log( cmp.test( 'hallo' ) );
 // Output: 0.8
 ```
 
-#### ``batchTest( arr [, config = {} ] )``
+#### `batchTest( arr [, config = {} ] )`
 
 Tests the similarity of multiple strings against the base string. Returns an array of objects with the target string and either the similarity score as a floating point number between 0 and 1 or raw output, if the algorithm supports it and the user passes `raw=true` through the config options.
 
 Parameters:
 
-- `<String[]> arr` array of strings
-- `<Object> config` configuration object
+- `<String[]> arr` – array of strings
+- `<Object> config` – configuration object
 
 Example:
 
@@ -256,14 +236,14 @@ console.log( cmp.batchTest( [ 'hallo', 'hola', 'hey' ] ) );
 // Output: [ { target: 'hallo', match: 0.8 }, { target: 'hola', match: 0.4 }, { target: 'hey', match: 0.4 } ]
 ```
 
-#### ``match( arr [, config = {} ] )``
+#### `match( arr [, config = {} ] )`
 
 Finds strings in an array that exceed a similarity threshold and sorts them by highest similarity. Returns an array of objects contain target string and similarity score as a floating point number between 0 and 1.
 
 Parameters:
 
-- `<String[]> arr` array of strings
-- `<Object> config` configuration object
+- `<String[]> arr` – array of strings
+- `<Object> config` – configuration object
 
 Example:
 
@@ -276,14 +256,14 @@ console.log( cmp.batchTest( [ 'hallo', 'hola', 'hey' ], {
 // Output: [ { target: 'hallo', match: 0.8 } ]
 ```
 
-#### ``closest( arr [, config = {} ] )``
+#### `closest( arr [, config = {} ] )`
 
 Finds the closest matching string from an array and returns them.
 
 Parameters:
 
-- `<String[]> arr` array of strings
-- `<Object> config` configuration object
+- `<String[]> arr` – array of strings
+- `<Object> config` – configuration object
 
 Example:
 
@@ -294,15 +274,15 @@ console.log( cmp.batchTest( [ 'hallo', 'hola', 'hey' ] ) );
 // Output: 'hallo'
 ```
 
-#### ``similarityMatrix( algo, arr [, config = {} ] )``
+#### `similarityMatrix( algo, arr [, config = {} ] )`
 
 Generates a similarity matrix for an array of strings. Returns an 2D array that represents the similarity matrix by floating point numbers between 0 and 1.
 
 Parameters:
 
-- `<String> algo` name of the algorithm
-- `<String[]> arr` array of strings
-- `<Object> config` configuration object
+- `<String> algo` – name of the algorithm
+- `<String[]> arr` – array of strings
+- `<Object> config` – configuration object
 
 Example:
 
@@ -321,15 +301,15 @@ The `CmpStr` package allows strings to be normalized before the similarity compa
 
 Supported flags:
 
-- `s` remove special chars
-- `w` collapse whitespaces
-- `r` remove repeated chars
-- `k` keep only letters
-- `n` ignore numbers
-- `t` trim whitespaces
-- `i` case insensitivity
-- `d` decompose unicode
-- `u` normalize unicode
+- `s` – remove special chars
+- `w` – collapse whitespaces
+- `r` – remove repeated chars
+- `k` – keep only letters
+- `n` – ignore numbers
+- `t` – trim whitespaces
+- `i` – case insensitivity
+- `d` – decompose unicode
+- `u` – normalize unicode
 
 Example:
 
@@ -348,9 +328,9 @@ It also contains `options` as an object of key-value pairs that are passed to th
 
 Global config options:
 
-- `<String> flags` normalization flags
-- `<Number> threshold` similarity threshold between 0 and 1
-- `<Object> options` options passed to the algorithm
+- `<String> flags` – normalization flags
+- `<Number> threshold` – similarity threshold between 0 and 1
+- `<Object> options` – options passed to the algorithm
 
 Example:
 
@@ -390,3 +370,93 @@ cmp.batchTestAsync( [
   'better', 'bestest', 'the best', 'good', ...
 ] ).then( console.log );
 ```
+
+## Supported Algorithms
+
+The following algorithms for similarity analysis are natively supported by the CmpStr package. Lazy-loading keeps memory consumption and loading time low, as only the algorithm intended to be used will be loaded as a module.
+
+### Similarity Algorithms
+
+#### Levenshtein Distance – `levenshtein`
+
+The Levenshtein distance between two strings is the minimum number of single-character edits (i.e. insertions, deletions or substitutions) required to change one word into the other.
+
+Options:
+
+- `<Boolean> raw` – if true the raw distance is returned
+
+#### Damerau-Levenshtein – `damerau`
+
+The Damerau-Levenshtein distance differs from the classical Levenshtein distance by including transpositions among its allowable operations in addition to the three classical single-character edit operations (insertions, deletions and substitutions). Useful for correcting typos.
+
+Options:
+
+- `<Boolean> raw` – if true the raw distance is returned
+
+#### Jaro-Winkler – `jaro`
+
+Jaro-Winkler is a string similarity metric that gives more weight to matching characters at the start of the strings.
+
+Options:
+
+- `<Boolean> raw` – if true the raw distance is returned
+
+#### Cosine Similarity – `cosine`
+
+Cosine similarity is a measure how similar two vectors are. It's often used in text analysis to compare texts based on the words they contain.
+
+Options:
+
+- `<String> delimiter` – term delimiter
+
+#### Dice Coefficient – `dice`
+
+The Dice-Sørensen index equals twice the number of elements common to both sets divided by the sum of the number of elements in each set. Equivalently the index is the size of the intersection as a fraction of the average size of the two sets.
+
+#### Jaccard Index – `jaccard`
+
+The Jaccard Index measures the similarity between two sets by dividing the size of their intersection by the size of their union.
+
+#### Hamming Distance – `hamming`
+
+The Hamming distance between two equal-length strings of symbols is the number of positions at which the corresponding symbols are different.
+
+#### Longest Common Subsequence – `lcs`
+
+LCS measures the length of the longest subsequence common to both strings.
+
+#### Needleman-Wunsch – `needlemanWunsch`
+
+The Needleman-Wunsch algorithm performs global alignment, aligning two strings entirely, including gaps. It is commonly used in bioinformatics.
+
+Options:
+
+- `<Number> match` – score for a match
+- `<Number> mismatch` – penalty for a mismatch
+- `<Number> gap` – penalty for a gap
+
+#### Smith-Waterman – `smithWaterman`
+
+The Smith-Waterman algorithm performs local alignment, finding the best matching subsequence between two strings. It is commonly used in bioinformatics.
+
+#### q-Gram – `qGram`
+
+Options:
+
+- `<Number> match` – score for a match
+- `<Number> mismatch` – penalty for a mismatch
+- `<Number> gap` – penalty for a gap
+
+### Phonetic Algorithms
+
+#### Soundex – `soundex`
+
+The Soundex algorithm generates a phonetic representation of a string based on how it sounds. It supports predefined setups for English and German and allows users to provide custom options.
+
+Options:
+
+- `<String> lang` – language code for predefined setups (e.g., `en`, `de`)
+- `<Boolean> raw` – if true, returns the raw sound index codes
+- `<Object> mapping` – custom phonetic mapping (overrides predefined)
+- `<String> exclude` – characters to exclude from the input (overrides predefined)
+- `<Number> maxLength` – maximum length of the phonetic code

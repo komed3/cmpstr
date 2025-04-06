@@ -303,7 +303,7 @@ module.exports = class CmpStr {
      * 
      * @param {String} name filter name
      * @param {Function} callback function implementing the filter (must accept a string and returns a normalized one)
-     * @param {Number} [priority=10] priority of the filter (lower numbers are processed first)
+     * @param {Int} [priority=10] priority of the filter (lower numbers are processed first)
      * @returns {Boolean} returns true if the filter was added successfully
      * @throws {Error} if the filter cannot be added
      */
