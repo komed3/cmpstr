@@ -69,6 +69,8 @@ console.log( cmp.test( 'Rupert', { options: { raw: true } } ) );
 
 Creating a new instance of `CmpStr` or `CmpStrAsync` allows passing the algorithm to be used and the base string as optional arguments. Alternatively or later in the process, the `setAlgo` and `setStr` methods can be used for this purpose.
 
+### Basics
+
 #### ``isReady()``
 
 Checks whether string and algorithm are set correctly. Returns `true`, if the class is ready to perform similarity checks, false otherwise.
@@ -336,6 +338,37 @@ const cmp = new CmpStr( 'levenshtein', 'hello' );
 
 console.log( cmp.test( '   he123LLo  ', { flags: 'nti' } ) );
 // Output: 1
+```
+
+## Configuration Object
+
+An additional object with optional parameters can be passed to all comparison methods (e.g. `test`, `match`, `closest` etc.) and their asynchronous pendants. This object includes the ability to pass `flags` for normalization to all methods, as well as the `threshold` parameter for `match` and `matchAsync`.
+
+It also contains `options` as an object of key-value pairs that are passed to the comparison algorithm. Which additional arguments an algorithm accepts depends on the function exported from the module itself. Further down in this documentation, the various parameters for each algorithm are listed.
+
+Global config options:
+
+- `<String> flags` normalization flags
+- `<Number> threshold` similarity threshold between 0 and 1
+- `<Object> options` options passed to the algorithm
+
+Example:
+
+```js
+const cmp = new CmpStr( 'smithWaterman', 'alignment' );
+
+console.log( cmp.match( [
+  '  align ment', 'ali gnm ent   ', ' alIGNMent'
+], {
+  flags: 'it',
+  threshold: 0.8,
+  options: {
+    mismatch: -4,
+    gap: -2
+  }
+} ) );
+// Output: [ { target: ' alIGNMent', match: 1 }, { target: '  align ment', match: 0.8... }
+]
 ```
 
 ## Asynchronous Support
