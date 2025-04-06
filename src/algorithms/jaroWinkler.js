@@ -17,9 +17,10 @@
  * 
  * @param {String} a string a
  * @param {String} b string b
- * @returns {Number} similarity score (0..1)
+ * @param {Boolean} [raw=false] if true the raw distance is returned
+ * @returns {Number} similarity score (0..1) or distance
  */
-module.exports = ( a, b ) => {
+module.exports = ( a, b, raw = false ) => {
 
     if ( a === b ) {
 
@@ -79,7 +80,7 @@ module.exports = ( a, b ) => {
 
         /* step 2: calculate transpositions */
 
-        let transpositions = 0,
+        let transpos = 0,
             k = 0;
 
         for ( let i = 0; i < a.length; i++ ) {
@@ -88,7 +89,7 @@ module.exports = ( a, b ) => {
 
                 while ( !bMatches[ k ] ) k++;
 
-                if ( a[ i ] !== b[ k ] ) transpositions++;
+                if ( a[ i ] !== b[ k ] ) transpos++;
 
                 k++;
 
@@ -98,18 +99,20 @@ module.exports = ( a, b ) => {
 
         /* step 3: calculate Jaro-Winkler distance */
 
-        let jaroScore = (
+        let jaro = (
             ( matches / a.length ) +
             ( matches / b.length ) +
-            ( matches - ( transpositions / 2 ) ) /
+            ( matches - ( transpos / 2 ) ) /
             matches
         ) / 3;
 
         /* step 4: get Jaro-Winkler as value between 0..1 */
 
-        return jaroScore + Math.min( 4, [ ...a ].findIndex(
-            ( char, i ) => char !== b[ i ]
-        ) || 0 ) * 0.1 * ( 1 - jaroScore );
+        return raw ? jaro : jaro + Math.min(
+            4, [ ...a ].findIndex(
+                ( char, i ) => char !== b[ i ]
+            ) || 0
+        ) * 0.1 * ( 1 - jaro );
 
     }
 
