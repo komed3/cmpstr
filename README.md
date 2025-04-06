@@ -81,6 +81,18 @@ Parameters:
 
 - `<String> str` string to set as the base
 
+#### ``setFlags( [ flags = '' ] )``
+
+Set default normalization flags. They will be overwritten by passing `flags` through the configuration object. See description of available flags / normalization options below in the documentation.
+
+Parameters:
+
+- `<String> flags` normalization flags
+
+#### ``clearCache()``
+
+Clears the normalization cache.
+
 ### Algorithms
 
 #### ``listAlgo()``
@@ -100,6 +112,37 @@ Parameters:
 Sets the current algorithm to use for similarity calculations.
 
 Allowed options for build-in althorithms are `cosine`, `damerau`, `dice`, `hamming`, `jaccard`, `jaro`, `lcs`, `levenshtein`, `needlemanWunsch`, `qGram`, `smithWaterman` and `soundex`.
+
+Parameters:
+
+- `<String> algo` name of the algorithm
+
+#### ``addAlgo( algo, callback [, useIt = true ] )``
+
+Adding a new similarity algorithm by using the `addAlgo()` method passing the name and a callback function, that must accept at least two strings and return a number. If `useIt` is `true`, the new algorithm will automatically be set as the current one.
+
+Parameters:
+
+- `<String> algo` name of the algorithm
+- `<Function> callback` callback function implementing the algorithm
+- `<Boolean> useIt` whether to set this algorithm as the current one
+
+Example:
+
+```js
+const cmp = new CmpStr();
+
+cmp.addAlgo( 'customAlgo', ( a, b ) => {
+  return a === b ? 1 : 0;
+} );
+
+console.log( cmp.compare( 'customAlgo', 'hello', 'hello' ) );
+// Output: 1
+```
+
+#### ``rmvAlgo( algo )``
+
+Removing a registered similarity algorithm.
 
 Parameters:
 
