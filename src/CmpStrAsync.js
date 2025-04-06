@@ -174,6 +174,8 @@ module.exports = class CmpStrAsync extends CmpStr {
 
             const { threshold = 0 } = config;
 
+            delete config?.options?.raw;
+
             let res = await this.batchTestAsync(
                 arr, config
             );
@@ -226,6 +228,8 @@ module.exports = class CmpStrAsync extends CmpStr {
     similarityMatrixAsync ( algo, arr, config = {} ) {
 
         if ( this.loadAlgo( algo ) ) {
+
+            delete config?.options?.raw;
 
             let tasks = [ ...arr ].map( ( a, i ) => {
 

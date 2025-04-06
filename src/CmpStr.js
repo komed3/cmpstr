@@ -593,6 +593,8 @@ module.exports = class CmpStr {
 
         if ( this.loadAlgo( algo ) ) {
 
+            delete config?.options?.raw;
+
             return [ ...arr ].map( ( a, i ) => {
 
                 return [ ...arr ].map(
