@@ -321,6 +321,8 @@ module.exports = class CmpStr {
                 active: true
             } );
 
+            this.clearCache();
+
             return true;
 
         } else {
@@ -339,6 +341,8 @@ module.exports = class CmpStr {
      */
     rmvFilter ( name ) {
 
+        this.clearCache();
+
         return this.#filter.delete( name );
 
     };
@@ -354,6 +358,8 @@ module.exports = class CmpStr {
         if ( this.#filter.has( name ) ) {
 
             this.#filter.get( name ).active = false;
+
+            this.clearCache();
 
             return true;
 
@@ -375,6 +381,8 @@ module.exports = class CmpStr {
 
             this.#filter.get( name ).active = true;
 
+            this.clearCache();
+
             return true;
 
         }
@@ -391,6 +399,8 @@ module.exports = class CmpStr {
     clearFilter () {
 
         this.#filter.clear();
+
+        this.clearCache();
 
         return true;
 
