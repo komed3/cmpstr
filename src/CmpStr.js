@@ -642,7 +642,7 @@ module.exports = class CmpStr {
                 arr, config
             );
 
-            return res.length
+            return res.length && res[ 0 ].match > 0
                 ? res[ 0 ].target
                 : undefined;
 
