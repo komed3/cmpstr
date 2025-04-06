@@ -34,7 +34,7 @@ module.exports = ( a, b ) => {
 
     } else {
 
-        /* step 1: create matrix */
+        /* step 1: initialize scoring matrix */
 
         let matrix = Array( a.length + 1 ).fill( null ).map(
             () => Array( b.length + 1 ).fill( 0 )
