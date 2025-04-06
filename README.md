@@ -71,7 +71,7 @@ Creating a new instance of `CmpStr` or `CmpStrAsync` allows passing the algorith
 
 #### ``isReady()``
 
-Checks whether string and algorithm are set correctly. Returns `true`, if the class is ready to perform similarity checks.
+Checks whether string and algorithm are set correctly. Returns `true`, if the class is ready to perform similarity checks, false otherwise.
 
 #### ``setStr( str )``
 

@@ -53,7 +53,7 @@ module.exports = class CmpStr {
      * added filters for string normalization
      * 
      * @private
-     * @type {Map<Function, Function>}
+     * @type {Map<String, Object[]>}
      */
     #filter = new Map ();
 
@@ -138,6 +138,12 @@ module.exports = class CmpStr {
     };
 
     /**
+     * --------------------------------------------------
+     * Algorithms
+     * --------------------------------------------------
+     */
+
+    /**
      * lazy-loads the specified algorithm module
      * 
      * @param {String} algo name of the similarity algorithm
@@ -198,6 +204,24 @@ module.exports = class CmpStr {
     isAlgo ( algo ) {
 
         return algo in this.#algorithms;
+
+    };
+
+    /**
+     * sets the current algorithm to use for similarity calculations
+     * 
+     * @param {String} algo name of the algorithm
+     * @returns {Boolean} true if the algorithm has been set
+     */
+    setAlgo ( algo ) {
+
+        if ( this.loadAlgo( algo ) ) {
+
+            this.algo = algo;
+
+            return true;
+
+        }
 
     };
 
@@ -269,47 +293,33 @@ module.exports = class CmpStr {
     };
 
     /**
-     * sets the current algorithm to use for similarity calculations
-     * 
-     * @param {String} algo name of the algorithm
-     * @returns {Boolean} true if the algorithm has been set
+     * --------------------------------------------------
+     * Custom Filters
+     * --------------------------------------------------
      */
-    setAlgo ( algo ) {
-
-        if ( this.loadAlgo( algo ) ) {
-
-            this.algo = algo;
-
-            return true;
-
-        }
-
-    };
 
     /**
-     * add a new string normalization filter
+     * adds a custom normalization filter
      * 
-     * @param {String} ident filter name / identifier
+     * @param {String} name filter name
      * @param {Function} callback function implementing the filter (must accept a string and returns a normalized one)
-     * @param {Boolean} [clearCache=true] clears the normalization cache if true
+     * @param {Number} [priority=10] priority of the filter (lower numbers are processed first)
      * @returns {Boolean} returns true if the filter was added successfully
      * @throws {Error} if the filter cannot be added
      */
-    addFilter ( ident, callback, clearCache = true ) {
+    addFilter ( name, callback, priority = 10 ) {
 
         if (
-            !this.#filter.has( ident ) &&
+            !this.#filter.has( name ) &&
             typeof callback === 'function' &&
             callback.length == 1 &&
-            typeof callback.apply( null, [ 'abc' ] ) === 'string' &&
-            this.#filter.set( ident, callback )
+            typeof callback.apply( null, [ 'abc' ] ) === 'string'
         ) {
 
-            if ( clearCache ) {
-
-                this.clearCache();
-
-            }
+            this.#filter.set( name, {
+                callback, priority,
+                active: true
+            } );
 
             return true;
 
@@ -322,43 +332,94 @@ module.exports = class CmpStr {
     };
 
     /**
-     * removes a string normalization filter
+     * removes a custom normalization filter
      * 
-     * @param {String} ident filter name / identifier
-     * @param {Boolean} [clearCache=true] clears the normalization cache if true
+     * @param {String} name filter name
      * @returns {Boolean} true if the filter was removed successfully
      */
-    rmvFilter ( ident, clearCache = true ) {
+    rmvFilter ( name ) {
 
-        if ( clearCache ) {
+        return this.#filter.delete( name );
 
-            this.clearCache();
+    };
+
+    /**
+     * pauses a custom normalization filter
+     * 
+     * @param {String} name filter name
+     * @returns {Boolean} true if the filter was paused successfully
+     */
+    pauseFilter ( name ) {
+
+        if ( this.#filter.has( name ) ) {
+
+            this.#filter.get( name ).active = false;
+
+            return true;
 
         }
 
-        return this.#filter.delete( ident );
+        return false;
+
+    };
+
+    /**
+     * resumes a custom normalization filter
+     * 
+     * @param {String} name filter name
+     * @returns {Boolean} true if the filter was resumed successfully
+     */
+    resumeFilter ( name ) {
+
+        if ( this.#filter.has( name ) ) {
+
+            this.#filter.get( name ).active = true;
+
+            return true;
+
+        }
+
+        return false;
 
     };
 
     /**
      * clears normalization filters (remove all of them)
      * 
-     * @param {Boolean} [clearCache=true] clears the normalization cache if true
      * @returns {Boolean} always returns true
      */
-    clearFilter ( clearCache = true ) {
+    clearFilter () {
 
         this.#filter.clear();
-
-        if ( clearCache ) {
-
-            this.clearCache();
-
-        }
 
         return true;
 
     };
+
+    /**
+     * applies all active filters to a string
+     * 
+     * @param {String} str string to process
+     * @returns {String} filtered string
+     */
+    applyFilters ( str ) {
+
+        return Array.from( this.#filter.values() ).flat().filter(
+            ( filter ) => filter.active
+        ).sort(
+            ( a, b ) => a.priority - b.priority
+        ).reduce(
+            ( res, filter ) => filter.callback.apply( null, [ res ] ),
+            String ( str )
+        );
+
+    };
+
+    /**
+     * --------------------------------------------------
+     * Normalization
+     * --------------------------------------------------
+     */
 
     /**
      * set default normalization flags
@@ -408,15 +469,7 @@ module.exports = class CmpStr {
 
         /* apply custom filters */
 
-        if ( this.#filter.size > 0 ) {
-
-            this.#filter.forEach( ( filter ) => {
-
-                res = filter.apply( null, [ res ] );
-
-            } );
-
-        }
+        res = this.applyFilters( res );
 
         /* normalize using flags */
 
@@ -450,6 +503,12 @@ module.exports = class CmpStr {
         return true;
 
     };
+
+    /**
+     * --------------------------------------------------
+     * Similarity Comparison
+     * --------------------------------------------------
+     */
 
     /**
      * compares two string a and b using the passed algorithm
