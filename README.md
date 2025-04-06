@@ -150,6 +150,52 @@ Parameters:
 
 ### Filters
 
+#### ``addFilter( name, callback [, priority = 10 ] )``
+
+Adds a custom normalization filter. Needs to be passed a unique name and callback function accepting a string and returns a normalized one. Prioritizing filters by setting higher priority (default is `10`).
+
+Parameters:
+
+- `<String> name` filter name
+- `<Function> callback` callback function implementing the filter
+- `<Number> priority` priority of the filter
+
+Example:
+
+```js
+const cmp = new CmpStr();
+
+cmp.addFilter( 'prefix', ( str ) => `prefix_${str}` );
+```
+
+#### ``rmvFilter( name )``
+
+Removes a custom normalization filter.
+
+Parameters:
+
+- `<String> name` filter name
+
+#### ``pauseFilter( name )``
+
+Pauses a custom normalization filter.
+
+Parameters:
+
+- `<String> name` filter name
+
+#### ``resumeFilter( name )``
+
+Resumes a custom normalization filter.
+
+Parameters:
+
+- `<String> name` filter name
+
+#### ``clearFilter( name )``
+
+Clears normalization filters (removing all of them).
+
 ### Similarity Comparison
 
 #### ``compare( algo, a, b [, config = {} ] )``
