@@ -1,15 +1,47 @@
+/**
+ * Cosine Similarity
+ * CmpStr module
+ * 
+ * Cosine similarity is a measure how similar two vectors are. It's often used
+ * in text analysis to compare texts based on the words they contain.
+ * 
+ * @author Paul Köhler (komed3)
+ * @license MIT
+ */
+
 'use strict';
 
 /**
- * Cosine Similarity
+ * private helper function
+ * get term frequency from string
+ * @private
  * 
- * Cosine similarity measures the cosine of the angle between two vectors,
- * often used for text similarity.
+ * @param {String} str string
+ * @param {String} delimiter term delimiter
+ * @returns {Object} term frequency
+ */
+const _termFreq = ( str, delimiter ) => {
+
+    let freq = {};
+
+    str.split( delimiter ).forEach( ( term ) => {
+
+        freq[ term ] = ( freq[ term ] || 0 ) + 1;
+
+    } );
+
+    return freq;
+
+};
+
+/**
+ * module exports
+ * @public
  * 
  * @param {String} a string a
  * @param {String} b string b
- * @param {String} [delimiter=" "] term delimiter
- * @returns {Number} similarity (0..1)
+ * @param {String} [delimiter=' '] term delimiter
+ * @returns {Number} similarity score (0..1)
  */
 module.exports = ( a, b, delimiter = ' ' ) => {
 
@@ -27,36 +59,12 @@ module.exports = ( a, b, delimiter = ' ' ) => {
 
     } else {
 
-        /**
-         * for all other strings calculate Cosine similarity
-         */
-
-        /**
-         * get term frequency from string
-         * 
-         * @param {String} str string
-         * @returns {Object} term frequency
-         */
-        const termFreq = ( str ) => {
-
-            let freq = {};
-
-            str.split( delimiter ).forEach( ( term ) => {
-
-                freq[ term ] = ( freq[ term ] || 0 ) + 1;
-
-            } );
-
-            return freq;
-
-        };
-
         /* step 1: count the frequency of chars per string */
 
-        let termsA = termFreq( a ),
-            termsB = termFreq( b );
+        let termsA = _termFreq( a ),
+            termsB = _termFreq( b );
 
-        let allTerms = new Set( [
+        let allTerms = new Set ( [
             ...Object.keys( termsA ),
             ...Object.keys( termsB )
         ] );

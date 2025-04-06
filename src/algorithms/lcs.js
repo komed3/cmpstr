@@ -1,13 +1,22 @@
-'use strict';
-
 /**
  * Longest Common Subsequence (LCS)
+ * CmpStr module
  * 
  * LCS measures the length of the longest subsequence common to both strings.
  * 
+ * @author Paul Köhler (komed3)
+ * @license MIT
+ */
+
+'use strict';
+
+/**
+ * module exports
+ * @public
+ * 
  * @param {String} a string a
  * @param {String} b string b
- * @returns {Number} similarity (0..1)
+ * @returns {Number} similarity score (0..1)
  */
 module.exports = ( a, b ) => {
 
@@ -25,11 +34,9 @@ module.exports = ( a, b ) => {
 
     } else {
 
-        /**
-         * for all other strings calculate LCS
-         */
+        /* step 1: create matrix */
 
-        let dp = Array( a.length + 1 ).fill( null ).map(
+        let matrix = Array( a.length + 1 ).fill( null ).map(
             () => Array( b.length + 1 ).fill( 0 )
         );
 
@@ -39,13 +46,13 @@ module.exports = ( a, b ) => {
 
                 if ( a[ i - 1 ] === b[ j - 1 ] ) {
 
-                    dp[ i ][ j ] = dp[ i - 1 ][ j - 1 ] + 1;
+                    matrix[ i ][ j ] = matrix[ i - 1 ][ j - 1 ] + 1;
 
                 } else {
 
-                    dp[ i ][ j ] = Math.max(
-                        dp[ i - 1 ][ j ],
-                        dp[ i ][ j - 1 ]
+                    matrix[ i ][ j ] = Math.max(
+                        matrix[ i - 1 ][ j ],
+                        matrix[ i ][ j - 1 ]
                     );
 
                 }
@@ -54,8 +61,10 @@ module.exports = ( a, b ) => {
 
         }
 
+        /* step 2: calculate LCS */
+
         return (
-            dp[ a.length ][ b.length ] /
+            matrix[ a.length ][ b.length ] /
             Math.max( a.length, b.length )
         );
 

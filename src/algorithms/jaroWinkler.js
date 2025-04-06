@@ -1,14 +1,23 @@
-'use strict';
-
 /**
  * Jaro-Winkler Distance
+ * CmpStr module
  * 
  * Jaro-Winkler is a string similarity metric that gives more weight to
  * matching characters at the start of the strings.
  * 
+ * @author Paul Köhler (komed3)
+ * @license MIT
+ */
+
+'use strict';
+
+/**
+ * module exports
+ * @public
+ * 
  * @param {String} a string a
  * @param {String} b string b
- * @returns {Number} similarity (0..1)
+ * @returns {Number} similarity score (0..1)
  */
 module.exports = ( a, b ) => {
 
@@ -25,10 +34,6 @@ module.exports = ( a, b ) => {
         return 0;
 
     } else {
-
-        /**
-         * for all other strings calculate Jaro-Winkler Distance
-         */
 
         /* step 1: check for matches between strings */
 
@@ -100,7 +105,7 @@ module.exports = ( a, b ) => {
             matches
         ) / 3;
 
-        /* step 4: get Jaro-Winkler distance as percentage */
+        /* step 4: get Jaro-Winkler as value between 0..1 */
 
         return jaroScore + Math.min( 4, [ ...a ].findIndex(
             ( char, i ) => char !== b[ i ]
