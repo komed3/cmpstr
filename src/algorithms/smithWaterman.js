@@ -25,6 +25,7 @@
  * }
  * @returns {Number} similarity score (0..1)
  */
+
 module.exports = ( a, b, {
     match = 2, mismatch = -1, gap = -1
 } = {} ) => {

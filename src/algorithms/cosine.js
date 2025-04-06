@@ -45,6 +45,7 @@ const _termFreq = ( str, delimiter ) => {
  * }
  * @returns {Number} similarity score (0..1)
  */
+
 module.exports = ( a, b, { delimiter = ' ' } = {} ) => {
 
     /* step 1: count the frequency of chars per string */

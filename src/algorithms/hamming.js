@@ -19,6 +19,7 @@
  * @param {String} b string b
  * @returns {Number} similarity score (0..1)
  */
+
 module.exports = ( a, b ) => {
 
     if ( a.length !== b.length ) {

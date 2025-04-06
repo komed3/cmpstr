@@ -23,6 +23,7 @@
  * }
  * @returns {Number} similarity score (0..1) or distance
  */
+
 module.exports = ( a, b, { raw = false } = {} ) => {
 
     /* step 1: initialize scoring matrix */

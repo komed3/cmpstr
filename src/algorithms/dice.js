@@ -43,6 +43,7 @@ const _str2bigrams = ( str ) => {
  * @param {String} b string b
  * @returns {Number} similarity score (0..1)
  */
+
 module.exports = ( a, b ) => {
 
     /* step 1: generate bigrams from strings */

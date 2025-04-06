@@ -98,7 +98,8 @@ const _generateSoundex = ( str, mapping, exclude, maxLength ) => {
  * }
  * @returns {Number|Object} similarity score (0..1) or raw soundex codes
  */
-module.exports = (a, b, {
+
+module.exports = ( a, b, {
     lang = 'en',
     raw = false,
     mapping = null,

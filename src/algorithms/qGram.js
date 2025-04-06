@@ -21,6 +21,7 @@
  * @param {Int} q length of substrings
  * @returns {String[]} array of substrings
  */
+
 const _qGrams = ( str, q ) => {
 
     let grams = [];
