@@ -41,8 +41,8 @@ Example 2: Phonetic Search
 ```js
 const cmp = new CmpStr( 'soundex', 'Robert' );
 
-console.log( cmp.test( 'Rupert', { options: { raw: true } } ) );
-// Output: { a: 'R163', b: 'R163' }
+console.log( cmp.test( 'Rubin', { options: { raw: true } } ) );
+// Output: { a: 'R163', b: 'R150' }
 ```
 
 ## Methods
