@@ -457,7 +457,7 @@ module.exports = class CmpStr {
      * @param {String} a string a
      * @param {String} b string b
      * @param {Object} [config={}] config (flags, args)
-     * @returns {Number} similarity score (0..1)
+     * @returns {Mixed} similarity score (0..1) or raw output
      */
     compare ( algo, a, b, config = {} ) {
 
@@ -491,7 +491,7 @@ module.exports = class CmpStr {
      * 
      * @param {String} str target string
      * @param {Object} [config={}] config (flags, args)
-     * @returns {Number} similarity score (0..1)
+     * @returns {Mixed} similarity score (0..1) or raw output
      */
     test ( str, config = {} ) {
 
@@ -512,7 +512,7 @@ module.exports = class CmpStr {
      * 
      * @param {String[]} arr array of strings
      * @param {Object} [config={}] config (flags, args)
-     * @returns {Object[]} array of objects, each containing the target string and its similarity score
+     * @returns {Object[]} array of objects, each containing the target string and its similarity score / raw output
      */
     batchTest ( arr, config = {} ) {
 
@@ -542,6 +542,8 @@ module.exports = class CmpStr {
         if ( this.isReady() ) {
 
             const { threshold = 0 } = config;
+
+            delete config?.options?.raw;
 
             return this.batchTest(
                 arr, config
