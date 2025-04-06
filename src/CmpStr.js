@@ -28,6 +28,7 @@ module.exports = class CmpStr {
      */
     #algorithms = {
         cosine: './algorithms/cosine',
+        damerau: './algorithms/damerau',
         dice: './algorithms/dice',
         hamming: './algorithms/hamming',
         jaccard: './algorithms/jaccard',
