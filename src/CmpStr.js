@@ -377,12 +377,15 @@ module.exports = class CmpStr {
      * 
      * list of all supported flags:
      * 
-     * i :: case insensitivity
-     * t :: trim whitespaces
      * s :: remove special chars
-     * u :: normalize unicode
-     * n :: ignore numbers
      * w :: collapse whitespaces
+     * r :: remove repeated chars
+     * k :: keep only letters
+     * n :: ignore numbers
+     * t :: trim whitespaces
+     * i :: case insensitivity
+     * d :: decompose unicode
+     * u :: normalize unicode
      * 
      * @param {String} string string to normalize
      * @param {String} [flags=''] normalization flags
@@ -394,7 +397,7 @@ module.exports = class CmpStr {
 
         /* use normalized string from cache to increase performance */
 
-        let key = res + '::' + flags;
+        let key = `${res}::${flags}`;
 
         if ( this.#cache.has( key ) ) {
 
@@ -402,48 +405,29 @@ module.exports = class CmpStr {
 
         }
 
-        /* apply filters */
+        /* apply custom filters */
 
-        this.#filter.forEach( ( filter ) => {
+        if ( this.#filter.size > 0 ) {
 
-            res = filter.apply( null, [ res ] );
+            this.#filter.forEach( ( filter ) => {
 
-        } );
+                res = filter.apply( null, [ res ] );
+
+            } );
+
+        }
 
         /* normalize using flags */
 
-        if ( flags.length ) {
-
-            res = [ ...flags ].reduce( ( s, flag ) => {
-
-                switch ( flag ) {
-
-                    case 'i':
-                        return s.toLowerCase();
-
-                    case 't':
-                        return s.trim();
-
-                    case 's':
-                        return s.replace( /[^a-z0-9]/gi, '' );
-
-                    case 'u':
-                        return s.normalize( 'NFC' );
-
-                    case 'n':
-                        return s.replace( /[0-9]/g, '' );
-
-                    case 'w':
-                        return s.replace( /\s+/g, ' ' );
-
-                    default:
-                        return s;
-
-                }
-
-            }, res );
-
-        }
+        if ( flags.includes( 's' ) ) res = res.replace( /[^a-z0-9]/gi, '' );
+        if ( flags.includes( 'w' ) ) res = res.replace( /\s+/g, ' ' );
+        if ( flags.includes( 'r' ) ) res = res.replace( /(.)\1+/g, '$1' );
+        if ( flags.includes( 'k' ) ) res = res.replace( /[^a-z]/gi, '' );
+        if ( flags.includes( 'n' ) ) res = res.replace( /[0-9]/g, '' );
+        if ( flags.includes( 't' ) ) res = res.trim();
+        if ( flags.includes( 'i' ) ) res = res.toLowerCase();
+        if ( flags.includes( 'd' ) ) res = res.normalize( 'NFD' ).replace( /[\u0300-\u036f]/g, '' );
+        if ( flags.includes( 'u' ) ) res = res.normalize( 'NFC' );
 
         /* store the normalized string in the cache */
 
