@@ -51,7 +51,7 @@ module.exports = ( a, b, {
 
             let matchScore = a[ i - 1 ] === b[ j - 1 ] ? match : mismatch;
 
-            matrix[ i] [ j ] = Math.max(
+            matrix[ i ][ j ] = Math.max(
                 matrix[ i - 1 ][ j - 1 ] + matchScore,
                 matrix[ i - 1 ][ j ] + gap,
                 matrix[ i ][ j - 1 ] + gap

@@ -16,7 +16,7 @@
  * predefined phonetic mappings / excluded chars for supported languages
  * @private
  */
-const soudexConfig = {
+const soundexConfig = {
     en: {
         exclude: 'AEIOUHWY',
         mapping: {
@@ -109,8 +109,8 @@ module.exports = ( a, b, {
 
     /* step 1: load mapping and excluded chars or use custom data */
 
-    let pMapping = mapping || soudexConfig[ lang ].mapping || soudexConfig.en.mapping,
-        pExclude = exclude || soudexConfig[ lang ].exclude || soudexConfig.en.exclude;
+    let pMapping = mapping || soundexConfig[ lang ].mapping || soundexConfig.en.mapping,
+        pExclude = exclude || soundexConfig[ lang ].exclude || soundexConfig.en.exclude;
 
     /* step 2: generate soundex codes for both strings */
 
