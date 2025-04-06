@@ -40,10 +40,12 @@ const _termFreq = ( str, delimiter ) => {
  * 
  * @param {String} a string a
  * @param {String} b string b
- * @param {String} [delimiter=' '] term delimiter
+ * @param {Object} options having {
+ *   @param {String} [delimiter=' '] term delimiter
+ * }
  * @returns {Number} similarity score (0..1)
  */
-module.exports = ( a, b, delimiter = ' ' ) => {
+module.exports = ( a, b, { delimiter = ' ' } = {} ) => {
 
     if ( a === b ) {
 
@@ -61,8 +63,8 @@ module.exports = ( a, b, delimiter = ' ' ) => {
 
         /* step 1: count the frequency of chars per string */
 
-        let termsA = _termFreq( a ),
-            termsB = _termFreq( b );
+        let termsA = _termFreq( a, delimiter ),
+            termsB = _termFreq( b, delimiter );
 
         let allTerms = new Set ( [
             ...Object.keys( termsA ),

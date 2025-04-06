@@ -19,10 +19,12 @@
  * 
  * @param {String} a string a
  * @param {String} b string b
- * @param {Boolean} [raw=false] if true the raw distance is returned
+ * @param {Object} options having {
+ *   @param {Boolean} [raw=false] if true the raw distance is returned
+ * }
  * @returns {Number} similarity score (0..1) or distance
  */
-module.exports = ( a, b, raw = false ) => {
+module.exports = ( a, b, { raw = false } = {} ) => {
 
     if ( a === b ) {
 

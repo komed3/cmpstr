@@ -41,10 +41,12 @@ const _qGrams = ( str, q ) => {
  * 
  * @param {String} a string a
  * @param {String} b string b
- * @param {Int} [q=2] length of substrings
+ * @param {Object} options having {
+ *   @param {Int} [q=2] length of substrings
+ * }
  * @returns {Number} similarity score (0..1)
  */
-module.exports = ( a, b, q = 2 ) => {
+module.exports = ( a, b, { q = 2 } = {} ) => {
 
     if ( a === b ) {
 

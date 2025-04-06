@@ -47,11 +47,10 @@ module.exports = class CmpStrAsync extends CmpStr {
      * @param {String} algo name of the algorithm
      * @param {String} a string a
      * @param {String} b string b
-     * @param {String} [flags=''] normalization flags
-     * @param {...any} args additional arguments to pass to the algorithm
+     * @param {Object} [config={}] config (flags, args)
      * @returns {Promise} Promise resolving similarity between a and b
      */
-    compareAsync ( algo, a, b, flags = '', ...args ) {
+    compareAsync ( algo, a, b, config = {} ) {
 
         return new Promise ( ( resolve, reject ) => {
 
@@ -60,7 +59,7 @@ module.exports = class CmpStrAsync extends CmpStr {
                 try {
 
                     resolve( this.compare(
-                        algo, a, b, flags, ...args
+                        algo, a, b, config
                     ) );
 
                 } catch ( err ) {
@@ -82,11 +81,10 @@ module.exports = class CmpStrAsync extends CmpStr {
      * @async
      * 
      * @param {String} str target string
-     * @param {String} [flags=''] normalization flags
-     * @param {...any} args additional arguments to pass to the algorithm
+     * @param {Object} [config={}] config (flags, args)
      * @returns {Promise} Promise resolving similarity to base string
      */
-    testAsync ( str, flags = '', ...args ) {
+    testAsync ( str, config = {} ) {
 
         if ( this.isReady() ) {
 
@@ -97,7 +95,7 @@ module.exports = class CmpStrAsync extends CmpStr {
                     try {
 
                         resolve( this.test(
-                            str, flags, ...args
+                            str, config
                         ) );
 
                     } catch ( err ) {
@@ -120,11 +118,10 @@ module.exports = class CmpStrAsync extends CmpStr {
      * @async
      * 
      * @param {String[]} arr array of strings
-     * @param {String} [flags=''] normalization flags
-     * @param {...any} args additional arguments to pass to the algorithm
+     * @param {Object} [config={}] config (flags, args)
      * @returns {Promise} Promise resolving an array of objects, each containing target string and similarity score
      */
-    batchTestAsync ( arr, flags = '', ...args ) {
+    batchTestAsync ( arr, config = {} ) {
 
         if ( this.isReady() ) {
 
@@ -139,7 +136,7 @@ module.exports = class CmpStrAsync extends CmpStr {
                             resolve( {
                                 target: str,
                                 match: this.test(
-                                    str, flags, ...args
+                                    str, config
                                 )
                             } );
 
@@ -168,17 +165,17 @@ module.exports = class CmpStrAsync extends CmpStr {
      * @async
      * 
      * @param {String[]} arr array of strings
-     * @param {String} [flags=''] normalization flags
-     * @param {Number} [threshold=0] minimum similarity score to consider a match
-     * @param {...any} args additional arguments to pass to the algorithm
+     * @param {Object} [config={}] config (flags, threshold, args)
      * @returns {Promise} Promise resolving an array of objects, sorted by highest similarity
      */
-    async matchAsync ( arr, flags = '', threshold = 0, ...args ) {
+    async matchAsync ( arr, config = {} ) {
 
         if ( this.isReady() ) {
 
+            const { threshold = 0 } = config;
+
             let res = await this.batchTestAsync(
-                arr, flags, ...args
+                arr, config
             );
 
             return res.filter(
@@ -197,16 +194,15 @@ module.exports = class CmpStrAsync extends CmpStr {
      * @async
      * 
      * @param {String[]} arr array of strings
-     * @param {String} [flags=''] normalization flags
-     * @param {...any} args additional arguments to pass to the algorithm
+     * @param {Object} [config={}] config (flags, args)
      * @returns {Promise} Promise resolving the closest matching string
      */
-    async closestAsync ( arr, flags = '', ...args ) {
+    async closestAsync ( arr, config = {} ) {
 
         if ( this.isReady() ) {
 
             let res = await this.matchAsync(
-                arr, flags, 0, ...args
+                arr, config
             );
 
             return res.length
@@ -224,11 +220,10 @@ module.exports = class CmpStrAsync extends CmpStr {
      * 
      * @param {String} algo name of the algorithm
      * @param {String[]} arr array of strings to cross-compare
-     * @param {String} [flags=''] normalization flags
-     * @param {...any} args additional arguments to pass to the algorithm
+     * @param {Object} [config={}] config (flags, args)
      * @returns {Promise} Promise resolving an 2D array representing the similarity matrix
      */
-    similarityMatrixAsync ( algo, arr, flags = '', ...args ) {
+    similarityMatrixAsync ( algo, arr, config = {} ) {
 
         if ( this.loadAlgo( algo ) ) {
 
@@ -243,7 +238,7 @@ module.exports = class CmpStrAsync extends CmpStr {
                             try {
 
                                 resolve( i === j ? 1 : this.compare(
-                                    algo, a, b, flags, ...args
+                                    algo, a, b, config
                                 ) );
 
                             } catch ( err ) {

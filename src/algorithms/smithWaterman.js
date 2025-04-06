@@ -18,12 +18,14 @@
  * 
  * @param {String} a string a
  * @param {String} b string b
- * @param {Number} [match=2] score for a match
- * @param {Number} [mismatch=-1] penalty for a mismatch
- * @param {Number} [gap=-1] penalty for a gap
+ * @param {Object} options having {
+ *   @param {Number} [match=2] score for a match
+ *   @param {Number} [mismatch=-1] penalty for a mismatch
+ *   @param {Number} [gap=-1] penalty for a gap
+ * }
  * @returns {Number} similarity score (0..1)
  */
-module.exports = ( a, b, match = 2, mismatch = -1, gap = -1 ) => {
+module.exports = ( a, b, { match = 2, mismatch = -1, gap = -1 } = {} ) => {
 
     if ( a === b ) {
 
