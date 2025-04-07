@@ -124,6 +124,26 @@ module.exports = class CmpStr {
     };
 
     /**
+     * checks ready state and throws an error if not
+     * 
+     * @returns {Boolean} true if ready
+     * @throws {Error} if CmpStr is not ready
+     */
+    _checkReady () {
+
+        if ( !this.isReady() ) {
+
+            throw new Error(
+                `CmpStr instance is not ready. Ensure the algorithm and base string are set.`
+            );
+
+        }
+
+        return true;
+
+    };
+
+    /**
      * sets the base string for comparison
      * 
      * @param {String} str string to set as the base
@@ -144,54 +164,13 @@ module.exports = class CmpStr {
      */
 
     /**
-     * lazy-loads the specified algorithm module
-     * 
-     * @param {String} algo name of the similarity algorithm
-     * @returns {Boolean} true if the algorithm is loaded
-     * @throws {Error} if the algorithm cannot be loaded or is not defined
-     */
-    loadAlgo ( algo ) {
-
-        if ( this.isAlgo( algo ) ) {
-
-            let typeOf = typeof this.#algorithms[ algo ];
-
-            if ( typeOf === 'function' ) {
-
-                return true;
-
-            } else if ( typeOf === 'string' ) {
-
-                /* lazy-load algorithm module */
-
-                this.#algorithms[ algo ] = require(
-                    this.#algorithms[ algo ]
-                );
-
-                return true;
-
-            } else {
-
-                throw new Error ( algo + ' cannot be loaded' );
-
-            }
-
-        } else {
-
-            throw new Error ( algo + ' is not defined' );
-
-        }
-
-    };
-
-    /**
      * list all registered similarity algorithms
      * 
      * @returns {String[]} array of algorithm names
      */
     listAlgo () {
 
-        return Object.keys( this.#algorithms );
+        return [ ...Object.keys( this.#algorithms ) ];
 
     };
 
@@ -215,7 +194,7 @@ module.exports = class CmpStr {
      */
     setAlgo ( algo ) {
 
-        if ( this.loadAlgo( algo ) ) {
+        if ( this._loadAlgo( algo ) ) {
 
             this.algo = algo;
 
@@ -255,7 +234,9 @@ module.exports = class CmpStr {
 
         } else {
 
-            throw new Error ( algo + ' could not be added' );
+            throw new Error (
+                `Algorithm "${algo}" cannot be added.`
+            );
 
         }
 
@@ -286,7 +267,65 @@ module.exports = class CmpStr {
 
         } else {
 
-            throw new Error ( algo + ' is not defined' );
+            throw new Error (
+                `Algorithm "${algo}" is not defined.`
+            );
+
+        }
+
+    };
+
+    /**
+     * lazy-loads the specified algorithm module
+     * 
+     * @param {String} algo name of the similarity algorithm
+     * @returns {Boolean} true if the algorithm is loaded
+     * @throws {Error} if the algorithm cannot be loaded or is not defined
+     */
+    _loadAlgo ( algo ) {
+
+        if ( this.isAlgo( algo ) ) {
+
+            let typeOf = typeof this.#algorithms[ algo ];
+
+            if ( typeOf === 'function' ) {
+
+                return true;
+
+            } else if ( typeOf === 'string' ) {
+
+                try {
+
+                    /* lazy-load algorithm module */
+
+                    this.#algorithms[ algo ] = require(
+                        this.#algorithms[ algo ]
+                    );
+
+                    return true;
+
+                } catch ( err ) {
+
+                    throw new Error (
+                        `Failed to load algorithm "${algo}".`,
+                        { cause: err }
+                    );
+
+                }
+
+            } else {
+
+                throw new Error (
+                    `Algorithm "${algo}" cannot be loaded.`
+                );
+
+            }
+
+        } else {
+
+            throw new Error (
+                `Algorithm "${algo}" is not defined.`
+            );
 
         }
 
@@ -297,6 +336,17 @@ module.exports = class CmpStr {
      * Custom Filters
      * --------------------------------------------------
      */
+
+    /**
+     * list all added filters
+     * 
+     * @returns {String[]} array of filter names
+     */
+    listFilter () {
+
+        return [ ...this.#filter.keys() ];
+
+    };
 
     /**
      * adds a custom normalization filter
@@ -327,7 +377,9 @@ module.exports = class CmpStr {
 
         } else {
 
-            throw new Error ( 'filter could not be added' );
+            throw new Error (
+                `Filter "${filter}" cannot be added.`
+            );
 
         }
 
@@ -338,12 +390,23 @@ module.exports = class CmpStr {
      * 
      * @param {String} name filter name
      * @returns {Boolean} true if the filter was removed successfully
+     * @throws {Error} if the filter does not exists
      */
     rmvFilter ( name ) {
 
-        this.clearCache();
+        if ( this.#filter.delete( name ) ) {
 
-        return this.#filter.delete( name );
+            this.clearCache();
+
+            return true;
+
+        } else {
+
+            throw new Error (
+                `Filter "${filter}" does not exists.`
+            );
+
+        }
 
     };
 
@@ -352,6 +415,7 @@ module.exports = class CmpStr {
      * 
      * @param {String} name filter name
      * @returns {Boolean} true if the filter was paused successfully
+     * @throws {Error} if the filter does not exists
      */
     pauseFilter ( name ) {
 
@@ -363,9 +427,13 @@ module.exports = class CmpStr {
 
             return true;
 
-        }
+        } else {
 
-        return false;
+            throw new Error (
+                `Filter "${filter}" does not exists.`
+            );
+
+        }
 
     };
 
@@ -374,6 +442,7 @@ module.exports = class CmpStr {
      * 
      * @param {String} name filter name
      * @returns {Boolean} true if the filter was resumed successfully
+     * @throws {Error} if the filter does not exists
      */
     resumeFilter ( name ) {
 
@@ -385,9 +454,13 @@ module.exports = class CmpStr {
 
             return true;
 
-        }
+        } else {
 
-        return false;
+            throw new Error (
+                `Filter "${filter}" does not exists.`
+            );
+
+        }
 
     };
 
@@ -411,17 +484,29 @@ module.exports = class CmpStr {
      * 
      * @param {String} str string to process
      * @returns {String} filtered string
+     * @throws {Error} if applying filters cause an error
      */
-    applyFilters ( str ) {
+    _applyFilters ( str ) {
 
-        return Array.from( this.#filter.values() ).flat().filter(
-            ( filter ) => filter.active
-        ).sort(
-            ( a, b ) => a.priority - b.priority
-        ).reduce(
-            ( res, filter ) => filter.callback.apply( null, [ res ] ),
-            String ( str )
-        );
+        try {
+
+            return Array.from( this.#filter.values() ).flat().filter(
+                ( filter ) => filter.active
+            ).sort(
+                ( a, b ) => a.priority - b.priority
+            ).reduce(
+                ( res, filter ) => filter.callback.apply( null, [ res ] ),
+                String ( str )
+            );
+
+        } catch ( err ) {
+
+            throw new Error (
+                `Error while applying filters.`,
+                { cause: err }
+            );
+
+        }
 
     };
 
@@ -462,6 +547,7 @@ module.exports = class CmpStr {
      * @param {String} string string to normalize
      * @param {String} [flags=''] normalization flags
      * @returns {String} normalized string
+     * @throws {Error} if normalization cause an error
      */
     normalize ( str, flags = '' ) {
 
@@ -479,19 +565,30 @@ module.exports = class CmpStr {
 
         /* apply custom filters */
 
-        res = this.applyFilters( res );
+        res = this._applyFilters( res );
 
         /* normalize using flags */
 
-        if ( flags.includes( 's' ) ) res = res.replace( /[^a-z0-9]/gi, '' );
-        if ( flags.includes( 'w' ) ) res = res.replace( /\s+/g, ' ' );
-        if ( flags.includes( 'r' ) ) res = res.replace( /(.)\1+/g, '$1' );
-        if ( flags.includes( 'k' ) ) res = res.replace( /[^a-z]/gi, '' );
-        if ( flags.includes( 'n' ) ) res = res.replace( /[0-9]/g, '' );
-        if ( flags.includes( 't' ) ) res = res.trim();
-        if ( flags.includes( 'i' ) ) res = res.toLowerCase();
-        if ( flags.includes( 'd' ) ) res = res.normalize( 'NFD' ).replace( /[\u0300-\u036f]/g, '' );
-        if ( flags.includes( 'u' ) ) res = res.normalize( 'NFC' );
+        try {
+
+            if ( flags.includes( 's' ) ) res = res.replace( /[^a-z0-9]/gi, '' );
+            if ( flags.includes( 'w' ) ) res = res.replace( /\s+/g, ' ' );
+            if ( flags.includes( 'r' ) ) res = res.replace( /(.)\1+/g, '$1' );
+            if ( flags.includes( 'k' ) ) res = res.replace( /[^a-z]/gi, '' );
+            if ( flags.includes( 'n' ) ) res = res.replace( /[0-9]/g, '' );
+            if ( flags.includes( 't' ) ) res = res.trim();
+            if ( flags.includes( 'i' ) ) res = res.toLowerCase();
+            if ( flags.includes( 'd' ) ) res = res.normalize( 'NFD' ).replace( /[\u0300-\u036f]/g, '' );
+            if ( flags.includes( 'u' ) ) res = res.normalize( 'NFC' );
+
+        } catch ( err ) {
+
+            throw new Error (
+                `Error while normalization.`,
+                { cause: err }
+            );
+
+        }
 
         /* store the normalized string in the cache */
 
@@ -528,10 +625,11 @@ module.exports = class CmpStr {
      * @param {String} b string b
      * @param {Object} [config={}] config (flags, args)
      * @returns {Mixed} similarity score (0..1) or raw output
+     * @throws {Error} if algorithm cause an error
      */
     compare ( algo, a, b, config = {} ) {
 
-        if ( this.loadAlgo( algo ) ) {
+        if ( this._loadAlgo( algo ) ) {
 
             /* handle trivial cases */
 
@@ -545,11 +643,22 @@ module.exports = class CmpStr {
                 options = {}
             } = config;
 
-            return this.#algorithms[ algo ].apply( null, [
-                this.normalize( a, flags ),
-                this.normalize( b, flags ),
-                options
-            ] );
+            try {
+
+                return this.#algorithms[ algo ].apply( null, [
+                    this.normalize( a, flags ),
+                    this.normalize( b, flags ),
+                    options
+                ] );
+
+            } catch ( err ) {
+
+                throw new Error (
+                    `Error in algorithm "${algo}".`,
+                    { cause: err }
+                );
+
+            }
 
         }
 
@@ -565,7 +674,7 @@ module.exports = class CmpStr {
      */
     test ( str, config = {} ) {
 
-        if ( this.isReady() ) {
+        if ( this._checkReady() ) {
 
             return this.compare(
                 this.algo,
@@ -586,12 +695,14 @@ module.exports = class CmpStr {
      */
     batchTest ( arr, config = {} ) {
 
-        if ( this.isReady() ) {
+        if ( this._checkReady() ) {
 
             return [ ...arr ].map( ( str ) => ( {
                 target: str,
-                match: this.test(
-                    str, config
+                match: this.compare(
+                    this.algo,
+                    this.str, str,
+                    config
                 )
             } ) );
 
@@ -609,21 +720,17 @@ module.exports = class CmpStr {
      */
     match ( arr, config = {} ) {
 
-        if ( this.isReady() ) {
+        const { threshold = 0 } = config;
 
-            const { threshold = 0 } = config;
+        delete config?.options?.raw;
 
-            delete config?.options?.raw;
-
-            return this.batchTest(
-                arr, config
-            ).filter(
-                ( r ) => r.match >= threshold
-            ).sort(
-                ( a, b ) => b.match - a.match
-            );
-
-        }
+        return this.batchTest(
+            arr, config
+        ).filter(
+            ( r ) => r.match >= threshold
+        ).sort(
+            ( a, b ) => b.match - a.match
+        );
 
     };
 
@@ -636,17 +743,13 @@ module.exports = class CmpStr {
      */
     closest ( arr, config = {} ) {
 
-        if ( this.isReady() ) {
+        let res = this.match(
+            arr, config
+        );
 
-            let res = this.match(
-                arr, config
-            );
-
-            return res.length && res[ 0 ].match > 0
-                ? res[ 0 ].target
-                : undefined;
-
-        }
+        return res.length && res[ 0 ].match > 0
+            ? res[ 0 ].target
+            : undefined;
 
     };
 
@@ -660,7 +763,7 @@ module.exports = class CmpStr {
      */
     similarityMatrix ( algo, arr, config = {} ) {
 
-        if ( this.loadAlgo( algo ) ) {
+        if ( this._loadAlgo( algo ) ) {
 
             delete config?.options?.raw;
 
