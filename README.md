@@ -346,6 +346,9 @@ const cmp = new CmpStr();
 
 console.log( cmp.normalize( '   he123LLo  ', 'nti' ) );
 // Output: hello
+
+console.log( cmp.normalize( [ 'Hello World!', 'CmpStr 123' ], 'nwti' ) );
+// Output: [ 'hello world!', 'cmpstr' ]
 ```
 
 ### Configuration Object
