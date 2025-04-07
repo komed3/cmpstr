@@ -1,4 +1,4 @@
-# CmpStr v2.0
+# CmpStr `v2.0`
 
 CmpStr is a lightweight and powerful npm package for calculating string similarity, finding the closest matches in arrays, performing phonetic searches, and more. It supports a variety of built-in algorithms (e.g., Levenshtein, Dice-Sørensen, Damerau-Levenshtein, Soundex) and allows users to add custom algorithms and normalization filters.
 
@@ -131,6 +131,10 @@ Parameters:
 - `<String> algo` – name of the algorithm
 
 ### Filters
+
+#### `listFilter()`
+
+List all added filters.
 
 #### `addFilter( name, callback [, priority = 10 ] )`
 
@@ -295,11 +299,13 @@ console.log( cmp.similarityMatrix( 'levenshtein', [
 // Output: [ [ 1, 0.8, 0.4 ], [ 0.8, 1, 0.4 ], [ 0.4, 0.4, 1 ] ]
 ```
 
-## Normalization
+## Customization
+
+### Normalize Strings
 
 The `CmpStr` package allows strings to be normalized before the similarity comparison. Options listed below are available for this and can either be set globally via `setFlags` or passed using the config object, which will overwrite the global flags. Flags are passed as a chained string in any order. For improved performance, normalized strings are stored in the cache, which can be freed using the `clearCache` method. Modifying custom filters automatically deletes the cache.
 
-Supported flags:
+#### Supported Flags
 
 - `s` – remove special chars
 - `w` – collapse whitespaces
@@ -311,16 +317,25 @@ Supported flags:
 - `d` – decompose unicode
 - `u` – normalize unicode
 
+#### `normalize( str [, flags = '' ] )`
+
+The method for normalizing strings can also be called on its own, without comparing the similarity of two strings. This also applies all filters and reads or writes to the cache. This can be helpful if certain strings should be saved beforehand or different normalization options want to be tested.
+
+Parameters:
+
+- `<String> str` – string to normalize
+- `<String> flags` normalization flags
+
 Example:
 
 ```js
-const cmp = new CmpStr( 'levenshtein', 'hello' );
+const cmp = new CmpStr();
 
-console.log( cmp.test( '   he123LLo  ', { flags: 'nti' } ) );
-// Output: 1
+console.log( cmp.normalize( '   he123LLo  ', 'nti' ) );
+// Output: hello
 ```
 
-## Configuration Object
+### Configuration Object
 
 An additional object with optional parameters can be passed to all comparison methods (e.g. `test`, `match`, `closest` etc.) and their asynchronous pendants. This object includes the ability to pass `flags` for normalization to all methods, as well as the `threshold` parameter for `match` and `matchAsync`.
 
@@ -439,13 +454,19 @@ Options:
 
 The Smith-Waterman algorithm performs local alignment, finding the best matching subsequence between two strings. It is commonly used in bioinformatics.
 
-#### q-Gram – `qGram`
-
 Options:
 
 - `<Number> match` – score for a match
 - `<Number> mismatch` – penalty for a mismatch
 - `<Number> gap` – penalty for a gap
+
+#### q-Gram – `qGram`
+
+Q-gram similarity is a string-matching algorithm that compares two strings by breaking them into substrings of length Q. It's used to determine how similar the two strings are.
+
+Options:
+
+- `<Int> q` length of substrings
 
 ### Phonetic Algorithms
 
