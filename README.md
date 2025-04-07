@@ -2,7 +2,7 @@
 
 CmpStr is a lightweight and powerful npm package for calculating string similarity, finding the closest matches in arrays, performing phonetic searches, and more. It supports a variety of built-in algorithms (e.g., Levenshtein, Dice-Sørensen, Damerau-Levenshtein, Soundex) and allows users to add custom algorithms and normalization filters.
 
-#### Key Features
+**Key Features**
 
 - Built-in support for multiple similarity algorithms.
 - Phonetic search with language-specific configurations (e.g., Soundex).
