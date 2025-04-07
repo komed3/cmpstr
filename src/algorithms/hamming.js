@@ -18,6 +18,7 @@
  * @param {String} a string a
  * @param {String} b string b
  * @returns {Number} similarity score (0..1)
+ * @throws {Error} if string not of equal length
  */
 
 module.exports = ( a, b ) => {
@@ -26,7 +27,9 @@ module.exports = ( a, b ) => {
 
         /* strings must be of equal length for this calculation */
 
-        throw new Error ( 'strings must be of equal length for Hamming Distance' );
+        throw new Error (
+            `Strings must be of equal length for Hamming Distance`
+        );
 
     }
 
