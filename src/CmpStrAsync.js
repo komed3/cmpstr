@@ -40,6 +40,42 @@ module.exports = class CmpStrAsync extends CmpStr {
     };
 
     /**
+     * @private
+     * generic async wrapper for methods
+     * 
+     * @param {Function} method method to call
+     * @param {...any} args arguments to pass to the method
+     * @returns {Promise} Promise resolving the result of the method
+     */
+    #asyncWrapper ( method, ...args ) {
+
+        return new Promise ( ( resolve, reject ) => {
+
+            setImmediate( () => {
+
+                try {
+
+                    resolve( method.apply( this, args ) );
+
+                } catch ( err ) {
+
+                    reject( err );
+
+                }
+
+            } );
+
+        } );
+
+    };
+
+    /**
+     * --------------------------------------------------
+     * Asynchronous Methods
+     * --------------------------------------------------
+     */
+
+    /**
      * compares two string a and b using the passed algorithm
      * 
      * @async
@@ -52,25 +88,10 @@ module.exports = class CmpStrAsync extends CmpStr {
      */
     compareAsync ( algo, a, b, config = {} ) {
 
-        return new Promise ( ( resolve, reject ) => {
-
-            setImmediate( () => {
-
-                try {
-
-                    resolve( this.compare(
-                        algo, a, b, config
-                    ) );
-
-                } catch ( err ) {
-
-                    reject( err );
-
-                }
-
-            } );
-
-        } );
+        return this.#asyncWrapper(
+            this.compare,
+            algo, a, b, config
+        );
 
     };
 
@@ -86,33 +107,10 @@ module.exports = class CmpStrAsync extends CmpStr {
      */
     testAsync ( str, config = {} ) {
 
-        return new Promise ( ( resolve, reject ) => {
-
-            setImmediate( () => {
-
-                if ( this.isReady() ) {
-
-                    try {
-
-                        resolve( this.test(
-                            str, config
-                        ) );
-
-                    } catch ( err ) {
-
-                        reject( err );
-
-                    }
-
-                } else {
-
-                    reject( new Error ( 'not ready, set algorithm and base string first' ) );
-
-                }
-
-            } );
-
-        } );
+        return this.#asyncWrapper(
+            this.test,
+            str, config
+        );
 
     };
 
@@ -127,44 +125,10 @@ module.exports = class CmpStrAsync extends CmpStr {
      */
     batchTestAsync ( arr, config = {} ) {
 
-        if ( this.isReady() ) {
-
-            let tasks = [ ...arr ].map( ( str ) => {
-
-                return new Promise ( ( resolve, reject ) => {
-
-                    setImmediate( () => {
-
-                        try {
-
-                            resolve( {
-                                target: str,
-                                match: this.test(
-                                    str, config
-                                )
-                            } );
-
-                        } catch ( err ) {
-
-                            reject( err );
-
-                        }
-
-                    } );
-
-                } );
-
-            } );
-
-            return Promise.all( tasks );
-
-        } else {
-
-            return Promise.reject(
-                new Error ( 'not ready, set algorithm and base string first' )
-            );
-
-        }
+        return this.#asyncWrapper(
+            this.batchTest,
+            arr, config
+        );
 
     };
 
@@ -180,18 +144,9 @@ module.exports = class CmpStrAsync extends CmpStr {
      */
     async matchAsync ( arr, config = {} ) {
 
-        const { threshold = 0 } = config;
-
-        delete config?.options?.raw;
-
-        let res = await this.batchTestAsync(
+        return this.#asyncWrapper(
+            this.match,
             arr, config
-        );
-
-        return res.filter(
-            ( r ) => r.match >= threshold
-        ).sort(
-            ( a, b ) => b.match - a.match
         );
 
     };
@@ -207,13 +162,10 @@ module.exports = class CmpStrAsync extends CmpStr {
      */
     async closestAsync ( arr, config = {} ) {
 
-        let res = await this.matchAsync(
+        return this.#asyncWrapper(
+            this.closest,
             arr, config
         );
-
-        return res.length && res[ 0 ].match > 0
-            ? res[ 0 ].target
-            : undefined;
 
     };
 
@@ -229,47 +181,10 @@ module.exports = class CmpStrAsync extends CmpStr {
      */
     similarityMatrixAsync ( algo, arr, config = {} ) {
 
-        if ( this.loadAlgo( algo ) ) {
-
-            delete config?.options?.raw;
-
-            let tasks = [ ...arr ].map( ( a, i ) => {
-
-                return Promise.all( [ ...arr ].map( ( b, j ) => {
-
-                    return new Promise ( ( resolve, reject ) => {
-
-                        setImmediate( () => {
-
-                            try {
-
-                                resolve( i === j ? 1 : this.compare(
-                                    algo, a, b, config
-                                ) );
-
-                            } catch ( err ) {
-
-                                reject( err );
-
-                            }
-
-                        } );
-
-                    } );
-
-                } ) );
-
-            } );
-
-            return Promise.all( tasks );
-
-        } else {
-
-            return Promise.reject(
-                new Error ( algo + ' cannot be loaded' )
-            );
-
-        }
+        return this.#asyncWrapper(
+            this.similarityMatrix,
+            algo, arr, config
+        );
 
     };
 
