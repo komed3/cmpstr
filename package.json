@@ -7,8 +7,9 @@
     "url" : "https://komed3.de"
   },
   "homepage": "https://github.com/komed3/cmpstr#readme",
-  "version": "2.0.0",
+  "version": "2.0.1",
   "main": "src/index.js",
+  "types": "src/index.d.ts",
   "license": "MIT",
   "keywords": [
     "string-similarity",
@@ -35,7 +36,8 @@
     "text-processing",
     "fuzzy-matching",
     "string-matching",
-    "text-similarity"
+    "text-similarity",
+    "typescript-definitions"
   ],
   "repository": {
     "type": "git",
