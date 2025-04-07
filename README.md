@@ -62,7 +62,7 @@ Sets the base string for comparison.
 
 Parameters:
 
-- `<String> str` – string to set as the base
+`<String> str` – string to set as the base
 
 #### `setFlags( [ flags = '' ] )`
 
@@ -70,7 +70,7 @@ Set default normalization flags. They will be overwritten by passing `flags` thr
 
 Parameters:
 
-- `<String> flags` – normalization flags
+`<String> flags` – normalization flags
 
 #### `clearCache()`
 
@@ -88,7 +88,7 @@ Checks if an algorithm is registered. Returns `true` if so, `false` otherwise.
 
 Parameters:
 
-- `<String> algo` – name of the algorithm
+`<String> algo` – name of the algorithm
 
 #### `setAlgo( algo )`
 
@@ -98,7 +98,7 @@ Allowed options for build-in althorithms are `cosine`, `damerau`, `dice`, `hammi
 
 Parameters:
 
-- `<String> algo` – name of the algorithm
+`<String> algo` – name of the algorithm
 
 #### `addAlgo( algo, callback [, useIt = true ] )`
 
@@ -106,9 +106,9 @@ Adding a new similarity algorithm by using the `addAlgo()` method passing the na
 
 Parameters:
 
-- `<String> algo` – name of the algorithm
-- `<Function> callback` – callback function implementing the algorithm
-- `<Boolean> useIt` – whether to set this algorithm as the current one
+`<String> algo` – name of the algorithm  
+`<Function> callback` – callback function implementing the algorithm  
+`<Boolean> useIt` – whether to set this algorithm as the current one
 
 Example:
 
@@ -129,7 +129,7 @@ Removing a registered similarity algorithm.
 
 Parameters:
 
-- `<String> algo` – name of the algorithm
+`<String> algo` – name of the algorithm
 
 ### Filters
 
@@ -143,9 +143,9 @@ Adds a custom normalization filter. Needs to be passed a unique name and callbac
 
 Parameters:
 
-- `<String> name` – filter name
-- `<Function> callback` – callback function implementing the filter
-- `<Int> priority` – priority of the filter
+`<String> name` – filter name  
+`<Function> callback` – callback function implementing the filter  
+`<Int> priority` – priority of the filter
 
 Example:
 
@@ -161,7 +161,7 @@ Removes a custom normalization filter.
 
 Parameters:
 
-- `<String> name` – filter name
+`<String> name` – filter name
 
 #### `pauseFilter( name )`
 
@@ -169,7 +169,7 @@ Pauses a custom normalization filter.
 
 Parameters:
 
-- `<String> name` – filter name
+`<String> name` – filter name
 
 #### `resumeFilter( name )`
 
@@ -177,7 +177,7 @@ Resumes a custom normalization filter.
 
 Parameters:
 
-- `<String> name` – filter name
+`<String> name` – filter name
 
 #### `clearFilter( name )`
 
@@ -191,10 +191,10 @@ Compares two strings using the specified algorithm. The method returns either th
 
 Parameters:
 
-- `<String> algo` – name of the algorithm
-- `<String> a` – first string
-- `<String> b` – second string
-- `<Object> config` – configuration object
+`<String> algo` – name of the algorithm  
+`<String> a` – first string  
+`<String> b` – second string  
+`<Object> config` – configuration object
 
 Example:
 
@@ -211,8 +211,8 @@ Tests the similarity between the base string and a given target string. Returns 
 
 Parameters:
 
-- `<String> str` – target string
-- `<Object> config` – configuration object
+`<String> str` – target string  
+`<Object> config` – configuration object
 
 Example:
 
@@ -229,8 +229,8 @@ Tests the similarity of multiple strings against the base string. Returns an arr
 
 Parameters:
 
-- `<String[]> arr` – array of strings
-- `<Object> config` – configuration object
+`<String[]> arr` – array of strings  
+`<Object> config` – configuration object
 
 Example:
 
@@ -247,8 +247,8 @@ Finds strings in an array that exceed a similarity threshold and sorts them by h
 
 Parameters:
 
-- `<String[]> arr` – array of strings
-- `<Object> config` – configuration object
+`<String[]> arr` – array of strings  
+`<Object> config` – configuration object
 
 Example:
 
@@ -267,8 +267,8 @@ Finds the closest matching string from an array and returns them.
 
 Parameters:
 
-- `<String[]> arr` – array of strings
-- `<Object> config` – configuration object
+`<String[]> arr` – array of strings  
+`<Object> config` – configuration object
 
 Example:
 
@@ -285,9 +285,9 @@ Generates a similarity matrix for an array of strings. Returns an 2D array that 
 
 Parameters:
 
-- `<String> algo` – name of the algorithm
-- `<String[]> arr` – array of strings
-- `<Object> config` – configuration object
+`<String> algo` – name of the algorithm  
+`<String[]> arr` – array of strings  
+`<Object> config` – configuration object
 
 Example:
 
@@ -308,15 +308,15 @@ The `CmpStr` package allows strings to be normalized before the similarity compa
 
 #### Supported Flags
 
-- `s` – remove special chars
-- `w` – collapse whitespaces
-- `r` – remove repeated chars
-- `k` – keep only letters
-- `n` – ignore numbers
-- `t` – trim whitespaces
-- `i` – case insensitivity
-- `d` – decompose unicode
-- `u` – normalize unicode
+`s` – remove special chars  
+`w` – collapse whitespaces  
+`r` – remove repeated chars  
+`k` – keep only letters  
+`n` – ignore numbers  
+`t` – trim whitespaces  
+`i` – case insensitivity  
+`d` – decompose unicode  
+`u` – normalize unicode
 
 #### `normalize( str [, flags = '' ] )`
 
@@ -324,8 +324,8 @@ The method for normalizing strings can also be called on its own, without compar
 
 Parameters:
 
-- `<String> str` – string to normalize
-- `<String> flags` normalization flags
+`<String> str` – string to normalize  
+`<String> flags` normalization flags
 
 Example:
 
@@ -344,9 +344,9 @@ It also contains `options` as an object of key-value pairs that are passed to th
 
 Global config options:
 
-- `<String> flags` – normalization flags
-- `<Number> threshold` – similarity threshold between 0 and 1
-- `<Object> options` – options passed to the algorithm
+`<String> flags` – normalization flags  
+`<Number> threshold` – similarity threshold between 0 and 1  
+`<Object> options` – options passed to the algorithm
 
 Example:
 
@@ -399,7 +399,7 @@ The Levenshtein distance between two strings is the minimum number of single-cha
 
 Options:
 
-- `<Boolean> raw` – if true the raw distance is returned
+`<Boolean> raw` – if true the raw distance is returned
 
 #### Damerau-Levenshtein – `damerau`
 
@@ -407,7 +407,7 @@ The Damerau-Levenshtein distance differs from the classical Levenshtein distance
 
 Options:
 
-- `<Boolean> raw` – if true the raw distance is returned
+`<Boolean> raw` – if true the raw distance is returned
 
 #### Jaro-Winkler – `jaro`
 
@@ -415,7 +415,7 @@ Jaro-Winkler is a string similarity metric that gives more weight to matching ch
 
 Options:
 
-- `<Boolean> raw` – if true the raw distance is returned
+`<Boolean> raw` – if true the raw distance is returned
 
 #### Cosine Similarity – `cosine`
 
@@ -423,7 +423,7 @@ Cosine similarity is a measure how similar two vectors are. It's often used in t
 
 Options:
 
-- `<String> delimiter` – term delimiter
+`<String> delimiter` – term delimiter
 
 #### Dice Coefficient – `dice`
 
@@ -447,9 +447,9 @@ The Needleman-Wunsch algorithm performs global alignment, aligning two strings e
 
 Options:
 
-- `<Number> match` – score for a match
-- `<Number> mismatch` – penalty for a mismatch
-- `<Number> gap` – penalty for a gap
+`<Number> match` – score for a match  
+`<Number> mismatch` – penalty for a mismatch  
+`<Number> gap` – penalty for a gap
 
 #### Smith-Waterman – `smithWaterman`
 
@@ -457,9 +457,9 @@ The Smith-Waterman algorithm performs local alignment, finding the best matching
 
 Options:
 
-- `<Number> match` – score for a match
-- `<Number> mismatch` – penalty for a mismatch
-- `<Number> gap` – penalty for a gap
+`<Number> match` – score for a match  
+`<Number> mismatch` – penalty for a mismatch  
+`<Number> gap` – penalty for a gap
 
 #### q-Gram – `qGram`
 
@@ -467,7 +467,7 @@ Q-gram similarity is a string-matching algorithm that compares two strings by br
 
 Options:
 
-- `<Int> q` length of substrings
+`<Int> q` length of substrings
 
 ### Phonetic Algorithms
 
@@ -477,8 +477,8 @@ The Soundex algorithm generates a phonetic representation of a string based on h
 
 Options:
 
-- `<String> lang` – language code for predefined setups (e.g., `en`, `de`)
-- `<Boolean> raw` – if true, returns the raw sound index codes
-- `<Object> mapping` – custom phonetic mapping (overrides predefined)
-- `<String> exclude` – characters to exclude from the input (overrides predefined)
-- `<Number> maxLength` – maximum length of the phonetic code
+`<String> lang` – language code for predefined setups (e.g., `en`, `de`)  
+`<Boolean> raw` – if true, returns the raw sound index codes  
+`<Object> mapping` – custom phonetic mapping (overrides predefined)  
+`<String> exclude` – characters to exclude from the input (overrides predefined)  
+`<Number> maxLength` – maximum length of the phonetic code
