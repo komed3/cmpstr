@@ -17,11 +17,15 @@ export declare class CmpStr {
 
     setStr ( str: string ) : boolean;
 
+    getStr () : string;
+
     listAlgo () : string[];
 
     isAlgo ( algo: string ) : boolean;
 
     setAlgo ( algo: string ) : boolean;
+
+    getAlgo () : string;
 
     addAlgo ( algo: string, callback: (
         a: string, b: string, ...args : any
@@ -44,6 +48,8 @@ export declare class CmpStr {
     clearFilter () : boolean;
 
     setFlags( flags: string ) : void;
+
+    getFlags () : string;
 
     normalize ( str: string, flags?: string ) : string;
 

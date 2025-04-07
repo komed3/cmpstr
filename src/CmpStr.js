@@ -21,6 +21,12 @@
 module.exports = class CmpStr {
 
     /**
+     * --------------------------------------------------
+     * Global Variables
+     * --------------------------------------------------
+     */
+
+    /**
      * all pre-defined similarity algorithms
      * 
      * @private
@@ -61,28 +67,34 @@ module.exports = class CmpStr {
      * default normalization flags
      * set by setFlags()
      * 
-     * @public
+     * @private
      * @type {String}
      */
-    flags = '';
+    #flags = '';
 
     /**
      * base string for comparison
      * set by setStr or constructor()
      * 
-     * @public
+     * @private
      * @type {String}
      */
-    str;
+    #str;
 
     /**
      * current algorithm to use for similarity calculations
      * set by setAlgo(), addAlgo() or constructor()
      * 
-     * @public
+     * @private
      * @type {String}
      */
-    algo;
+    #algo;
+
+    /**
+     * --------------------------------------------------
+     * Constructor
+     * --------------------------------------------------
+     */
 
     /**
      * initializes a CmpStr instance
@@ -108,6 +120,12 @@ module.exports = class CmpStr {
     };
 
     /**
+     * --------------------------------------------------
+     * Ready State
+     * --------------------------------------------------
+     */
+
+    /**
      * checks whether string and algorithm are set correctly
      * 
      * @returns {Boolean} true if ready, false otherwise
@@ -115,10 +133,10 @@ module.exports = class CmpStr {
     isReady () {
 
         return (
-            typeof this.algo === 'string' &&
-            this.isAlgo( this.algo ) &&
-            typeof this.str === 'string' &&
-            this.str.length != 0
+            typeof this.#algo === 'string' &&
+            this.isAlgo( this.#algo ) &&
+            typeof this.#str === 'string' &&
+            this.#str.length != 0
         );
 
     };
@@ -126,10 +144,11 @@ module.exports = class CmpStr {
     /**
      * checks ready state and throws an error if not
      * 
+     * @private
      * @returns {Boolean} true if ready
      * @throws {Error} if CmpStr is not ready
      */
-    _checkReady () {
+    #checkReady () {
 
         if ( !this.isReady() ) {
 
@@ -144,6 +163,12 @@ module.exports = class CmpStr {
     };
 
     /**
+     * --------------------------------------------------
+     * Base String
+     * --------------------------------------------------
+     */
+
+    /**
      * sets the base string for comparison
      * 
      * @param {String} str string to set as the base
@@ -151,9 +176,21 @@ module.exports = class CmpStr {
      */
     setStr ( str ) {
 
-        this.str = String ( str );
+        this.#str = String ( str );
 
         return true;
+
+    };
+
+    /**
+     * gets the base string for comparison
+     * 
+     * @since 2.0.2
+     * @returns {String} base string
+     */
+    getStr () {
+
+        return this.#str;
 
     };
 
@@ -194,13 +231,25 @@ module.exports = class CmpStr {
      */
     setAlgo ( algo ) {
 
-        if ( this._loadAlgo( algo ) ) {
+        if ( this.#loadAlgo( algo ) ) {
 
-            this.algo = algo;
+            this.#algo = algo;
 
             return true;
 
         }
+
+    };
+
+    /**
+     * gets the current algorithm to use for similarity calculations
+     * 
+     * @since 2.0.2
+     * @returns {String} name of the algorithm
+     */
+    getAlgo () {
+
+        return this.#algo;
 
     };
 
@@ -255,11 +304,11 @@ module.exports = class CmpStr {
 
             delete this.#algorithms[ algo ];
 
-            if ( this.algo === algo ) {
+            if ( this.#algo === algo ) {
 
                 /* reset current algorithm if it was removed */
 
-                this.algo = undefined;
+                this.#algo = undefined;
 
             }
 
@@ -278,11 +327,12 @@ module.exports = class CmpStr {
     /**
      * lazy-loads the specified algorithm module
      * 
+     * @private
      * @param {String} algo name of the similarity algorithm
      * @returns {Boolean} true if the algorithm is loaded
      * @throws {Error} if the algorithm cannot be loaded or is not defined
      */
-    _loadAlgo ( algo ) {
+    #loadAlgo ( algo ) {
 
         if ( this.isAlgo( algo ) ) {
 
@@ -482,11 +532,12 @@ module.exports = class CmpStr {
     /**
      * applies all active filters to a string
      * 
+     * @private
      * @param {String} str string to process
      * @returns {String} filtered string
      * @throws {Error} if applying filters cause an error
      */
-    _applyFilters ( str ) {
+    #applyFilters ( str ) {
 
         try {
 
@@ -524,7 +575,19 @@ module.exports = class CmpStr {
      */
     setFlags ( flags = '' ) {
 
-        this.flags = String ( flags );
+        this.#flags = String ( flags );
+
+    };
+
+    /**
+     * get default normalization flags
+     * 
+     * @since 2.0.2
+     * @returns {String} normalization flags
+     */
+    getFlags () {
+
+        return this.#flags;
 
     };
 
@@ -565,7 +628,7 @@ module.exports = class CmpStr {
 
         /* apply custom filters */
 
-        res = this._applyFilters( res );
+        res = this.#applyFilters( res );
 
         /* normalize using flags */
 
@@ -629,7 +692,7 @@ module.exports = class CmpStr {
      */
     compare ( algo, a, b, config = {} ) {
 
-        if ( this._loadAlgo( algo ) ) {
+        if ( this.#loadAlgo( algo ) ) {
 
             /* handle trivial cases */
 
@@ -639,7 +702,7 @@ module.exports = class CmpStr {
             /* apply similarity algorithm */
 
             const {
-                flags = this.flags,
+                flags = this.#flags,
                 options = {}
             } = config;
 
@@ -674,11 +737,11 @@ module.exports = class CmpStr {
      */
     test ( str, config = {} ) {
 
-        if ( this._checkReady() ) {
+        if ( this.#checkReady() ) {
 
             return this.compare(
-                this.algo,
-                this.str, str,
+                this.#algo,
+                this.#str, str,
                 config
             );
 
@@ -695,13 +758,13 @@ module.exports = class CmpStr {
      */
     batchTest ( arr, config = {} ) {
 
-        if ( this._checkReady() ) {
+        if ( this.#checkReady() ) {
 
             return [ ...arr ].map( ( str ) => ( {
                 target: str,
                 match: this.compare(
-                    this.algo,
-                    this.str, str,
+                    this.#algo,
+                    this.#str, str,
                     config
                 )
             } ) );
@@ -763,7 +826,7 @@ module.exports = class CmpStr {
      */
     similarityMatrix ( algo, arr, config = {} ) {
 
-        if ( this._loadAlgo( algo ) ) {
+        if ( this.#loadAlgo( algo ) ) {
 
             delete config?.options?.raw;
 

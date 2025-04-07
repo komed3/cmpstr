@@ -40,9 +40,10 @@ module.exports = class CmpStrAsync extends CmpStr {
     };
 
     /**
-     * @private
      * generic async wrapper for methods
+     * @async
      * 
+     * @private
      * @param {Function} method method to call
      * @param {...any} args arguments to pass to the method
      * @returns {Promise} Promise resolving the result of the method
@@ -79,10 +80,10 @@ module.exports = class CmpStrAsync extends CmpStr {
      * normalizes a string by chainable options; uses cache to increase
      * performance and custom filters for advanced behavior
      * 
+     * @since 2.0.2
      * @param {String} string string to normalize
      * @param {String} [flags=''] normalization flags
-     * @returns {String} normalized string
-     * @throws {Error} if normalization cause an error
+     * @returns {Promise} Promise resolving string normalization
      */
     normalizeAsync ( str, flags = '' ) {
 
@@ -95,7 +96,6 @@ module.exports = class CmpStrAsync extends CmpStr {
 
     /**
      * compares two string a and b using the passed algorithm
-     * 
      * @async
      * 
      * @param {String} algo name of the algorithm
@@ -116,7 +116,6 @@ module.exports = class CmpStrAsync extends CmpStr {
     /**
      * tests the similarity between the base string and a target string
      * using the current algorithm
-     * 
      * @async
      * 
      * @param {String} str target string
@@ -134,7 +133,6 @@ module.exports = class CmpStrAsync extends CmpStr {
 
     /**
      * tests the similarity of multiple strings against the base string
-     * 
      * @async
      * 
      * @param {String[]} arr array of strings
@@ -153,7 +151,6 @@ module.exports = class CmpStrAsync extends CmpStr {
     /**
      * finds strings in an array that exceed a similarity threshold
      * returns the array sorted by highest similarity
-     * 
      * @async
      * 
      * @param {String[]} arr array of strings
@@ -171,7 +168,6 @@ module.exports = class CmpStrAsync extends CmpStr {
 
     /**
      * finds the closest matching string from an array
-     * 
      * @async
      * 
      * @param {String[]} arr array of strings
@@ -189,7 +185,6 @@ module.exports = class CmpStrAsync extends CmpStr {
 
     /**
      * generate a similarity matrix for an array of strings
-     * 
      * @async
      * 
      * @param {String} algo name of the algorithm

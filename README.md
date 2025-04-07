@@ -64,13 +64,17 @@ Parameters:
 
 `<String> str` – string to set as the base
 
+#### `getStr()`
+
+Gets the base string for comparison.
+
 #### `setFlags( [ flags = '' ] )`
 
 Set default normalization flags. They will be overwritten by passing `flags` through the configuration object. See description of available flags / normalization options below in the documentation.
 
-Parameters:
+#### `getFlags()`
 
-`<String> flags` – normalization flags
+Gets the default normalization flags.
 
 #### `clearCache()`
 
@@ -99,6 +103,10 @@ Allowed options for build-in althorithms are `cosine`, `damerau`, `dice`, `hammi
 Parameters:
 
 `<String> algo` – name of the algorithm
+
+#### `getAlgo()`
+
+Gets the current algorithm to use for similarity calculations.
 
 #### `addAlgo( algo, callback [, useIt = true ] )`
 
