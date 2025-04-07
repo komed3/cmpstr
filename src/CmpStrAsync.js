@@ -76,6 +76,24 @@ module.exports = class CmpStrAsync extends CmpStr {
      */
 
     /**
+     * normalizes a string by chainable options; uses cache to increase
+     * performance and custom filters for advanced behavior
+     * 
+     * @param {String} string string to normalize
+     * @param {String} [flags=''] normalization flags
+     * @returns {String} normalized string
+     * @throws {Error} if normalization cause an error
+     */
+    normalizeAsync ( str, flags = '' ) {
+
+        return this.#asyncWrapper(
+            this.normalize,
+            str, flags
+        );
+
+    };
+
+    /**
      * compares two string a and b using the passed algorithm
      * 
      * @async

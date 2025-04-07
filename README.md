@@ -369,9 +369,9 @@ console.log( cmp.match( [
 
 ## Asynchronous Support
 
-The `CmpStrAsync` class provides asynchronous versions of all comparison methods. It is ideal for large datasets or non-blocking workflows.
+The `CmpStrAsync` class provides an asynchronous wrapper for all comparison methods as well as the string normalization function. It is ideal for large datasets or non-blocking workflows.
 
-The asynchronous class supports the methods `compareAsync`, `testAsync`, `batchTestAsync`, `matchAsync`, `closestAsync` and `similarityMatrixAsync`. Each of these methods returns a `Promise`.
+The asynchronous class supports the methods `normalizeAsync`, `compareAsync`, `testAsync`, `batchTestAsync`, `matchAsync`, `closestAsync` and `similarityMatrixAsync`. Each of these methods returns a `Promise`.
 
 For options, arguments and returned values, see the documentation above.
 

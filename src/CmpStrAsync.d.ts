@@ -2,6 +2,8 @@ import { CmpStr, Config, BatchResult } from './CmpStr';
 
 export declare class CmpStrAsync extends CmpStr {
 
+    normalizeAsync ( str: string, flags?: string ) : string;
+
     compareAsync ( algo: string, a: string, b: string, config?: Config ) : Promise<number | any>;
 
     testAsync ( str: string, config?: Config ) : Promise<number | any>;
