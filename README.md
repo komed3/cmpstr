@@ -10,7 +10,7 @@ CmpStr is a lightweight and powerful npm package for calculating string similari
 - Customizable normalization with global flags and caching.
 - Asynchronous support for non-blocking workflows.
 - Extensible with custom algorithms and filters.
-- TypeScript definitions for better developer experience.
+- TypeScript declarations for better developer experience.
 
 ## Installation
 
@@ -82,9 +82,13 @@ Clears the normalization cache.
 
 ### Algorithms
 
-#### `listAlgo()`
+#### `listAlgo( [ loadedOnly = false ] )`
 
 List all registered similarity algorithms.
+
+Parameters:
+
+`<Boolean> loadedOnly` – it true, only loaded algorithm names are returned
 
 #### `isAlgo( algo )`
 

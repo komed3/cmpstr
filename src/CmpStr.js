@@ -48,6 +48,15 @@ module.exports = class CmpStr {
     };
 
     /**
+     * stores the names of loaded algorithms
+     * 
+     * @since 2.0.2
+     * @private
+     * @type {Set<String>}
+     */
+    #loadedAlgo = new Set ();
+
+    /**
      * normalized strings cache
      * 
      * @private
@@ -73,6 +82,15 @@ module.exports = class CmpStr {
     #flags = '';
 
     /**
+     * current algorithm to use for similarity calculations
+     * set by setAlgo(), addAlgo() or constructor()
+     * 
+     * @private
+     * @type {String}
+     */
+    #algo;
+
+    /**
      * base string for comparison
      * set by setStr or constructor()
      * 
@@ -82,13 +100,13 @@ module.exports = class CmpStr {
     #str;
 
     /**
-     * current algorithm to use for similarity calculations
-     * set by setAlgo(), addAlgo() or constructor()
+     * stores the current ready state
      * 
+     * @since 2.0.2
      * @private
-     * @type {String}
+     * @type {Boolean}
      */
-    #algo;
+    #readyState = false;
 
     /**
      * --------------------------------------------------
@@ -132,11 +150,23 @@ module.exports = class CmpStr {
      */
     isReady () {
 
-        return (
+        return this.#readyState;
+
+    };
+
+    /**
+     * updates the readiness state
+     * 
+     * @since 2.0.2
+     * @private
+     */
+    #updateReadyState () {
+
+        this.#readyState = (
             typeof this.#algo === 'string' &&
             this.isAlgo( this.#algo ) &&
             typeof this.#str === 'string' &&
-            this.#str.length != 0
+            this.#str.length !== 0
         );
 
     };
@@ -150,7 +180,7 @@ module.exports = class CmpStr {
      */
     #checkReady () {
 
-        if ( !this.isReady() ) {
+        if ( !this.#readyState ) {
 
             throw new Error(
                 `CmpStr instance is not ready. Ensure the algorithm and base string are set.`
@@ -178,6 +208,8 @@ module.exports = class CmpStr {
 
         this.#str = String ( str );
 
+        this.#updateReadyState();
+
         return true;
 
     };
@@ -203,11 +235,14 @@ module.exports = class CmpStr {
     /**
      * list all registered similarity algorithms
      * 
+     * @param {Boolean} [loadedOnly=false] it true, only loaded algorithm names are returned
      * @returns {String[]} array of algorithm names
      */
-    listAlgo () {
+    listAlgo ( loadedOnly = false ) {
 
-        return [ ...Object.keys( this.#algorithms ) ];
+        return loadedOnly
+            ? [ ...this.#loadedAlgo ]
+            : [ ...Object.keys( this.#algorithms ) ];
 
     };
 
@@ -234,6 +269,8 @@ module.exports = class CmpStr {
         if ( this.#loadAlgo( algo ) ) {
 
             this.#algo = algo;
+
+            this.#updateReadyState();
 
             return true;
 
@@ -304,11 +341,15 @@ module.exports = class CmpStr {
 
             delete this.#algorithms[ algo ];
 
+            this.#loadedAlgo.delete( algo );
+
             if ( this.#algo === algo ) {
 
                 /* reset current algorithm if it was removed */
 
                 this.#algo = undefined;
+
+                this.#updateReadyState();
 
             }
 
@@ -334,11 +375,17 @@ module.exports = class CmpStr {
      */
     #loadAlgo ( algo ) {
 
-        if ( this.isAlgo( algo ) ) {
+        if ( this.#loadedAlgo.has( algo ) ) {
+
+            return true;
+
+        } else if ( this.isAlgo( algo ) ) {
 
             let typeOf = typeof this.#algorithms[ algo ];
 
             if ( typeOf === 'function' ) {
+
+                this.#loadedAlgo.add( algo );
 
                 return true;
 
@@ -351,6 +398,8 @@ module.exports = class CmpStr {
                     this.#algorithms[ algo ] = require(
                         this.#algorithms[ algo ]
                     );
+
+                    this.#loadedAlgo.add( algo );
 
                     return true;
 

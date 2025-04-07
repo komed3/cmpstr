@@ -19,7 +19,7 @@ export declare class CmpStr {
 
     getStr () : string;
 
-    listAlgo () : string[];
+    listAlgo ( loadedOnly?: boolean ) : string[];
 
     isAlgo ( algo: string ) : boolean;
 
