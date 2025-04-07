@@ -656,57 +656,73 @@ module.exports = class CmpStr {
      * d :: decompose unicode
      * u :: normalize unicode
      * 
-     * @param {String} string string to normalize
+     * @param {String|String[]} string string(s) to normalize
      * @param {String} [flags=''] normalization flags
-     * @returns {String} normalized string
+     * @returns {String|String[]} normalized string(s)
      * @throws {Error} if normalization cause an error
      */
-    normalize ( str, flags = '' ) {
+    normalize ( input, flags = '' ) {
 
-        let res = String ( str );
+        const processStr = ( str ) => {
 
-        /* use normalized string from cache to increase performance */
+            let res = String ( str );
 
-        let key = `${res}::${flags}`;
+            /* use normalized string from cache to increase performance */
 
-        if ( this.#cache.has( key ) ) {
+            let key = `${res}::${flags}`;
 
-            return this.#cache.get( key );
+            if ( this.#cache.has( key ) ) {
+
+                return this.#cache.get( key );
+
+            }
+
+            /* apply custom filters */
+
+            res = this.#applyFilters( res );
+
+            /* normalize using flags */
+
+            try {
+
+                if ( flags.includes( 's' ) ) res = res.replace( /[^a-z0-9]/gi, '' );
+                if ( flags.includes( 'w' ) ) res = res.replace( /\s+/g, ' ' );
+                if ( flags.includes( 'r' ) ) res = res.replace( /(.)\1+/g, '$1' );
+                if ( flags.includes( 'k' ) ) res = res.replace( /[^a-z]/gi, '' );
+                if ( flags.includes( 'n' ) ) res = res.replace( /[0-9]/g, '' );
+                if ( flags.includes( 't' ) ) res = res.trim();
+                if ( flags.includes( 'i' ) ) res = res.toLowerCase();
+                if ( flags.includes( 'd' ) ) res = res.normalize( 'NFD' ).replace( /[\u0300-\u036f]/g, '' );
+                if ( flags.includes( 'u' ) ) res = res.normalize( 'NFC' );
+
+            } catch ( err ) {
+
+                throw new Error (
+                    `Error while normalization.`,
+                    { cause: err }
+                );
+
+            }
+
+            /* store the normalized string in the cache */
+
+            this.#cache.set( key, res );
+
+            return res;
 
         }
 
-        /* apply custom filters */
+        /* processing multiple string */
 
-        res = this.#applyFilters( res );
+        if ( Array.isArray( input ) ) {
 
-        /* normalize using flags */
-
-        try {
-
-            if ( flags.includes( 's' ) ) res = res.replace( /[^a-z0-9]/gi, '' );
-            if ( flags.includes( 'w' ) ) res = res.replace( /\s+/g, ' ' );
-            if ( flags.includes( 'r' ) ) res = res.replace( /(.)\1+/g, '$1' );
-            if ( flags.includes( 'k' ) ) res = res.replace( /[^a-z]/gi, '' );
-            if ( flags.includes( 'n' ) ) res = res.replace( /[0-9]/g, '' );
-            if ( flags.includes( 't' ) ) res = res.trim();
-            if ( flags.includes( 'i' ) ) res = res.toLowerCase();
-            if ( flags.includes( 'd' ) ) res = res.normalize( 'NFD' ).replace( /[\u0300-\u036f]/g, '' );
-            if ( flags.includes( 'u' ) ) res = res.normalize( 'NFC' );
-
-        } catch ( err ) {
-
-            throw new Error (
-                `Error while normalization.`,
-                { cause: err }
+            return input.map(
+                ( str ) => processStr( str )
             );
 
         }
 
-        /* store the normalized string in the cache */
-
-        this.#cache.set( key, res );
-
-        return res;
+        return processStr( input );
 
     };
 

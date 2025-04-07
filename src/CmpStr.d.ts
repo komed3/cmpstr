@@ -51,7 +51,7 @@ export declare class CmpStr {
 
     getFlags () : string;
 
-    normalize ( str: string, flags?: string ) : string;
+    normalize ( input: string|string[], flags?: string ) : string|string[];
 
     clearCache () : boolean;
 

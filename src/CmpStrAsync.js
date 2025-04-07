@@ -81,15 +81,15 @@ module.exports = class CmpStrAsync extends CmpStr {
      * performance and custom filters for advanced behavior
      * 
      * @since 2.0.2
-     * @param {String} string string to normalize
+     * @param {String|String[]} input string(s) to normalize
      * @param {String} [flags=''] normalization flags
      * @returns {Promise} Promise resolving string normalization
      */
-    normalizeAsync ( str, flags = '' ) {
+    normalizeAsync ( input, flags = '' ) {
 
         return this.#asyncWrapper(
             this.normalize,
-            str, flags
+            input, flags
         );
 
     };

@@ -330,13 +330,13 @@ The `CmpStr` package allows strings to be normalized before the similarity compa
 `d` – decompose unicode  
 `u` – normalize unicode
 
-#### `normalize( str [, flags = '' ] )`
+#### `normalize( input [, flags = '' ] )`
 
 The method for normalizing strings can also be called on its own, without comparing the similarity of two strings. This also applies all filters and reads or writes to the cache. This can be helpful if certain strings should be saved beforehand or different normalization options want to be tested.
 
 Parameters:
 
-`<String> str` – string to normalize  
+`<String|String[]> input` – single string or array of strings to normalize  
 `<String> flags` normalization flags
 
 Example:
