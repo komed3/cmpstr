@@ -7,7 +7,7 @@
     "url" : "https://komed3.de"
   },
   "homepage": "https://github.com/komed3/cmpstr#readme",
-  "version": "2.0.2",
+  "version": "2.0.3",
   "main": "src/index.js",
   "types": "src/index.d.ts",
   "license": "MIT",

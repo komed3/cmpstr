@@ -22,7 +22,7 @@
  * - generate similarity matrices for cross-comparisons
  * 
  * @author Paul Köhler (komed3)
- * @version 2.0.2
+ * @version 2.0.3
  * @license MIT
  */
 
