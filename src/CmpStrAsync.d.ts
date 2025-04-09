@@ -2,7 +2,7 @@ import { CmpStr, Config, BatchResult } from './CmpStr';
 
 export declare class CmpStrAsync extends CmpStr {
 
-    normalizeAsync ( input: string|string[], flags?: string ) : string|string[];
+    normalizeAsync ( input: string|string[], flags?: string ) : Promise<string|string[]>;
 
     compareAsync ( algo: string, a: string, b: string, config?: Config ) : Promise<number | any>;
 
