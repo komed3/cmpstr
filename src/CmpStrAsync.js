@@ -41,7 +41,6 @@ module.exports = class CmpStrAsync extends CmpStr {
 
     /**
      * generic async wrapper for methods
-     * @async
      * 
      * @private
      * @param {Function} method method to call
@@ -96,7 +95,6 @@ module.exports = class CmpStrAsync extends CmpStr {
 
     /**
      * compares two string a and b using the passed algorithm
-     * @async
      * 
      * @param {String} algo name of the algorithm
      * @param {String} a string a
@@ -116,7 +114,6 @@ module.exports = class CmpStrAsync extends CmpStr {
     /**
      * tests the similarity between the base string and a target string
      * using the current algorithm
-     * @async
      * 
      * @param {String} str target string
      * @param {Object} [config={}] config (flags, args)
@@ -133,7 +130,6 @@ module.exports = class CmpStrAsync extends CmpStr {
 
     /**
      * tests the similarity of multiple strings against the base string
-     * @async
      * 
      * @param {String[]} arr array of strings
      * @param {Object} [config={}] config (flags, args)
@@ -151,13 +147,12 @@ module.exports = class CmpStrAsync extends CmpStr {
     /**
      * finds strings in an array that exceed a similarity threshold
      * returns the array sorted by highest similarity
-     * @async
      * 
      * @param {String[]} arr array of strings
      * @param {Object} [config={}] config (flags, threshold, args)
      * @returns {Promise} Promise resolving an array of objects, sorted by highest similarity
      */
-    async matchAsync ( arr, config = {} ) {
+    matchAsync ( arr, config = {} ) {
 
         return this.#asyncWrapper(
             this.match,
@@ -168,13 +163,12 @@ module.exports = class CmpStrAsync extends CmpStr {
 
     /**
      * finds the closest matching string from an array
-     * @async
      * 
      * @param {String[]} arr array of strings
      * @param {Object} [config={}] config (flags, args)
      * @returns {Promise} Promise resolving the closest matching string
      */
-    async closestAsync ( arr, config = {} ) {
+    closestAsync ( arr, config = {} ) {
 
         return this.#asyncWrapper(
             this.closest,
@@ -185,7 +179,6 @@ module.exports = class CmpStrAsync extends CmpStr {
 
     /**
      * generate a similarity matrix for an array of strings
-     * @async
      * 
      * @param {String} algo name of the algorithm
      * @param {String[]} arr array of strings to cross-compare
