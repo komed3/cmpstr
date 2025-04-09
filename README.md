@@ -84,7 +84,7 @@ Clears the normalization cache.
 
 #### `listAlgo( [ loadedOnly = false ] )`
 
-List all registered similarity algorithms.
+List all registered or loaded similarity algorithms.
 
 Parameters:
 
@@ -145,9 +145,13 @@ Parameters:
 
 ### Filters
 
-#### `listFilter()`
+#### `listFilter( [ activeOnly = false ] )`
 
-List all added filters.
+List all added or active filter names. 
+
+Parameters:
+
+`<Boolean> activeOnly` – it true, only names of active filters are returned
 
 #### `addFilter( name, callback [, priority = 10 ] )`
 

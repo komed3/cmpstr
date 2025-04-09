@@ -19,7 +19,7 @@ export declare class CmpStr {
 
     getStr () : string;
 
-    listAlgo ( loadedOnly?: boolean ) : string[];
+    listAlgo ( loadedOnly?: boolean = false ) : string[];
 
     isAlgo ( algo: string ) : boolean;
 
@@ -33,11 +33,11 @@ export declare class CmpStr {
 
     rmvAlgo( algo: string ) : boolean;
 
-    listFilter () : string[];
+    listFilter ( activeOnly?: boolean = false ) : string[];
 
     addFilter ( name: string, callback: (
         str: string
-    ) => string, priority?: number ) : boolean;
+    ) => string, priority?: number = 10 ) : boolean;
 
     rmvFilter ( name: string ) : boolean;
 

@@ -233,7 +233,7 @@ module.exports = class CmpStr {
      */
 
     /**
-     * list all registered similarity algorithms
+     * list all registered or loaded similarity algorithms
      * 
      * @param {Boolean} [loadedOnly=false] it true, only loaded algorithm names are returned
      * @returns {String[]} array of algorithm names
@@ -437,13 +437,18 @@ module.exports = class CmpStr {
      */
 
     /**
-     * list all added filters
+     * list all added or artice filter names
      * 
+     * @param {Boolean} [activeOnly=false] if true, only names of active filters are returned
      * @returns {String[]} array of filter names
      */
-    listFilter () {
+    listFilter ( activeOnly = false ) {
 
-        return [ ...this.#filter.keys() ];
+        return activeOnly
+            ? Array.from( this.#filter.entries() )
+                .filter( ( [ _, filter ] ) => filter.active )
+                .map( ( [ name ] ) => name )
+            : [ ...this.#filter.keys() ];
 
     };
 
