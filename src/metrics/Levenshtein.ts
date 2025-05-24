@@ -9,25 +9,32 @@
  * 
  * @see https://en.wikipedia.org/wiki/Levenshtein_distance
  * 
+ * Optimized for performance and batch processing by reusing row arrays.
+ * 
  * @author Paul Köhler (komed3)
  * @license MIT
+ * @package CmpStr
  * @since 1.0.0
  */
 
 'use strict';
 
-import type { MetricResult } from '../utils/Types.js';
+import type { MetricResult, MetricBatchResult } from '../utils/Types.js';
 
 /**
- * Calculate the Levenshtein distance between two strings.
+ * Helper function to calculate the Levenshtein distance between two strings.
  * 
- * @param a - First string
- * @param b - Second string
- * @returns MetricResult
+ * @param {string} a - First string
+ * @param {string} b - Second string
+ * @param {number[]} [prev] - Previous row array for optimization
+ * @param {number[]} [curr] - Current row array for optimization
+ * @returns {MetricResult} metric result
  */
-export default (
+const _single = (
     a : string,
-    b : string
+    b : string,
+    prev? : number[],
+    curr? : number[]
 ) : MetricResult => {
 
     let m : number = a.length;
@@ -46,8 +53,9 @@ export default (
         // Use always the shorter string as columns (save memory)
         if ( m > n ) [ a, b, m, n ] = [ b, a, n, m ];
 
-        let prev : number[] = new Array ( m + 1 );
-        let curr : number[] = new Array ( m + 1 );
+        // Initialize row arrays if not provided
+        prev = prev || new Array ( m + 1 );
+        curr = curr || new Array ( m + 1 );
 
         // Initialization of the first line
         for ( let i = 0; i <= m; i++ ) prev[ i ] = i;
@@ -87,5 +95,37 @@ export default (
         metric: 'levenshtein', a, b, res,
         raw: { dist }
     };
+
+};
+
+/**
+ * Calculate the Levenshtein distance between two strings.
+ * 
+ * @exports
+ * @param {string} a - First string
+ * @param {string | string[]} b - Second string or array of strings
+ * @returns {MetricResult | MetricBatchResult} metric result(s)
+ */
+export default (
+    a : string,
+    b : string | string[]
+) : MetricResult | MetricBatchResult => {
+
+    // Batch mode
+    if ( Array.isArray( b ) ) {
+
+        // Reuse row arrays for all comparisons (performance)
+        const m : number = a.length;
+
+        let prev : number[] = new Array ( m + 1 );
+        let curr : number[] = new Array ( m + 1 );
+
+        // Batch comparison
+        return b.map( s => _single( a, s, prev, curr ) );
+
+    }
+
+    // Single comparison
+    return _single( a, b );
 
 };

@@ -43,3 +43,26 @@ export interface MetricResult {
     res : number;
     raw? : MetricRaw;
 }
+
+/**
+ * Type for a batch of metric results.
+ * 
+ * @type MetricBatchResult
+ * @property {MetricResult[]} - Array of metric results
+ */ 
+export type MetricBatchResult = MetricResult[];
+
+/**
+ * Type for a metric module.
+ * 
+ * @function Metric
+ * @param {string} a - First string
+ * @param {string | string[]} b - Second string or array of strings
+ * @param {MetricOptions} [options] - Optional metric options
+ * @returns {MetricResult | MetricBatchResult} - Result of the metric calculation
+ */
+export type Metric = (
+    a : string,
+    b : string | string[],
+    options? : MetricOptions
+) => MetricResult | MetricBatchResult;
