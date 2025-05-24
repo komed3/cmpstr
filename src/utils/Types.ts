@@ -27,16 +27,16 @@ export interface MetricRaw {
 }
 
 /**
- * Interface for metric result.
+ * Interface for a single metric result.
  * 
- * @interface MetricResult
+ * @interface MetricSingleResult
  * @property {string} metric - Name of the metric
  * @property {string} a - First string
  * @property {string} b - Second string
  * @property {number} res - Result of the metric calculation
  * @property {MetricRaw} [raw] - Optional raw data related to the metric
  */
-export interface MetricResult {
+export interface MetricSingleResult {
     metric : string;
     a : string;
     b : string;
@@ -48,9 +48,17 @@ export interface MetricResult {
  * Type for a batch of metric results.
  * 
  * @type MetricBatchResult
- * @property {MetricResult[]} - Array of metric results
+ * @property {MetricSingleResult[]} - Array of metric results
  */ 
-export type MetricBatchResult = MetricResult[];
+export type MetricBatchResult = MetricSingleResult[];
+
+/**
+ * Type for metric result(s).
+ * 
+ * @type MetricResult
+ * @property {MetricSingleResult | MetricBatchResult} - Single or array of metric results
+ */ 
+export type MetricResult = MetricSingleResult | MetricBatchResult;
 
 /**
  * Type for a metric module.
@@ -59,10 +67,10 @@ export type MetricBatchResult = MetricResult[];
  * @param {string} a - First string
  * @param {string | string[]} b - Second string or array of strings
  * @param {MetricOptions} [options] - Optional metric options
- * @returns {MetricResult | MetricBatchResult} - Result of the metric calculation
+ * @returns {MetricResult} - Result of the metric calculation
  */
 export type Metric = (
     a : string,
     b : string | string[],
     options? : MetricOptions
-) => MetricResult | MetricBatchResult;
+) => MetricResult;

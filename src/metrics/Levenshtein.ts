@@ -19,7 +19,7 @@
 
 'use strict';
 
-import type { MetricResult, MetricBatchResult } from '../utils/Types.js';
+import type { MetricResult, MetricSingleResult } from '../utils/Types.js';
 
 /**
  * Helper function to calculate the Levenshtein distance between two strings.
@@ -28,14 +28,14 @@ import type { MetricResult, MetricBatchResult } from '../utils/Types.js';
  * @param {string} b - Second string
  * @param {number[]} [prev] - Previous row array for optimization
  * @param {number[]} [curr] - Current row array for optimization
- * @returns {MetricResult} metric result
+ * @returns {MetricSingleResult} metric result
  */
 const _single = (
     a : string,
     b : string,
     prev? : number[],
     curr? : number[]
-) : MetricResult => {
+) : MetricSingleResult => {
 
     let m : number = a.length;
     let n : number = b.length;
@@ -104,12 +104,12 @@ const _single = (
  * @exports
  * @param {string} a - First string
  * @param {string | string[]} b - Second string or array of strings
- * @returns {MetricResult | MetricBatchResult} metric result(s)
+ * @returns {MetricResult} metric result(s)
  */
 export default (
     a : string,
     b : string | string[]
-) : MetricResult | MetricBatchResult => {
+) : MetricResult => {
 
     // Batch mode
     if ( Array.isArray( b ) ) {
