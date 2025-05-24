@@ -76,7 +76,7 @@ export default (
     }
 
     // Calculate string similarity
-    const res = maxLen === 0 ? 1 : raw / maxLen;
+    const res : number = maxLen === 0 ? 1 : raw / maxLen;
 
     return {
         metric: 'lcs',

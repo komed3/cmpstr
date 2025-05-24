@@ -23,7 +23,7 @@ import type { MetricResult } from '../utils/Types.js';
  * 
  * @param a - First string
  * @param b - Second string
- * @returns MetricResult.
+ * @returns MetricResult
  */
 export default (
     a : string,
@@ -80,7 +80,7 @@ export default (
     }
 
     // Calculate string similarity
-    const res = maxLen === 0 ? 1 : 1 - raw / maxLen;
+    const res : number = maxLen === 0 ? 1 : 1 - raw / maxLen;
 
     // Return the result
     return {
