@@ -9,34 +9,37 @@
  * 
  * @see https://en.wikipedia.org/wiki/Jaccard_index
  * 
+ * Optimized for performance and batch processing.
+ * 
  * @author Paul Köhler (komed3)
  * @license MIT
+ * @package CmpStr
  * @since 2.0.0
  */
 
 'use strict';
 
-import type { MetricOptions, MetricResult } from '../utils/Types.js';
+import type { MetricOptions, MetricResult, MetricSingleResult } from '../utils/Types.js';
 
 /**
- * Calculate the Jaccard index between two strings.
+ * Helper function to calculate the Jaccard index between two strings.
  * Jaccard index = |A ∩ B| / |A ∪ B|
  * 
- * @param a - First string
- * @param b - Second string
- * @param options.split - Optional string to split string into sets.
- * @returns MetricResult.
+ * @param {string} a - First string
+ * @param {string} b - Second string
+ * @param {string} split - Optional string to split string into sets
+ * @param {Set<string>} setA - Optional set for first string
+ * @returns {MetricSingleResult} metric result
  */
-export default (
+const _single = (
     a : string,
     b : string,
-    { split = '' } : MetricOptions
-) : MetricResult => {
-
-    split = String ( split );
+    split : string,
+    setA? : Set<string>
+) : MetricSingleResult => {
 
     // Set up the sets for both strings
-    const setA : Set<string> = new Set ( a.split( split ) );
+    setA = setA || new Set ( a.split( split ) );
     const setB : Set<string> = new Set ( b.split( split ) );
 
     // Count the intersection of both sets
@@ -59,5 +62,39 @@ export default (
         metric: 'jaccard', a, b, res,
         raw: { intersection, union }
     };
+
+};
+
+/**
+ * Calculate the Jaccard index between two strings
+ * or a string and an array of strings.
+ * 
+ * @exports
+ * @param {string} a - First string
+ * @param {string | string[]} b - Second string or array of strings
+ * @param {string} options.split - Optional string to split string into sets.
+ * @returns {MetricResult} metric result(s)
+ */
+export default (
+    a : string,
+    b : string | string[],
+    { split = '' } : MetricOptions
+) : MetricResult => {
+
+    split = String ( split );
+
+    // Batch mode
+    if ( Array.isArray( b ) ) {
+
+        // Set up the set for the first string (performance optimization)
+        const setA : Set<string> = new Set ( a.split( split ) );
+
+        // Batch comparison
+        return b.map( s => _single( a, s, split, setA ) );
+
+    }
+
+    // Single comparison
+    return _single( a, b, split );
 
 };
