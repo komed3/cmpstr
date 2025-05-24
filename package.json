@@ -7,7 +7,7 @@
     "url" : "https://komed3.de"
   },
   "homepage": "https://github.com/komed3/cmpstr",
-  "version": "2.1.0",
+  "version": "3.0.0",
   "license": "MIT",
   "keywords": [
     "string-similarity",

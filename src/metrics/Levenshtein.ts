@@ -43,7 +43,7 @@ export default (
     else {
 
         // Use always the shorter string as columns (save memory)
-        [ a, b, m, n ] = m > n ? [ b, a, n, m ] : [ a, b, m, n ];
+        if ( m > n ) [ a, b, m, n ] = [ b, a, n, m ];
 
         let prev : number[] = new Array ( m + 1 );
         let curr : number[] = new Array ( m + 1 );
