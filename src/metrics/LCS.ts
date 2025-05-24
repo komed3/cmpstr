@@ -9,6 +9,8 @@
  * 
  * @see https://en.wikipedia.org/wiki/Longest_common_subsequence
  * 
+ * Optimized for performance and batch processing by reusing row arrays.
+ * 
  * @author Paul Köhler (komed3)
  * @license MIT
  * @since 2.0.0
@@ -16,19 +18,23 @@
 
 'use strict';
 
-import type { MetricResult } from '../utils/Types.js';
+import type { MetricResult, MetricSingleResult } from '../utils/Types.js';
 
 /**
- * Calculate the LCS of two strings.
+ * Helper function to calculate the LCS of two strings.
  * 
- * @param a - First string
- * @param b - Second string
- * @returns MetricResult
+ * @param {string} a - First string
+ * @param {string} b - Second string
+ * @param {number[]} prev - Previous row array for optimization (i-1)
+ * @param {number[]} curr - Current row array for optimization (i)
+ * @returns {MetricSingleResult} metric result
  */
-export default (
+const _single = (
     a : string,
-    b : string
-) : MetricResult => {
+    b : string,
+    prev? : number[],
+    curr? : number[]
+) : MetricSingleResult => {
 
     let m : number = a.length;
     let n : number = b.length;
@@ -45,8 +51,8 @@ export default (
         // Use always the shorter string as columns (save memory)
         if ( m > n ) [ a, b, m, n ] = [ b, a, n, m ];
 
-        let prev : number[] = new Array ( m + 1 ).fill( 0 );
-        let curr : number[] = new Array ( m + 1 ).fill( 0 );
+        prev = prev || new Array ( m + 1 ).fill( 0 );
+        curr = curr || new Array ( m + 1 ).fill( 0 );
 
         // Loop through the characters of the second string
         for ( let j = 1; j <= n; j++ ) {
@@ -85,5 +91,37 @@ export default (
         metric: 'lcs', a, b, res,
         raw: { dist }
     };
+
+};
+
+/**
+ * Calculate the LCS of two strings or a string and an array of strings.
+ * 
+ * @exports
+ * @param {string} a - First string
+ * @param {string | string[]} b - Second string or array of strings
+ * @returns {MetricResult} metric result(s)
+ */
+export default (
+    a : string,
+    b : string | string[]
+) : MetricResult => {
+
+    // Batch mode
+    if ( Array.isArray( b ) ) {
+
+        // Reuse row arrays for all comparisons (performance)
+        const m : number = a.length;
+
+        let prev : number[] = new Array ( m + 1 ).fill( 0 );
+        let curr : number[] = new Array ( m + 1 ).fill( 0 );
+
+        // Batch comparison
+        return b.map( s => _single( a, s, prev, curr ) );
+
+    }
+
+    // Single comparison
+    return _single( a, b );
 
 };
