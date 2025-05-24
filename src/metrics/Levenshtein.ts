@@ -1,6 +1,6 @@
 /**
  * Levenshtein Distance
- * src/metrics/Levensthein.ts
+ * src/metrics/Levenshtein.ts
  * 
  * The Levenshtein distance between two strings is the minimum number of
  * single-character edits (i.e. insertions, deletions or substitutions)
@@ -63,7 +63,7 @@ export default (
                 curr[ i ] = Math.min(
                     curr[ i - 1 ] + 1,    // insertion
                     prev[ i ] + 1,        // deletion
-                    prev[ i - 1 ] + cost  // replacement
+                    prev[ i - 1 ] + cost  // substitution
                 );
 
             }
@@ -82,7 +82,7 @@ export default (
 
     // Return the result
     return {
-        metric: 'levensthein',
+        metric: 'levenshtein',
         a, b, raw, res
     };
 
