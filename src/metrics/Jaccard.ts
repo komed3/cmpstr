@@ -90,7 +90,7 @@ const _single = (
 export default (
     a : string,
     b : string | string[],
-    { split = '' } : MetricOptions
+    { split = '' } : MetricOptions = {}
 ) : MetricResult => {
 
     split = String ( split );

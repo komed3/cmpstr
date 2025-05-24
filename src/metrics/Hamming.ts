@@ -92,7 +92,7 @@ const _single = (
 export default (
     a : string,
     b : string | string[],
-    { pad = undefined } : MetricOptions
+    { pad = undefined } : MetricOptions = {}
 ) : MetricResult => {
 
     // Batch mode
