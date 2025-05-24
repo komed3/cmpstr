@@ -13,6 +13,7 @@
  * 
  * @author Paul Köhler (komed3)
  * @license MIT
+ * @package CmpStr
  * @since 2.0.0
  */
 
