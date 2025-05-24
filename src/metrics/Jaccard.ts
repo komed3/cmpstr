@@ -54,9 +54,10 @@ export default (
     // Calculate normalized string similarity
     const res : number = union === 0 ? 1 : intersection / union;
 
+    // Return the result
     return {
-        metric: 'jaccard',
-        a, b, raw: { intersection, union }, res
+        metric: 'jaccard', a, b, res,
+        raw: { intersection, union }
     };
 
 };

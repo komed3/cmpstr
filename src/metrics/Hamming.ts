@@ -59,20 +59,21 @@ export default (
     }
 
     // Calculate the Hamming distance
-    let raw : number = 0;
+    let dist : number = 0;
 
     for ( let i = 0; i < a.length; i++ ) {
 
-        if ( a[ i ] !== b[ i ] ) raw++;
+        if ( a[ i ] !== b[ i ] ) dist++;
 
     }
 
     // Calculate normalized string similarity
-    const res : number = a.length === 0 ? 1 : 1 - raw / a.length;
+    const res : number = a.length === 0 ? 1 : 1 - dist / a.length;
 
+    // Return the result
     return {
-        metric: 'hamming',
-        a, b, raw, res
+        metric: 'hamming', a, b, res,
+        raw: { dist }
     };
 
 };

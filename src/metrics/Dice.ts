@@ -57,7 +57,7 @@ export default (
     let intersection : number = 0;
     let res : number;
 
-    // Special case of empty strings
+    // Check of empty strings
     if ( m < 2 && n < 2 ) intersection = res = 1;
     else if ( m < 2 || n < 2 ) intersection = res = 0;
 

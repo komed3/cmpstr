@@ -34,11 +34,11 @@ export default (
     let n : number = b.length;
     const maxLen : number = Math.max( m, n );
 
-    let raw : number;
+    let dist : number;
 
     // Check for equal or empty strings
-    if ( a === b ) raw = m;
-    else if ( m === 0 || n === 0 ) raw = 0;
+    if ( a === b ) dist = m;
+    else if ( m === 0 || n === 0 ) dist = 0;
 
     else {
 
@@ -73,16 +73,17 @@ export default (
         }
 
         // Save the LCS result
-        raw = prev[ m ];
+        dist = prev[ m ];
 
     }
 
     // Calculate normalized string similarity
-    const res : number = maxLen === 0 ? 1 : raw / maxLen;
+    const res : number = maxLen === 0 ? 1 : dist / maxLen;
 
+    // Return the result
     return {
-        metric: 'lcs',
-        a, b, raw, res
+        metric: 'lcs', a, b, res,
+        raw: { dist }
     };
 
 };

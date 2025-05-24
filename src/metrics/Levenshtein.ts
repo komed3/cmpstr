@@ -34,12 +34,12 @@ export default (
     let n : number = b.length;
     const maxLen : number = Math.max( m, n );
 
-    let raw : number;
+    let dist : number;
 
     // Check for equal or empty strings
-    if ( a === b ) raw = 0;
-    else if ( m === 0 ) raw = n;
-    else if ( n === 0 ) raw = m;
+    if ( a === b ) dist = 0;
+    else if ( m === 0 ) dist = n;
+    else if ( n === 0 ) dist = m;
 
     else {
 
@@ -75,17 +75,17 @@ export default (
         }
 
         // Save the Levenshtein distance
-        raw = prev[ m ];
+        dist = prev[ m ];
 
     }
 
     // Calculate normalized string similarity
-    const res : number = maxLen === 0 ? 1 : 1 - raw / maxLen;
+    const res : number = maxLen === 0 ? 1 : 1 - dist / maxLen;
 
     // Return the result
     return {
-        metric: 'levenshtein',
-        a, b, raw, res
+        metric: 'levenshtein', a, b, res,
+        raw: { dist }
     };
 
 };
