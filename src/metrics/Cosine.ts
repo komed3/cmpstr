@@ -12,7 +12,7 @@
  * @author Paul Köhler (komed3)
  * @license MIT
  * @package CmpStr
- * @since 3.0.0
+ * @since 2.0.0
  */
 
 'use strict';
