@@ -66,13 +66,12 @@ const _single = (
 };
 
 /**
- * Calculate the Jaccard index between two strings
- * or a string and an array of strings.
+ * Calculate the Jaccard index between two strings or a string and an array of strings.
  * 
  * @exports
  * @param {string} a - First string
  * @param {string | string[]} b - Second string or array of strings
- * @param {string} options.split - Optional string to split string into sets.
+ * @param {string} options.split - Optional string to split string into sets
  * @returns {MetricResult} metric result(s)
  */
 export default (

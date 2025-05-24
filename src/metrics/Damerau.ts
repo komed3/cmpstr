@@ -115,8 +115,7 @@ const _single = (
 };
 
 /**
- * Calculate the Damerau-Levenshtein distance between two strings
- * or a string and an array of strings.
+ * Calculate the Damerau-Levenshtein between two strings or a string and an array of strings.
  * 
  * @exports
  * @param {string} a - First string

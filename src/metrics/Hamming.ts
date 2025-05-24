@@ -12,47 +12,49 @@
  * 
  * @author Paul Köhler (komed3)
  * @license MIT
+ * @package CmpStr
  * @since 2.0.0
  */
 
 'use strict';
 
-import type { MetricOptions, MetricResult } from '../utils/Types.js';
+import type { MetricOptions, MetricResult, MetricSingleResult } from '../utils/Types.js';
 
 /**
- * Calculate the Hamming distance (with optional padding).
+ * Helper function to calculate the Hamming distance between two strings.
  * 
- * @param a - First string
- * @param b - Second string
- * @param options.pad - Optional pad shorter string (default: undefined = strict mode)
- * @returns MetricResult
+ * @param {string} a - First string
+ * @param {string} b - Second string
+ * @param {string} pad - Optional pad shorter string (default: undefined = strict mode)
+ * @returns {MetricSingleResult} metric result
  */
-export default (
+const _single = (
     a : string,
     b : string,
-    { pad = undefined } : MetricOptions
-) : MetricResult => {
+    pad : string | undefined
+) : MetricSingleResult => {
 
     let m : number = a.length;
     let n : number = b.length;
     const maxLen : number = Math.max( m, n );
 
-    // Optional: use padding to equalize string length
-    if ( pad !== undefined && m !== n ) {
-
-        pad = String ( pad );
-
-        if ( m < maxLen ) a = a.padEnd( maxLen, pad );
-        if ( n < maxLen ) b = b.padEnd( maxLen, pad );
-
-        m = n = maxLen;
-
-    }
-
-    // Standard: Error for unequal length
+    // Check for equal string length
     if ( m !== n ) {
 
-        throw new Error (
+        // Optional: use padding to equalize string length
+        if ( pad !== undefined ) {
+
+            pad = String ( pad ).substring( 0, 1 );
+
+            if ( m < maxLen ) a = a.padEnd( maxLen, pad );
+            if ( n < maxLen ) b = b.padEnd( maxLen, pad );
+
+            m = n = maxLen;
+
+        }
+
+        // Standard: Error for unequal length
+        else throw new Error (
             `Strings must be of equal length for Hamming Distance, a=${m} and b=${n} given`
         );
 
@@ -75,5 +77,33 @@ export default (
         metric: 'hamming', a, b, res,
         raw: { dist }
     };
+
+};
+
+/**
+ * Calculate the Hamming distance between two strings or a string and an array of strings.
+ * 
+ * @exports
+ * @param {string} a - First string
+ * @param {string | string[]} b - Second string or array of strings
+ * @param {string} options.pad - Optional pad shorter string (default: undefined = strict mode)
+ * @returns {MetricResult} metric result(s)
+ */
+export default (
+    a : string,
+    b : string | string[],
+    { pad = undefined } : MetricOptions
+) : MetricResult => {
+
+    // Batch mode
+    if ( Array.isArray( b ) ) {
+
+        // Batch comparison
+        return b.map( s => _single( a, s, pad ) );
+
+    }
+
+    // Single comparison
+    return _single( a, b, pad );
 
 };
