@@ -1,15 +1,13 @@
 {
   "name": "cmpstr",
-  "description": "lightweight npm package to calculate string similarity",
+  "description": "Lightweight npm package to calculate string similarity",
   "author": {
     "name" : "komed3 (Paul Köhler)",
     "email" : "webmaster@komed3.de",
     "url" : "https://komed3.de"
   },
-  "homepage": "https://github.com/komed3/cmpstr#readme",
-  "version": "2.0.3",
-  "main": "src/index.js",
-  "types": "src/index.d.ts",
+  "homepage": "https://github.com/komed3/cmpstr",
+  "version": "2.1.0",
   "license": "MIT",
   "keywords": [
     "string-similarity",
