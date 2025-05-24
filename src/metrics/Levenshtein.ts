@@ -26,8 +26,8 @@ import type { MetricResult, MetricSingleResult } from '../utils/Types.js';
  * 
  * @param {string} a - First string
  * @param {string} b - Second string
- * @param {number[]} [prev] - Previous row array for optimization
- * @param {number[]} [curr] - Current row array for optimization
+ * @param {number[]} [prev] - Previous row array for optimization (i-1)
+ * @param {number[]} [curr] - Current row array for optimization (i)
  * @returns {MetricSingleResult} metric result
  */
 const _single = (
@@ -70,9 +70,9 @@ const _single = (
                 const cost : number = a[ i - 1 ] === b[ j - 1 ] ? 0 : 1;
 
                 curr[ i ] = Math.min(
-                    curr[ i - 1 ] + 1,    // insertion
-                    prev[ i ] + 1,        // deletion
-                    prev[ i - 1 ] + cost  // substitution
+                    curr[ i - 1 ] + 1,    // Insertion
+                    prev[ i ] + 1,        // Deletion
+                    prev[ i - 1 ] + cost  // Substitution
                 );
 
             }
@@ -99,7 +99,8 @@ const _single = (
 };
 
 /**
- * Calculate the Levenshtein distance between two strings.
+ * Calculate the Levenshtein distance between two strings
+ * or a string and an array of strings.
  * 
  * @exports
  * @param {string} a - First string
