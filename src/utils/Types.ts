@@ -8,6 +8,6 @@ export interface MetricResult {
     metric : string;
     a : string;
     b : string;
-    raw? : string | number;
+    raw? : string | number | unknown;
     res : number;
 }

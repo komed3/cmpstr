@@ -56,9 +56,7 @@ export default (
 
     return {
         metric: 'jaccard',
-        a, b,
-        raw: intersection,
-        res
+        a, b, raw: { intersection, union }, res
     };
 
 };
