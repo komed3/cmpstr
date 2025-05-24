@@ -2,9 +2,10 @@
  * Levenshtein Distance
  * src/metrics/Levenshtein.ts
  * 
- * The Levenshtein distance between two strings is the minimum number of
- * single-character edits (i.e. insertions, deletions or substitutions)
- * required to change one word into the other.
+ * The Levenshtein distance is a metric for measuring the difference between
+ * two strings. It is defined as the minimum number of single-character edits
+ * (insertions, deletions, or substitutions) required to change one string
+ * into the other.
  * 
  * @see https://en.wikipedia.org/wiki/Levenshtein_distance
  * 

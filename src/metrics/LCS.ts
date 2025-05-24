@@ -2,7 +2,10 @@
  * Longest Common Subsequence (LCS)
  * src/metrics/LCS.ts
  * 
- * LCS measures the length of the longest subsequence common to both strings.
+ * The Longest Common Subsequence (LCS) is a classic problem in computer science
+ * that finds the longest subsequence present in both strings. A subsequence is
+ * a sequence that can be derived from another sequence by deleting some elements
+ * without changing the order of the remaining elements.
  * 
  * @see https://en.wikipedia.org/wiki/Longest_common_subsequence
  * 
