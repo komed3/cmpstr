@@ -55,10 +55,12 @@ export default (
 
                 if ( a[ i - 1 ] === b[ j - 1 ] ) {
 
+                    // If characters match, increment the LCS length
                     curr[ i ] = prev[ i - 1 ] + 1;
 
                 } else {
 
+                    // If characters do not match, take the maximum of the previous values
                     curr[ i ] = Math.max( prev[ i ], curr[ i - 1 ] );
 
                 }
@@ -75,7 +77,7 @@ export default (
 
     }
 
-    // Calculate string similarity
+    // Calculate normalized string similarity
     const res : number = maxLen === 0 ? 1 : raw / maxLen;
 
     return {

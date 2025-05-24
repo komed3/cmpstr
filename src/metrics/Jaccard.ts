@@ -20,6 +20,7 @@ import type { MetricOptions, MetricResult } from '../utils/Types.js';
 
 /**
  * Calculate the Jaccard index between two strings.
+ * Jaccard index = |A ∩ B| / |A ∪ B|
  * 
  * @param a - First string
  * @param b - Second string
@@ -32,9 +33,11 @@ export default (
     { split = '' } : MetricOptions
 ) : MetricResult => {
 
+    // Set up the sets for both strings
     const setA : Set<string> = new Set ( a.split( split ) );
     const setB : Set<string> = new Set ( b.split( split ) );
 
+    // Count the intersection of both sets
     let intersection : number = 0;
 
     for ( const char of setA ) {
@@ -43,7 +46,10 @@ export default (
 
     }
 
+    // Calculate the union of both sets
     const union : number = setA.size + setB.size - intersection;
+
+    // Calculate normalized string similarity
     const res : number = union === 0 ? 1 : intersection / union;
 
     return {

@@ -79,7 +79,7 @@ export default (
 
     }
 
-    // Calculate string similarity
+    // Calculate normalized string similarity
     const res : number = maxLen === 0 ? 1 : 1 - raw / maxLen;
 
     // Return the result
