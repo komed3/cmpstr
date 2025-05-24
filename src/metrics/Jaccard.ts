@@ -38,24 +38,37 @@ const _single = (
     setA? : Set<string>
 ) : MetricSingleResult => {
 
-    // Set up the sets for both strings
-    setA = setA || new Set ( a.split( split ) );
-    const setB : Set<string> = new Set ( b.split( split ) );
+    const m : number = a.length;
+    const n : number = b.length;
 
-    // Count the intersection of both sets
     let intersection : number = 0;
+    let union : number;
+    let res : number;
 
-    for ( const sub of setA ) {
+    // Check for equal or empty strings
+    if ( a === b ) intersection = union = res = 1;
+    else if ( m < 2 || n < 2 ) intersection = union = res = 0;
 
-        if ( setB.has( sub ) ) intersection++;
+    else {
+
+        // Set up the sets for both strings
+        setA = setA || new Set ( a.split( split ) );
+        const setB : Set<string> = new Set ( b.split( split ) );
+
+        // Count the intersection of both sets
+        for ( const sub of setA ) {
+
+            if ( setB.has( sub ) ) intersection++;
+
+        }
+
+        // Calculate the union of both sets
+        union = setA.size + setB.size - intersection;
+
+        // Calculate normalized string similarity
+        res = union === 0 ? 1 : intersection / union;
 
     }
-
-    // Calculate the union of both sets
-    const union : number = setA.size + setB.size - intersection;
-
-    // Calculate normalized string similarity
-    const res : number = union === 0 ? 1 : intersection / union;
 
     // Return the result
     return {
