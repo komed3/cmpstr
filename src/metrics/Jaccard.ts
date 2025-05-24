@@ -33,6 +33,8 @@ export default (
     { split = '' } : MetricOptions
 ) : MetricResult => {
 
+    split = String ( split );
+
     // Set up the sets for both strings
     const setA : Set<string> = new Set ( a.split( split ) );
     const setB : Set<string> = new Set ( b.split( split ) );
@@ -40,9 +42,9 @@ export default (
     // Count the intersection of both sets
     let intersection : number = 0;
 
-    for ( const char of setA ) {
+    for ( const sub of setA ) {
 
-        if ( setB.has( char ) ) intersection++;
+        if ( setB.has( sub ) ) intersection++;
 
     }
 
