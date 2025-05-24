@@ -20,13 +20,13 @@ import type { MetricResult } from '../utils/Types.js';
 /**
  * Calculate the Levenshtein distance between two strings.
  * 
- * @param a - First string.
- * @param b - Second string.
- * @returns MetricResult containing the metric name, input strings, raw distance, and similarity result.
+ * @param a - First string
+ * @param b - Second string
+ * @returns MetricResult.
  */
 export default (
-    a: string,
-    b: string
+    a : string,
+    b : string
 ) : MetricResult => {
 
     let m : number = a.length;
@@ -35,7 +35,7 @@ export default (
 
     let raw : number;
 
-    // Check for empty strings
+    // Check for equal or empty strings
     if ( a === b ) raw = 0;
     else if ( m === 0 ) raw = n;
     else if ( n === 0 ) raw = m;
@@ -73,6 +73,7 @@ export default (
 
         }
 
+        // Save the levenshtein distance
         raw = prev[ m ];
 
     }
