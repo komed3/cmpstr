@@ -33,7 +33,7 @@ export class Perf {
 
     /**
      * Returns a high-resolution timestamp.
-     * Uses performance.now() if available, Date.now() as fallback.
+     * Uses performance.now() if available, otherwise Date.now().
      * 
      * @private
      * @returns {number} - High-resolution timestamp
@@ -73,6 +73,8 @@ export class Perf {
 
     /**
      * Constructs a Perf instance and stores the current time and memory usage.
+     * 
+     * @constructor
      */
     constructor () {
 
