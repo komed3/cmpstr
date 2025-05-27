@@ -1,5 +1,12 @@
 'use strict';
 
+export interface PoolBuffer {
+    a: Uint16Array;
+    b: Uint16Array;
+    len: number;
+    t: number;
+};
+
 export interface Performance {
     time: number;
     mem: number;
