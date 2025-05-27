@@ -20,6 +20,7 @@
 'use strict';
 
 import type { PoolBuffer } from './Types';
+import { Helper } from './Helper';
 
 /**
  * Pool class for efficient reuse of temporary buffers.
@@ -27,26 +28,13 @@ import type { PoolBuffer } from './Types';
 export class Pool {
 
     // Maximum number of buffers to keep in the pool
-    private static readonly POOL_SIZE = 8;
+    private static readonly POOL_SIZE: number = 8;
 
     // Maximum length of buffer to pool (larger arrays are not pooled)
-    private static readonly MAX_LEN = 100000;
+    private static readonly MAX_LEN: number = 100000;
 
     // The actual pool of buffers
     private static buffers: PoolBuffer[] = [];
-
-    /**
-     * Get the current timestamp (ms).
-     * Uses performance.now() if available, otherwise Date.now().
-     * 
-     * @private
-     * @returns {number} - High-resolution timestamp
-     */
-    private static _now () : number {
-
-        return typeof performance !== 'undefined' ? performance.now() : Date.now();
-
-    }
 
     /**
      * Create a new buffer object with two Uint16Arrays of the given length.
@@ -95,10 +83,10 @@ export class Pool {
 
         }
 
-        const t: number = this._now();
+        const t: number = Helper.now();
 
         // Try to find a reusable buffer with sufficient length
-        let reusable = this.buffers.find( b => b.len >= len );
+        let reusable: PoolBuffer | undefined = this.buffers.find( b => b.len >= len );
 
         if ( ! reusable ) {
 

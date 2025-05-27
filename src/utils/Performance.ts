@@ -22,6 +22,7 @@
 'use strict';
 
 import type { Performance } from './Types';
+import { Helper } from './Helper';
 
 /**
  * Perf class for measuring elapsed time and memory usage.
@@ -30,20 +31,6 @@ export class Perf {
 
     private time: number;
     private mem: number;
-
-    /**
-     * Returns a high-resolution timestamp.
-     * Uses performance.now() if available, otherwise Date.now().
-     * 
-     * @private
-     * @returns {number} - High-resolution timestamp
-     */
-    private _now () : number {
-
-        return typeof performance !== 'undefined' && typeof performance.now === 'function'
-            ? performance.now() : Date.now();
-
-    }
 
     /**
      * Returns the current memory usage in bytes.
@@ -87,7 +74,7 @@ export class Perf {
      */
     public set () : void {
 
-        this.time = this._now();
+        this.time = Helper.now();
         this.mem = this._mem();
 
     }
