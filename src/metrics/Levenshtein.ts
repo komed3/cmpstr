@@ -96,7 +96,7 @@ const _levenshteinDistance = ( a: string, b: string, m: number, n: number ) : nu
  * @param {Perf | null} perf - Optional performance measurement instance
  * @returns {MetricResultSingle} - Result object with similarity and raw distance
  */
-const _single = ( a: string, b: string, perf: Perf | null ) : MetricResultSingle => {
+const _computeSingleResult = ( a: string, b: string, perf: Perf | null ) : MetricResultSingle => {
 
     // Get length of string a, b and their max length
     const { m, n, maxLen } = Helper.mnLen( a, b );
@@ -136,7 +136,7 @@ export default (
     // Single string comparison
     if ( Helper.singleOp( a, b ) ) {
 
-        return _single( a as string, b as string, perf );
+        return _computeSingleResult( a as string, b as string, perf );
 
     }
 
@@ -151,7 +151,7 @@ export default (
 
         for ( let j = 0; j < B.length; j++ ) {
 
-            results.push( _single( s, B[ j ], perf ) );
+            results.push( _computeSingleResult( s, B[ j ], perf ) );
 
         }
 
