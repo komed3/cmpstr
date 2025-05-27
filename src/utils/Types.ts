@@ -7,7 +7,9 @@ export interface Performance {
 
 export type MetricInput = string | string[];
 
-export interface MetricOptions {};
+export interface MetricOptions {
+    perf?: boolean;
+};
 
 export interface MetricRaw {
     distance?: number;

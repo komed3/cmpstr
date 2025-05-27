@@ -1,6 +1,6 @@
 'use strict';
 
-import type { MetricInput, MetricResult, MetricResultSingle } from '../utils/Types';
+import type { MetricInput, MetricOptions, MetricResult, MetricResultSingle } from '../utils/Types';
 import { Pool } from '../utils/Pool';
 import { Perf } from '../utils/Performance';
 
@@ -42,9 +42,7 @@ const _levenshteinDistance = ( a: string, b: string, m: number, n: number ) : nu
 
 };
 
-const _single = ( a: string, b: string ) : MetricResultSingle => {
-
-    const perf = new Perf ();
+const _single = ( a: string, b: string, perf: Perf | null ) : MetricResultSingle => {
 
     const m: number = a.length, n: number = b.length;
     const maxLen: number = Math.max( m, n );
@@ -53,17 +51,22 @@ const _single = ( a: string, b: string ) : MetricResultSingle => {
     const similarity: number = maxLen === 0 ? 1 : 1 - distance / maxLen;
 
     return {
-        metric: 'levenshtein', a, b, similarity,
-        raw: { distance }, perf: perf.get()
+        metric: 'levenshtein', a, b, similarity, raw: { distance },
+        ...( perf ? { perf: perf.get() } : {} )
     };
 
 };
 
-export default ( a: MetricInput, b: MetricInput ) : MetricResult => {
+export default (
+    a: MetricInput, b: MetricInput,
+    options: MetricOptions = {}
+) : MetricResult => {
+
+    const perf = options.perf ? new Perf () : null;
 
     if ( typeof a === 'string' && typeof b === 'string' ) {
 
-        return _single( a, b );
+        return _single( a, b, perf );
 
     }
 
@@ -77,7 +80,7 @@ export default ( a: MetricInput, b: MetricInput ) : MetricResult => {
 
         for ( let j = 0; j < B.length; j++ ) {
 
-            results.push( _single( s, B[ j ] ) );
+            results.push( _single( s, B[ j ], perf ) );
 
         }
 

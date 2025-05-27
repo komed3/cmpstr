@@ -39,6 +39,12 @@ export class Perf {
 
     constructor () {
 
+        this.set();
+
+    }
+
+    public set () : void {
+
         this.time = this._time();
         this.mem = this._mem();
 
@@ -46,9 +52,14 @@ export class Perf {
 
     public get () : Performance {
 
+        const time = this.time;
+        const mem = this.mem;
+
+        this.set();
+
         return {
-            time: this._time() - this.time,
-            mem: this._mem() - this.mem
+            time: this.time - time,
+            mem: this.mem - mem
         };
 
     }
