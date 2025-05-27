@@ -20,6 +20,7 @@
 'use strict';
 
 import type { MetricInput, MetricOptions, MetricResult, MetricResultSingle } from '../utils/Types';
+import { Helper } from '../utils/Helper';
 import { Pool } from '../utils/Pool';
 import { Perf } from '../utils/Performance';
 
@@ -97,14 +98,14 @@ const _levenshteinDistance = ( a: string, b: string, m: number, n: number ) : nu
  */
 const _single = ( a: string, b: string, perf: Perf | null ) : MetricResultSingle => {
 
-    const m: number = a.length, n: number = b.length;
-    const maxLen: number = Math.max( m, n );
+    // Get length of string a, b and their max length
+    const { m, n, maxLen } = Helper.mnLen( a, b );
 
     // Compute the Levenshtein distance
     const distance: number = _levenshteinDistance( a, b, m, n );
 
     // Normalize similarity to [0, 1] (1 = identical, 0 = completely different)
-    const similarity: number = maxLen === 0 ? 1 : 1 - distance / maxLen;
+    const similarity: number = Helper.similarity( distance, maxLen );
 
     // Build result object, optionally including performance data
     return {
@@ -133,16 +134,16 @@ export default (
     const perf = options.perf ? new Perf () : null;
 
     // Single string comparison
-    if ( typeof a === 'string' && typeof b === 'string' ) {
+    if ( Helper.singleOp( a, b ) ) {
 
-        return _single( a, b, perf );
+        return _single( a as string, b as string, perf );
 
     }
 
     // Batch processing: compare all combinations of a[] and b[]
     const results: MetricResultSingle[] = [];
-    const A: string[] = Array.isArray( a ) ? a : [ a ];
-    const B: string[] = Array.isArray( b ) ? b : [ b ];
+    const A: string[] = Helper.asArr( a );
+    const B: string[] = Helper.asArr( b );
 
     for ( let i = 0; i < A.length; i++ ) {
 
