@@ -60,6 +60,19 @@ export abstract class Metric {
     }
 
     /**
+     * Calculates the normalized similarity based on the raw and maximum value.
+     * 
+     * @param {number} raw - Raw value (e.g., distance)
+     * @param {number} max - Maximum value (e.g., maximum possible distance)
+     * @returns {number} - Normalized similarity (0 to 1)
+     */
+    protected normalized ( raw: number, max: number ) : number {
+
+        return max === 0 ? 1 : 1 - raw / max;
+
+    }
+
+    /**
      * Abstract method to be implemented by subclasses to perform the metric computation.
      * 
      * This method should contain the logic for computing the metric between two strings.
@@ -70,6 +83,7 @@ export abstract class Metric {
      * @param n - Length of the second string
      * @param maxLen - Maximum length of the strings
      * @returns {MetricCompute} - The result of the metric computation
+     * @throws {Error} - If not overridden in a subclass
      */
     protected algo ( a: string, b: string, m: number, n: number, maxLen: number ) : MetricCompute {
 
@@ -90,7 +104,8 @@ export abstract class Metric {
     private runSingle ( a: string, b: string ) : MetricResultSingle {
 
         // Get length of string a, b and their max length
-        const { m, n, maxLen } = Helper.mnLen( a, b );
+        const m: number = a.length, n: number = b.length;
+        const maxLen: number = Math.max( m, n );
 
         // Compute the similarity using the algorithm
         const { res, raw = {} } = this.algo( a, b, m, n, maxLen );

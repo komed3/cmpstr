@@ -99,7 +99,7 @@ export default class Levenshtein extends Metric {
 
         // Return the result as a MetricCompute object
         return {
-            res: Helper.similarity( dist, maxLen ),
+            res: this.normalized( dist, maxLen ),
             raw: { dist }
         };
 

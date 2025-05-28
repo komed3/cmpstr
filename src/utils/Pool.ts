@@ -13,8 +13,6 @@
  * 
  * @author Paul Köhler (komed3)
  * @license MIT
- * @package CmpStr
- * @since 3.0.0
  */
 
 'use strict';
@@ -83,6 +81,7 @@ export class Pool {
 
         }
 
+        // Get current timestamp for LRU management
         const t: number = Helper.now();
 
         // Try to find a reusable buffer with sufficient length
