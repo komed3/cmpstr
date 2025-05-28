@@ -1,126 +1,128 @@
-/**
- * Pool Utility
- * src/utils/Pool.ts
- * 
- * The Pool class provides a simple and efficient buffer pool for dynamic programming
- * algorithms that require temporary arrays (such as Levenshtein, LCS, etc.).
- * By reusing pre-allocated typed arrays, it reduces memory allocations and garbage
- * collection overhead, especially for repeated or batch computations.
- * 
- * The pool maintains a fixed number of buffers, each with a certain length and
- * a timestamp for LRU (least recently used) replacement. For very large arrays,
- * the pool is bypassed and a fresh buffer is allocated.
- * 
- * @author Paul Köhler (komed3)
- * @license MIT
- */
-
 'use strict';
 
-import type { PoolBuffer } from './Types';
-import { Helper } from './Helper';
+import type { PoolType, PoolConfig, PoolBuffer } from './Types';
 
-/**
- * Pool class for efficient reuse of temporary buffers.
- */
-export class Pool {
+class PoolRing<T> {
 
-    // Maximum number of buffers to keep in the pool
-    private static readonly POOL_SIZE: number = 8;
+    private buffers: PoolBuffer<T>[] = [];
+    private pointer: number = 0;
 
-    // Maximum length of buffer to pool (larger arrays are not pooled)
-    private static readonly MAX_LEN: number = 100000;
+    constructor (
+        private readonly maxSize: number
+    ) {}
 
-    // The actual pool of buffers
-    private static buffers: PoolBuffer[] = [];
+    public acquire ( minSize: number, allowOversize: boolean ) : PoolBuffer<T> | null {
 
-    /**
-     * Create a new buffer object with two Uint16Arrays of the given length.
-     * 
-     * @private
-     * @static
-     * @param {number} len - Length of the arrays
-     * @param {number} t - Timestamp for LRU management
-     * @returns {PoolBuffer} - PoolBuffer object
-     */
-    private static _create ( len: number, t: number ) : PoolBuffer {
+        const len: number = this.buffers.length;
 
-        return {
-            a: new Uint16Array ( len ),
-            b: new Uint16Array ( len ),
-            len, t
-        };
+        for ( let i = 0; i < len; i++ ) {
 
-    }
+            const idx: number = ( this.pointer + i ) % len;
+            const item: PoolBuffer<T> = this.buffers[ idx ];
 
-    /**
-     * Clear the buffer pool and frees all pooled buffers.
-     * 
-     * @static
-     */
-    public static clear () : void {
+            if ( item.size >= minSize ) {
 
-        this.buffers = [];
+                this.pointer = ( idx + 1 ) % len;
 
-    }
-
-    /**
-     * Get a pair of reusable Uint16Array buffers of the requested length.
-     * If a suitable buffer is not available, a new one is created and added to the pool.
-     * For very large arrays, pooling is bypassed for performance reasons.
-     * 
-     * @static
-     * @param {number} len - Required length of the arrays
-     * @returns {[Uint16Array, Uint16Array]} [a, b] - Two Uint16Array buffers
-     */
-    public static get ( len: number ) : [ Uint16Array, Uint16Array ] {
-
-        // For very large arrays, do not use the pool
-        if ( len > this.MAX_LEN ) {
-
-            return [
-                new Uint16Array ( len ),
-                new Uint16Array ( len )
-            ];
-
-        }
-
-        // Get current timestamp for LRU management
-        const t: number = Helper.now();
-
-        // Try to find a reusable buffer with sufficient length
-        let reusable: PoolBuffer | undefined = this.buffers.find( b => b.len >= len );
-
-        if ( ! reusable ) {
-
-            // No suitable buffer found, create a new one
-            reusable = this._create( len, t );
-
-            if ( this.buffers.length < this.POOL_SIZE ) {
-
-                // Add to pool if space is available
-                this.buffers.push( reusable );
-
-            } else {
-
-                // Replace the least recently used buffer
-                this.buffers[ this.buffers.indexOf( this.buffers.reduce(
-                    ( acc, val ) => val.t < acc.t ? val : acc
-                ) ) ] = reusable;
+                return allowOversize || item.size === minSize ? item : null;
 
             }
 
         }
 
-        // Update timestamp for LRU management
-        reusable.t = t;
-
-        // Return subarrays of the correct length (in case buffer is longer)
-        return [
-            reusable.a.subarray( 0, len ),
-            reusable.b.subarray( 0, len )
-        ];
+        return null;
 
     }
 
-};
+    public release ( item: PoolBuffer<T> ) : void {
+
+        if ( this.buffers.length < this.maxSize ) {
+
+            this.buffers.push( item );
+
+        } else {
+
+            this.buffers[ this.pointer ] = item;
+            this.pointer = ( this.pointer + 1 ) % this.maxSize;
+
+        }
+
+    }
+
+    clear () : void {
+
+        this.buffers = [];
+        this.pointer = 0;
+
+    }
+
+}
+
+export class Pool {
+
+    private static readonly CONFIG: Record<PoolType, PoolConfig> = {
+        'uint16':   { type: 'uint16',   maxSize: 32, maxItemSize: 2048, allowOversize: true  },
+        'number[]': { type: 'number[]', maxSize: 16, maxItemSize: 1024, allowOversize: false },
+        'set':      { type: 'set',      maxSize: 8,  maxItemSize: 0,    allowOversize: false },
+        'map':      { type: 'map',      maxSize: 8,  maxItemSize: 0,    allowOversize: false },
+    };
+
+    private static readonly RINGS: Record<PoolType, PoolRing<any>> = {
+        'uint16':   new PoolRing<Uint16Array>( 32 ),
+        'number[]': new PoolRing<number[]>( 16 ),
+        'set':      new PoolRing<Set<any>>( 8 ),
+        'map':      new PoolRing<Map<any, any>>( 8 ),
+    };
+
+    public static acquire<T = any> ( type: PoolType, size: number ) : T {
+
+        const CONFIG: PoolConfig = this.CONFIG[ type ];
+
+        if ( size > CONFIG.maxItemSize ) return this.allocate( type, size );
+
+        const item: PoolBuffer<any> | null = this.RINGS[ type ].acquire( size, CONFIG.allowOversize );
+
+        if ( item ) {
+
+            return type === 'uint16' ? (
+                ( item.buffer as Uint16Array ).subarray( 0, size ) as unknown as T
+            ) : item.buffer as T;
+
+        }
+
+        return this.allocate( type, size );
+
+    }
+
+    static acquireMany<T = any> ( type: PoolType, sizes: number[] ) : T[] {
+
+        return sizes.map( size => this.acquire<T>( type, size ) );
+
+    }
+
+    static release<T = any> ( type: PoolType, buffer: T, size: number ) : void {
+
+        const CONFIG: PoolConfig = this.CONFIG[ type ];
+
+        if ( size <= CONFIG.maxItemSize ) {
+
+            this.RINGS[ type ].release( { buffer, size } );
+
+        }
+
+    }
+
+    private static allocate ( type: PoolType, size: number ) : any {
+
+        switch ( type ) {
+
+            case 'uint16':   return new Uint16Array ( size );
+            case 'number[]': return new Array ( size ).fill( 0 );
+            case 'set':      return new Set ();
+            case 'map':      return new Map ();
+
+        }
+
+    }
+
+}

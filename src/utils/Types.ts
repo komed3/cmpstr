@@ -1,11 +1,18 @@
 'use strict';
 
-export interface PoolBuffer {
-    a: Uint16Array;
-    b: Uint16Array;
-    len: number;
-    t: number;
-};
+export type PoolType = 'uint16' | 'number[]' | 'set' | 'map';
+
+export interface PoolConfig {
+  type: PoolType;
+  maxSize: number;
+  maxItemSize: number;
+  allowOversize: boolean;
+}
+
+export interface PoolBuffer<T> {
+  buffer: T;
+  size: number;
+}
 
 export interface Performance {
     time: number;

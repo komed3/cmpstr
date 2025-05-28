@@ -80,7 +80,7 @@ export default class Levenshtein extends Metric {
             [ a, b, m, n ] = Helper.swap( a, b, m, n );
 
             // Get two reusable arrays from the Pool for the DP rows
-            const [ prev, curr ] = Pool.get( m + 1 );
+            const [ prev, curr ] = Pool.acquireMany( 'uint16', [ m + 1, m + 1 ] );
 
             // Initialize the first row (edit distances from empty string to a)
             for ( let i = 0; i <= m; i++ ) prev[ i ] = i;
