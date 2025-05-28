@@ -14,7 +14,10 @@ export interface Performance {
 
 export type MetricInput = string | string[];
 
+export type MetricMode = 'default' | 'batch' | 'pairwise';
+
 export interface MetricOptions {
+    mode?: MetricMode;
     perf?: boolean;
 };
 
