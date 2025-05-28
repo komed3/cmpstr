@@ -42,9 +42,10 @@ export abstract class Metric {
      * 
      * Initializes the metric with two inputs (strings or arrays of strings) and options.
      * 
-     * @param a - First input string or array of strings
-     * @param b - Second input string or array of strings
-     * @param options - Options for the metric computation (e.g., performance tracking)
+     * @constructor
+     * @param {MetricInput} a - First input string or array of strings
+     * @param {MetricInput} b - Second input string or array of strings
+     * @param {MetricOptions} options - Options for the metric computation
      */
     constructor (
         a: MetricInput, b: MetricInput,
@@ -62,6 +63,7 @@ export abstract class Metric {
     /**
      * Calculates the normalized similarity based on the raw and maximum value.
      * 
+     * @protected
      * @param {number} raw - Raw value (e.g., distance)
      * @param {number} max - Maximum value (e.g., maximum possible distance)
      * @returns {number} - Normalized similarity (0 to 1)
@@ -77,11 +79,12 @@ export abstract class Metric {
      * 
      * This method should contain the logic for computing the metric between two strings.
      * 
-     * @param a - First string
-     * @param b - Second string
-     * @param m - Length of the first string
-     * @param n - Length of the second string
-     * @param maxLen - Maximum length of the strings
+     * @protected
+     * @param {string} a - First string
+     * @param {string} b - Second string
+     * @param {number} m - Length of the first string
+     * @param {number} n - Length of the second string
+     * @param {number} maxLen - Maximum length of the strings
      * @returns {MetricCompute} - The result of the metric computation
      * @throws {Error} - If not overridden in a subclass
      */
@@ -97,8 +100,9 @@ export abstract class Metric {
      * It computes the Levenshtein distance between the two strings and returns
      * the result in a structured format.
      * 
-     * @param a - First string
-     * @param b - Second string
+     * @private
+     * @param {string} a - First string
+     * @param {string} b - Second string
      * @returns {MetricResultSingle} - The result of the metric computation
      */
     private runSingle ( a: string, b: string ) : MetricResultSingle {
@@ -123,6 +127,8 @@ export abstract class Metric {
      * 
      * It iterates through each string in the first array and computes the metric
      * against each string in the second array, storing the results in `this.res`.
+     * 
+     * @private
      */
     private runBatch () : void {
 

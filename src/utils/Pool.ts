@@ -38,6 +38,7 @@ export class Pool {
      * Create a new buffer object with two Uint16Arrays of the given length.
      * 
      * @private
+     * @static
      * @param {number} len - Length of the arrays
      * @param {number} t - Timestamp for LRU management
      * @returns {PoolBuffer} - PoolBuffer object
@@ -54,6 +55,8 @@ export class Pool {
 
     /**
      * Clear the buffer pool and frees all pooled buffers.
+     * 
+     * @static
      */
     public static clear () : void {
 
@@ -66,6 +69,7 @@ export class Pool {
      * If a suitable buffer is not available, a new one is created and added to the pool.
      * For very large arrays, pooling is bypassed for performance reasons.
      * 
+     * @static
      * @param {number} len - Required length of the arrays
      * @returns {[Uint16Array, Uint16Array]} [a, b] - Two Uint16Array buffers
      */

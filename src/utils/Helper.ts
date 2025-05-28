@@ -21,6 +21,7 @@ export class Helper {
      * in browsers and Node.js >= 8.5), otherwise falls back to
      * Date.now() (millisecond precision).
      * 
+     * @static
      * @returns {number} - High-resolution timestamp in milliseconds
      */
     public static now () : number {
@@ -33,6 +34,7 @@ export class Helper {
     /**
      * Swaps two strings and their lengths if the first is longer than the second.
      * 
+     * @static
      * @param {string} a - First string
      * @param {string} b - Second string
      * @param {number} m - Length of the first string
@@ -52,6 +54,7 @@ export class Helper {
      * If the input is already an array, it returns it as is.
      * If the input is a single value (string or number), it wraps it in an array.
      * 
+     * @static
      * @param {any} s - Input to convert
      * @returns {string[]} - Array of strings
      */

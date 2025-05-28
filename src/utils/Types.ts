@@ -20,6 +20,8 @@ export interface MetricOptions {
 
 export interface MetricRaw {
     dist?: number;
+    intersection?: number;
+    size?: number;
     [ key: string ]: any;
 };
 

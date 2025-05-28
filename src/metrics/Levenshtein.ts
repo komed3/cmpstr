@@ -2,6 +2,8 @@
  * Levenshtein Distance
  * src/metrics/Levenshtein.ts
  * 
+ * @see https://en.wikipedia.org/wiki/Levenshtein_distance
+ * 
  * The Levenshtein distance is a classic metric for measuring the minimum number
  * of single-character edits (insertions, deletions, or substitutions) required
  * to change one string into another. It is widely used in approximate string
@@ -33,11 +35,12 @@ export default class Levenshtein extends Metric {
     /**
      * Calculates the Levenshtein distance between two strings.
      * 
-     * @param a - First string
-     * @param b - Second string
-     * @param m - Length of the first string
-     * @param n - Length of the second string
-     * @param maxLen - Maximum length of the strings
+     * @protected
+     * @param {string} a - First string
+     * @param {string} b - Second string
+     * @param {number} m - Length of the first string
+     * @param {number} n - Length of the second string
+     * @param {number} maxLen - Maximum length of the strings
      * @return MetricCompute - Object containing the similarity result and raw distance
      */
     protected algo ( a: string, b: string, m: number, n: number, maxLen: number ) : MetricCompute {
