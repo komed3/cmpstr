@@ -7,6 +7,8 @@
  * By reusing pre-allocated typed arrays, it reduces memory allocations and garbage
  * collection overhead, especially for repeated or batch computations.
  * 
+ * @see https://en.wikipedia.org/wiki/Circular_buffer
+ * 
  * It supports different types of buffers (Uint16Array, number[], Set, Map) and allows
  * for acquiring buffers of specific sizes while managing a maximum pool size.
  * 

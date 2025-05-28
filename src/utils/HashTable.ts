@@ -4,6 +4,7 @@
  * 
  * This module implements a hash table using the FNV-1a hash algorithm.
  * 
+ * @see https://en.wikipedia.org/wiki/Hash_table
  * @see https://en.wikipedia.org/wiki/Fowler%E2%80%93Noll%E2%80%93Vo_hash_function
  * 
  * It provides methods to compute a hash for a given string, generate a unique key
