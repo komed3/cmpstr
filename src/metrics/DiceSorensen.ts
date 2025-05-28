@@ -20,7 +20,7 @@
 
 'use strict';
 
-import type { MetricCompute } from '../utils/Types';
+import type { MetricInput, MetricOptions, MetricCompute } from '../utils/Types';
 import { Metric } from './Metric';
 import { Helper } from '../utils/Helper';
 
@@ -29,8 +29,26 @@ import { Helper } from '../utils/Helper';
  */
 export default class DiceSorensen extends Metric {
 
-    // Metric name for identification
-    protected metric: string = 'dice';
+    /**
+     * Constructor for the DiceSorensen class.
+     * 
+     * Initializes the DiceSorensen metric with two input strings or
+     * arrays of strings and optional options.
+     * 
+     * @constructor
+     * @param {MetricInput} a - First input string or array of strings
+     * @param {MetricInput} b - Second input string or array of strings
+     * @param {MetricOptions} options - Options for the metric computation
+     */
+    constructor (
+        a: MetricInput, b: MetricInput,
+        options: MetricOptions = {}
+    ) {
+
+        // Call the parent Metric constructor with the metric name and inputs
+        super( 'dice', a, b, options );
+
+    }
 
     /**
      * Computes the bigrams of a given string.

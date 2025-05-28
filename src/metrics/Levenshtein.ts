@@ -19,7 +19,7 @@
 
 'use strict';
 
-import type { MetricCompute } from '../utils/Types';
+import type { MetricInput, MetricOptions, MetricCompute } from '../utils/Types';
 import { Metric } from './Metric';
 import { Helper } from '../utils/Helper';
 import { Pool } from '../utils/Pool';
@@ -29,8 +29,26 @@ import { Pool } from '../utils/Pool';
  */
 export default class Levenshtein extends Metric {
 
-    // Metric name for identification
-    protected metric: string = 'levenshtein';
+    /**
+     * Constructor for the Levenshtein class.
+     * 
+     * Initializes the Levenshtein metric with two input strings or
+     * arrays of strings and optional options.
+     * 
+     * @constructor
+     * @param {MetricInput} a - First input string or array of strings
+     * @param {MetricInput} b - Second input string or array of strings
+     * @param {MetricOptions} options - Options for the metric computation
+     */
+    constructor (
+        a: MetricInput, b: MetricInput,
+        options: MetricOptions = {}
+    ) {
+
+        // Call the parent Metric constructor with the metric name and inputs
+        super( 'levenshtein', a, b, options );
+
+    }
 
     /**
      * Calculates the Levenshtein distance between two strings.

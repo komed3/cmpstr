@@ -18,24 +18,29 @@ import type { MetricInput, MetricOptions, MetricCompute, MetricResult, MetricRes
 import { Helper } from '../utils/Helper';
 import { Perf } from '../utils/Performance';
 
+/**
+ * Abstract class representing a generic string metric.
+ * 
+ * @abstract
+ */
 export abstract class Metric {
+
+    // Metric name for identification
+    private readonly metric: string;
 
     // Inputs for the metric computation, which can be either strings or arrays of strings
     private readonly a: MetricInput;
     private readonly b: MetricInput;
 
     // Options for the metric computation, such as performance tracking
-    private readonly options: MetricOptions;
+    protected readonly options: MetricOptions;
 
     // Optional performance tracker
     private readonly perf: Perf | undefined;
 
-    // Metric name for identification
-    protected metric: string;
-
     // Result of the metric computation, which can be a single result or an array of results
     // This will be populated after running the metric
-    private res: MetricResult;
+    private res: MetricResult | undefined;
 
     /**
      * Constructor for the Metric class.
@@ -43,15 +48,21 @@ export abstract class Metric {
      * Initializes the metric with two inputs (strings or arrays of strings) and options.
      * 
      * @constructor
+     * @param {string} metric - The name of the metric (e.g., 'levenshtein')
      * @param {MetricInput} a - First input string or array of strings
      * @param {MetricInput} b - Second input string or array of strings
      * @param {MetricOptions} options - Options for the metric computation
      */
     constructor (
+        metric: string,
         a: MetricInput, b: MetricInput,
         options: MetricOptions = {}
     ) {
 
+        // Set the metric name
+        this.metric = metric;
+
+        // Set the inputs and options
         this.a = a, this.b = b;
         this.options = options;
 
@@ -90,7 +101,7 @@ export abstract class Metric {
      */
     protected algo ( a: string, b: string, m: number, n: number, maxLen: number ) : MetricCompute {
 
-        throw new Error ( `method Metric::algo must be overridden in a subclass.` );
+        throw new Error ( `method algo() must be overridden in a subclass` );
 
     }
 
@@ -142,7 +153,7 @@ export abstract class Metric {
 
             for ( let j = 0; j < B.length; j++ ) {
 
-                ( this.res as any ).push(
+                ( this.res as MetricResultSingle[] ).push(
                     this.runSingle( s, B[ j ] )
                 );
 
@@ -207,6 +218,12 @@ export abstract class Metric {
      * @returns {MetricResult} - The result of the metric computation
      */
     public getResult () : MetricResult {
+
+        if ( this.res === undefined ) {
+
+            throw new Error ( `run() must be called before getResult()` );
+
+        }
 
         return this.res;
 
