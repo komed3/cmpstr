@@ -19,6 +19,7 @@ export type MetricMode = 'default' | 'batch' | 'pairwise';
 export interface MetricOptions {
     mode?: MetricMode;
     perf?: boolean;
+    pad?: string;
 };
 
 export interface MetricRaw {

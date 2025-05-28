@@ -91,9 +91,11 @@ export default class DiceSorensen extends Metric {
         // Always use the shorter string for columns to save memory
         [ a, b, m, n ] = Helper.swap( a, b, m, n );
 
+        // Generate bigrams for both strings
         const setA: Set<string> = this._bigrams( a );
         const setB: Set<string> = this._bigrams( b );
 
+        // Calculate the intersection of bigrams
         let intersection: number = 0;
 
         for ( const bigram of setA ) {
@@ -102,6 +104,7 @@ export default class DiceSorensen extends Metric {
 
         }
 
+        // Calculate the size of the union of both sets
         const size: number = setA.size + setB.size;
 
         // Return the result as a MetricCompute object
