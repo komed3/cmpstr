@@ -158,11 +158,12 @@ export class HashTable {
      * 
      * @param {string} key - The key for the MetricCompute object
      * @param {MetricCompute} res - The MetricCompute object to add
+     * @param {boolean} [update=true] - Whether to update the entry if it already exists
      * @returns {boolean} - True if added successfully, false if the table is full
      */
-    public static set ( key: string, res: MetricCompute ) : boolean {
+    public static set ( key: string, res: MetricCompute, update: boolean = true ) : boolean {
 
-        if ( this.table.size < this.TABLE_SIZE ) {
+        if ( this.table.size < this.TABLE_SIZE && ( update || ! this.table.has( key ) ) ) {
 
             this.table.set( key, res );
 
@@ -171,6 +172,17 @@ export class HashTable {
         }
 
         return false;
+
+    }
+
+    /**
+     * Deletes an entry from the hash table by its key.
+     * 
+     * @param {string} key - The key of the entry to delete
+     */
+    public static delete ( key: string ) : void {
+
+        this.table.delete( key );
 
     }
 
