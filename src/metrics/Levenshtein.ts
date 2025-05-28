@@ -61,7 +61,7 @@ export default class Levenshtein extends Metric {
      * @param {number} maxLen - Maximum length of the strings
      * @return MetricCompute - Object containing the similarity result and raw distance
      */
-    protected algo ( a: string, b: string, m: number, n: number, maxLen: number ) : MetricCompute {
+    override algo ( a: string, b: string, m: number, n: number, maxLen: number ) : MetricCompute {
 
         // Set distance to max possible length
         let dist: number = maxLen;

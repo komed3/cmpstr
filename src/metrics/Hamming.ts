@@ -56,7 +56,7 @@ export default class Hamming extends Metric {
      * @return {MetricCompute} - Object containing the similarity result and raw distance
      * @throws {Error} - If strings are of unequal length and padding is not specified
      */
-    protected algo ( a: string, b: string, m: number, n: number, maxLen: number ) : MetricCompute {
+    override algo ( a: string, b: string, m: number, n: number, maxLen: number ) : MetricCompute {
 
         // Check for equal string length
         if ( m !== n ) {

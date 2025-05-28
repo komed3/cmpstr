@@ -82,7 +82,7 @@ export default class DiceSorensen extends Metric {
      * @param {number} maxLen - Maximum length of the strings
      * @return {MetricCompute} - Object containing the similarity result and raw distance
      */
-    protected algo ( a: string, b: string, m: number, n: number, maxLen: number ) : MetricCompute {
+    override algo ( a: string, b: string, m: number, n: number, maxLen: number ) : MetricCompute {
 
         // Edge cases: if both strings are empty or identical, return 1; if either is empty, return 0
         if ( a === b ) return { res: 1 };
