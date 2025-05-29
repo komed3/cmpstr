@@ -117,7 +117,7 @@ export class Normalizer {
         if ( ! flags || typeof flags !== 'string' || ! input ) return input;
 
         // Generate a cache key based on the flags and input
-        const key: string | false = this.cache.key( flags, input );
+        const key: string | false = this.cache.key( flags, [ input ] );
 
         // If the key exists in the cache, return the cached result
         if ( key && this.cache.has( key ) ) return this.cache.get( key )!;

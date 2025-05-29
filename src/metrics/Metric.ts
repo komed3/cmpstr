@@ -11,7 +11,9 @@
  * It provides:
  *  - A base class for string metrics with common functionality
  *  - Methods for running metrics in different modes
+ *  - Pre-computation for trivial cases to optimize performance
  *  - Caching of metric computations to avoid redundant calculations
+ *  - Support for symmetrical metrics (same result for inputs in any order)
  *  - Performance tracking capabilities
  * 
  * This class is intended to be extended by specific metric implementations that will
@@ -47,6 +49,9 @@ export abstract class Metric {
 
     // Options for the metric computation, such as performance tracking
     protected readonly options: MetricOptions;
+
+    // Indicates whether the metric is symmetric (same result for inputs in any order)
+    protected readonly symmetric: boolean;
 
     // Optional performance tracker
     private readonly perf: Perf | undefined;
@@ -100,16 +105,20 @@ export abstract class Metric {
     constructor (
         metric: string,
         a: MetricInput, b: MetricInput,
-        options: MetricOptions = {}
+        options: MetricOptions = {},
+        symmetric: boolean = false
     ) {
 
         // Set the metric name
         this.metric = metric;
 
-        // Set the inputs and options
+        // Set the inputs
         this.a = Array.isArray( a ) ? a : [ a ];
         this.b = Array.isArray( b ) ? b : [ b ];
+
+        // Set options
         this.options = options;
+        this.symmetric = symmetric;
 
         // Validate inputs: ensure they are not empty
         if ( this.a.length === 0 || this.b.length === 0 ) {
@@ -120,6 +129,28 @@ export abstract class Metric {
 
         // Optionally start performance measurement
         this.perf = this.options.perf ? Perf.getInstance( true ) : undefined;
+
+    }
+
+    /**
+     * Pre-compute the metric for two strings.
+     * This method is called before the actual computation to handle trivial cases.
+     * 
+     * @param {string} a - First string
+     * @param {string} b - Second string
+     * @param {number} m - Length of the first string
+     * @param {number} n - Length of the second string
+     * @returns {MetricCompute | undefined} - Pre-computed result or undefined if not applicable
+     */
+    protected preCompute ( a: string, b: string, m: number, n: number ) : MetricCompute | undefined {
+
+        // If strings are identical, return a similarity of 1
+        if ( a === b ) return { res: 1 };
+
+        // If the lengths of both strings is less than 2, return a similarity of 0
+        else if ( m == 0 || n == 0 || ( m < 2 && n < 2 ) ) return { res: 0 };
+
+        else undefined;
 
     }
 
@@ -143,7 +174,7 @@ export abstract class Metric {
 
     /**
      * Run the metric computation for single inputs (two strings).
-     * It uses a cache to avoid redundant calculations.
+     * Applies preCompute for trivial cases before cache lookup and computation.
      * 
      * @param {string} a - First string
      * @param {string} b - Second string
@@ -154,25 +185,35 @@ export abstract class Metric {
         // Type safety: convert inputs to strings
         a = String ( a ), b = String ( b );
 
-        // Generate a cache key based on the metric and pair of strings `a` and `b`
-        const key: string | false = Metric.cache.key( this.metric, a, b );
+        // Get lengths
+        let m: number = a.length, n: number = b.length;
 
-        // If the key exists in the cache, return the cached result
-        // Otherwise, compute the metric using the algorithm
-        const result: MetricCompute = ( key && Metric.cache.has( key ) ) ? Metric.cache.get( key )! : ( () => {
+        // Pre-compute trivial cases (identical, empty, etc.)
+        let result: MetricCompute | undefined = this.preCompute( a, b, m, n );
 
-            // Get length of string a, b
-            const m: number = a.length, n: number = b.length;
+        if ( ! result ) {
 
-            // Compute the similarity using the algorithm
-            const res: MetricCompute = this.compute( a, b, m, n, Math.max( m, n ) );
+            // Generate a cache key based on the metric and pair of strings `a` and `b`
+            const key: string | false = Metric.cache.key( this.metric, [ a, b ], this.symmetric );
 
-            // If a key was generated, store the result in the cache
-            if ( key ) Metric.cache.set( key, res );
+            // If the key exists in the cache, return the cached result
+            // Otherwise, compute the metric using the algorithm
+            result = ( key && Metric.cache.has( key ) ) ? Metric.cache.get( key )! : ( () => {
 
-            return res;
+                // If the metric is symmetrical, swap `a` and `b` (shorter string first)
+                if ( this.symmetric ) [ a, b, m, n ] = Metric.swap( a, b, m, n );
 
-        } )();
+                // Compute the similarity using the algorithm
+                const res = this.compute( a, b, m, n, Math.max( m, n ) );
+
+                // If a key was generated, store the result in the cache
+                if ( key ) Metric.cache.set( key, res );
+
+                return res;
+
+            } )();
+
+        }
 
         // Build result object, optionally including performance data
         return { metric: this.metric, a, b, ...result, ...(
@@ -275,6 +316,20 @@ export abstract class Metric {
     public isPairwise () : boolean {
 
         return this.isBatch() && this.a.length === this.b.length;
+
+    }
+
+    /**
+     * Check if the metric is symmetrical.
+     * 
+     * This method returns whether the metric is symmetric, meaning it produces the same
+     * result regardless of the order of inputs (e.g., Levenshtein distance).
+     * 
+     * @returns {boolean} - True if the metric is symmetric
+     */
+    public isSymmetrical () : boolean {
+
+        return this.symmetric;
 
     }
 

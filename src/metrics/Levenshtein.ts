@@ -44,7 +44,8 @@ export default class Levenshtein extends Metric {
     ) {
 
         // Call the parent Metric constructor with the metric name and inputs
-        super( 'levenshtein', a, b, options );
+        // Metric is symmetrical
+        super( 'levenshtein', a, b, options, true );
 
     }
 
@@ -60,54 +61,42 @@ export default class Levenshtein extends Metric {
      */
     override compute ( a: string, b: string, m: number, n: number, maxLen: number ) : MetricCompute {
 
-        // If strings are identical, distance is zero
-        // If one string is empty, distance is the length of the other
-        let dist: number = m === 0 ? n : n === 0 ? m : 0;
+        // Get two reusable arrays from the Pool for the DP rows
+        const [ prev, curr ] = Pool.acquireMany( 'uint16', [ m + 1, m + 1 ] );
 
-        // Otherwise, perform the Levenshtein algorithm
-        if ( a !== b ) {
+        // Initialize the first row (edit distances from empty string to a)
+        for ( let i = 0; i <= m; i++ ) prev[ i ] = i;
 
-            // Always use the shorter string for columns to save memory
-            [ a, b, m, n ] = Metric.swap( a, b, m, n );
+        // Fill the DP matrix row by row
+        for ( let j = 1; j <= n; j++ ) {
 
-            // Get two reusable arrays from the Pool for the DP rows
-            const [ prev, curr ] = Pool.acquireMany( 'uint16', [ m + 1, m + 1 ] );
+            // Cost of transforming empty string to b[0..j]
+            curr[ 0 ] = j;
 
-            // Initialize the first row (edit distances from empty string to a)
-            for ( let i = 0; i <= m; i++ ) prev[ i ] = i;
+            // Get the character code of the current character in b
+            const cb: number = b.charCodeAt( j - 1 );
 
-            // Fill the DP matrix row by row
-            for ( let j = 1; j <= n; j++ ) {
+            for ( let i = 1; i <= m; i++ ) {
 
-                // Cost of transforming empty string to b[0..j]
-                curr[ 0 ] = j;
+                // Cost is 0 if characters match, 1 otherwise
+                const cost: number = a.charCodeAt( i - 1 ) === cb ? 0 : 1;
 
-                // Get the character code of the current character in b
-                const cb: number = b.charCodeAt( j - 1 );
-
-                for ( let i = 1; i <= m; i++ ) {
-
-                    // Cost is 0 if characters match, 1 otherwise
-                    const cost: number = a.charCodeAt( i - 1 ) === cb ? 0 : 1;
-
-                    // Calculate the minimum edit distance for current cell
-                    curr[ i ] = Math.min(
-                        curr[ i - 1 ] + 1,      // Insertion
-                        prev[ i ] + 1,          // Deletion
-                        prev[ i - 1 ] + cost    // Substitution
-                    );
-
-                }
-
-                // Copy current row to previous for next iteration
-                prev.set( curr );
+                // Calculate the minimum edit distance for current cell
+                curr[ i ] = Math.min(
+                    curr[ i - 1 ] + 1,      // Insertion
+                    prev[ i ] + 1,          // Deletion
+                    prev[ i - 1 ] + cost    // Substitution
+                );
 
             }
 
-            // The last value in prev is the Levenshtein distance
-            dist = prev[ m ];
+            // Copy current row to previous for next iteration
+            prev.set( curr );
 
         }
+
+        // The last value in prev is the Levenshtein distance
+        const dist: number = prev[ m ];
 
         // Return the result as a MetricCompute object
         return {

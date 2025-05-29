@@ -119,10 +119,11 @@ export class HashTable<K extends string, T> {
      * The key is in the format "label-H1-H2-H3-..."
      *
      * @param {K} label - Label for this key (e.g. metric name, normalization flags, …)
-     * @param {...string[]} strs - Any number of strings to hash (e.g. input, params, …)
+     * @param {string[]} strs - Array of strings to hash (e.g. input, params, …)
+     * @param {boolean} [sorted=false] - Whether to sort the hashes before creating the key
      * @returns {string|false} - A unique hash key or false if any string is too long
      */
-    public key ( label: K, ...strs: string[] ) : string | false {
+    public key ( label: K, strs: string[], sorted: boolean = false ) : string | false {
 
         // Return false if any string exceeds the maximum length
         for ( const str of strs ) {
@@ -131,9 +132,11 @@ export class HashTable<K extends string, T> {
 
         }
 
-        // Hash all strings and sort them in ascending order
+        // Hash all strings
         const hashes: number[] = strs.map( s => Hasher.fnv1a( s ) );
-        hashes.sort();
+
+        // Sort them in ascending order
+        if ( sorted ) hashes.sort();
 
         // Build key: label-H1-H2-H3-...
         return [ label, ...hashes ].join( '-' );

@@ -76,18 +76,12 @@ export default class Hamming extends Metric {
 
         }
 
-        // If strings are identical, distance is zero
+        // Calculate the Hamming distance
         let dist: number = 0;
 
-        // Otherwise, perform the Hamming distance algorithm
-        if ( a !== b ) {
+        for ( let i = 0; i < a.length; i++ ) {
 
-            // Calculate the Hamming distance
-            for ( let i = 0; i < a.length; i++ ) {
-
-                if ( a[ i ] !== b[ i ] ) dist++;
-
-            }
+            if ( a[ i ] !== b[ i ] ) dist++;
 
         }
 

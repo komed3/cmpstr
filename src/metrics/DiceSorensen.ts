@@ -45,7 +45,8 @@ export default class DiceSorensen extends Metric {
     ) {
 
         // Call the parent Metric constructor with the metric name and inputs
-        super( 'dice', a, b, options );
+        // Metric is symmetrical
+        super( 'dice', a, b, options, true );
 
     }
 
@@ -72,19 +73,9 @@ export default class DiceSorensen extends Metric {
      * 
      * @param {string} a - First string
      * @param {string} b - Second string
-     * @param {number} m - Length of the first string
-     * @param {number} n - Length of the second string
-     * @param {number} maxLen - Maximum length of the strings
      * @return {MetricCompute} - Object containing the similarity result and raw distance
      */
-    override compute ( a: string, b: string, m: number, n: number, maxLen: number ) : MetricCompute {
-
-        // Edge cases: if both strings are empty or identical, return 1; if either is empty, return 0
-        if ( a === b ) return { res: 1 };
-        if ( m < 2 || n < 2 ) return { res: 0 };
-
-        // Always use the shorter string for columns to save memory
-        [ a, b, m, n ] = Metric.swap( a, b, m, n );
+    override compute ( a: string, b: string ) : MetricCompute {
 
         // Generate bigrams for both strings
         const setA: Set<string> = this._bigrams( a );
