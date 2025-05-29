@@ -22,7 +22,7 @@ import type { PerfMeasure } from './Types';
 export class Perf {
 
     // Environment detection
-    private static ENV: 'nodejs' | 'browser' | undefined;
+    private static ENV: 'nodejs' | 'browser' | 'unknown';
 
     // Singleton instance
     private static instance: Perf;
@@ -47,8 +47,8 @@ export class Perf {
         // Check for browser environment
         else if ( typeof performance !== 'undefined' ) Perf.ENV = 'browser';
 
-        // If neither, set ENV to undefined
-        else Perf.ENV = undefined;
+        // If neither, set ENV to unknown
+        else Perf.ENV = 'unknown';
 
     }
 
@@ -75,7 +75,7 @@ export class Perf {
 
             // Node.js environment
             case 'nodejs':
-                return this.lastTime = Number( process.hrtime.bigint() );
+                return this.lastTime = Number( process.hrtime.bigint() ) / 1e6;
 
             // Browser environment
             case 'browser':
@@ -106,7 +106,7 @@ export class Perf {
 
             // Browser environment
             case 'browser':
-                return this.lastMemory = ( performance as any ).memory.usedJSHeapSize;
+                return this.lastMemory = ( performance as any ).memory?.usedJSHeapSize ?? 0;
 
             // Fallback
             default:
@@ -120,12 +120,19 @@ export class Perf {
      * Returns the singleton instance of the Perf class.
      * If the instance does not exist, it creates a new one.
      * 
-     * @returns {Perf} - Singleton instance of Perf
+     * @param {boolean} reset - If true, resets the time and memory measurements
+     * @returns {Perf} - Singleton instance of the Perf class
      */
-    public static getInstance () : Perf {
+    public static getInstance ( reset: boolean = false ) : Perf {
+
+        // Ensure the environment is set
+        if ( ! Perf.ENV ) Perf.setEnv();
 
         // If instance does not exist, create a new one
-        if ( ! Perf.instance ) Perf.instance = new Perf ();
+        if ( ! Perf.instance ) return Perf.instance = new Perf ();
+
+        // If reset is true, reset the time and memory measurements
+        if ( reset ) Perf.instance.reset();
 
         return Perf.instance;
 
@@ -174,6 +181,3 @@ export class Perf {
     }
 
 }
-
-// Initialize the environment detection
-Perf.setEnv();
