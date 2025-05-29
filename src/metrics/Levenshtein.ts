@@ -57,7 +57,7 @@ export default class LevenshteinDistance extends Metric {
      * @param {number} m - Length of the first string
      * @param {number} n - Length of the second string
      * @param {number} maxLen - Maximum length of the strings
-     * @return MetricCompute - Object containing the similarity result and raw distance
+     * @return {MetricCompute} - Object containing the similarity result and raw distance
      */
     override compute ( a: string, b: string, m: number, n: number, maxLen: number ) : MetricCompute {
 

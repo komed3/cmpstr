@@ -88,7 +88,7 @@ export abstract class Metric {
      */
     public static norm ( raw: number, max: number ) : number {
 
-        return max === 0 ? 1 : 1 - raw / max;
+        return max === 0 ? 1 : Math.max( 0, Math.min( 1, 1 - raw / max ) );
 
     }
 

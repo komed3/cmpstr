@@ -47,6 +47,9 @@ export interface MetricOptions {
     mode?: MetricMode;
     perf?: boolean;
     pad?: string;
+    match?: number;
+    mismatch?: number;
+    gap?: number;
 };
 
 export interface MetricRaw {
