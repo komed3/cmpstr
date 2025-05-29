@@ -54,7 +54,7 @@ export default class Hamming extends Metric {
      * @return {MetricCompute} - Object containing the similarity result and raw distance
      * @throws {Error} - If strings are of unequal length and padding is not specified
      */
-    override algo ( a: string, b: string, m: number, n: number, maxLen: number ) : MetricCompute {
+    override compute ( a: string, b: string, m: number, n: number, maxLen: number ) : MetricCompute {
 
         // Check for equal string length
         if ( m !== n ) {
@@ -76,12 +76,18 @@ export default class Hamming extends Metric {
 
         }
 
-        // Calculate the Hamming distance
+        // If strings are identical, distance is zero
         let dist: number = 0;
 
-        for ( let i = 0; i < a.length; i++ ) {
+        // Otherwise, perform the Hamming distance algorithm
+        if ( a !== b ) {
 
-            if ( a[ i ] !== b[ i ] ) dist++;
+            // Calculate the Hamming distance
+            for ( let i = 0; i < a.length; i++ ) {
+
+                if ( a[ i ] !== b[ i ] ) dist++;
+
+            }
 
         }
 

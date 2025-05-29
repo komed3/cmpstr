@@ -58,20 +58,14 @@ export default class Levenshtein extends Metric {
      * @param {number} maxLen - Maximum length of the strings
      * @return MetricCompute - Object containing the similarity result and raw distance
      */
-    override algo ( a: string, b: string, m: number, n: number, maxLen: number ) : MetricCompute {
-
-        // Set distance to max possible length
-        let dist: number = maxLen;
+    override compute ( a: string, b: string, m: number, n: number, maxLen: number ) : MetricCompute {
 
         // If strings are identical, distance is zero
-        if ( a === b ) dist = 0;
-
         // If one string is empty, distance is the length of the other
-        else if ( m === 0 ) dist = n;
-        else if ( n === 0 ) dist = m;
+        let dist: number = m === 0 ? n : n === 0 ? m : 0;
 
-        // Perform the Levenshtein algorithm
-        else {
+        // Otherwise, perform the Levenshtein algorithm
+        if ( a !== b ) {
 
             // Always use the shorter string for columns to save memory
             [ a, b, m, n ] = Metric.swap( a, b, m, n );

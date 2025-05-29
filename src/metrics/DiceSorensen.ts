@@ -22,6 +22,7 @@
 
 import type { MetricInput, MetricOptions, MetricCompute } from '../utils/Types';
 import { Metric } from './Metric';
+import { Pool } from '../utils/Pool';
 
 /**
  * DiceSorensen class extends the Metric class to implement the Dice-Sørensen coefficient.
@@ -56,13 +57,11 @@ export default class DiceSorensen extends Metric {
      */
     private _bigrams ( str: string ) : Set<string> {
 
-        const bigrams: Set<string> = new Set ();
+        const len: number = str.length - 1;
+        const bigrams: Set<string> = Pool.acquire( 'set', len );
 
-        for ( let i = 0; i < str.length - 1; i++ ) {
-
-            bigrams.add( str.substring( i, i + 2 ) );
-
-        }
+        // Generate bigrams by iterating through the string
+        for ( let i = 0; i < len; i++ ) bigrams.add( str.substring( i, i + 2 ) );
 
         return bigrams;
 
@@ -78,7 +77,7 @@ export default class DiceSorensen extends Metric {
      * @param {number} maxLen - Maximum length of the strings
      * @return {MetricCompute} - Object containing the similarity result and raw distance
      */
-    override algo ( a: string, b: string, m: number, n: number, maxLen: number ) : MetricCompute {
+    override compute ( a: string, b: string, m: number, n: number, maxLen: number ) : MetricCompute {
 
         // Edge cases: if both strings are empty or identical, return 1; if either is empty, return 0
         if ( a === b ) return { res: 1 };

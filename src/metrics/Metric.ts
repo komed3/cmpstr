@@ -15,7 +15,7 @@
  *  - Performance tracking capabilities
  * 
  * This class is intended to be extended by specific metric implementations that will
- * implement the `algo` method to define the specific metric computation logic.
+ * implement the `compute` method to define the specific metric computation logic.
  * 
  * @module Metric
  * @author Paul Köhler (komed3)
@@ -135,9 +135,9 @@ export abstract class Metric {
      * @returns {MetricCompute} - The result of the metric computation
      * @throws {Error} - If not overridden in a subclass
      */
-    protected algo ( a: string, b: string, m: number, n: number, maxLen: number ) : MetricCompute {
+    protected compute ( a: string, b: string, m: number, n: number, maxLen: number ) : MetricCompute {
 
-        throw new Error ( `method algo() must be overridden in a subclass` );
+        throw new Error ( `method compute() must be overridden in a subclass` );
 
     }
 
@@ -165,7 +165,7 @@ export abstract class Metric {
             const m: number = a.length, n: number = b.length;
 
             // Compute the similarity using the algorithm
-            const res: MetricCompute = this.algo( a, b, m, n, Math.max( m, n ) );
+            const res: MetricCompute = this.compute( a, b, m, n, Math.max( m, n ) );
 
             // If a key was generated, store the result in the cache
             if ( key ) Metric.cache.set( key, res );
