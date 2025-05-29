@@ -14,6 +14,10 @@ export interface PoolBuffer<T> {
   size: number;
 }
 
+export type NormalizerFn = ( input: string ) => string;
+
+export type NormalizeFlags = string;
+
 export interface Performance {
     time: number;
     mem: number;
