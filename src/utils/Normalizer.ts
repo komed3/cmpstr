@@ -10,15 +10,16 @@
  * cached for efficiency.
  * 
  * Supported flags:
- * 'w': Collapse whitespace
- * 't': Remove leading and trailing whitespace
- * 's': Remove punctuation / special characters
- * 'r': Remove diacritics
- * 'k': Remove non-letter characters
- * 'n': Remove non-number characters
- * 'i': Case insensitive (convert to lowercase)
- * 'd': Normalize to NFD (Normalization Form Decomposed)
- * 'u': Normalize to NFC (Normalization Form Composed)
+ * 'd' :: Normalize to NFD (Normalization Form Decomposed)
+ * 'u' :: Normalize to NFC (Normalization Form Composed)
+ * 'x' :: Normalize to NFKC (Normalization Form Compatibility Composed)
+ * 'w' :: Collapse whitespace
+ * 't' :: Remove leading and trailing whitespace
+ * 'r' :: Remove double characters
+ * 's' :: Remove punctuation / special characters
+ * 'k' :: Remove non-letter characters
+ * 'n' :: Remove non-number characters
+ * 'i' :: Case insensitive (convert to lowercase)
  * 
  * @module Normalizer
  * @author Paul Köhler (komed3)
@@ -62,24 +63,26 @@ export class Normalizer {
         // Define the normalization steps based on the flags
         const steps: NormalizerFn[] = [];
 
+        // Normalize to NFD (Normalization Form Decomposed)
+        if ( flags.includes( 'd' ) ) steps.push( str => str.normalize( 'NFD' ) );
+        // Normalize to NFC (Normalization Form Composed)
+        if ( flags.includes( 'u' ) ) steps.push( str => str.normalize( 'NFC' ) );
+        // Normalize to NFKC (Normalization Form Compatibility Composed)
+        if ( flags.includes( 'x' ) ) steps.push( str => str.normalize( 'NFKC' ) );
         // Collapse whitespace
         if ( flags.includes( 'w' ) ) steps.push( str => str.replace( /\s+/g, ' ' ) );
         // Remove leading and trailing whitespace
         if ( flags.includes( 't' ) ) steps.push( str => str.trim() );
+        // Remove double characters
+        if ( flags.includes( 'r' ) ) steps.push( str => str.replace( /(.)\1+/g, '$1' ) );
         // Remove punctuation / special characters
         if ( flags.includes( 's' ) ) steps.push( str => str.replace( /[^\p{L}\p{N}\s]/gu, '' ) );
-        // Remove diacritics
-        if ( flags.includes( 'r' ) ) steps.push( str => str.replace( /(.)\1+/g, '$1' ) );
         // Remove non-letter characters
         if ( flags.includes( 'k' ) ) steps.push( str => str.replace( /[^\p{L}]/gu, '' ) );
         // Remove non-number characters
         if ( flags.includes( 'n' ) ) steps.push( str => str.replace( /\p{N}/gu, '' ) );
         // Case insensitive
         if ( flags.includes( 'i' ) ) steps.push( str => str.toLowerCase() );
-        // Normalize to NFD (Normalization Form Decomposed)
-        if ( flags.includes( 'd' ) ) steps.push( str => str.normalize( 'NFD' ) );
-        // Normalize to NFC (Normalization Form Composed)
-        if ( flags.includes( 'u' ) ) steps.push( str => str.normalize( 'NFC' ) );
 
         // Build the normalization function from the steps
         const compiled: NormalizerFn = input => {
@@ -111,7 +114,7 @@ export class Normalizer {
     static normalize ( input: string, flags: NormalizeFlags ) : string {
 
         // If input or flags are not provided, return the input as is
-        if ( ! input || ! flags ) return input;
+        if ( ! flags || typeof flags !== 'string' || ! input ) return input;
 
         // Generate a cache key based on the flags and input
         const key: string | false = this.cache.key( flags, input );
