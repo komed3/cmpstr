@@ -1,16 +1,14 @@
 /**
- * Hash Table
+ * Hash Table Utility (Instance-based)
  * src/utils/HashTable.ts
  * 
- * This module implements a hash table using the FNV-1a hash algorithm.
+ * This module implements an instantiable hash table/cache using the FNV-1a hash algorithm.
+ * It allows for multiple independent caches (e.g. for metrics, normalization, etc.) with
+ * type safety and high performance. The FNV-1a algorithm is factored out into its own
+ * static utility class to avoid code duplication and memory overhead.
  * 
- * @see https://en.wikipedia.org/wiki/Hash_table
- * @see https://en.wikipedia.org/wiki/Fowler%E2%80%93Noll%E2%80%93Vo_hash_function
- * 
- * It provides methods to compute a hash for a given string, generate a unique key
- * for queries, check for the existence of keys, retrieve values, add new entries,
- * clear the table, and get the size of the table. The hash table is designed to
- * store normalized strings and `MetricCompute` objects.
+ * The key() method supports any number of string arguments, enabling flexible cache keys
+ * for different use cases (e.g. normalization, metrics, etc.).
  * 
  * @author Paul Köhler (komed3)
  * @license MIT
@@ -19,41 +17,23 @@
 'use strict';
 
 /**
- * HashTable class implements a hash table using the FNV-1a hash algorithm.
+ * Hasher Utility
+ * Static class for FNV-1a hash calculation.
  */
-export class HashTable {
+class Hasher {
 
     // Constants for the FNV-1a hash algorithm
     private static readonly FNV_PRIME: number = 0x01000193;
     private static readonly HASH_OFFSET: number = 0x811c9dc5;
 
-    // The max. length of a string to hash, which is set to 2048 characters.
-    private static readonly MAX_LEN: number = 2048;
-
-    // The max. size of the hash table, which is set to 10,000.
-    private static readonly TABLE_SIZE: number = 10_000;
-
-    /**
-     * A static map to store entries.
-     * 
-     * The key is a string generated from the query and (two) hashed strings,
-     * and the value (e.g. normalized strings or a MetricCompute object).
-     * 
-     * @private
-     */
-    private static table: Map<string, unknown> = new Map ();
-
     /**
      * Computes a hash value for a given string using the FNV-1a algorithm.
+     * Processes the string in chunks of 4 characters for better performance.
      * 
-     * This method processes the string in chunks of 4 characters for better performance,
-     * and handles any remaining characters efficiently.
-     * 
-     * @private
      * @param {string} str - The string to hash
      * @return {number} - The computed hash value as an unsigned 32-bit integer
      */
-    private static fnv1a ( str: string ) : number {
+    public static fnv1a ( str: string ) : number {
 
         const len: number = str.length;
         let hash: number = this.HASH_OFFSET;
@@ -66,7 +46,7 @@ export class HashTable {
             const pos = i * 4;
 
             // Combine 4 chars into a single number for faster processing
-            const chunk = (
+            const chunk: number = (
                 ( str.charCodeAt( pos ) ) |
                 ( str.charCodeAt( pos + 1 ) <<  8 ) |
                 ( str.charCodeAt( pos + 2 ) << 16 ) |
@@ -106,26 +86,52 @@ export class HashTable {
 
     }
 
+}
+
+/**
+ * HashTable class implements an instantiable hash table/cache.
+ * Allows for multiple independent caches with type safety and high performance.
+ * 
+ * @template T - The type of value to be stored in the hash table (e.g. MetricCompute, string, …)
+ */
+export class HashTable<T> {
+
+    // The max. length of a string to hash, which is set to 2048 characters.
+    private static readonly MAX_LEN: number = 2048;
+
+    // The max. size of the hash table, which is set to 10,000.
+    private static readonly TABLE_SIZE: number = 10_000;
+
     /**
-     * Generates a unique hash key for a query based on (two) strings.
-     * 
-     * @param {string} q - The query
-     * @param {string} a - The first string to hash
-     * @param {string} b - The optional second string to hash
-     * @returns {string|false} - A unique hash key in the format "metric-A-B" or false
+     * The internal map to store entries.
+     * The key is a string generated from the label and any number of hashed strings.
+     * The value is of type T.
      */
-    public static key ( q: string, a: string, b: string = '' ) : string | false {
+    private table: Map<string, T> = new Map ();
 
-        // Return false if either string exceeds the maximum length
-        if ( a.length > this.MAX_LEN || b.length > this.MAX_LEN ) return false;
+    /**
+     * Generates a unique hash key for any number of string arguments.
+     * The key is in the format "label-H1-H2-H3-..."
+     *
+     * @param {string} label - Label for this key (e.g. metric name, normalization flags, …)
+     * @param {...string[]} strs - Any number of strings to hash (e.g. input, params, …)
+     * @returns {string|false} - A unique hash key or false if any string is too long
+     */
+    public key ( label: string, ...strs: string[] ) : string | false {
 
-        // Get the hash values for both strings
-        const A: number = this.fnv1a( a );
-        const B: number = b.length ? this.fnv1a( b ) : 0;
+        // Return false if any string exceeds the maximum length
+        for ( const str of strs ) {
 
-        // Consistent key independent of sequence
-        return A < B ? `${q}-${A}-${B}` : `${q}-${B}-${A}`;
+            if ( str.length > HashTable.MAX_LEN ) return false;
 
+        }
+
+        // Hash all strings and sort them in ascending order
+        const hashes: number[] = strs.map( s => Hasher.fnv1a( s ) );
+        hashes.sort();
+
+        // Build key: label-H1-H2-H3-...
+        return [ label, ...hashes ].join( '-' );
     }
 
     /**
@@ -134,7 +140,7 @@ export class HashTable {
      * @param {string} key - The key to check
      * @returns {boolean} - True if the key exists, false otherwise
      */
-    public static has ( key: string ) : boolean {
+    public has ( key: string ) : boolean {
 
         return this.table.has( key );
 
@@ -144,25 +150,25 @@ export class HashTable {
      * Retrieves the entry from the hash table by its key.
      * 
      * @param {string} key - The key to look up
-     * @returns {unknown|undefined} - The entry if found, undefined otherwise
+     * @returns {T|undefined} - The entry if found, undefined otherwise
      */
-    public static get ( key: string ) : unknown | undefined {
+    public get ( key: string ) : T | undefined {
 
         return this.table.get( key );
 
     }
 
     /**
-     * Adds an entry (e.g. normalized string or MetricCompute object) to the hash table.
+     * Adds an entry to the hash table.
      * 
      * @param {string} key - The hashed key for the entry
-     * @param {unknown} entry - The entry itself to add
+     * @param {T} entry - The entry itself to add
      * @param {boolean} [update=true] - Whether to update the entry if it already exists
      * @returns {boolean} - True if added successfully, false if the table is full
      */
-    public static set ( key: string, entry: unknown, update: boolean = true ) : boolean {
+    public set ( key: string, entry: T, update: boolean = true ) : boolean {
 
-        if ( this.table.size < this.TABLE_SIZE && ( update || ! this.table.has( key ) ) ) {
+        if ( this.table.size < HashTable.TABLE_SIZE && ( update || ! this.table.has( key ) ) ) {
 
             this.table.set( key, entry );
 
@@ -179,7 +185,7 @@ export class HashTable {
      * 
      * @param {string} key - The key of the entry to delete
      */
-    public static delete ( key: string ) : void {
+    public delete ( key: string ) : void {
 
         this.table.delete( key );
 
@@ -187,10 +193,9 @@ export class HashTable {
 
     /**
      * Clears the hash table.
-     * 
      * This method removes all entries from the hash table.
      */
-    public static clear () : void {
+    public clear () : void {
 
         this.table.clear();
 
@@ -201,7 +206,7 @@ export class HashTable {
      * 
      * @returns {number} - The number of entries in the hash table
      */
-    public static size () : number {
+    public size () : number {
 
         return this.table.size;
 

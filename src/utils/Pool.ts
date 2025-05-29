@@ -25,6 +25,8 @@ import type { PoolType, PoolConfig, PoolBuffer } from './Types';
  * 
  * It allows for efficient acquisition and release of buffers, ensuring that
  * buffers are reused without unnecessary allocations.
+ * 
+ * @template T - The type of buffers managed by the pool
  */
 class PoolRing<T> {
 
