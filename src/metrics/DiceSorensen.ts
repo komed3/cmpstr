@@ -25,9 +25,9 @@ import { Metric } from './Metric';
 import { Pool } from '../utils/Pool';
 
 /**
- * DiceSorensen class extends the Metric class to implement the Dice-Sørensen coefficient.
+ * DiceSorensenCoefficient class extends the Metric class to implement the Dice-Sørensen coefficient.
  */
-export default class DiceSorensen extends Metric {
+export default class DiceSorensenCoefficient extends Metric {
 
     /**
      * Constructor for the DiceSorensen class.

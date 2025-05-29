@@ -24,9 +24,9 @@ import { Metric } from './Metric';
 import { Pool } from '../utils/Pool';
 
 /**
- * Levenshtein class extends the Metric class to implement the Levenshtein distance algorithm.
+ * LevenshteinDistance class extends the Metric class to implement the Levenshtein distance algorithm.
  */
-export default class Levenshtein extends Metric {
+export default class LevenshteinDistance extends Metric {
 
     /**
      * Constructor for the Levenshtein class.

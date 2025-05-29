@@ -19,9 +19,9 @@ import type { MetricInput, MetricOptions, MetricCompute } from '../utils/Types';
 import { Metric } from './Metric';
 
 /**
- * Hamming class extends the Metric class to implement the Hamming distance.
+ * HammingDistance class extends the Metric class to implement the Hamming distance.
  */
-export default class Hamming extends Metric {
+export default class HammingDistance extends Metric {
 
     /**
      * Constructor for the Hamming class.
