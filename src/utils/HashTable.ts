@@ -2,6 +2,9 @@
  * Hash Table Utility (Instance-based)
  * src/utils/HashTable.ts
  * 
+ * @see https://en.wikipedia.org/wiki/Fowler–Noll–Vo_hash_function
+ * @see https://en.wikipedia.org/wiki/Hash_table
+ * 
  * This module implements an instantiable hash table/cache using the FNV-1a hash algorithm.
  * It allows for multiple independent caches (e.g. for metrics, normalization, etc.) with
  * type safety and high performance. The FNV-1a algorithm is factored out into its own
