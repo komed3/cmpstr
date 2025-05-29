@@ -10,16 +10,16 @@
  * cached for efficiency.
  * 
  * Supported flags:
- * 'd' :: Normalize to NFD (Normalization Form Decomposed)
- * 'u' :: Normalize to NFC (Normalization Form Composed)
- * 'x' :: Normalize to NFKC (Normalization Form Compatibility Composed)
- * 'w' :: Collapse whitespace
- * 't' :: Remove leading and trailing whitespace
- * 'r' :: Remove double characters
- * 's' :: Remove punctuation / special characters
- * 'k' :: Remove non-letter characters
- * 'n' :: Remove non-number characters
- * 'i' :: Case insensitive (convert to lowercase)
+ *  'd' :: Normalize to NFD (Normalization Form Decomposed)
+ *  'u' :: Normalize to NFC (Normalization Form Composed)
+ *  'x' :: Normalize to NFKC (Normalization Form Compatibility Composed)
+ *  'w' :: Collapse whitespace
+ *  't' :: Remove leading and trailing whitespace
+ *  'r' :: Remove double characters
+ *  's' :: Remove punctuation / special characters
+ *  'k' :: Remove non-letter characters
+ *  'n' :: Remove non-number characters
+ *  'i' :: Case insensitive (convert to lowercase)
  * 
  * @module Normalizer
  * @author Paul Köhler (komed3)

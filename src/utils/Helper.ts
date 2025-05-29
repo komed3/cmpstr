@@ -33,19 +33,4 @@ export class Helper {
 
     }
 
-    /**
-     * Converts an input to an array of strings.
-     * If the input is already an array, it returns it as is.
-     * If the input is a single value (string or number), it wraps it in an array.
-     * 
-     * @static
-     * @param {any} s - Input to convert
-     * @returns {string[]} - Array of strings
-     */
-    public static asArr ( s: any ) : string[] {
-
-        return Array.isArray( s ) ? s : [ s ];
-
-    }
-
 };
