@@ -58,10 +58,9 @@ export default class SmithWatermanDistance extends Metric {
      * @param {string} b - Second string
      * @param {number} m - Length of the first string
      * @param {number} n - Length of the second string
-     * @param {number} maxLen - Maximum length of the strings
      * @return {MetricCompute} - Object containing the similarity result and raw score
      */
-    override compute ( a: string, b: string, m: number, n: number, maxLen: number ) : MetricCompute {
+    override compute ( a: string, b: string, m: number, n: number ) : MetricCompute {
 
         // Scoring parameters (can be customized via options if needed)
         const { match = 2, mismatch = -1, gap = -2 } = this.options;
