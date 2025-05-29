@@ -46,7 +46,7 @@ export class Normalizer {
      * A cache to store normalized strings based on the flags and input.
      * This helps avoid recomputing normalization for the same input and flags.
      */
-    private static cache: HashTable<string> = new HashTable ();
+    private static cache: HashTable<NormalizeFlags, string> = new HashTable ();
 
     /**
      * Returns a normalization function based on the provided flags.

@@ -96,9 +96,10 @@ class Hasher {
  * HashTable class implements an instantiable hash table/cache.
  * Allows for multiple independent caches with type safety and high performance.
  * 
+ * @template K - The type of the label for the key (e.g. string, MetricName, …)
  * @template T - The type of value to be stored in the hash table (e.g. MetricCompute, string, …)
  */
-export class HashTable<T> {
+export class HashTable<K extends string, T> {
 
     // The max. length of a string to hash, which is set to 2048 characters.
     private static readonly MAX_LEN: number = 2048;
@@ -117,11 +118,11 @@ export class HashTable<T> {
      * Generates a unique hash key for any number of string arguments.
      * The key is in the format "label-H1-H2-H3-..."
      *
-     * @param {string} label - Label for this key (e.g. metric name, normalization flags, …)
+     * @param {K} label - Label for this key (e.g. metric name, normalization flags, …)
      * @param {...string[]} strs - Any number of strings to hash (e.g. input, params, …)
      * @returns {string|false} - A unique hash key or false if any string is too long
      */
-    public key ( label: string, ...strs: string[] ) : string | false {
+    public key ( label: K, ...strs: string[] ) : string | false {
 
         // Return false if any string exceeds the maximum length
         for ( const str of strs ) {
