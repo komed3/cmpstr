@@ -27,11 +27,11 @@ export class Perf {
     // Singleton instance
     private static instance: Perf;
 
-    // Last measured time and memory
+    // Last measured time and memory (in ms)
     private lastTime: number;
     private lastMemory: number;
 
-    // Start time and memory for total measurement
+    // Start time and memory for total measurement (in bytes)
     private startTime: number;
     private startMemory: number;
 
@@ -63,13 +63,13 @@ export class Perf {
     }
 
     /**
-     * Sets the current time based on the environment.
+     * Updates the current time based on the environment.
      * Uses process.hrtime.bigint() for Node.js, performance.now() for browsers,
      * and Date.now() as a fallback.
      * 
      * @returns {number} - Current time in milliseconds or nanoseconds
      */
-    private setTime () : number {
+    private updateTime () : number {
 
         switch ( Perf.ENV ) {
 
@@ -90,13 +90,13 @@ export class Perf {
     }
 
     /**
-     * Sets the current memory usage based on the environment.
+     * Updates the current memory usage based on the environment.
      * Uses process.memoryUsage().heapUsed for Node.js, performance.memory.usedJSHeapSize
      * for browsers, and returns 0 as a fallback.
      * 
      * @returns {number} - Current memory usage in bytes
      */
-    private setMemory () : number {
+    private updateMemory () : number {
 
         switch ( Perf.ENV ) {
 
@@ -149,8 +149,8 @@ export class Perf {
         const memory = this.lastMemory;
 
         return {
-            time: this.setTime() - time,
-            memory: this.setMemory() - memory
+            time: this.updateTime() - time,
+            memory: this.updateMemory() - memory
         };
 
     }
@@ -163,8 +163,8 @@ export class Perf {
     public measureTotal () : PerfMeasure {
 
         return {
-            time: this.setTime() - this.startTime,
-            memory: this.setMemory() - this.startMemory
+            time: this.updateTime() - this.startTime,
+            memory: this.updateMemory() - this.startMemory
         }
 
     }
@@ -175,8 +175,8 @@ export class Perf {
      */
     public reset () : void {
 
-        this.startTime = this.setTime();
-        this.startMemory = this.setMemory();
+        this.startTime = this.updateTime();
+        this.startMemory = this.updateMemory();
 
     }
 
