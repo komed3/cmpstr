@@ -95,6 +95,7 @@ export abstract class Metric {
      * @param {MetricInput} a - First input string or array of strings
      * @param {MetricInput} b - Second input string or array of strings
      * @param {MetricOptions} options - Options for the metric computation
+     * @throws {Error} - If inputs `a` or `b` are empty
      */
     constructor (
         metric: string,
@@ -109,6 +110,13 @@ export abstract class Metric {
         this.a = Array.isArray( a ) ? a : [ a ];
         this.b = Array.isArray( b ) ? b : [ b ];
         this.options = options;
+
+        // Validate inputs: ensure they are not empty
+        if ( this.a.length === 0 || this.b.length === 0 ) {
+
+            throw new Error( `inputs a and b must not be empty` );
+
+        }
 
         // Optionally start performance measurement
         this.perf = this.options.perf ? Perf.getInstance( true ) : undefined;
@@ -153,17 +161,18 @@ export abstract class Metric {
         // Otherwise, compute the metric using the algorithm
         const result: MetricCompute = ( key && Metric.cache.has( key ) ) ? Metric.cache.get( key )! : ( () => {
 
-            // Get length of string a, b and their max length
+            // Get length of string a, b
             const m: number = a.length, n: number = b.length;
-            const maxLen: number = Math.max( m, n );
 
             // Compute the similarity using the algorithm
-            return this.algo( a, b, m, n, maxLen );
+            const res: MetricCompute = this.algo( a, b, m, n, Math.max( m, n ) );
+
+            // If a key was generated, store the result in the cache
+            if ( key ) Metric.cache.set( key, res );
+
+            return res;
 
         } )();
-
-        // If a key was generated, store the result in the cache
-        if ( key ) Metric.cache.set( key, result );
 
         // Build result object, optionally including performance data
         return { metric: this.metric, a, b, ...result, ...(
