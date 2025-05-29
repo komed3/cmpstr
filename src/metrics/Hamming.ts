@@ -29,7 +29,6 @@ export default class Hamming extends Metric {
      * Initializes the Hamming distance metric with two input strings or
      * arrays of strings and optional options.
      * 
-     * @constructor
      * @param {MetricInput} a - First input string or array of strings
      * @param {MetricInput} b - Second input string or array of strings
      * @param {MetricOptions} options - Options for the metric computation
@@ -47,7 +46,6 @@ export default class Hamming extends Metric {
     /**
      * Calculates the Hamming distance between two strings.
      * 
-     * @protected
      * @param {string} a - First string
      * @param {string} b - Second string
      * @param {number} m - Length of the first string
@@ -89,7 +87,7 @@ export default class Hamming extends Metric {
 
         // Return the result as a MetricCompute object
         return {
-            res: this.normalized( dist, m ),
+            res: Metric.norm( dist, m ),
             raw: { dist }
         };
 

@@ -22,7 +22,6 @@
 
 import type { MetricInput, MetricOptions, MetricCompute } from '../utils/Types';
 import { Metric } from './Metric';
-import { Helper } from '../utils/Helper';
 
 /**
  * DiceSorensen class extends the Metric class to implement the Dice-Sørensen coefficient.
@@ -35,7 +34,6 @@ export default class DiceSorensen extends Metric {
      * Initializes the DiceSorensen metric with two input strings or
      * arrays of strings and optional options.
      * 
-     * @constructor
      * @param {MetricInput} a - First input string or array of strings
      * @param {MetricInput} b - Second input string or array of strings
      * @param {MetricOptions} options - Options for the metric computation
@@ -53,7 +51,6 @@ export default class DiceSorensen extends Metric {
     /**
      * Computes the bigrams of a given string.
      * 
-     * @private
      * @param {string} str - The input string
      * @return {Set<string>} - A set of bigrams (two-character sequences) from the string
      */
@@ -74,7 +71,6 @@ export default class DiceSorensen extends Metric {
     /**
      * Calculates the Dice-Sørensen coefficient between two strings.
      * 
-     * @protected
      * @param {string} a - First string
      * @param {string} b - Second string
      * @param {number} m - Length of the first string
@@ -89,7 +85,7 @@ export default class DiceSorensen extends Metric {
         if ( m < 2 || n < 2 ) return { res: 0 };
 
         // Always use the shorter string for columns to save memory
-        [ a, b, m, n ] = Helper.swap( a, b, m, n );
+        [ a, b, m, n ] = Metric.swap( a, b, m, n );
 
         // Generate bigrams for both strings
         const setA: Set<string> = this._bigrams( a );

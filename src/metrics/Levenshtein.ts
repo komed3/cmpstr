@@ -21,7 +21,6 @@
 
 import type { MetricInput, MetricOptions, MetricCompute } from '../utils/Types';
 import { Metric } from './Metric';
-import { Helper } from '../utils/Helper';
 import { Pool } from '../utils/Pool';
 
 /**
@@ -35,7 +34,6 @@ export default class Levenshtein extends Metric {
      * Initializes the Levenshtein metric with two input strings or
      * arrays of strings and optional options.
      * 
-     * @constructor
      * @param {MetricInput} a - First input string or array of strings
      * @param {MetricInput} b - Second input string or array of strings
      * @param {MetricOptions} options - Options for the metric computation
@@ -53,7 +51,6 @@ export default class Levenshtein extends Metric {
     /**
      * Calculates the Levenshtein distance between two strings.
      * 
-     * @protected
      * @param {string} a - First string
      * @param {string} b - Second string
      * @param {number} m - Length of the first string
@@ -77,7 +74,7 @@ export default class Levenshtein extends Metric {
         else {
 
             // Always use the shorter string for columns to save memory
-            [ a, b, m, n ] = Helper.swap( a, b, m, n );
+            [ a, b, m, n ] = Metric.swap( a, b, m, n );
 
             // Get two reusable arrays from the Pool for the DP rows
             const [ prev, curr ] = Pool.acquireMany( 'uint16', [ m + 1, m + 1 ] );
@@ -120,7 +117,7 @@ export default class Levenshtein extends Metric {
 
         // Return the result as a MetricCompute object
         return {
-            res: this.normalized( dist, maxLen ),
+            res: Metric.norm( dist, maxLen ),
             raw: { dist }
         };
 
