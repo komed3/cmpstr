@@ -2,12 +2,12 @@
  * Pool Utility
  * src/utils/Pool.ts
  * 
+ * @see https://en.wikipedia.org/wiki/Circular_buffer
+ * 
  * The Pool class provides a simple and efficient buffer pool for dynamic programming
  * algorithms that require temporary arrays (such as Levenshtein, LCS, etc.).
  * By reusing pre-allocated typed arrays, it reduces memory allocations and garbage
  * collection overhead, especially for repeated or batch computations.
- * 
- * @see https://en.wikipedia.org/wiki/Circular_buffer
  * 
  * It supports different types of buffers (Uint16Array, number[], Set, Map) and allows
  * for acquiring buffers of specific sizes while managing a maximum pool size.
@@ -133,7 +133,7 @@ export class Pool {
     };
 
     // Pool Rings for each type
-    private static readonly RINGS: Record<PoolType, PoolRing<any>> = {
+    private static readonly POOLS: Record<PoolType, PoolRing<any>> = {
         'uint16':   new PoolRing<Uint16Array>( 32 ),
         'number[]': new PoolRing<number[]>( 16 ),
         'set':      new PoolRing<Set<any>>( 8 ),
@@ -179,7 +179,7 @@ export class Pool {
 
         // Try to acquire a buffer from the pool ring
         // If a suitable buffer is found, return it (subarray for uint16)
-        const item: PoolBuffer<any> | null = this.RINGS[ type ].acquire( size, CONFIG.allowOversize );
+        const item: PoolBuffer<any> | null = this.POOLS[ type ].acquire( size, CONFIG.allowOversize );
 
         if ( item ) {
 
@@ -225,7 +225,7 @@ export class Pool {
         if ( size <= CONFIG.maxItemSize ) {
 
             // Release the buffer back to the pool ring
-            this.RINGS[ type ].release( { buffer, size } );
+            this.POOLS[ type ].release( { buffer, size } );
 
         }
 

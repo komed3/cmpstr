@@ -171,6 +171,7 @@ export class HashTable<T> {
      */
     public set ( key: string, entry: T, update: boolean = true ) : boolean {
 
+        // If the table is not full and the key does not exist or update is true, add the entry
         if ( this.table.size < HashTable.TABLE_SIZE && ( update || ! this.table.has( key ) ) ) {
 
             this.table.set( key, entry );
