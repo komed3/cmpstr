@@ -18,9 +18,9 @@ export type NormalizerFn = ( input: string ) => string;
 
 export type NormalizeFlags = string;
 
-export interface Performance {
+export interface PerfMeasure {
     time: number;
-    mem: number;
+    memory: number;
 };
 
 export type FilterFn = ( input: string ) => string;
@@ -67,7 +67,7 @@ export interface MetricResultSingle {
     b: string;
     res: number;
     raw?: MetricRaw;
-    perf?: Performance;
+    perf?: PerfMeasure;
 };
 
 export type MetricResult = MetricResultSingle | MetricResultSingle[];

@@ -130,7 +130,7 @@ export class Pool {
         'uint16':   { type: 'uint16',   maxSize: 32, maxItemSize: 2048, allowOversize: true  },
         'number[]': { type: 'number[]', maxSize: 16, maxItemSize: 1024, allowOversize: false },
         'set':      { type: 'set',      maxSize: 8,  maxItemSize: 0,    allowOversize: false },
-        'map':      { type: 'map',      maxSize: 8,  maxItemSize: 0,    allowOversize: false },
+        'map':      { type: 'map',      maxSize: 8,  maxItemSize: 0,    allowOversize: false }
     };
 
     // Pool Rings for each type
@@ -138,13 +138,12 @@ export class Pool {
         'uint16':   new RingPool<Uint16Array>( 32 ),
         'number[]': new RingPool<number[]>( 16 ),
         'set':      new RingPool<Set<any>>( 8 ),
-        'map':      new RingPool<Map<any, any>>( 8 ),
+        'map':      new RingPool<Map<any, any>>( 8 )
     };
 
     /**
      * Allocates a new buffer of the specified type and size.
      * 
-     * @private
      * @param {PoolType} type - The type of buffer to allocate
      * @param {number} size - The size of the buffer to allocate
      * @return {any} - The newly allocated buffer

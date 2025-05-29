@@ -16,22 +16,6 @@
 export class Helper {
 
     /**
-     * Returns a high-resolution timestamp in milliseconds.
-     * Uses performance.now() if available (sub-millisecond precision
-     * in browsers and Node.js >= 8.5), otherwise falls back to
-     * Date.now() (millisecond precision).
-     * 
-     * @static
-     * @returns {number} - High-resolution timestamp in milliseconds
-     */
-    public static now () : number {
-
-        return typeof performance !== 'undefined' && typeof performance.now === 'function'
-            ? performance.now() : Date.now();
-
-    }
-
-    /**
      * Swaps two strings and their lengths if the first is longer than the second.
      * 
      * @static

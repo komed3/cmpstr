@@ -1,5 +1,5 @@
 /**
- * Hash Table Utility (Instance-based)
+ * Hash Table Utility
  * src/utils/HashTable.ts
  * 
  * @see https://en.wikipedia.org/wiki/Fowler–Noll–Vo_hash_function

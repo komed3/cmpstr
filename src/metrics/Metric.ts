@@ -70,7 +70,7 @@ export abstract class Metric {
         this.options = options;
 
         // Optionally start performance measurement
-        this.perf = this.options.perf ? new Perf () : undefined;
+        this.perf = this.options.perf ? Perf.getInstance() : undefined;
 
     }
 
@@ -134,7 +134,7 @@ export abstract class Metric {
         // Build result object, optionally including performance data
         return {
             metric: this.metric, a, b, res, raw,
-            ...( this.perf ? { perf: this.perf.get() } : {} )
+            ...( this.perf ? { perf: this.perf.measure() } : {} )
         };
 
     }

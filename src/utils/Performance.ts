@@ -2,103 +2,178 @@
  * Performance Utility
  * src/utils/Performance.ts
  * 
- * The Perf class provides a lightweight and cross-platform way to measure elapsed
- * time and memory usage for code sections or algorithm runs. It is designed to
- * work in both Node.js and browser environments, using only built-in APIs. The
- * class is optimized for minimal overhead and can be used for fine-grained
- * performance profiling.
+ * This class provides methods to measure performance in both Node.js and browser
+ * environments. It supports singleton pattern to ensure only one instance is used
+ * throughout the application. The class is optimized for minimal overhead and can
+ * be used for fine-grained performance profiling.
  * 
- * Usage:
- * const perf = new Perf ();
- * // ... code to measure ...
- * const stats = perf.get(); // { time, mem }
- * 
+ * @module Performance
  * @author Paul Köhler (komed3)
  * @license MIT
  */
 
 'use strict';
 
-import type { Performance } from './Types';
-import { Helper } from './Helper';
+import type { PerfMeasure } from './Types';
 
 /**
- * Perf class for measuring elapsed time and memory usage.
+ * Performance utility class for measuring time and memory usage.
  */
 export class Perf {
 
-    private time: number;
-    private mem: number;
+    // Environment detection
+    private static ENV: 'nodejs' | 'browser' | undefined;
+
+    // Singleton instance
+    private static instance: Perf;
+
+    // Last measured time and memory
+    private lastTime: number;
+    private lastMemory: number;
+
+    // Start time and memory for total measurement
+    private startTime: number;
+    private startMemory: number;
 
     /**
-     * Returns the current memory usage in bytes.
-     * Uses process.memoryUsage().heapUsed in Node.js, navigator.deviceMemory
-     * (approximate, in browsers), or 0 if unavailable.
-     * 
-     * @private
-     * @returns {number} - Memory usage in bytes
+     * Sets the environment based on the available global objects.
+     * Detects if running in Node.js or browser and sets the ENV property accordingly.
      */
-    private _mem () : number {
+    public static setEnv () : void {
 
-        // Node.js environment
-        if ( typeof process !== 'undefined' && process.memoryUsage ) {
+        // Check for Node.js environment
+        if ( typeof process !== 'undefined' ) Perf.ENV = 'nodejs';
 
-            return process.memoryUsage().heapUsed;
+        // Check for browser environment
+        else if ( typeof performance !== 'undefined' ) Perf.ENV = 'browser';
+
+        // If neither, set ENV to undefined
+        else Perf.ENV = undefined;
+
+    }
+
+    /**
+     * Private constructor to enforce singleton pattern.
+     * Initializes the last time and memory measurements.
+     */
+    private constructor () {
+
+        this.reset();
+
+    }
+
+    /**
+     * Sets the current time based on the environment.
+     * Uses process.hrtime.bigint() for Node.js, performance.now() for browsers,
+     * and Date.now() as a fallback.
+     * 
+     * @returns {number} - Current time in milliseconds or nanoseconds
+     */
+    private setTime () : number {
+
+        switch ( Perf.ENV ) {
+
+            // Node.js environment
+            case 'nodejs':
+                return this.lastTime = Number( process.hrtime.bigint() );
+
+            // Browser environment
+            case 'browser':
+                return this.lastTime = ( performance as any ).now();
+
+            // Fallback
+            default:
+                return this.lastTime = Date.now();
 
         }
 
-        // Browser environment with deviceMemory API
-        else if ( typeof navigator !== 'undefined' && 'deviceMemory' in navigator ) {
+    }
 
-            return ( navigator as any ).deviceMemory * 1024 * 1024 * 1024;
+    /**
+     * Sets the current memory usage based on the environment.
+     * Uses process.memoryUsage().heapUsed for Node.js, performance.memory.usedJSHeapSize
+     * for browsers, and returns 0 as a fallback.
+     * 
+     * @returns {number} - Current memory usage in bytes
+     */
+    private setMemory () : number {
+
+        switch ( Perf.ENV ) {
+
+            // Node.js environment
+            case 'nodejs':
+                return this.lastMemory = process.memoryUsage().heapUsed;
+
+            // Browser environment
+            case 'browser':
+                return this.lastMemory = ( performance as any ).memory.usedJSHeapSize;
+
+            // Fallback
+            default:
+                return this.lastMemory = 0;
 
         }
 
-        // Fallback for environments without memory API
-        return 0;
-
     }
 
     /**
-     * Constructs a Perf instance and stores the current time and memory usage.
+     * Returns the singleton instance of the Perf class.
+     * If the instance does not exist, it creates a new one.
      * 
-     * @constructor
+     * @returns {Perf} - Singleton instance of Perf
      */
-    constructor () {
+    public static getInstance () : Perf {
 
-        this.set();
+        // If instance does not exist, create a new one
+        if ( ! Perf.instance ) Perf.instance = new Perf ();
+
+        return Perf.instance;
 
     }
 
     /**
-     * Resets the start time and memory usage to the current values.
-     */
-    public set () : void {
-
-        this.time = Helper.now();
-        this.mem = this._mem();
-
-    }
-
-    /**
-     * Returns the elapsed time (ms) and memory usage (bytes) since the
-     * last set or construction. Also resets the start values for the
-     * next measurement.
+     * Get a performance measurement and resetting the last time and memory.
      * 
-     * @returns {Performance} - Object with time (ms) and mem (bytes) difference
+     * @returns {PerfMeasure} - Object containing time and memory measurements
      */
-    public get () : Performance {
+    public measure () : PerfMeasure {
 
-        const time = this.time;
-        const mem = this.mem;
-
-        this.set();
+        const time = this.lastTime;
+        const memory = this.lastMemory;
 
         return {
-            time: this.time - time,
-            mem: this.mem - mem
+            time: this.setTime() - time,
+            memory: this.setMemory() - memory
         };
 
     }
 
-};
+    /**
+     * Measures the total time and memory since the last reset.
+     * 
+     * @returns {PerfMeasure} - Object containing time and memory measurements
+     */
+    public measureTotal () : PerfMeasure {
+
+        return {
+            time: this.setTime() - this.startTime,
+            memory: this.setMemory() - this.startMemory
+        }
+
+    }
+
+    /**
+     * Resets the start time and memory to the current values.
+     * This is useful for measuring performance over a specific period.
+     */
+    public reset () : void {
+
+        this.startTime = this.setTime();
+        this.startMemory = this.setMemory();
+
+    }
+
+}
+
+// Initialize the environment detection
+Perf.setEnv();
