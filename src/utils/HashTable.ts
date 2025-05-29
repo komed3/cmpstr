@@ -8,17 +8,15 @@
  * @see https://en.wikipedia.org/wiki/Fowler%E2%80%93Noll%E2%80%93Vo_hash_function
  * 
  * It provides methods to compute a hash for a given string, generate a unique key
- * for metrics, check for the existence of keys, retrieve values, add new entries,
+ * for queries, check for the existence of keys, retrieve values, add new entries,
  * clear the table, and get the size of the table. The hash table is designed to
- * store `MetricCompute` objects.
+ * store normalized strings and `MetricCompute` objects.
  * 
  * @author Paul Köhler (komed3)
  * @license MIT
  */
 
 'use strict';
-
-import type { MetricCompute } from './Types';
 
 /**
  * HashTable class implements a hash table using the FNV-1a hash algorithm.
@@ -36,14 +34,14 @@ export class HashTable {
     private static readonly TABLE_SIZE: number = 10_000;
 
     /**
-     * A static map to store computed metrics.
+     * A static map to store entries.
      * 
-     * The key is a string generated from the metric name and two hashed strings,
-     * and the value is a MetricCompute object.
+     * The key is a string generated from the query and (two) hashed strings,
+     * and the value (e.g. normalized strings or a MetricCompute object).
      * 
      * @private
      */
-    private static table: Map<string, MetricCompute> = new Map ();
+    private static table: Map<string, unknown> = new Map ();
 
     /**
      * Computes a hash value for a given string using the FNV-1a algorithm.
@@ -55,7 +53,7 @@ export class HashTable {
      * @param {string} str - The string to hash
      * @return {number} - The computed hash value as an unsigned 32-bit integer
      */
-    private static hash ( str: string ) : number {
+    private static fnv1a ( str: string ) : number {
 
         const len: number = str.length;
         let hash: number = this.HASH_OFFSET;
@@ -109,24 +107,24 @@ export class HashTable {
     }
 
     /**
-     * Generates a unique hash key for a metric based on two strings.
+     * Generates a unique hash key for a query based on (two) strings.
      * 
-     * @param {string} metric - The metric name
+     * @param {string} q - The query
      * @param {string} a - The first string to hash
-     * @param {string} b - The second string to hash
+     * @param {string} b - The optional second string to hash
      * @returns {string|false} - A unique hash key in the format "metric-A-B" or false
      */
-    public static key ( metric: string, a: string, b: string ) : string | false {
+    public static key ( q: string, a: string, b: string = '' ) : string | false {
 
         // Return false if either string exceeds the maximum length
         if ( a.length > this.MAX_LEN || b.length > this.MAX_LEN ) return false;
 
         // Get the hash values for both strings
-        const A: number = this.hash( a );
-        const B: number = this.hash( b );
+        const A: number = this.fnv1a( a );
+        const B: number = b.length ? this.fnv1a( b ) : 0;
 
         // Consistent key independent of sequence
-        return A < B ? `${metric}-${A}-${B}` : `${metric}-${B}-${A}`;
+        return A < B ? `${q}-${A}-${B}` : `${q}-${B}-${A}`;
 
     }
 
@@ -143,30 +141,30 @@ export class HashTable {
     }
 
     /**
-     * Retrieves a MetricCompute object from the hash table by its key.
+     * Retrieves the entry from the hash table by its key.
      * 
      * @param {string} key - The key to look up
-     * @returns {MetricCompute|undefined} - The MetricCompute object if found, undefined otherwise
+     * @returns {unknown|undefined} - The entry if found, undefined otherwise
      */
-    public static get ( key: string ) : MetricCompute | undefined {
+    public static get ( key: string ) : unknown | undefined {
 
         return this.table.get( key );
 
     }
 
     /**
-     * Adds a MetricCompute object to the hash table.
+     * Adds an entry (e.g. normalized string or MetricCompute object) to the hash table.
      * 
-     * @param {string} key - The key for the MetricCompute object
-     * @param {MetricCompute} res - The MetricCompute object to add
+     * @param {string} key - The hashed key for the entry
+     * @param {unknown} entry - The entry itself to add
      * @param {boolean} [update=true] - Whether to update the entry if it already exists
      * @returns {boolean} - True if added successfully, false if the table is full
      */
-    public static set ( key: string, res: MetricCompute, update: boolean = true ) : boolean {
+    public static set ( key: string, entry: unknown, update: boolean = true ) : boolean {
 
         if ( this.table.size < this.TABLE_SIZE && ( update || ! this.table.has( key ) ) ) {
 
-            this.table.set( key, res );
+            this.table.set( key, entry );
 
             return true;
 
