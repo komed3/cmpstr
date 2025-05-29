@@ -51,8 +51,8 @@ export class Normalizer {
      * Returns a normalization function based on the provided flags.
      * The flags are a string of characters that define the normalization steps.
      * 
-     * @param {NormalizeFlags} flags - A string of characters representing the normalization steps.
-     * @returns {NormalizerFn} A function that normalizes a string based on the provided flags.
+     * @param {NormalizeFlags} flags - A string of characters representing the normalization steps
+     * @returns {NormalizerFn} - A function that normalizes a string based on the provided flags
      */
     private static getPipeline ( flags: NormalizeFlags ) : NormalizerFn {
 
@@ -104,9 +104,9 @@ export class Normalizer {
      * Normalizes the input string based on the provided flags.
      * The flags are a string of characters that define the normalization steps.
      * 
-     * @param {string} input - The string to normalize.
-     * @param {NormalizeFlags} flags - A string of characters representing the normalization steps.
-     * @returns {string} - The normalized string.
+     * @param {string} input - The string to normalize
+     * @param {NormalizeFlags} flags - A string of characters representing the normalization steps
+     * @returns {string} - The normalized string
      */
     static normalize ( input: string, flags: NormalizeFlags ) : string {
 
