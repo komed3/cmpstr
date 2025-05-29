@@ -85,7 +85,7 @@ export class Normalizer {
         if ( flags.includes( 'i' ) ) steps.push( str => str.toLowerCase() );
 
         // Build the normalization function from the steps
-        const compiled: NormalizerFn = input => {
+        const compiled: NormalizerFn = ( input: string ) => {
 
             let res: string = input;
 

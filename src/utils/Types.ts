@@ -23,6 +23,22 @@ export interface Performance {
     mem: number;
 };
 
+export type FilterFn = ( input: string ) => string;
+
+export interface FilterOptions {
+    priority?: number;
+    active?: boolean;
+    overrideable?: boolean;
+};
+
+export interface FilterEntry {
+    id: string;
+    fn: FilterFn;
+    priority: number;
+    active: boolean;
+    overrideable: boolean;
+}
+
 export type MetricInput = string | string[];
 
 export type MetricMode = 'default' | 'batch' | 'pairwise';
