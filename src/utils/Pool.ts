@@ -22,14 +22,14 @@
 import type { PoolType, PoolConfig, PoolBuffer } from './Types';
 
 /**
- * PoolRing is a circular buffer implementation that manages a pool of buffers.
+ * RingPool is a circular buffer implementation that manages a pool of buffers.
  * 
  * It allows for efficient acquisition and release of buffers, ensuring that
  * buffers are reused without unnecessary allocations.
  * 
  * @template T - The type of buffers managed by the pool
  */
-class PoolRing<T> {
+class RingPool<T> {
 
     // The buffers in the pool
     private buffers: PoolBuffer<T>[] = [];
@@ -38,7 +38,7 @@ class PoolRing<T> {
     private pointer: number = 0;
 
     /**
-     * Creates a new PoolRing with a specified maximum size.
+     * Creates a new RingPool with a specified maximum size.
      * 
      * @param {number} maxSize - The maximum number of buffers that can be stored in the pool
      */
@@ -134,11 +134,11 @@ export class Pool {
     };
 
     // Pool Rings for each type
-    private static readonly POOLS: Record<PoolType, PoolRing<any>> = {
-        'uint16':   new PoolRing<Uint16Array>( 32 ),
-        'number[]': new PoolRing<number[]>( 16 ),
-        'set':      new PoolRing<Set<any>>( 8 ),
-        'map':      new PoolRing<Map<any, any>>( 8 ),
+    private static readonly POOLS: Record<PoolType, RingPool<any>> = {
+        'uint16':   new RingPool<Uint16Array>( 32 ),
+        'number[]': new RingPool<number[]>( 16 ),
+        'set':      new RingPool<Set<any>>( 8 ),
+        'map':      new RingPool<Map<any, any>>( 8 ),
     };
 
     /**
