@@ -58,11 +58,7 @@ export interface MetricRaw {
     dist?: number;
     intersection?: number;
     size?: number;
-    maxScore?: number;
     total?: number;
-    dotProduct?: number;
-    magnitudeA?: number;
-    magnitudeB?: number;
     [ key: string ]: any;
 };
 

@@ -10,6 +10,7 @@
  *  - Dice-Sorensen Coefficient
  *  - Hamming Distance
  *  - Jaccard Index
+ *  - Jaro-Winkler Distance
  *  - Longest Common Subsequence
  *  - Levenshtein Distance
  *  - Needleman-Wunsch Distance
@@ -27,6 +28,7 @@ import DamerauLevenshteinDistance from './DamerauLevenshtein';
 import DiceSorensenCoefficient from './DiceSorensen';
 import HammingDistance from './Hamming';
 import JaccardIndex from './Jaccard';
+import JaroWinklerDistance from './JaroWinkler';
 import LCSMetric from './LCS';
 import LevenshteinDistance from './Levenshtein';
 import NeedlemanWunschDistance from './NeedlemanWunsch';
@@ -39,6 +41,7 @@ export const ALL_METRICS = {
     dice: DiceSorensenCoefficient,
     hamming: HammingDistance,
     jaccard: JaccardIndex,
+    jaroWinkler: JaroWinklerDistance,
     lcs: LCSMetric,
     levenshtein: LevenshteinDistance,
     needlemanWunsch: NeedlemanWunschDistance,
