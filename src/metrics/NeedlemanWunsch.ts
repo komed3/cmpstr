@@ -66,7 +66,8 @@ export default class NeedlemanWunschDistance extends Metric {
         const { match = 1, mismatch = -1, gap = -1 } = this.options;
 
         // Get two reusable arrays from the Pool for the DP rows
-        const [ prev, curr ] = Pool.acquireMany( 'uint16', [ m + 1, m + 1 ] );
+        const len: number = m + 1;
+        const [ prev, curr ] = Pool.acquireMany( 'uint16', [ len, len ] );
 
         // Initialize the first row (gap penalties)
         prev[ 0 ] = 0; for ( let i = 1; i <= m; i++ ) prev[ i ] = prev[ i - 1 ] + gap;
@@ -100,6 +101,10 @@ export default class NeedlemanWunschDistance extends Metric {
 
         // The last value in prev is the Needleman-Wunsch score
         const score: number = prev[ m ];
+
+        // Release arrays back to the pool
+        Pool.release( 'uint16', prev, len );
+        Pool.release( 'uint16', curr, len );
 
         // Use the maximum possible score for the longer string (global alignment)
         const total = maxLen * match;

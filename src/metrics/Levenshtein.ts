@@ -63,7 +63,8 @@ export default class LevenshteinDistance extends Metric {
     override compute ( a: string, b: string, m: number, n: number, maxLen: number ) : MetricCompute {
 
         // Get two reusable arrays from the Pool for the DP rows
-        const [ prev, curr ] = Pool.acquireMany( 'uint16', [ m + 1, m + 1 ] );
+        const len: number = m + 1;
+        const [ prev, curr ] = Pool.acquireMany( 'uint16', [ len, len ] );
 
         // Initialize the first row (edit distances from empty string to a)
         for ( let i = 0; i <= m; i++ ) prev[ i ] = i;
@@ -98,6 +99,10 @@ export default class LevenshteinDistance extends Metric {
 
         // The last value in prev is the Levenshtein distance
         const dist: number = prev[ m ];
+
+        // Release arrays back to the pool
+        Pool.release( 'uint16', prev, len );
+        Pool.release( 'uint16', curr, len );
 
         // Return the result as a MetricCompute object
         return {

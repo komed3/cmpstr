@@ -40,7 +40,8 @@ export default class HammingDistance extends Metric {
     ) {
 
         // Call the parent Metric constructor with the metric name and inputs
-        super( 'hamming', a, b, options );
+        // Metric is symmetrical
+        super( 'hamming', a, b, options, true );
 
     }
 

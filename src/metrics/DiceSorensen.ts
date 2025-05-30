@@ -94,6 +94,10 @@ export default class DiceSorensenCoefficient extends Metric {
         // Calculate the size of the union of both sets
         const size: number = setA.size + setB.size;
 
+        // Release sets back to the pool
+        Pool.release( 'set', setA, setA.size );
+        Pool.release( 'set', setB, setB.size );
+
         // Return the result as a MetricCompute object
         return {
             res: size === 0 ? 1 : Metric.clamp( ( 2 * intersection ) / size ),

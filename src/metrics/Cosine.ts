@@ -115,6 +115,10 @@ export default class CosineSimilarity extends Metric {
         magnitudeA = Math.sqrt( magnitudeA );
         magnitudeB = Math.sqrt( magnitudeB );
 
+        // Release maps back to the pool
+        Pool.release( 'map', termsA, termsA.size );
+        Pool.release( 'map', termsB, termsB.size );
+
         // Return the result as a MetricCompute object
         return {
             res: ( magnitudeA && magnitudeB ) ? Metric.clamp(
