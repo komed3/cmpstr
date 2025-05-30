@@ -107,7 +107,7 @@ export default class NeedlemanWunschDistance extends Metric {
         Pool.release( 'uint16', curr, len );
 
         // Use the maximum possible score for the longer string (global alignment)
-        const total = maxLen * match;
+        const total: number = maxLen * match;
 
         // Return the result as a MetricCompute object
         return {
