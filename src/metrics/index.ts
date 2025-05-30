@@ -1,15 +1,17 @@
 'use strict';
 
-import LevenshteinDistance from './Levenshtein';
-import DiceSorensenCoefficient from './DiceSorensen';
 import CosineSimilarity from './Cosine';
-import SmithWatermanDistance from './SmithWaterman';
+import DiceSorensenCoefficient from './DiceSorensen';
 import HammingDistance from './Hamming';
+import LevenshteinDistance from './Levenshtein';
+import NeedlemanWunschDistance from './NeedlemanWunsch';
+import SmithWatermanDistance from './SmithWaterman';
 
 export const ALL_METRICS = {
-    levenshtein: LevenshteinDistance,
-    dice: DiceSorensenCoefficient,
     cosine: CosineSimilarity,
-    smithWaterman: SmithWatermanDistance,
-    hamming: HammingDistance
+    dice: DiceSorensenCoefficient,
+    hamming: HammingDistance,
+    levenshtein: LevenshteinDistance,
+    needlemanWunsch: NeedlemanWunschDistance,
+    smithWaterman: SmithWatermanDistance
 };
