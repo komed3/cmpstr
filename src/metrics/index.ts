@@ -6,6 +6,7 @@
  * 
  * Included metrics:
  *  - Cosine Similarity
+ *  - Damerau-Levenshtein Distance
  *  - Dice-Sorensen Coefficient
  *  - Hamming Distance
  *  - Jaccard Index
@@ -22,6 +23,7 @@
 'use strict';
 
 import CosineSimilarity from './Cosine';
+import DamerauLevenshteinDistance from './DamerauLevenshtein';
 import DiceSorensenCoefficient from './DiceSorensen';
 import HammingDistance from './Hamming';
 import JaccardIndex from './Jaccard';
@@ -33,6 +35,7 @@ import SmithWatermanDistance from './SmithWaterman';
 
 export const ALL_METRICS = {
     cosine: CosineSimilarity,
+    damerau: DamerauLevenshteinDistance,
     dice: DiceSorensenCoefficient,
     hamming: HammingDistance,
     jaccard: JaccardIndex,
