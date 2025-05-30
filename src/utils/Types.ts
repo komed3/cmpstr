@@ -18,9 +18,11 @@ export type NormalizerFn = ( input: string ) => string;
 
 export type NormalizeFlags = string;
 
-export interface PerfMeasure {
+export interface ProfilerEntry<T> {
     time: number;
-    memory: number;
+    mem: number;
+    res: T;
+    meta?: Record<string, any>;
 };
 
 export type FilterFn = ( input: string ) => string;
@@ -45,7 +47,7 @@ export type MetricMode = 'default' | 'batch' | 'pairwise';
 
 export interface MetricOptions {
     mode?: MetricMode;
-    perf?: boolean;
+    debug?: boolean;
     delimiter?: string;
     pad?: string;
     q?: number;
@@ -67,7 +69,6 @@ export interface MetricResultSingle<R = MetricRaw> {
     b: string;
     res: number;
     raw?: R;
-    perf?: PerfMeasure;
 };
 
 export type MetricResult<R = MetricRaw> = MetricResultSingle<R> | MetricResultSingle<R>[];
