@@ -21,10 +21,15 @@ import type { MetricInput, MetricOptions, MetricCompute } from '../utils/Types';
 import { Metric } from './Metric';
 import { Pool } from '../utils/Pool';
 
+export interface SmithWatermanRaw {
+    score: number;
+    denum: number;
+};
+
 /**
  * SmithWatermanDistance class extends the Metric class to implement the Smith-Waterman algorithm.
  */
-export default class SmithWatermanDistance extends Metric {
+export default class SmithWatermanDistance extends Metric<SmithWatermanRaw> {
 
     /**
      * Constructor for the SmithWaterman class.
@@ -59,9 +64,9 @@ export default class SmithWatermanDistance extends Metric {
      * @param {string} b - Second string
      * @param {number} m - Length of the first string
      * @param {number} n - Length of the second string
-     * @return {MetricCompute} - Object containing the similarity result and raw score
+     * @return {MetricCompute<SmithWatermanRaw>} - Object containing the similarity result and raw score
      */
-    override compute ( a: string, b: string, m: number, n: number ) : MetricCompute {
+    override compute ( a: string, b: string, m: number, n: number ) : MetricCompute<SmithWatermanRaw> {
 
         // Scoring parameters (can be customized via options if needed)
         const { match = 2, mismatch = -1, gap = -2 } = this.options;
@@ -111,12 +116,12 @@ export default class SmithWatermanDistance extends Metric {
         Pool.release( 'uint16', curr, len );
 
         // Use the maximum possible score for the shorter string (local alignment)
-        const total = Math.min( m * match, n * match );
+        const denum = Math.min( m * match, n * match );
 
         // Return the result as a MetricCompute object
         return {
-            res: total === 0 ? 0 : Metric.clamp( maxScore / total ),
-            raw: { maxScore, total }
+            res: denum === 0 ? 0 : Metric.clamp( maxScore / denum ),
+            raw: { score: maxScore, denum }
         };
 
     }

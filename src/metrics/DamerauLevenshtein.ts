@@ -24,10 +24,15 @@ import type { MetricInput, MetricOptions, MetricCompute } from '../utils/Types';
 import { Metric } from './Metric';
 import { Pool } from '../utils/Pool';
 
+export interface DamerauRaw {
+    dist: number;
+    maxLen: number;
+};
+
 /**
  * DamerauLevenshteinDistance class extends the Metric class to implement the Damerau-Levenshtein algorithm.
  */
-export default class DamerauLevenshteinDistance extends Metric {
+export default class DamerauLevenshteinDistance extends Metric<DamerauRaw> {
 
     /**
      * Constructor for the DamerauLevenshteinDistance class.
@@ -63,9 +68,12 @@ export default class DamerauLevenshteinDistance extends Metric {
      * @param {number} m - Length of the first string (a)
      * @param {number} n - Length of the second string (b)
      * @param {number} maxLen - Maximum length of the strings
-     * @return {MetricCompute} - Object containing the similarity result and raw distance
+     * @return {MetricCompute<DamerauRaw>} - Object containing the similarity result and raw distance
      */
-    override compute ( a: string, b: string, m: number, n: number, maxLen: number ) : MetricCompute {
+    override compute (
+        a: string, b: string, m: number, n: number,
+        maxLen: number
+    ) : MetricCompute<DamerauRaw> {
 
         // Get three reusable arrays from the Pool for the DP rows
         const len: number = m + 1;
@@ -131,7 +139,7 @@ export default class DamerauLevenshteinDistance extends Metric {
         // Normalize by the length of the longer string
         return {
             res: maxLen === 0 ? 1 : Metric.clamp( 1 - ( dist / maxLen ) ),
-            raw: { dist }
+            raw: { dist, maxLen }
         };
 
     }

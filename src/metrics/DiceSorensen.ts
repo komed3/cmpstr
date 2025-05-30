@@ -25,10 +25,15 @@ import type { MetricInput, MetricOptions, MetricCompute } from '../utils/Types';
 import { Metric } from './Metric';
 import { Pool } from '../utils/Pool';
 
+export interface DiceRaw {
+    intersection: number;
+    size: number;
+};
+
 /**
  * DiceSorensenCoefficient class extends the Metric class to implement the Dice-Sørensen coefficient.
  */
-export default class DiceSorensenCoefficient extends Metric {
+export default class DiceSorensenCoefficient extends Metric<DiceRaw> {
 
     /**
      * Constructor for the DiceSorensen class.
@@ -74,9 +79,9 @@ export default class DiceSorensenCoefficient extends Metric {
      * 
      * @param {string} a - First string
      * @param {string} b - Second string
-     * @return {MetricCompute} - Object containing the similarity result and raw distance
+     * @return {MetricCompute<DiceRaw>} - Object containing the similarity result and raw distance
      */
-    override compute ( a: string, b: string ) : MetricCompute {
+    override compute ( a: string, b: string ) : MetricCompute<DiceRaw> {
 
         // Generate bigrams for both strings
         const setA: Set<string> = this._bigrams( a );

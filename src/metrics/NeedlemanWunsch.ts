@@ -24,10 +24,15 @@ import type { MetricInput, MetricOptions, MetricCompute } from '../utils/Types';
 import { Metric } from './Metric';
 import { Pool } from '../utils/Pool';
 
+export interface NeedlemanRaw {
+    score: number;
+    denum: number;
+};
+
 /**
  * NeedlemanWunschDistance class extends the Metric class to implement the Needleman-Wunsch algorithm.
  */
-export default class NeedlemanWunschDistance extends Metric {
+export default class NeedlemanWunschDistance extends Metric<NeedlemanRaw> {
 
     /**
      * Constructor for the NeedlemanWunsch class.
@@ -58,9 +63,12 @@ export default class NeedlemanWunschDistance extends Metric {
      * @param {number} m - Length of the first string
      * @param {number} n - Length of the second string
      * @param {number} maxLen - Maximum length of the strings
-     * @return {MetricCompute} - Object containing the similarity result and raw score
+     * @return {MetricCompute<NeedlemanRaw>} - Object containing the similarity result and raw score
      */
-    override compute ( a: string, b: string, m: number, n: number, maxLen: number ) : MetricCompute {
+    override compute (
+        a: string, b: string, m: number, n: number,
+        maxLen: number
+    ) : MetricCompute<NeedlemanRaw> {
 
         // Scoring parameters (can be customized via options if needed)
         const { match = 1, mismatch = -1, gap = -1 } = this.options;
@@ -107,12 +115,12 @@ export default class NeedlemanWunschDistance extends Metric {
         Pool.release( 'uint16', curr, len );
 
         // Use the maximum possible score for the longer string (global alignment)
-        const total: number = maxLen * match;
+        const denum: number = maxLen * match;
 
         // Return the result as a MetricCompute object
         return {
-            res: total === 0 ? 0 : Metric.clamp( score / total ),
-            raw: { score, total }
+            res: denum === 0 ? 0 : Metric.clamp( score / denum ),
+            raw: { score, denum }
         };
 
     }

@@ -25,10 +25,16 @@ import type { MetricInput, MetricOptions, MetricCompute } from '../utils/Types';
 import { Metric } from './Metric';
 import { Pool } from '../utils/Pool';
 
+export interface CosineRaw {
+    dotProduct: number;
+    magnitudeA: number;
+    magnitudeB: number;
+};
+
 /**
  * CosineSimilarity class extends the Metric class to implement the Cosine similarity algorithm.
  */
-export default class CosineSimilarity extends Metric {
+export default class CosineSimilarity extends Metric<CosineRaw> {
 
     /**
      * Constructor for the CosineSimilarity class.
@@ -81,9 +87,9 @@ export default class CosineSimilarity extends Metric {
      * 
      * @param {string} a - First string
      * @param {string} b - Second string
-     * @return {MetricCompute} - Object containing the similarity result and raw values
+     * @return {MetricCompute<CosineRaw>} - Object containing the similarity result and raw values
      */
-    override compute ( a: string, b: string ) : MetricCompute {
+    override compute ( a: string, b: string ) : MetricCompute<CosineRaw> {
 
         // Get delimiter from options or use default (space)
         const { delimiter = ' ' } = this.options;

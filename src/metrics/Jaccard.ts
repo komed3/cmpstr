@@ -23,10 +23,15 @@ import type { MetricInput, MetricOptions, MetricCompute } from '../utils/Types';
 import { Metric } from './Metric';
 import { Pool } from '../utils/Pool';
 
+export interface JaccardRaw {
+    intersection: number;
+    union: number;
+};
+
 /**
  * JaccardIndex class extends the Metric class to implement the Jaccard Index algorithm.
  */
-export default class JaccardIndex extends Metric {
+export default class JaccardIndex extends Metric<JaccardRaw> {
 
     /**
      * Constructor for the JaccardIndex class.
@@ -56,9 +61,9 @@ export default class JaccardIndex extends Metric {
      * @param {string} b - Second string
      * @param {number} m - Length of the first string
      * @param {number} n - Length of the second string
-     * @return {MetricCompute} - Object containing the similarity result and raw values
+     * @return {MetricCompute<JaccardRaw>} - Object containing the similarity result and raw values
      */
-    override compute ( a: string, b: string, m: number, n: number ) : MetricCompute {
+    override compute ( a: string, b: string, m: number, n: number ) : MetricCompute<JaccardRaw> {
 
         // Acquire two sets from the Pool
         const setA: Set<string> = Pool.acquire( 'set', m );

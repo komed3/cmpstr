@@ -26,10 +26,15 @@ import type { MetricInput, MetricOptions, MetricCompute } from '../utils/Types';
 import { Metric } from './Metric';
 import { Pool } from '../utils/Pool';
 
+export interface LCSRaw {
+    lcs: number;
+    maxLen: number;
+};
+
 /**
  * LCSMetric class extends the Metric class to implement the Longest Common Subsequence algorithm.
  */
-export default class LCSMetric extends Metric {
+export default class LCSMetric extends Metric<LCSRaw> {
 
     /**
      * Constructor for the LCSMetric class.
@@ -60,9 +65,12 @@ export default class LCSMetric extends Metric {
      * @param {number} m - Length of the first string
      * @param {number} n - Length of the second string
      * @param {number} maxLen - Maximum length of the strings
-     * @return {MetricCompute} - Object containing the similarity result and raw LCS length
+     * @return {MetricCompute<LCSRaw>} - Object containing the similarity result and raw LCS length
      */
-    override compute ( a: string, b: string, m: number, n: number, maxLen: number ) : MetricCompute {
+    override compute (
+        a: string, b: string, m: number, n: number,
+        maxLen: number
+    ) : MetricCompute<LCSRaw> {
 
         // Get two reusable arrays from the Pool for the DP rows
         const len: number = m + 1;

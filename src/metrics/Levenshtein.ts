@@ -24,10 +24,15 @@ import type { MetricInput, MetricOptions, MetricCompute } from '../utils/Types';
 import { Metric } from './Metric';
 import { Pool } from '../utils/Pool';
 
+export interface LevenshteinRaw {
+    dist: number;
+    maxLen: number;
+};
+
 /**
  * LevenshteinDistance class extends the Metric class to implement the Levenshtein distance algorithm.
  */
-export default class LevenshteinDistance extends Metric {
+export default class LevenshteinDistance extends Metric<LevenshteinRaw> {
 
     /**
      * Constructor for the Levenshtein class.
@@ -58,9 +63,12 @@ export default class LevenshteinDistance extends Metric {
      * @param {number} m - Length of the first string
      * @param {number} n - Length of the second string
      * @param {number} maxLen - Maximum length of the strings
-     * @return {MetricCompute} - Object containing the similarity result and raw distance
+     * @return {MetricCompute<LevenshteinRaw>} - Object containing the similarity result and raw distance
      */
-    override compute ( a: string, b: string, m: number, n: number, maxLen: number ) : MetricCompute {
+    override compute (
+        a: string, b: string, m: number, n: number,
+        maxLen: number
+    ) : MetricCompute<LevenshteinRaw> {
 
         // Get two reusable arrays from the Pool for the DP rows
         const len: number = m + 1;
@@ -107,7 +115,7 @@ export default class LevenshteinDistance extends Metric {
         // Return the result as a MetricCompute object
         return {
             res: maxLen === 0 ? 1 : Metric.clamp( 1 - dist / maxLen ),
-            raw: { dist }
+            raw: { dist, maxLen }
         };
 
     }

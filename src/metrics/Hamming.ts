@@ -19,10 +19,14 @@
 import type { MetricInput, MetricOptions, MetricCompute } from '../utils/Types';
 import { Metric } from './Metric';
 
+export interface HammingRaw {
+    dist: number;
+};
+
 /**
  * HammingDistance class extends the Metric class to implement the Hamming distance.
  */
-export default class HammingDistance extends Metric {
+export default class HammingDistance extends Metric<HammingRaw> {
 
     /**
      * Constructor for the Hamming class.
@@ -53,10 +57,13 @@ export default class HammingDistance extends Metric {
      * @param {number} m - Length of the first string
      * @param {number} n - Length of the second string
      * @param {number} maxLen - Maximum length of the strings
-     * @return {MetricCompute} - Object containing the similarity result and raw distance
+     * @return {MetricCompute<HammingRaw>} - Object containing the similarity result and raw distance
      * @throws {Error} - If strings are of unequal length and padding is not specified
      */
-    override compute ( a: string, b: string, m: number, n: number, maxLen: number ) : MetricCompute {
+    override compute (
+        a: string, b: string, m: number, n: number,
+        maxLen: number
+    ) : MetricCompute<HammingRaw> {
 
         // Check for equal string length
         if ( m !== n ) {

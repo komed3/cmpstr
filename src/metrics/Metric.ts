@@ -26,7 +26,7 @@
 
 'use strict';
 
-import type { MetricMode, MetricInput, MetricOptions, MetricCompute, MetricResult, MetricResultSingle } from '../utils/Types';
+import type { MetricMode, MetricInput, MetricOptions, MetricCompute, MetricRaw, MetricResult, MetricResultSingle } from '../utils/Types';
 import { HashTable } from '../utils/HashTable';
 import { Perf } from '../utils/Performance';
 
@@ -34,11 +34,12 @@ import { Perf } from '../utils/Performance';
  * Abstract class representing a generic string metric.
  * 
  * @abstract
+ * @template R - The type of the raw result, defaulting to `MetricRaw`.
  */
-export abstract class Metric {
+export abstract class Metric<R = MetricRaw> {
 
     // Cache for metric computations to avoid redundant calculations
-    private static cache: HashTable<string, MetricCompute> = new HashTable ();
+    private static cache: HashTable<string, MetricCompute<any>> = new HashTable ();
 
     // Metric name for identification
     private readonly metric: string;
@@ -60,7 +61,7 @@ export abstract class Metric {
      * Result of the metric computation, which can be a single result or an array of results.
      * This will be populated after running the metric.
      */
-    private results: MetricResult | undefined;
+    private results: MetricResult<R> | undefined;
 
     /**
      * Swaps two strings and their lengths if the first is longer than the second.
@@ -139,9 +140,9 @@ export abstract class Metric {
      * @param {string} b - Second string
      * @param {number} m - Length of the first string
      * @param {number} n - Length of the second string
-     * @returns {MetricCompute | undefined} - Pre-computed result or undefined if not applicable
+     * @returns {MetricCompute<R> | undefined} - Pre-computed result or undefined if not applicable
      */
-    protected preCompute ( a: string, b: string, m: number, n: number ) : MetricCompute | undefined {
+    protected preCompute ( a: string, b: string, m: number, n: number ) : MetricCompute<R> | undefined {
 
         // If strings are identical, return a similarity of 1
         if ( a === b ) return { res: 1 };
@@ -162,10 +163,13 @@ export abstract class Metric {
      * @param {number} m - Length of the first string
      * @param {number} n - Length of the second string
      * @param {number} maxLen - Maximum length of the strings
-     * @returns {MetricCompute} - The result of the metric computation
+     * @returns {MetricCompute<R>} - The result of the metric computation
      * @throws {Error} - If not overridden in a subclass
      */
-    protected compute ( a: string, b: string, m: number, n: number, maxLen: number ) : MetricCompute {
+    protected compute (
+        a: string, b: string, m: number, n: number,
+        maxLen: number
+    ) : MetricCompute<R> {
 
         throw new Error ( `method compute() must be overridden in a subclass` );
 
@@ -177,9 +181,9 @@ export abstract class Metric {
      * 
      * @param {string} a - First string
      * @param {string} b - Second string
-     * @returns {MetricResultSingle} - The result of the metric computation
+     * @returns {MetricResultSingle<R>} - The result of the metric computation
      */
-    private runSingle ( a: string, b: string ) : MetricResultSingle {
+    private runSingle ( a: string, b: string ) : MetricResultSingle<R> {
 
         // Type safety: convert inputs to strings
         a = String ( a ), b = String ( b );
@@ -188,7 +192,7 @@ export abstract class Metric {
         let m: number = a.length, n: number = b.length;
 
         // Pre-compute trivial cases (identical, empty, etc.)
-        let result: MetricCompute | undefined = this.preCompute( a, b, m, n );
+        let result: MetricCompute<R> | undefined = this.preCompute( a, b, m, n );
 
         if ( ! result ) {
 
@@ -229,7 +233,7 @@ export abstract class Metric {
      */
     private runBatch () : void {
 
-        const results: MetricResultSingle[] = [];
+        const results: MetricResultSingle<R>[] = [];
 
         // Loop through each combination of strings in a[] and b[]
         for ( const a of this.a ) { for ( const b of this.b ) {
@@ -261,7 +265,7 @@ export abstract class Metric {
 
         }
 
-        const results: MetricResultSingle[] = [];
+        const results: MetricResultSingle<R>[] = [];
 
         // Compute metric for each corresponding pair
         for ( let i = 0; i < this.a.length; i++ ) {
@@ -393,10 +397,10 @@ export abstract class Metric {
     /**
      * Get the result of the metric computation.
      * 
-     * @returns {MetricResult} - The result of the metric computation
+     * @returns {MetricResult<R>} - The result of the metric computation
      * @throws {Error} - If `run()` has not been called before this method
      */
-    public getResults () : MetricResult {
+    public getResults () : MetricResult<R> {
 
         // Ensure that the metric has been run before getting the result
         if ( this.results === undefined ) {

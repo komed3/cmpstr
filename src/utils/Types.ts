@@ -48,32 +48,26 @@ export interface MetricOptions {
     perf?: boolean;
     delimiter?: string;
     pad?: string;
+    q?: number;
     match?: number;
     mismatch?: number;
     gap?: number;
-    q?: number;
 };
 
-export interface MetricRaw {
-    dist?: number;
-    intersection?: number;
-    size?: number;
-    total?: number;
-    [ key: string ]: any;
-};
+export type MetricRaw = Record<string, any>;
 
-export interface MetricCompute {
+export interface MetricCompute<R = MetricRaw> {
     res: number;
-    raw?: MetricRaw;
+    raw?: R;
 }
 
-export interface MetricResultSingle {
+export interface MetricResultSingle<R = MetricRaw> {
     metric: string;
     a: string;
     b: string;
     res: number;
-    raw?: MetricRaw;
+    raw?: R;
     perf?: PerfMeasure;
 };
 
-export type MetricResult = MetricResultSingle | MetricResultSingle[];
+export type MetricResult<R = MetricRaw> = MetricResultSingle<R> | MetricResultSingle<R>[];

@@ -23,10 +23,15 @@ import type { MetricInput, MetricOptions, MetricCompute } from '../utils/Types';
 import { Metric } from './Metric';
 import { Pool } from '../utils/Pool';
 
+export interface QGramRaw {
+    intersection: number;
+    size: number;
+};
+
 /**
  * QGramSimilarity class extends the Metric class to implement the q-Gram similarity algorithm.
  */
-export default class QGramSimilarity extends Metric {
+export default class QGramSimilarity extends Metric<QGramRaw> {
 
     /**
      * Constructor for the QGramSimilarity class.
@@ -75,9 +80,9 @@ export default class QGramSimilarity extends Metric {
      * @param {string} b - Second string
      * @param {number} m - Length of the first string
      * @param {number} n - Length of the second string
-     * @return {MetricCompute} - Object containing the similarity result and raw values
+     * @return {MetricCompute<QGramRaw>} - Object containing the similarity result and raw values
      */
-    override compute ( a: string, b: string, m: number, n: number ) : MetricCompute {
+    override compute ( a: string, b: string, m: number, n: number ) : MetricCompute<QGramRaw> {
 
         // Get q from options or use default "2"
         const { q = 2 } = this.options;

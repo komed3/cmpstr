@@ -24,10 +24,18 @@ import type { MetricInput, MetricOptions, MetricCompute } from '../utils/Types';
 import { Metric } from './Metric';
 import { Pool } from '../utils/Pool';
 
+export interface JaroWinklerRaw {
+    matchWindow: number;
+    matches: number;
+    transpos: number;
+    jaro: number;
+    prefix: number;
+};
+
 /**
  * JaroWinklerDistance class extends the Metric class to implement the Jaro-Winkler algorithm.
  */
-export default class JaroWinklerDistance extends Metric {
+export default class JaroWinklerDistance extends Metric<JaroWinklerRaw> {
 
     /**
      * Constructor for the JaroWinklerDistance class.
@@ -57,9 +65,9 @@ export default class JaroWinklerDistance extends Metric {
      * @param {string} b - Second string
      * @param {number} m - Length of the first string
      * @param {number} n - Length of the second string
-     * @return {MetricCompute} - Object containing the similarity result and raw values
+     * @return {MetricCompute<JaroWinklerRaw>} - Object containing the similarity result and raw values
      */
-    override compute ( a: string, b: string, m: number, n: number ) : MetricCompute {
+    override compute ( a: string, b: string, m: number, n: number ) : MetricCompute<JaroWinklerRaw> {
 
         // Find matches
         const matchWindow: number = Math.max( 0, Math.floor( n / 2 ) - 1 );
@@ -97,7 +105,7 @@ export default class JaroWinklerDistance extends Metric {
         }
 
         // Set initial values for transpositions, jaro distance, prefix and result
-        let transpos: number = 0, dist: number = 0, prefix: number = 0, res: number = 0;
+        let transpos: number = 0, jaro: number = 0, prefix: number = 0, res: number = 0;
 
         // If matches are found, proceed with further calculations
         if ( matches > 0 ) {
@@ -122,7 +130,7 @@ export default class JaroWinklerDistance extends Metric {
             transpos /= 2;
 
             // Calculate Jaro similarity
-            dist = (
+            jaro = (
                 ( matches / m ) + ( matches / n ) +
                 ( matches - transpos ) / matches
             ) / 3;
@@ -136,7 +144,7 @@ export default class JaroWinklerDistance extends Metric {
             }
 
             // Step 5: Calculate Jaro-Winkler similarity
-            res = dist + prefix * 0.1 * ( 1 - dist );
+            res = jaro + prefix * 0.1 * ( 1 - jaro );
 
         }
 
@@ -147,7 +155,7 @@ export default class JaroWinklerDistance extends Metric {
         // Return the result as a MetricCompute object
         return {
             res: Metric.clamp( res ),
-            raw: { matchWindow, matches, transpos, dist, prefix }
+            raw: { matchWindow, matches, transpos, jaro, prefix }
         };
 
     }
