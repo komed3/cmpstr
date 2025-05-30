@@ -45,7 +45,7 @@ export default class HammingDistance extends Metric<HammingRaw> {
 
         // Call the parent Metric constructor with the metric name and inputs
         // Metric is symmetrical
-        super( 'hamming', a, b, options, true );
+        super ( 'hamming', a, b, options, true );
 
     }
 
@@ -60,7 +60,7 @@ export default class HammingDistance extends Metric<HammingRaw> {
      * @return {MetricCompute<HammingRaw>} - Object containing the similarity result and raw distance
      * @throws {Error} - If strings are of unequal length and padding is not specified
      */
-    override compute (
+    protected override compute (
         a: string, b: string, m: number, n: number,
         maxLen: number
     ) : MetricCompute<HammingRaw> {

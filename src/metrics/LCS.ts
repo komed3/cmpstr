@@ -53,7 +53,7 @@ export default class LCSMetric extends Metric<LCSRaw> {
 
         // Call the parent Metric constructor with the metric name and inputs
         // Metric is symmetrical
-        super( 'lcs', a, b, options, true );
+        super ( 'lcs', a, b, options, true );
 
     }
 
@@ -67,7 +67,7 @@ export default class LCSMetric extends Metric<LCSRaw> {
      * @param {number} maxLen - Maximum length of the strings
      * @return {MetricCompute<LCSRaw>} - Object containing the similarity result and raw LCS length
      */
-    override compute (
+    protected override compute (
         a: string, b: string, m: number, n: number,
         maxLen: number
     ) : MetricCompute<LCSRaw> {

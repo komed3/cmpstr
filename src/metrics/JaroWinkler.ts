@@ -54,7 +54,7 @@ export default class JaroWinklerDistance extends Metric<JaroWinklerRaw> {
 
         // Call the parent Metric constructor with the metric name and inputs
         // Metric is symmetrical
-        super( 'jaro-winkler', a, b, options, true );
+        super ( 'jaro-winkler', a, b, options, true );
 
     }
 
@@ -67,7 +67,7 @@ export default class JaroWinklerDistance extends Metric<JaroWinklerRaw> {
      * @param {number} n - Length of the second string
      * @return {MetricCompute<JaroWinklerRaw>} - Object containing the similarity result and raw values
      */
-    override compute ( a: string, b: string, m: number, n: number ) : MetricCompute<JaroWinklerRaw> {
+    protected override compute ( a: string, b: string, m: number, n: number ) : MetricCompute<JaroWinklerRaw> {
 
         // Find matches
         const matchWindow: number = Math.max( 0, Math.floor( n / 2 ) - 1 );

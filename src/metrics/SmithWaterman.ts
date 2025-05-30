@@ -48,7 +48,7 @@ export default class SmithWatermanDistance extends Metric<SmithWatermanRaw> {
 
         // Call the parent Metric constructor with the metric name and inputs
         // Metric is symmetrical
-        super( 'smithWaterman', a, b, options, true );
+        super ( 'smithWaterman', a, b, options, true );
 
     }
 
@@ -66,7 +66,7 @@ export default class SmithWatermanDistance extends Metric<SmithWatermanRaw> {
      * @param {number} n - Length of the second string
      * @return {MetricCompute<SmithWatermanRaw>} - Object containing the similarity result and raw score
      */
-    override compute ( a: string, b: string, m: number, n: number ) : MetricCompute<SmithWatermanRaw> {
+    protected override compute ( a: string, b: string, m: number, n: number ) : MetricCompute<SmithWatermanRaw> {
 
         // Scoring parameters (can be customized via options if needed)
         const { match = 2, mismatch = -1, gap = -2 } = this.options;

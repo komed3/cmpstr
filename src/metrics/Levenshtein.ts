@@ -51,7 +51,7 @@ export default class LevenshteinDistance extends Metric<LevenshteinRaw> {
 
         // Call the parent Metric constructor with the metric name and inputs
         // Metric is symmetrical
-        super( 'levenshtein', a, b, options, true );
+        super ( 'levenshtein', a, b, options, true );
 
     }
 
@@ -65,7 +65,7 @@ export default class LevenshteinDistance extends Metric<LevenshteinRaw> {
      * @param {number} maxLen - Maximum length of the strings
      * @return {MetricCompute<LevenshteinRaw>} - Object containing the similarity result and raw distance
      */
-    override compute (
+    protected override compute (
         a: string, b: string, m: number, n: number,
         maxLen: number
     ) : MetricCompute<LevenshteinRaw> {

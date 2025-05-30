@@ -52,7 +52,7 @@ export default class DiceSorensenCoefficient extends Metric<DiceRaw> {
 
         // Call the parent Metric constructor with the metric name and inputs
         // Metric is symmetrical
-        super( 'dice', a, b, options, true );
+        super ( 'dice', a, b, options, true );
 
     }
 
@@ -81,7 +81,7 @@ export default class DiceSorensenCoefficient extends Metric<DiceRaw> {
      * @param {string} b - Second string
      * @return {MetricCompute<DiceRaw>} - Object containing the similarity result and raw distance
      */
-    override compute ( a: string, b: string ) : MetricCompute<DiceRaw> {
+    protected override compute ( a: string, b: string ) : MetricCompute<DiceRaw> {
 
         // Generate bigrams for both strings
         const setA: Set<string> = this._bigrams( a );

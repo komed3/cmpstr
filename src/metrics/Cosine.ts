@@ -53,7 +53,7 @@ export default class CosineSimilarity extends Metric<CosineRaw> {
 
         // Call the parent Metric constructor with the metric name and inputs
         // Metric is symmetrical
-        super( 'cosine', a, b, options, true );
+        super ( 'cosine', a, b, options, true );
 
     }
 
@@ -89,7 +89,7 @@ export default class CosineSimilarity extends Metric<CosineRaw> {
      * @param {string} b - Second string
      * @return {MetricCompute<CosineRaw>} - Object containing the similarity result and raw values
      */
-    override compute ( a: string, b: string ) : MetricCompute<CosineRaw> {
+    protected override compute ( a: string, b: string ) : MetricCompute<CosineRaw> {
 
         // Get delimiter from options or use default (space)
         const { delimiter = ' ' } = this.options;

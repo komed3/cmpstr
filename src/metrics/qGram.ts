@@ -50,7 +50,7 @@ export default class QGramSimilarity extends Metric<QGramRaw> {
 
         // Call the parent Metric constructor with the metric name and inputs
         // Metric is symmetrical
-        super( 'qgram', a, b, options, true );
+        super ( 'qgram', a, b, options, true );
 
     }
 
@@ -82,7 +82,7 @@ export default class QGramSimilarity extends Metric<QGramRaw> {
      * @param {number} n - Length of the second string
      * @return {MetricCompute<QGramRaw>} - Object containing the similarity result and raw values
      */
-    override compute ( a: string, b: string, m: number, n: number ) : MetricCompute<QGramRaw> {
+    protected override compute ( a: string, b: string, m: number, n: number ) : MetricCompute<QGramRaw> {
 
         // Get q from options or use default "2"
         const { q = 2 } = this.options;

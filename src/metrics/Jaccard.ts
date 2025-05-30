@@ -50,7 +50,7 @@ export default class JaccardIndex extends Metric<JaccardRaw> {
 
         // Call the parent Metric constructor with the metric name and inputs
         // Metric is symmetrical
-        super( 'jaccard', a, b, options, true );
+        super ( 'jaccard', a, b, options, true );
 
     }
 
@@ -63,7 +63,7 @@ export default class JaccardIndex extends Metric<JaccardRaw> {
      * @param {number} n - Length of the second string
      * @return {MetricCompute<JaccardRaw>} - Object containing the similarity result and raw values
      */
-    override compute ( a: string, b: string, m: number, n: number ) : MetricCompute<JaccardRaw> {
+    protected override compute ( a: string, b: string, m: number, n: number ) : MetricCompute<JaccardRaw> {
 
         // Acquire two sets from the Pool
         const setA: Set<string> = Pool.acquire( 'set', m );
