@@ -46,6 +46,7 @@ export type MetricMode = 'default' | 'batch' | 'pairwise';
 export interface MetricOptions {
     mode?: MetricMode;
     perf?: boolean;
+    delimiter?: string;
     pad?: string;
     match?: number;
     mismatch?: number;
@@ -56,6 +57,11 @@ export interface MetricRaw {
     dist?: number;
     intersection?: number;
     size?: number;
+    maxScore?: number;
+    total?: number;
+    dotProduct?: number;
+    magnitudeA?: number;
+    magnitudeB?: number;
     [ key: string ]: any;
 };
 
