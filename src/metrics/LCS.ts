@@ -1,19 +1,21 @@
 /**
- * Needleman-Wunsch Algorithm
- * src/metrics/NeedlemanWunsch.ts
+ * Longest Common Subsequence (LCS)
+ * src/metrics/LCS.ts
  * 
- * @see https://en.wikipedia.org/wiki/Needleman%E2%80%93Wunsch_algorithm
+ * @see https://en.wikipedia.org/wiki/Longest_common_subsequence
  * 
- * The Needleman-Wunsch algorithm performs global alignment, aligning two strings
- * entirely, including gaps. It is commonly used in bioinformatics for sequence
- * alignment.
+ * The Longest Common Subsequence (LCS) metric measures the length of the longest
+ * subsequence common to both strings. Unlike substrings, the characters of a
+ * subsequence do not need to be contiguous, but must appear in the same order.
+ * The LCS is widely used in diff tools, bioinformatics, and approximate string
+ * matching.
  * 
  * This implementation is highly optimized for both time and memory efficiency.
  * It uses only two rows of the dynamic programming matrix at any time, and always
  * iterates over the shorter string for memory efficiency (a is always the shorter
- * string in (a, b)). Batch processing is supported via the Metric base class.
+ * string in (a, b)).
  * 
- * @module Metric/NeedlemanWunsch
+ * @module Metric/LCS
  * @author Paul Köhler (komed3)
  * @license MIT
  */
@@ -25,14 +27,14 @@ import { Metric } from './Metric';
 import { Pool } from '../utils/Pool';
 
 /**
- * NeedlemanWunschDistance class extends the Metric class to implement the Needleman-Wunsch algorithm.
+ * LCSMetric class extends the Metric class to implement the Longest Common Subsequence algorithm.
  */
-export default class NeedlemanWunschDistance extends Metric {
+export default class LCSMetric extends Metric {
 
     /**
-     * Constructor for the NeedlemanWunsch class.
+     * Constructor for the LCSMetric class.
      * 
-     * Initializes the Needleman-Wunsch metric with two input strings or
+     * Initializes the LCS metric with two input strings or
      * arrays of strings and optional options.
      * 
      * @param {MetricInput} a - First input string or array of strings
@@ -46,51 +48,44 @@ export default class NeedlemanWunschDistance extends Metric {
 
         // Call the parent Metric constructor with the metric name and inputs
         // Metric is symmetrical
-        super( 'needlemanWunsch', a, b, options, true );
+        super( 'lcs', a, b, options, true );
 
     }
 
     /**
-     * Calculates the Needleman-Wunsch global alignment score between two strings.
+     * Calculates the normalized LCS similarity between two strings.
      * 
      * @param {string} a - First string
      * @param {string} b - Second string
      * @param {number} m - Length of the first string
      * @param {number} n - Length of the second string
      * @param {number} maxLen - Maximum length of the strings
-     * @return {MetricCompute} - Object containing the similarity result and raw score
+     * @return {MetricCompute} - Object containing the similarity result and raw LCS length
      */
     override compute ( a: string, b: string, m: number, n: number, maxLen: number ) : MetricCompute {
-
-        // Scoring parameters (can be customized via options if needed)
-        const { match = 1, mismatch = -1, gap = -1 } = this.options;
 
         // Get two reusable arrays from the Pool for the DP rows
         const len: number = m + 1;
         const [ prev, curr ] = Pool.acquireMany( 'uint16', [ len, len ] );
 
-        // Initialize the first row (gap penalties)
-        prev[ 0 ] = 0; for ( let i = 1; i <= m; i++ ) prev[ i ] = prev[ i - 1 ] + gap;
+        // Initialize the first row to zeros
+        for ( let i = 0; i <= m; i++ ) prev[ i ] = 0;
 
         // Fill the DP matrix row by row (over the longer string)
         for ( let j = 1; j <= n; j++ ) {
 
-            curr[ 0 ] = prev[ 0 ] + gap;
+            curr[ 0 ] = 0;
 
             // Get the character code of the current character in b
             const cb: number = b.charCodeAt( j - 1 );
 
             for ( let i = 1; i <= m; i++ ) {
 
-                // Score for match / mismatch
-                const score: number = a.charCodeAt( i - 1 ) === cb ? match : mismatch;
+                // If characters match, increment the LCS length
+                if ( a.charCodeAt( i - 1 ) === cb ) curr[ i ] = prev[ i - 1 ] + 1;
 
-                // Calculate the maximum score for current cell
-                curr[ i ] = Math.max(
-                    prev[ i - 1 ] + score,   // Diagonal (match/mismatch)
-                    prev[ i ] + gap,         // Up (gap)
-                    curr[ i - 1 ] + gap      // Left (gap)
-                );
+                // Otherwise, take the maximum of the left or above cell
+                else curr[ i ] = Math.max( prev[ i ], curr[ i - 1 ] );
 
             }
 
@@ -99,20 +94,17 @@ export default class NeedlemanWunschDistance extends Metric {
 
         }
 
-        // The last value in prev is the Needleman-Wunsch score
-        const score: number = prev[ m ];
+        // The last value in prev is the LCS length
+        const lcs: number = prev[ m ];
 
         // Release arrays back to the pool
         Pool.release( 'uint16', prev, len );
         Pool.release( 'uint16', curr, len );
 
-        // Use the maximum possible score for the longer string (global alignment)
-        const total: number = maxLen * match;
-
-        // Return the result as a MetricCompute object
+        // Normalize by the length of the longer string
         return {
-            res: total === 0 ? 0 : Metric.clamp( score / total ),
-            raw: { score, total }
+            res: maxLen === 0 ? 1 : Metric.clamp( lcs / maxLen ),
+            raw: { lcs, maxLen }
         };
 
     }

@@ -75,7 +75,7 @@ export default class SmithWatermanDistance extends Metric {
 
         let maxScore: number = 0;
 
-        // Fill the DP matrix row by row
+        // Fill the DP matrix row by row (over the longer string)
         for ( let j = 1; j <= n; j++ ) {
 
             // First column always zero

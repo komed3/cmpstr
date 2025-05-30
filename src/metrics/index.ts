@@ -9,6 +9,7 @@
  *  - Dice-Sorensen Coefficient
  *  - Hamming Distance
  *  - Jaccard Index
+ *  - Longest Common Subsequence
  *  - Levenshtein Distance
  *  - Needleman-Wunsch Distance
  *  - Q-Gram Similarity
@@ -24,6 +25,7 @@ import CosineSimilarity from './Cosine';
 import DiceSorensenCoefficient from './DiceSorensen';
 import HammingDistance from './Hamming';
 import JaccardIndex from './Jaccard';
+import LCSMetric from './LCS';
 import LevenshteinDistance from './Levenshtein';
 import NeedlemanWunschDistance from './NeedlemanWunsch';
 import QGramSimilarity from './qGram';
@@ -34,6 +36,7 @@ export const ALL_METRICS = {
     dice: DiceSorensenCoefficient,
     hamming: HammingDistance,
     jaccard: JaccardIndex,
+    lcs: LCSMetric,
     levenshtein: LevenshteinDistance,
     needlemanWunsch: NeedlemanWunschDistance,
     qGram: QGramSimilarity,

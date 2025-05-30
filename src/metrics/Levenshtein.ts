@@ -32,8 +32,8 @@ export default class LevenshteinDistance extends Metric {
     /**
      * Constructor for the Levenshtein class.
      * 
-     * Initializes the Levenshtein metric with two input strings or
-     * arrays of strings and optional options.
+     * Initializes the Levenshtein metric with two input strings
+     * or arrays of strings and optional options.
      * 
      * @param {MetricInput} a - First input string or array of strings
      * @param {MetricInput} b - Second input string or array of strings
@@ -69,7 +69,7 @@ export default class LevenshteinDistance extends Metric {
         // Initialize the first row (edit distances from empty string to a)
         for ( let i = 0; i <= m; i++ ) prev[ i ] = i;
 
-        // Fill the DP matrix row by row
+        // Fill the DP matrix row by row (over the longer string)
         for ( let j = 1; j <= n; j++ ) {
 
             // Cost of transforming empty string to b[0..j]
