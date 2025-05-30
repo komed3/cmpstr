@@ -224,7 +224,7 @@ export abstract class Metric<R = MetricRaw> {
             };
 
             // If profiler is active, measure; else, just run
-            result = this.profiler ? this.profiler.run( fn ) : fn();
+            result = this.profiler?.run( fn ) ?? fn();
 
         }
 
@@ -433,10 +433,10 @@ export abstract class Metric<R = MetricRaw> {
      * Run the metric computation based on the specified mode.
      * 
      * @param {MetricMode} [mode] - The mode to run the metric in (optional)
-     * @param {boolean} [clear=false] - Whether to clear previous results before running
+     * @param {boolean} [clear=true] - Whether to clear previous results before running
      * @throws {Error} - If an unsupported mode is specified
      */
-    public run ( mode?: MetricMode, clear: boolean = false ) : void {
+    public run ( mode?: MetricMode, clear: boolean = true ) : void {
 
         // Clear previous results if requested
         if ( clear ) this.clear();
@@ -466,11 +466,11 @@ export abstract class Metric<R = MetricRaw> {
      * Run the metric computation based on the specified mode asynchronously.
      * 
      * @param {MetricMode} [mode] - The mode to run the metric in (optional)
-     * @param {boolean} [clear=false] - Whether to clear previous results before running
+     * @param {boolean} [clear=true] - Whether to clear previous results before running
      * @returns {Promise<void>} - A promise that resolves when the metric computation is complete
      * @throws {Error} - If an unsupported mode is specified
      */
-    public async runAsync ( mode?: MetricMode, clear: boolean = false ) : Promise<void> {
+    public async runAsync ( mode?: MetricMode, clear: boolean = true ) : Promise<void> {
 
         // Clear previous results if requested
         if ( clear ) this.clear();
