@@ -117,7 +117,9 @@ export default class CosineSimilarity extends Metric {
 
         // Return the result as a MetricCompute object
         return {
-            res: ( magnitudeA && magnitudeB ) ? dotProduct / ( magnitudeA * magnitudeB ) : 0,
+            res: ( magnitudeA && magnitudeB ) ? Metric.clamp(
+                dotProduct / ( magnitudeA * magnitudeB )
+            ) : 0,
             raw: { dotProduct, magnitudeA, magnitudeB }
         };
 

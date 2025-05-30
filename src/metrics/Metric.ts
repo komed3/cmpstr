@@ -80,6 +80,18 @@ export abstract class Metric {
     }
 
     /**
+     * Clamps the similarity result between 0 and 1.
+     * 
+     * @param {number} res - The input similarity to clamp
+     * @returns {number} - The clamped similarity (0 to 1)
+     */
+    public static clamp ( res: number ) : number {
+
+        return Math.max( 0, Math.min( 1, res ) );
+
+    }
+
+    /**
      * Calculates the normalized similarity based on the raw and maximum value.
      * 
      * @param {number} raw - Raw value (e.g., distance)
@@ -88,7 +100,7 @@ export abstract class Metric {
      */
     public static norm ( raw: number, max: number ) : number {
 
-        return max === 0 ? 1 : Math.max( 0, Math.min( 1, 1 - raw / max ) );
+        return max === 0 ? 1 : Metric.clamp( 1 - raw / max );
 
     }
 

@@ -106,7 +106,7 @@ export default class NeedlemanWunschDistance extends Metric {
 
         // Return the result as a MetricCompute object
         return {
-            res: total === 0 ? 0 : score / total,
+            res: total === 0 ? 0 : Metric.clamp( score / total ),
             raw: { score, total }
         };
 

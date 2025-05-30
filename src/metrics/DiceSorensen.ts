@@ -96,7 +96,7 @@ export default class DiceSorensenCoefficient extends Metric {
 
         // Return the result as a MetricCompute object
         return {
-            res: size === 0 ? 1 : ( 2 * intersection ) / size,
+            res: size === 0 ? 1 : Metric.clamp( ( 2 * intersection ) / size ),
             raw: { intersection, size }
         };
 

@@ -110,7 +110,7 @@ export default class SmithWatermanDistance extends Metric {
 
         // Return the result as a MetricCompute object
         return {
-            res: total === 0 ? 0 : maxScore / total,
+            res: total === 0 ? 0 : Metric.clamp( maxScore / total ),
             raw: { maxScore, total }
         };
 
