@@ -9,6 +9,7 @@
  * This implementation allows for optional padding of the shorter string to equalize
  * lengths, otherwise it throws an error if the strings are of unequal length.
  * 
+ * @module Metric/HammingDistance
  * @author Paul Köhler (komed3)
  * @license MIT
  */

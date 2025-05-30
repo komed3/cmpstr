@@ -14,6 +14,7 @@
  * It avoids unnecessary allocations by iterating only over the keys present in the
  * term frequency objects, and does not build a union set of all terms.
  * 
+ * @module Metric/CosineSimilarity
  * @author Paul Köhler (komed3)
  * @license MIT
  */
@@ -92,12 +93,12 @@ export default class CosineSimilarity extends Metric {
         const termsB: Map<string, number> = this._termFreq( b, delimiter );
 
         // Calculate dot product and magnitudes
-        let dotProduct = 0, magnitudeA = 0, magnitudeB = 0;
+        let dotProduct: number = 0, magnitudeA: number = 0, magnitudeB: number = 0;
 
         // Iterate over terms in A for dotProduct and magnitudeA
         for ( const [ term, freqA ] of termsA ) {
 
-            const freqB = termsB.get( term ) || 0;
+            const freqB: number = termsB.get( term ) || 0;
 
             dotProduct += freqA * freqB;
             magnitudeA += freqA * freqA;

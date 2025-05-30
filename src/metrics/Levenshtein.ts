@@ -13,6 +13,7 @@
  * It uses only two rows of the dynamic programming matrix at any time, and
  * supports batch processing for comparing multiple string pairs efficiently.
  * 
+ * @module Metric/LevenshteinDistance
  * @author Paul Köhler (komed3)
  * @license MIT
  */
