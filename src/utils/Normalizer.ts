@@ -5,9 +5,9 @@
  * @see https://en.wikipedia.org/wiki/Text_normalization
  * @see https://en.wikipedia.org/wiki/Unicode_equivalence
  * 
- * This module provides a Normalizer class that allows for string normalization based on
- * various flags. It uses a pipeline of normalization functions that can be reused and
- * cached for efficiency.
+ * This module provides a Normalizer class that allows for string normalization based
+ * on various flags. It uses a pipeline of normalization functions that can be reused
+ * and cached for efficiency.
  * 
  * Supported flags:
  *  'd' :: Normalize to NFD (Normalization Form Decomposed)

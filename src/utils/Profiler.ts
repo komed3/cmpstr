@@ -1,7 +1,27 @@
+/**
+ * Profiler Utility
+ * src/utils/profiler.ts
+ * 
+ * @see https://en.wikipedia.org/wiki/Profiling_(computer_programming)
+ * 
+ * This class provides methods to run synchronous and asynchronous functions, capturing
+ * their execution time and memory usage, and storing the results in a set of profiler
+ * entries. It supports both Node.js and browser environments, detecting the environment
+ * automatically. The class is optimized for minimal overhead and can be used for fine-
+ * grained performance profiling.
+ * 
+ * @module Profiler
+ * @author Paul Köhler (komed3)
+ * @license MIT
+ */
+
 'use strict';
 
 import type { ProfilerEntry } from './Types';
 
+/**
+ * Profiler class for measuring execution time and memory usage of functions.
+ */
 export class Profiler {
 
     // Environment detection
@@ -11,7 +31,7 @@ export class Profiler {
     private static instance: Profiler;
 
     // Store for profiler entries
-    private store: Set<ProfilerEntry<unknown>> = new Set ();
+    private store: Set<ProfilerEntry<any>> = new Set ();
 
     /**
      * Sets the environment based on the available global objects.
@@ -166,6 +186,17 @@ export class Profiler {
 
         // Return the result of the function
         return res;
+
+    }
+
+    /**
+     * Retrieves all profiler entries stored in the profiler.
+     * 
+     * @returns {ProfilerEntry<any>[]} - An array of profiler entries
+     */
+    public getAll () : ProfilerEntry<any>[] {
+
+        return [ ...this.store ];
 
     }
 
