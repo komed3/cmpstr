@@ -55,9 +55,61 @@ export default class Soundex extends Phonetic {
 
         const { delimiter = ' ', phonetic: { mapping = 'en', length = 4 } = {} } = this.options;
 
-        //
+        const { map, ignore = [], rules = [] } = Soundex.mapping[ mapping ] ?? Soundex.mapping.en;
 
-        return [];
+        const index: string[] = [];
+
+        for ( const word of input.split( delimiter ).filter( Boolean ) ) {
+
+            const chars: string[] = word.toLowerCase().split( '' );
+            const charLast: number = chars.length - 1;
+
+            let code: string = '';
+            let lastCode: string | null = null;
+
+            for ( let i = 1; i <= charLast; i++ ) {
+
+                const char: string = chars[ i ];
+
+                if ( ignore.includes( char ) ) continue;
+
+                const prev: string = chars[ i - 1 ] || '';
+                const next: string = chars[ i + 1 ] || '';
+                let c: string = map[ char ] || '';
+
+                for ( const rule of rules ) {
+
+                    if ( rule.char !== char ) continue;
+
+                    if ( rule.position === 'start' && i !== 0 ) continue;
+                    if ( rule.position === 'end' && i !== charLast ) continue;
+
+                    if ( rule.prev && ! rule.prev.includes( prev ) ) continue;
+                    if ( rule.prevNot && rule.prevNot.includes( prev ) ) continue;
+
+                    if ( rule.next && ! rule.next.includes( next ) ) continue;
+                    if ( rule.nextNot && rule.nextNot.includes( next ) ) continue;
+
+                    c = rule.code;
+                    break;
+
+                }
+
+                if ( ! c || c === lastCode ) continue;
+
+                code += c.replace( /\D/g, '' ), lastCode = c;
+
+            }
+
+            code = chars[ 0 ] + code.replaceAll( '0', '' );
+
+            index.push( length === -1 ? code : (
+                ( code + '0'.repeat( length ) ).slice( 0, length )
+            ) );
+
+        }
+
+        return index;
 
     }
 
