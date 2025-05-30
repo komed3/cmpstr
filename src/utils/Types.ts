@@ -54,6 +54,10 @@ export interface MetricOptions {
     match?: number;
     mismatch?: number;
     gap?: number;
+    phonetic?: {
+        mapping?: string;
+        length?: number;
+    }
 };
 
 export type MetricRaw = Record<string, any>;
@@ -72,3 +76,19 @@ export interface MetricResultSingle<R = MetricRaw> {
 };
 
 export type MetricResult<R = MetricRaw> = MetricResultSingle<R> | MetricResultSingle<R>[];
+
+export interface PhoneticMap {
+    map: Record<string, string>;
+    ignore?: string[];
+    rules?: {
+        char: string;
+        code: string;
+        position?: 'start' | 'end';
+        prev?: string[];
+        prevNot?: string[];
+        next?: string[];
+        nextNot?: string[];
+    }[]
+};
+
+export type PhoneticMapping = Record<string, PhoneticMap>;

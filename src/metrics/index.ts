@@ -17,6 +17,9 @@
  *  - Q-Gram Similarity
  *  - Smith-Waterman Distance
  * 
+ * Phonetic search:
+ *  - Soundex
+ * 
  * @author Paul Köhler (komed3)
  * @license MIT
  */
@@ -35,7 +38,11 @@ import NeedlemanWunschDistance from './NeedlemanWunsch';
 import QGramSimilarity from './qGram';
 import SmithWatermanDistance from './SmithWaterman';
 
+import Soundex from './Soundex';
+
 export const ALL_METRICS = {
+
+    // Classic string similarity
     cosine: CosineSimilarity,
     damerau: DamerauLevenshteinDistance,
     dice: DiceSorensenCoefficient,
@@ -46,5 +53,9 @@ export const ALL_METRICS = {
     levenshtein: LevenshteinDistance,
     needlemanWunsch: NeedlemanWunschDistance,
     qGram: QGramSimilarity,
-    smithWaterman: SmithWatermanDistance
+    smithWaterman: SmithWatermanDistance,
+
+    // Phonetic search
+    soundex: Soundex
+
 };
