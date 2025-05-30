@@ -51,6 +51,7 @@ export interface MetricOptions {
     match?: number;
     mismatch?: number;
     gap?: number;
+    q?: number;
 };
 
 export interface MetricRaw {
