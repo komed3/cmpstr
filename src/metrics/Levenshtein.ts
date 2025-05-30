@@ -106,7 +106,7 @@ export default class LevenshteinDistance extends Metric {
 
         // Return the result as a MetricCompute object
         return {
-            res: Metric.norm( dist, maxLen ),
+            res: maxLen === 0 ? 1 : Metric.clamp( 1 - dist / maxLen ),
             raw: { dist }
         };
 

@@ -92,19 +92,6 @@ export abstract class Metric {
     }
 
     /**
-     * Calculates the normalized similarity based on the raw and maximum value.
-     * 
-     * @param {number} raw - Raw value (e.g., distance)
-     * @param {number} max - Maximum value (e.g., maximum possible distance)
-     * @returns {number} - Normalized similarity (0 to 1)
-     */
-    public static norm ( raw: number, max: number ) : number {
-
-        return max === 0 ? 1 : Metric.clamp( 1 - raw / max );
-
-    }
-
-    /**
      * Constructor for the Metric class.
      * Initializes the metric with two inputs (strings or arrays of strings) and options.
      * 

@@ -89,7 +89,7 @@ export default class HammingDistance extends Metric {
 
         // Return the result as a MetricCompute object
         return {
-            res: Metric.norm( dist, m ),
+            res: m === 0 ? 1 : Metric.clamp( 1 - dist / m ),
             raw: { dist }
         };
 
