@@ -20,6 +20,7 @@
 
 import type { MetricInput, MetricOptions, MetricCompute, PhoneticMapping, PhoneticMap } from '../utils/Types';
 import { Metric } from './Metric';
+import { Pool } from '../utils/Pool';
 
 export interface PhoneticRaw {
     indexA: string[];
@@ -126,25 +127,44 @@ export abstract class Phonetic extends Metric<PhoneticRaw> {
      * Computes the phonetic based similatity for the two input strings.
      * 
      * This method processes both inputs, applies the phonetic mapping, and calculates
-     * the similarity based on phonetic indices.
+     * the similarity based on phonetic indices and the Jaccard index.
      * 
      * @param {string} a - First string
      * @param {string} b - Second string
-     * @param {number} m - Length of the first string
-     * @param {number} n - Length of the second string
-     * @param {number} maxLen - Maximum length of the strings
      * @returns {MetricCompute<PhoneticRaw>} - Object containing the similarity result and phonetic indices
      */
-    protected override compute (
-        a: string, b: string, m: number, n: number,
-        maxLen: number
-    ) : MetricCompute<PhoneticRaw> {
+    protected override compute ( a: string, b: string ) : MetricCompute<PhoneticRaw> {
 
         // Computes phonetic index for `a` and `b`
         const indexA: string[] = this.phoneticIndex( a );
         const indexB: string[] = this.phoneticIndex( b );
 
-        return { res: 0, raw: { indexA, indexB } };
+        const sizeA: number = indexA.length, sizeB: number = indexB.length;
+
+        // Acquire two sets from the Pool
+        const [ setA, setB ] = Pool.acquireMany( 'set', [ sizeA, sizeB ] );
+
+        // Fill setA and setB from the computed phonetic indices
+        for ( const A of this.phoneticIndex( a ) ) setA.add( A );
+        for ( const B of this.phoneticIndex( b ) ) setB.add( B );
+
+        // Calculate intersection size
+        let intersection: number = 0;
+
+        for ( const c of setA ) if ( setB.has( c ) ) intersection++;
+
+        // Calculate union size (setA + elements in setB not in setA)
+        const union: number = setA.size + setB.size - intersection;
+
+        // Release sets back to the pool
+        Pool.release( 'set', setA, sizeA );
+        Pool.release( 'set', setB, sizeB );
+
+        // Return the result as a MetricCompute object
+        return {
+            res: union === 0 ? 1 : Metric.clamp( intersection / union ),
+            raw: { indexA, indexB }
+        };
 
     }
 

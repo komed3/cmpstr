@@ -66,8 +66,7 @@ export default class JaccardIndex extends Metric<JaccardRaw> {
     protected override compute ( a: string, b: string, m: number, n: number ) : MetricCompute<JaccardRaw> {
 
         // Acquire two sets from the Pool
-        const setA: Set<string> = Pool.acquire( 'set', m );
-        const setB: Set<string> = Pool.acquire( 'set', n );
+        const [ setA, setB ] = Pool.acquireMany( 'set', [ m, n ] );
 
         // Fill setA and setB with unique characters from a and b
         for ( const A of a ) setA.add( A );
@@ -79,9 +78,7 @@ export default class JaccardIndex extends Metric<JaccardRaw> {
         for ( const c of setA ) if ( setB.has( c ) ) intersection++;
 
         // Calculate union size (setA + elements in setB not in setA)
-        let union: number = setA.size;
-
-        for ( const c of setB ) if ( ! setA.has( c ) ) union++;
+        const union: number = setA.size + setB.size - intersection;
 
         // Release sets back to the pool
         Pool.release( 'set', setA, m );
