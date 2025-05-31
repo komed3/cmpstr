@@ -37,7 +37,7 @@ export default class Soundex extends Phonetic {
         }
     };
 
-    protected override adjust( code: string, chars: string[] ) : string {
+    protected override adjustCode( code: string, chars: string[] ) : string {
 
         return chars[ 0 ].toUpperCase() + code.slice( 1 ).replaceAll( '0', '' );
 

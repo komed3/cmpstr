@@ -83,7 +83,7 @@ export abstract class Phonetic {
 
     }
 
-    protected adjust ( code: string, chars: string[] ) : string {
+    protected adjustCode ( code: string, chars: string[] ) : string {
 
         return code.replaceAll( '0', '' );
 
@@ -122,7 +122,7 @@ export abstract class Phonetic {
 
         }
 
-        return this.adjust( code, chars );
+        return this.adjustCode( code, chars );
 
     }
 
