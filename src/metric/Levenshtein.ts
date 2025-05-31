@@ -1,6 +1,6 @@
 /**
  * Levenshtein Distance
- * src/metrics/Levenshtein.ts
+ * src/metric/Levenshtein.ts
  * 
  * @see https://en.wikipedia.org/wiki/Levenshtein_distance
  * 

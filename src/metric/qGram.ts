@@ -1,6 +1,6 @@
 /**
  * q-Gram Similarity
- * src/metrics/QGram.ts
+ * src/metric/QGram.ts
  * 
  * @see https://en.wikipedia.org/wiki/Q-gram
  * 

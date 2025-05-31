@@ -1,6 +1,6 @@
 /**
  * Cosine Similarity
- * src/metrics/Cosine.ts
+ * src/metric/Cosine.ts
  * 
  * @see https://en.wikipedia.org/wiki/Cosine_similarity
  * 

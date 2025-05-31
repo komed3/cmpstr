@@ -1,6 +1,6 @@
 /**
  * Dice-Sørensen Coefficient
- * src/metrics/DiceSorensen.ts
+ * src/metric/DiceSorensen.ts
  * 
  * @see https://en.wikipedia.org/wiki/Dice-S%C3%B8rensen_coefficient
  * 

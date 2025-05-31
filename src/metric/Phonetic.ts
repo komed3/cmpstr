@@ -1,6 +1,6 @@
 /**
  * Abstract Phonetic
- * src/metrics/Phonetic.ts
+ * src/metric/Phonetic.ts
  * 
  * @see https://en.wikipedia.org/wiki/Phonetic_algorithm
  * 

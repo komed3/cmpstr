@@ -1,6 +1,6 @@
 /**
  * Hamming Distance
- * src/metrics/Hamming.ts
+ * src/metric/Hamming.ts
  * 
  * @see https://en.wikipedia.org/wiki/Hamming_distance
  * 

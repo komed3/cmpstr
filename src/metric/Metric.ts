@@ -1,6 +1,6 @@
 /**
  * Abstract Metric
- * src/metrics/Metric.ts
+ * src/metric/Metric.ts
  * 
  * This module defines an abstract class for string metrics, providing a framework for
  * computing various string similarity metrics. It includes methods for running metrics

@@ -1,6 +1,6 @@
 /**
  * Soundex Phonetic Algorithm
- * src/metrics/Soudex.ts
+ * src/metric/Soudex.ts
  * 
  * @see https://en.wikipedia.org/wiki/Soundex
  * 

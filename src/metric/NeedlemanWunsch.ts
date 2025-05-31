@@ -1,6 +1,6 @@
 /**
  * Needleman-Wunsch Algorithm
- * src/metrics/NeedlemanWunsch.ts
+ * src/metric/NeedlemanWunsch.ts
  * 
  * @see https://en.wikipedia.org/wiki/Needleman%E2%80%93Wunsch_algorithm
  * 

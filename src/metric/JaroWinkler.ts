@@ -1,6 +1,6 @@
 /**
  * Jaro-Winkler Distance
- * src/metrics/JaroWinkler.ts
+ * src/metric/JaroWinkler.ts
  * 
  * @see https://en.wikipedia.org/wiki/Jaro%E2%80%93Winkler_distance
  * 

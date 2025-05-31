@@ -1,6 +1,6 @@
 /**
  * Jaccard Index
- * src/metrics/Jaccard.ts
+ * src/metric/Jaccard.ts
  * 
  * @see https://en.wikipedia.org/wiki/Jaccard_index
  * 

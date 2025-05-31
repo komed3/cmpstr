@@ -1,6 +1,6 @@
 /**
  * Longest Common Subsequence (LCS)
- * src/metrics/LCS.ts
+ * src/metric/LCS.ts
  * 
  * @see https://en.wikipedia.org/wiki/Longest_common_subsequence
  * 

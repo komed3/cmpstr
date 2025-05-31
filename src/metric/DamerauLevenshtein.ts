@@ -1,6 +1,6 @@
 /**
  * Damerau-Levenshtein Distance
- * src/metrics/DamerauLevenshtein.ts
+ * src/metric/DamerauLevenshtein.ts
  * 
  * @see https://en.wikipedia.org/wiki/Damerau%E2%80%93Levenshtein_distance
  * 

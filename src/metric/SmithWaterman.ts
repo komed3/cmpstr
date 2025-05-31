@@ -1,6 +1,6 @@
 /**
  * Smith-Waterman Algorithm
- * src/metrics/SmithWaterman.ts
+ * src/metric/SmithWaterman.ts
  * 
  * @see https://en.wikipedia.org/wiki/Smith%E2%80%93Waterman_algorithm
  * 
