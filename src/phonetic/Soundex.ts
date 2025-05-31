@@ -6,7 +6,7 @@ import { Phonetic } from './Phonetic';
 export default class Soundex extends Phonetic {
 
     protected static override default: PhoneticOptions = {
-        map: 'en', delimiter: ' ', length: 4, pad: '0'
+        map: 'en', delimiter: ' ', length: 4, pad: '0', dedupe: true
     };
 
     protected static override mapping: PhoneticMapping = {
@@ -45,8 +45,10 @@ export default class Soundex extends Phonetic {
 
     constructor ( options: PhoneticOptions = {} ) {
 
+        const { map = Soundex.default.map } = options;
+
         super (
-            Soundex.mapping[ options.map ?? Soundex.default.map! ],
+            typeof map === 'string' ? Soundex.mapping[ map ] : map!,
             { ...Soundex.default, ...options }
         );
 

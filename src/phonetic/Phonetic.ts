@@ -1,13 +1,64 @@
+/**
+ * Abstract Phonetic
+ * src/phonetic/Phonetic.ts
+ * 
+ * @see https://en.wikipedia.org/wiki/Phonetic_algorithm
+ * 
+ * A phonetic algorithm refers to a method for indexing words according to their pronunciation.
+ * When the algorithm relies on orthography, it is significantly influenced by the spelling
+ * conventions of the language for which it is intended: since the majority of phonetic algorithms
+ * were created for English, they tend to be less effective for indexing words in other languages.
+ * 
+ * Phonetic search has numerous applications, and one of the initial use cases has been in
+ * trademark searches to verify that newly registered trademarks do not pose a risk of
+ * infringing upon existing trademarks due to their pronunciation.
+ * 
+ * This module provides an abstract class for generating phonetic indices based on mappings
+ * and rules. It allows for the implementation of various phonetic algorithms by extending
+ * the abstract class.
+ * 
+ * @module Phonetic
+ * @author Paul Köhler (komed3)
+ * @license MIT
+ */
+
 'use strict';
 
 import type { PhoneticMapping, PhoneticMap, PhoneticOptions } from '../utils/Types';
 
+/**
+ * Abstract class representing a phonetic algorithm.
+ * 
+ * The methods `applyRules`, `equalLen`, `word2Chars`, `char2Code`, `adjustCode`, `phoneticCode`
+ * and `loop` can be overridden in subclasses to implement specific phonetic algorithms.
+ * 
+ * @abstract
+ */
 export abstract class Phonetic {
 
+    /**
+     * Default phonetic options.
+     * 
+     * This object contains default settings for phonetic algorithms,
+     * implemented in the subclass.
+     */
     protected static default: PhoneticOptions;
 
+    /**
+     * Phonetic mapping used for phonetic algorithms.
+     * 
+     * This mapping is used to convert words into their phonetic representation
+     * based on the specific phonetic algorithm implemented in the subclass.
+     */
     protected static mapping: PhoneticMapping;
 
+    /**
+     * Constructor for the Phonetic class.
+     * 
+     * @param {PhoneticMap} map - The phonetic map containing rules and mappings
+     * @param {PhoneticOptions} options - Options for the phonetic algorithm
+     * @throws {Error} - If the requested mapping is not declared
+     */
     constructor (
         protected readonly map: PhoneticMap,
         protected readonly options: PhoneticOptions
@@ -19,76 +70,84 @@ export abstract class Phonetic {
 
     }
 
+    /**
+     * Applies phonetic rules to a character in a word context.
+     * 
+     * This method is designed to be generic and efficient for all phonetic algorithms.
+     * It checks all rule types (prev, next, prevNot, nextNot, position, etc.) and
+     * returns either the appropriate code (string) or undefined.
+     * 
+     * @param {string} char - The current character
+     * @param {number} i - The current position within the word
+     * @param {string[]} chars - The word as an array of characters
+     * @param {number} charLen - The total length of the word
+     * @returns {string|undefined} - The rule code or undefined if no rule applies
+     */
     protected applyRules ( char: string, i: number, chars: string[], charLen: number ) : string | undefined {
 
         const { ruleset = [] } = this.map;
 
+        // If no rules are provided, return undefined
         if ( ! ruleset || ! ruleset.length ) return undefined;
 
+        // Get the surrounding characters
         const prev: string = chars[ i - 1 ] || '', prev2: string = chars[ i - 2 ] || '';
         const next: string = chars[ i + 1 ] || '', next2: string = chars[ i + 2 ] || '';
 
+        // Iterate over the rules to find a matching rule for the current character
         for ( const rule of ruleset ) {
 
+            // Skip if the rule does not match the current character
             if ( rule.char && rule.char !== char ) continue;
 
+            // Position in the word (start, middle, end)
             if ( rule.position === 'start' && i !== 0 ) continue;
             if ( rule.position === 'middle' && i > 0 && i < charLen ) continue;
             if ( rule.position === 'end' && i !== charLen ) continue;
 
+            // Previous character(s)
             if ( rule.prev && ! rule.prev.includes( prev ) ) continue;
             if ( rule.prevNot && rule.prevNot.includes( prev ) ) continue;
             if ( rule.prev2 && ! rule.prev2.includes( prev2 ) ) continue;
             if ( rule.prev2Not && rule.prev2Not.includes( prev2 ) ) continue;
 
+            // Following character(s)
             if ( rule.next && ! rule.next.includes( next ) ) continue;
             if ( rule.nextNot && rule.nextNot.includes( next ) ) continue;
             if ( rule.next2 && ! rule.next2.includes( next2 ) ) continue;
             if ( rule.next2Not && rule.next2Not.includes( next2 ) ) continue;
 
+            // Special case: Beginning of a word (e.g. chars.slice(0, n))
             if ( rule.leading && ! rule.leading.includes(
                 chars.slice( 0, rule.leading.length ).join( '' )
             ) ) continue;
 
+            // Special case: end of word (e.g. chars.slice(-n))
             if ( rule.trailing && ! rule.trailing.includes(
                 chars.slice( -rule.trailing.length ).join( '' )
             ) ) continue;
 
+            // Check multiple characters (e.g. bigram/trigram)
             if ( rule.match && ! rule.match.every(
                 ( c: string, j: number ) => chars[ i + j ] === c
             ) ) continue;
 
+            // If all conditions met, return the rule code
             return rule.code;
 
         }
 
+        // If no rule matched, return undefined
         return undefined;
 
     }
 
-    protected word2Chars ( word: string ) : string[] {
-
-        return word.toLowerCase().split( '' );
-
-    }
-
-    protected char2Code (
-        char: string, i: number, chars: string[], charLen: number,
-        lastCode: string | null, map: Record<string, string>
-    ) : string | undefined {
-
-        const c = this.applyRules( char, i, chars, charLen ) ?? map[ char ] ?? undefined;
-
-        return c === lastCode ? undefined : c;
-
-    }
-
-    protected adjustCode ( code: string, chars: string[] ) : string {
-
-        return code.replaceAll( '0', '' );
-
-    }
-
+    /**
+     * Ensures the phonetic code has a fixed length by padding or truncating.
+     * 
+     * @param {string} input - The input string to be adjusted
+     * @returns {string} - The adjusted string with fixed length
+     */
     protected equalLen ( input: string ) : string {
 
         const { length = -1, pad = '0' } = this.options;
@@ -97,43 +156,124 @@ export abstract class Phonetic {
 
     }
 
+    /**
+     * Converts a word into an array of characters.
+     * 
+     * @param {string} word - The input word to be converted
+     * @returns {string[]} - An array of characters from the input word
+     */
+    protected word2Chars ( word: string ) : string[] {
+
+        return word.toLowerCase().split( '' );
+
+    }
+
+    /**
+     * Converts a character to its phonetic code based on the mapping and rules.
+     * 
+     * @param {string} char - The current character
+     * @param {number} i - The current position within the word
+     * @param {string[]} chars - The word as an array of characters
+     * @param {number} charLen - The total length of the word
+     * @param {string|null} lastCode - The last code generated (to avoid duplicates)
+     * @param {Record<string, string>} map - The phonetic mapping
+     * @returns {string|undefined} - The phonetic code or undefined if no code applies
+     */
+    protected char2Code (
+        char: string, i: number, chars: string[], charLen: number,
+        lastCode: string | null, map: Record<string, string>
+    ) : string | undefined {
+
+        const { dedupe = true } = this.options;
+
+        // Apply phonetic rules to the character
+        // If no rules apply, use the mapping
+        // If the character is not in the mapping, return undefined
+        const c = this.applyRules( char, i, chars, charLen ) ?? map[ char ] ?? undefined;
+
+        // De-duplicate the code if necessary
+        return dedupe && c === lastCode ? undefined : c;
+
+    }
+
+    /**
+     * Adjusts the phonetic code.
+     * 
+     * @param {string} code - The phonetic code to be adjusted
+     * @param {string[]} chars - Characters to be removed from the code
+     * @returns {string} - The adjusted phonetic code
+     */
+    protected adjustCode ( code: string, chars: string[] ) : string {
+
+        return code;
+
+    }
+
+    /**
+     * Generates the phonetic code for a given word.
+     * 
+     * This method processes the word character by character, applying phonetic rules
+     * and mappings to generate a phonetic code.
+     * 
+     * @param {string} word - The input word to be converted into a phonetic code
+     * @returns {string} - The generated phonetic code
+     */
     protected phoneticCode ( word: string ) : string {
 
         const { map = {}, ignore = [] } = this.map;
 
+        // Get the characters of the word and its length
         const chars: string[] = this.word2Chars( word );
         const charLen: number = chars.length;
 
         let code: string = '', lastCode: string | null = null;
 
+        // Iterate over each character in the word
         for ( let i = 0; i < charLen; i++ ) {
 
             const char: string = chars[ i ];
 
+            // Skip characters that are in the ignore list
             if ( ignore.includes( char ) ) continue;
 
+            // Convert the character to its phonetic code
             const mapped: string | undefined = this.char2Code(
                 char, i, chars, charLen, lastCode, map
             );
 
+            // If no code is generated, skip to the next character
             if ( mapped === undefined ) continue;
 
+            // Append the generated code to the final code
             code += mapped, lastCode = mapped;
 
         }
 
+        // Return the adjusted phonetic code
         return this.adjustCode( code, chars );
 
     }
 
+    /**
+     * Processes an array of words to generate their phonetic indices.
+     * 
+     * This method iterates over each word, generates its phonetic code,
+     * and ensures that the resulting codes are of equal length.
+     * 
+     * @param {string[]} words - An array of words to be processed
+     * @returns {string[]} - An array of phonetic indices for the input words
+     */
     protected loop ( words: string[] ) : string[] {
 
         const index: string[] = [];
 
+        // Loop over each word in the input array
         for ( const word of words ) {
 
+            // Get the phonetic code for the word
             const code: string = this.phoneticCode( word );
 
+            // If a code is generated, add them to the index
             if ( code && code.length ) index.push( this.equalLen( code ) );
 
         }
@@ -142,10 +282,17 @@ export abstract class Phonetic {
 
     }
 
+    /**
+     * Generates a phonetic index for the given input string.
+     * 
+     * @param {string} input - The input string to be indexed
+     * @returns {string[]} - An array of phonetic indices for the input words
+     */
     public getIndex ( input: string ) : string[] {
 
         const { delimiter = ' ' } = this.options;
 
+        // Split the input string by the specified delimiter and loop over it
         return this.loop( input.split( delimiter ).filter( Boolean ) ).filter( Boolean );
 
     }

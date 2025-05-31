@@ -74,10 +74,11 @@ export interface MetricResultSingle<R = MetricRaw> {
 export type MetricResult<R = MetricRaw> = MetricResultSingle<R> | MetricResultSingle<R>[];
 
 export interface PhoneticOptions {
-    map?: string;
+    map?: string | PhoneticMap;
     delimiter?: string;
     length?: number;
     pad?: string;
+    dedupe?: boolean;
 };
 
 export interface PhoneticRule {

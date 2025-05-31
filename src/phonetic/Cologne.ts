@@ -6,7 +6,7 @@ import { Phonetic } from './Phonetic';
 export default class Cologne extends Phonetic {
 
     protected static override default: PhoneticOptions = {
-        delimiter: ' ', length: -1
+        delimiter: ' ', length: -1, dedupe: true
     };
 
     constructor ( options: PhoneticOptions = {} ) {
