@@ -18,7 +18,7 @@
 
 'use strict';
 
-import type { MetricInput, MetricOptions, MetricCompute, PhoneticMapping, PhoneticMap } from '../utils/Types';
+import type { MetricInput, MetricOptions, MetricCompute, PhoneticMapping, PhoneticMap, PhoneticRule } from '../utils/Types';
 import { Metric } from './Metric';
 import { Pool } from '../utils/Pool';
 
@@ -105,6 +105,83 @@ export abstract class Phonetic extends Metric<PhoneticRaw> {
     ) {
 
         super ( metric, a, b, options, true );
+
+    }
+
+    /**
+     * Applies phonetic rules to a character in a word context.
+     * 
+     * This method is designed to be generic and efficient for all phonetic algorithms.
+     * It checks all rule types (prev, next, prevNot, nextNot, position, etc.) and
+     * returns either the appropriate code (string) or undefined.
+     * 
+     * @param {string} char - The current character
+     * @param {number} i - The current position within the word
+     * @param {string[]} chars - The word as an array of characters
+     * @param {PhoneticRule[]} rules - The ruleset from the mapping
+     * @returns {string|undefined} - The rule code or undefined if no rule applies
+     */
+    protected phoneticRules (
+        char: string, i: number, chars: string[],
+        rules: PhoneticRule[]
+    ) : string | undefined {
+
+        // If no rules are provided, return undefined
+        if ( ! rules || ! rules.length ) return undefined;
+
+        // Get the previous, next, and surrounding characters
+        const prev: string = chars[ i - 1 ] || '', prev2: string = chars[ i - 2 ] || '';
+        const next: string = chars[ i + 1 ] || '', next2: string = chars[ i + 2 ] || '';
+
+        // Iterate over the rules to find a matching rule for the current character
+        for ( const rule of rules ) {
+
+            // Skip if the rule does not match the current character
+            if ( rule.char && rule.char !== char ) continue;
+
+            // Position in the word (start, end, middle)
+            if ( rule.position === 'start' && i !== 0 ) continue;
+            if ( rule.position === 'end' && i !== chars.length - 1 ) continue;
+            if ( rule.position === 'middle' && 0 < i && i > chars.length - 1 ) continue;
+
+            // Previous character (i-1)
+            if ( rule.prev && ! rule.prev.includes( prev ) ) continue;
+            if ( rule.prevNot && rule.prevNot.includes( prev ) ) continue;
+
+            // Preceding character (i-2)
+            if ( rule.prev2 && ! rule.prev2.includes( prev2 ) ) continue;
+            if ( rule.prev2Not && rule.prev2Not.includes( prev2 ) ) continue;
+
+            // Next character (i+1)
+            if ( rule.next && ! rule.next.includes( next ) ) continue;
+            if ( rule.nextNot && rule.nextNot.includes( next ) ) continue;
+
+            // Upcoming character (i+2)
+            if ( rule.next2 && ! rule.next2.includes( next2 ) ) continue;
+            if ( rule.next2Not && rule.next2Not.includes( next2 ) ) continue;
+
+            // Special case: Beginning of a word (e.g. chars.slice(0, n))
+            if ( rule.leading && ! rule.leading.includes(
+                chars.slice( 0, rule.leading.length ).join( '' )
+            ) ) continue;
+
+            // Special case: end of word (e.g. chars.slice(-n))
+            if ( rule.trailing && ! rule.trailing.includes(
+                chars.slice( -rule.trailing.length ).join( '' )
+            ) ) continue;
+
+            // Check multiple characters (e.g. bigram/trigram)
+            if ( rule.match && ! rule.match.every(
+                ( c: string, j: number ) => chars[ i + j ] === c
+            ) ) continue;
+
+            // If all conditions met, return the rule code
+            return rule.code;
+
+        }
+
+        // If no rule matched, return undefined
+        return undefined;
 
     }
 

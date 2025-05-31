@@ -1,5 +1,6 @@
 /**
  * Soundex Phonetic Algorithm
+ * src/metrics/Soudex.ts
  * 
  * @see https://en.wikipedia.org/wiki/Soundex
  * 
@@ -134,37 +135,14 @@ export default class Soundex extends Phonetic {
             // Iterate over each character in the word (excluding the first one)
             for ( let i = 1; i <= charLast; i++ ) {
 
+                // Get the character at the current position
                 const char: string = chars[ i ];
 
                 // Skip characters that are in the ignore list
                 if ( ignore.includes( char ) ) continue;
 
-                // Get the previous and next characters, defaulting to empty string if out of bounds
-                const prev: string = chars[ i - 1 ] || '';
-                const next: string = chars[ i + 1 ] || '';
-                let c: string = map[ char ] || '';
-
-                // Check for rules that apply to the current character
-                for ( const rule of rules ) {
-
-                    if ( rule.char !== char ) continue;
-
-                    // Check if the rule applies based on position
-                    if ( rule.position === 'start' && i !== 0 ) continue;
-                    if ( rule.position === 'end' && i !== charLast ) continue;
-
-                    // Check if the previous and next characters match the rule
-                    if ( rule.prev && ! rule.prev.includes( prev ) ) continue;
-                    if ( rule.prevNot && rule.prevNot.includes( prev ) ) continue;
-
-                    // Check if the next character matches the rule
-                    if ( rule.next && ! rule.next.includes( next ) ) continue;
-                    if ( rule.nextNot && rule.nextNot.includes( next ) ) continue;
-
-                    c = rule.code;
-                    break;
-
-                }
+                // Apply phonetic rules to the character
+                const c = this.phoneticRules( char, i, chars, rules ) ?? map[ char ] ?? '';
 
                 // Skip if the character code is empty or the same as the last one
                 if ( ! c || c === lastCode ) continue;
