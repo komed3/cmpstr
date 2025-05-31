@@ -41,37 +41,6 @@ export interface FilterEntry {
     overrideable: boolean;
 }
 
-export interface PhoneticRule {
-    char: string;
-    code: string;
-    position?: 'start' | 'end' | 'middle';
-    prev?: string[]; prevNot?: string[];
-    prev2?: string[]; prev2Not?: string[];
-    next?: string[]; nextNot?: string[];
-    next2?: string[]; next2Not?: string[];
-    leading?: string; trailing?: string;
-    match?: string[];
-};
-
-export type PhoneticFirstChar = 'letter' | 'map' | 'keep0';
-
-export interface PhoneticMap {
-    map: Record<string, string>;
-    ignore?: string[];
-    firstChar?: PhoneticFirstChar;
-    dedupe?: boolean;
-    rules?: PhoneticRule[];
-};
-
-export type PhoneticMapping = Record<string, PhoneticMap>;
-
-export interface PhoneticOptions {
-    mapping?: string;
-    delimiter?: string;
-    pad?: string;
-    length?: number;
-};
-
 export type MetricInput = string | string[];
 
 export type MetricMode = 'default' | 'batch' | 'pairwise';
