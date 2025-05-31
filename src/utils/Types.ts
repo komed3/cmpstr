@@ -41,42 +41,6 @@ export interface FilterEntry {
     overrideable: boolean;
 }
 
-export type MetricInput = string | string[];
-
-export type MetricMode = 'default' | 'batch' | 'pairwise';
-
-export interface MetricOptions {
-    mode?: MetricMode;
-    debug?: boolean;
-    delimiter?: string;
-    pad?: string;
-    q?: number;
-    match?: number;
-    mismatch?: number;
-    gap?: number;
-    phonetic?: {
-        mapping?: string;
-        length?: number;
-    }
-};
-
-export type MetricRaw = Record<string, any>;
-
-export interface MetricCompute<R = MetricRaw> {
-    res: number;
-    raw?: R;
-}
-
-export interface MetricResultSingle<R = MetricRaw> {
-    metric: string;
-    a: string;
-    b: string;
-    res: number;
-    raw?: R;
-};
-
-export type MetricResult<R = MetricRaw> = MetricResultSingle<R> | MetricResultSingle<R>[];
-
 export interface PhoneticRule {
     char: string;
     code: string;
@@ -96,3 +60,41 @@ export interface PhoneticMap {
 };
 
 export type PhoneticMapping = Record<string, PhoneticMap>;
+
+export interface PhoneticOptions {
+    mapping?: string;
+    delimiter?: string;
+    length?: number;
+};
+
+export type MetricInput = string | string[];
+
+export type MetricMode = 'default' | 'batch' | 'pairwise';
+
+export interface MetricOptions {
+    mode?: MetricMode;
+    debug?: boolean;
+    delimiter?: string;
+    pad?: string;
+    q?: number;
+    match?: number;
+    mismatch?: number;
+    gap?: number;
+};
+
+export type MetricRaw = Record<string, any>;
+
+export interface MetricCompute<R = MetricRaw> {
+    res: number;
+    raw?: R;
+}
+
+export interface MetricResultSingle<R = MetricRaw> {
+    metric: string;
+    a: string;
+    b: string;
+    res: number;
+    raw?: R;
+};
+
+export type MetricResult<R = MetricRaw> = MetricResultSingle<R> | MetricResultSingle<R>[];

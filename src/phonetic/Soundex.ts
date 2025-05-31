@@ -1,6 +1,6 @@
 /**
  * Soundex Phonetic Algorithm
- * src/metric/Soudex.ts
+ * src/phonetic/Soudex.ts
  * 
  * @see https://en.wikipedia.org/wiki/Soundex
  * 
@@ -22,14 +22,14 @@
  * This implementation is designed to be efficient and easy to use, with options for
  * customizing the phonetic mapping and output length.
  * 
- * @module Metric/Phonetic/Soundex
+ * @module Phonetic/Soundex
  * @author Paul Köhler (komed3)
  * @license MIT
  */
 
 'use strict';
 
-import { PhoneticMapping, MetricInput, MetricOptions } from '../utils/Types';
+import { PhoneticMapping, PhoneticOptions } from '../utils/Types';
 import { Phonetic } from './Phonetic';
 
 /**
@@ -84,41 +84,22 @@ export default class Soundex extends Phonetic {
     };
 
     /**
-     * Constructor for the Soundex class.
-     * 
-     * Initializes the Soundex class with two input strings or
-     * arrays of strings and optional options.
-     * 
-     * @param {MetricInput} a - First input string or array of strings
-     * @param {MetricInput} b - Second input string or array of strings
-     * @param {MetricOptions} options - Options for the metric computation
-     */
-    constructor (
-        a: MetricInput, b: MetricInput,
-        options: MetricOptions = {}
-    ) {
-
-        // Call the parent Phonetic constructor with the metric name and inputs
-        super ( 'soundex', a, b, options );
-
-    }
-
-    /**
      * Computes the phonetic index for the given input string.
      * 
      * This method processes the input string, applies the Soundex phonetic
-     * mapping, and returns an array of phonetic codes for each word in the input.
+     * mapping, and returns an array of phonetic codes for each word.
      * 
      * @param {string} input - The input string to process
+     * @param {PhoneticOptions} options - Optional parameters for phonetic processing
      * @returns {string[]} - An array of phonetic codes
      */
-    protected override phoneticIndex ( input: string ) : string[] {
+    public static getIndex ( input: string, options: PhoneticOptions = {} ) : string[] {
 
         // Get options with defaults
-        const { delimiter = ' ', phonetic: { mapping = 'en', length = 4 } = {} } = this.options;
+        const { mapping = 'en', delimiter = ' ', length = 4 } = options;
 
         // Get the mapping for the specified language, fallback to Englisch
-        const { map, ignore = [], rules = [] } = Soundex.mapping[ mapping ] ?? Soundex.mapping.en;
+        const { map, ignore = [], rules = [] } = this.mapping[ mapping ] ?? this.mapping.en;
 
         const index: string[] = [];
 
@@ -141,7 +122,7 @@ export default class Soundex extends Phonetic {
                 if ( ignore.includes( char ) ) continue;
 
                 // Apply phonetic rules to the character
-                const c = this.phoneticRules( char, i, chars, rules ) ?? map[ char ] ?? '';
+                const c = this.applyRules( char, i, chars, rules ) ?? map[ char ] ?? '';
 
                 // Skip if the character code is empty or the same as the last one
                 if ( ! c || c === lastCode ) continue;

@@ -1,6 +1,6 @@
 /**
  * Metaphone Phonetic Algorithm
- * src/Metric/Metaphone
+ * src/phonetic/Metaphone
  * 
  * @see https://en.wikipedia.org/wiki/Metaphone
  * 
@@ -15,14 +15,14 @@
  * This implementation is designed for maximal performance and memory efficiency, using a
  * simple mapping and a compact rule engine.
  * 
- * @module Metric/Phonetic/Metaphone
+ * @module Phonetic/Metaphone
  * @author Paul Köhler (komed3)
  * @license MIT
  */
 
 'use strict';
 
-import type { MetricInput, MetricOptions, PhoneticMapping } from '../utils/Types';
+import type { PhoneticMapping, PhoneticOptions } from '../utils/Types';
 import { Phonetic } from './Phonetic';
 
 /**
@@ -61,40 +61,22 @@ export default class Metaphone extends Phonetic {
     };
 
     /**
-     * Constructor for the Metaphone class.
-     * 
-     * Initializes the Metaphone class with two input strings or
-     * arrays of strings and optional options.
-     * 
-     * @param {MetricInput} a - First input string or array of strings
-     * @param {MetricInput} b - Second input string or array of strings
-     * @param {MetricOptions} options - Options for the metric computation
-     */
-    constructor (
-        a: MetricInput, b: MetricInput,
-        options: MetricOptions = {}
-    ) {
-
-        super ( 'metaphone', a, b, options );
-
-    }
-
-    /**
      * Computes the phonetic index for the given input string.
      * 
      * This method processes the input string, applies the Metaphone phonetic
-     * mapping, and returns an array of phonetic codes for each word in the input.
+     * mapping, and returns an array of phonetic codes for each word.
      * 
      * @param {string} input - The input string to process
+     * @param {PhoneticOptions} options - Optional parameters for phonetic processing
      * @returns {string[]} - An array of phonetic codes
      */
-    protected override phoneticIndex ( input: string ) : string[] {
+    public static getIndex ( input: string, options: PhoneticOptions = {} ) : string[] {
 
         // Get options with defaults
-        const { delimiter = ' ', phonetic: { mapping = 'en', length = -1 } = {} } = this.options;
+        const { mapping = 'en', delimiter = ' ', length = -1 } = options;
 
         // Get the mapping for the specified language, fallback to Englisch
-        const { map, rules = [] } = Metaphone.mapping[ mapping ] ?? Metaphone.mapping.en;
+        const { map, rules = [] } = this.mapping[ mapping ] ?? this.mapping.en;
 
         const index: string[] = [];
 
@@ -114,7 +96,7 @@ export default class Metaphone extends Phonetic {
                 const char: string = chars[ i ];
 
                 // Apply phonetic rules to the character
-                const ruleCode: string | undefined = this.phoneticRules( char, i, chars, rules );
+                const ruleCode: string | undefined = this.applyRules( char, i, chars, rules );
                 const mapped: string = ruleCode ?? map[ char ] ?? '';
 
                 // Dedupe consecutive characters

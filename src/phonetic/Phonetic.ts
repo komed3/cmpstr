@@ -1,15 +1,20 @@
 /**
  * Abstract Phonetic
- * src/metric/Phonetic.ts
+ * src/phonetic/Phonetic.ts
  * 
  * @see https://en.wikipedia.org/wiki/Phonetic_algorithm
  * 
- * This module provides an abstract class for phonetic metrics, which can be used to
- * compare strings based on their phonetic representation. It allows for the implementation
- * of various phonetic algorithms by extending the abstract class.
+ * A phonetic algorithm refers to a method for indexing words according to their pronunciation.
+ * When the algorithm relies on orthography, it is significantly influenced by the spelling
+ * conventions of the language for which it is intended: since the majority of phonetic algorithms
+ * were created for English, they tend to be less effective for indexing words in other languages.
+ * Phonetic search has numerous applications, and one of the initial use cases has been in
+ * trademark searches to verify that newly registered trademarks do not pose a risk of
+ * infringing upon existing trademarks due to their pronunciation.
  * 
- * The class includes methods for managing phonetic mappings, which are used to convert
- * words into their phonetic representation.
+ * This module provides an abstract class for generating phonetic indices based on mappings
+ * and rules. It allows for the implementation of various phonetic algorithms by extending
+ * the abstract class.
  * 
  * @module Phonetic
  * @author Paul Köhler (komed3)
@@ -18,21 +23,14 @@
 
 'use strict';
 
-import type { MetricInput, MetricOptions, MetricCompute, PhoneticMapping, PhoneticMap, PhoneticRule } from '../utils/Types';
-import { Metric } from './Metric';
-import { Pool } from '../utils/Pool';
-
-export interface PhoneticRaw {
-    indexA: string[];
-    indexB: string[];
-};
+import type { PhoneticMapping, PhoneticMap, PhoneticRule, PhoneticOptions } from '../utils/Types';
 
 /**
- * Abstract class representing a phonetic metric extending Metric.
+ * Abstract class representing a phonetic metric.
  * 
  * @abstract
  */
-export abstract class Phonetic extends Metric<PhoneticRaw> {
+export abstract class Phonetic {
 
     /**
      * Phonetic mapping used for phonetic algorithms.
@@ -41,72 +39,6 @@ export abstract class Phonetic extends Metric<PhoneticRaw> {
      * based on the specific phonetic algorithm implemented in the subclass.
      */
     protected static mapping: PhoneticMapping;
-
-    /**
-     * Returns a list of supported phonetic mappings.
-     *  
-     * @returns {string[]} - An array of supported phonetic mappings
-     */
-    public static supportedMappings () : string[] {
-
-        return Object.keys( this.mapping );
-
-    }
-
-    /**
-     * Checks if a phonetic mapping exists for the given ID.
-     * 
-     * @param {string} id - The ID of the phonetic mapping to check
-     * @returns {boolean} - True if the mapping exists, false otherwise
-     */
-    public static hasMapping ( id: string ) : boolean {
-
-        return id in this.mapping;
-
-    }
-
-    /**
-     * Adds a new phonetic mapping.
-     * 
-     * @param {string} id - The ID for the new phonetic mapping
-     * @param {PhoneticMap} mapping - The phonetic mapping to add
-     * @returns {boolean} - True if the mapping was added successfully, false if it already exists
-     */
-    public static addMapping ( id: string, mapping: PhoneticMap ) : boolean {
-
-        if ( this.hasMapping( id ) ) return false;
-
-        this.mapping[ id ] = mapping;
-
-        return true;
-
-    }
-
-    /**
-     * Deletes a phonetic mapping by its ID.
-     * 
-     * @param {string} id - The ID of the phonetic mapping to delete
-     * @returns {boolean} - True if the mapping was deleted successfully, false if it does not exist
-     */
-    public static deleteMapping ( id: string ) : boolean {
-
-        if ( ! this.hasMapping( id ) ) return false;
-
-        delete this.mapping[ id ];
-
-        return true;
-
-    }
-
-    constructor (
-        metric: string,
-        a: MetricInput, b: MetricInput,
-        options: MetricOptions = {}
-    ) {
-
-        super ( metric, a, b, options, true );
-
-    }
 
     /**
      * Applies phonetic rules to a character in a word context.
@@ -121,7 +53,7 @@ export abstract class Phonetic extends Metric<PhoneticRaw> {
      * @param {PhoneticRule[]} rules - The ruleset from the mapping
      * @returns {string|undefined} - The rule code or undefined if no rule applies
      */
-    protected phoneticRules (
+    public static applyRules (
         char: string, i: number, chars: string[],
         rules: PhoneticRule[]
     ) : string | undefined {
@@ -191,57 +123,69 @@ export abstract class Phonetic extends Metric<PhoneticRaw> {
      * of phonetic codes for each word in the input.
      * 
      * @param {string} input - The input string to process
+     * @param {PhoneticOptions} options - Optional parameters for phonetic processing
      * @returns {string[]} - An array of phonetic codes for each word in the input
      * @throws {Error} - Throws an error if the method is not overridden in a subclass
      */
-    protected phoneticIndex ( input: string ) : string[] {
+    public static getIndex ( input: string, options: PhoneticOptions = {} ) : string[] {
 
         throw new Error ( `method phoneticIndex() must be overridden in a subclass` );
 
     }
 
     /**
-     * Computes the phonetic based similatity for the two input strings.
-     * 
-     * This method processes both inputs, applies the phonetic mapping, and calculates
-     * the similarity based on phonetic indices and the Jaccard index.
-     * 
-     * @param {string} a - First string
-     * @param {string} b - Second string
-     * @returns {MetricCompute<PhoneticRaw>} - Object containing the similarity result and phonetic indices
+     * Returns a list of supported phonetic mappings.
+     *  
+     * @returns {string[]} - An array of supported phonetic mappings
      */
-    protected override compute ( a: string, b: string ) : MetricCompute<PhoneticRaw> {
+    public static supportedMappings () : string[] {
 
-        // Computes phonetic index for `a` and `b`
-        const indexA: string[] = this.phoneticIndex( a );
-        const indexB: string[] = this.phoneticIndex( b );
+        return Object.keys( this.mapping );
 
-        const sizeA: number = indexA.length, sizeB: number = indexB.length;
+    }
 
-        // Acquire two sets from the Pool
-        const [ setA, setB ] = Pool.acquireMany( 'set', [ sizeA, sizeB ] );
+    /**
+     * Checks if a phonetic mapping exists for the given ID.
+     * 
+     * @param {string} id - The ID of the phonetic mapping to check
+     * @returns {boolean} - True if the mapping exists, false otherwise
+     */
+    public static hasMapping ( id: string ) : boolean {
 
-        // Fill setA and setB from the computed phonetic indices
-        for ( const A of this.phoneticIndex( a ) ) setA.add( A );
-        for ( const B of this.phoneticIndex( b ) ) setB.add( B );
+        return id in this.mapping;
 
-        // Calculate intersection size
-        let intersection: number = 0;
+    }
 
-        for ( const c of setA ) if ( setB.has( c ) ) intersection++;
+    /**
+     * Adds a new phonetic mapping.
+     * 
+     * @param {string} id - The ID for the new phonetic mapping
+     * @param {PhoneticMap} mapping - The phonetic mapping to add
+     * @returns {boolean} - True if the mapping was added successfully, false if it already exists
+     */
+    public static addMapping ( id: string, mapping: PhoneticMap ) : boolean {
 
-        // Calculate union size (setA + elements in setB not in setA)
-        const union: number = setA.size + setB.size - intersection;
+        if ( this.hasMapping( id ) ) return false;
 
-        // Release sets back to the pool
-        Pool.release( 'set', setA, sizeA );
-        Pool.release( 'set', setB, sizeB );
+        this.mapping[ id ] = mapping;
 
-        // Return the result as a MetricCompute object
-        return {
-            res: union === 0 ? 1 : Metric.clamp( intersection / union ),
-            raw: { indexA, indexB }
-        };
+        return true;
+
+    }
+
+    /**
+     * Deletes a phonetic mapping by its ID.
+     * 
+     * @param {string} id - The ID of the phonetic mapping to delete
+     * @returns {boolean} - True if the mapping was deleted successfully, false if it does not exist
+     */
+    public static deleteMapping ( id: string ) : boolean {
+
+        if ( ! this.hasMapping( id ) ) return false;
+
+        delete this.mapping[ id ];
+
+        return true;
 
     }
 
