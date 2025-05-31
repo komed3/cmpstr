@@ -22,11 +22,11 @@
 
 'use strict';
 
-import type { PhoneticMapping, PhoneticOptions } from '../utils/Types';
+import type { PhoneticMapping } from '../utils/Types';
 import { Phonetic } from './Phonetic';
 
 /**
- * Metaphone class extends the Phonetic class to implement the Metaphone phonetic algorithm.
+ * Metaphone class extends the Phonetic class to implement the mapping.
  */
 export default class Metaphone extends Phonetic {
 
@@ -59,70 +59,5 @@ export default class Metaphone extends Phonetic {
             ]
         }
     };
-
-    /**
-     * Computes the phonetic index for the given input string.
-     * 
-     * This method processes the input string, applies the Metaphone phonetic
-     * mapping, and returns an array of phonetic codes for each word.
-     * 
-     * @param {string} input - The input string to process
-     * @param {PhoneticOptions} options - Optional parameters for phonetic processing
-     * @returns {string[]} - An array of phonetic codes
-     */
-    public static getIndex ( input: string, options: PhoneticOptions = {} ) : string[] {
-
-        // Get options with defaults
-        const { mapping = 'en', delimiter = ' ', length = -1 } = options;
-
-        // Get the mapping for the specified language, fallback to Englisch
-        const { map, rules = [] } = this.mapping[ mapping ] ?? this.mapping.en;
-
-        const index: string[] = [];
-
-        // Split the input into words using the specified delimiter
-        for ( const word of input.split( delimiter ).filter( Boolean ) ) {
-
-            // Split the word into characters, convert to lowercase, and initialize variables
-            const chars: string[] = word.toLowerCase().split( '' );
-
-            // Initialize the phonetic code and last code variables
-            let code: string = '', lastCode: string | null = null;
-
-            // Loop through characters; i will be incremented by 1 or 2 depending on the rule
-            for ( let i = 0; i < chars.length; ) {
-
-                // Get the character at the current position
-                const char: string = chars[ i ];
-
-                // Apply phonetic rules to the character
-                const ruleCode: string | undefined = this.applyRules( char, i, chars, rules );
-                const mapped: string = ruleCode ?? map[ char ] ?? '';
-
-                // Dedupe consecutive characters
-                if ( mapped && mapped !== lastCode ) {
-
-                    code += mapped;
-                    lastCode = mapped;
-
-                }
-
-                // Advance by rule length if rule matched, else by 1
-                i += ( ruleCode && rules.find(
-                    ( r ) => r.char === char && r.next && r.next.includes( chars[ i + 1 ] || '' )
-                ) ) ? 2 : 1;
-
-            }
-
-            // Add the phonetic code to the index, ensuring it has the specified length
-            index.push( length === -1 ? code.toUpperCase() : (
-                ( code.toUpperCase() + '0'.repeat( length ) ).slice( 0, length )
-            ) );
-
-        }
-
-        return index;
-
-    }
 
 }

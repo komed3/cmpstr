@@ -53,10 +53,14 @@ export interface PhoneticRule {
     match?: string[];
 };
 
+export type PhoneticFirstChar = 'letter' | 'map' | 'keep0';
+
 export interface PhoneticMap {
     map: Record<string, string>;
     ignore?: string[];
-    rules?: PhoneticRule[]
+    firstChar?: PhoneticFirstChar;
+    dedupe?: boolean;
+    rules?: PhoneticRule[];
 };
 
 export type PhoneticMapping = Record<string, PhoneticMap>;
@@ -64,6 +68,7 @@ export type PhoneticMapping = Record<string, PhoneticMap>;
 export interface PhoneticOptions {
     mapping?: string;
     delimiter?: string;
+    pad?: string;
     length?: number;
 };
 
