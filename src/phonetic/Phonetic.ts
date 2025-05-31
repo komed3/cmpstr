@@ -19,14 +19,6 @@ export abstract class Phonetic {
 
     }
 
-    protected equalLen ( input: string ) : string {
-
-        const { length = -1, pad = '0' } = this.options;
-
-        return length === -1 ? input : ( input + pad.repeat( length ) ).slice( 0, length );
-
-    }
-
     protected applyRules ( char: string, i: number, chars: string[], charLen: number ) : string | undefined {
 
         const { ruleset = [] } = this.map;
@@ -74,19 +66,13 @@ export abstract class Phonetic {
 
     }
 
-    protected getChars ( word: string ) : string[] {
+    protected word2Chars ( word: string ) : string[] {
 
         return word.toLowerCase().split( '' );
 
     }
 
-    protected adjust ( code: string, chars: string[] ) : string {
-
-        return code.replaceAll( '0', '' );
-
-    }
-
-    protected mapChar (
+    protected char2Code (
         char: string, i: number, chars: string[], charLen: number,
         lastCode: string | null, map: Record<string, string>
     ) : string | undefined {
@@ -97,22 +83,38 @@ export abstract class Phonetic {
 
     }
 
-    protected phoneticCode ( word: string ) : string | undefined {
+    protected adjust ( code: string, chars: string[] ) : string {
+
+        return code.replaceAll( '0', '' );
+
+    }
+
+    protected equalLen ( input: string ) : string {
+
+        const { length = -1, pad = '0' } = this.options;
+
+        return length === -1 ? input : ( input + pad.repeat( length ) ).slice( 0, length );
+
+    }
+
+    protected phoneticCode ( word: string ) : string {
 
         const { map = {}, ignore = [] } = this.map;
 
-        const chars: string[] = this.getChars( word );
+        const chars: string[] = this.word2Chars( word );
         const charLen: number = chars.length;
 
         let code: string = '', lastCode: string | null = null;
 
         for ( let i = 0; i < charLen; i++ ) {
 
-            const char = chars[ i ];
+            const char: string = chars[ i ];
 
             if ( ignore.includes( char ) ) continue;
 
-            const mapped = this.mapChar( char, i, chars, charLen, lastCode, map );
+            const mapped: string | undefined = this.char2Code(
+                char, i, chars, charLen, lastCode, map
+            );
 
             if ( mapped === undefined ) continue;
 
@@ -130,7 +132,7 @@ export abstract class Phonetic {
 
         for ( const word of words ) {
 
-            const code = this.phoneticCode( word );
+            const code: string = this.phoneticCode( word );
 
             if ( code && code.length ) index.push( this.equalLen( code ) );
 
