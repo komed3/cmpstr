@@ -128,8 +128,8 @@ export default class Soundex extends Phonetic {
             // Split the word into characters, convert to lowercase, and initialize variables
             const chars: string[] = word.toLowerCase().split( '' );
 
-            let code: string = '';
-            let lastCode: string | null = null;
+            // Initialize the phonetic code and last code variables
+            let code: string = '', lastCode: string | null = null;
 
             // Iterate over each character in the word (excluding the first one)
             for ( let i = 1; i < chars.length; i++ ) {
