@@ -72,3 +72,32 @@ export interface MetricResultSingle<R = MetricRaw> {
 };
 
 export type MetricResult<R = MetricRaw> = MetricResultSingle<R> | MetricResultSingle<R>[];
+
+export interface PhoneticOptions {
+    map?: string;
+    delimiter?: string;
+    length?: number;
+    pad?: string;
+};
+
+export interface PhoneticRule {
+    char: string;
+    code: string;
+    position?: 'start' | 'middle' | 'end';
+    prev?: string[]; prevNot?: string[];
+    prev2?: string[]; prev2Not?: string[];
+    next?: string[]; nextNot?: string[];
+    next2?: string[]; next2Not?: string[];
+    leading?: string; trailing?: string;
+    match?: string[];
+};
+
+export interface PhoneticMap {
+    map: Record<string, string>;
+    ruleset?: PhoneticRule[];
+    ignore?: string[];
+    length?: number;
+    pad?: string;
+};
+
+export type PhoneticMapping = Record<string, PhoneticMap>;
