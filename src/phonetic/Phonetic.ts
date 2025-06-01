@@ -30,8 +30,9 @@ import type { PhoneticMapping, PhoneticMap, PhoneticOptions } from '../utils/Typ
 /**
  * Abstract class representing a phonetic algorithm.
  * 
- * The methods `applyRules`, `equalLen`, `word2Chars`, `char2Code`, `adjustCode`, `phoneticCode`
- * and `loop` can be overridden in subclasses to implement specific phonetic algorithms.
+ * The methods `applyRules`, `equalLen`, `word2Chars`, `char2Code`, `exitEarly`,
+ * `adjustCode`, `phoneticCode` and `loop` can be overridden in subclasses to
+ * implement specific phonetic algorithms.
  * 
  * @abstract
  */
@@ -198,6 +199,21 @@ export abstract class Phonetic {
     }
 
     /**
+     * Determines whether to exit early based on the current phonetic code length.
+     * 
+     * @param {string} code - The current phonetic code
+     * @param {number} i - The current index in the word
+     * @returns {boolean} - True if the code length exceeds the specified limit, false otherwise
+     */
+    protected exitEarly ( code: string, i: number ) : boolean {
+
+        const { length = -1 } = this.options;
+
+        return length > 0 && code.length >= length;
+
+    }
+
+    /**
      * Adjusts the phonetic code.
      * 
      * @param {string} code - The phonetic code to be adjusted
@@ -247,6 +263,9 @@ export abstract class Phonetic {
 
             // Append the generated code to the final code
             code += mapped, lastCode = mapped;
+
+            // If the code length exceeds the specified limit, exit early
+            if ( this.exitEarly( code, i ) ) break;
 
         }
 
