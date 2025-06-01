@@ -19,7 +19,7 @@ import Cologne from './Cologne';
 import Metaphone from './Metaphone';
 import Soundex from './Soundex';
 
-export const ALL_PHONETICS = {
+export const PHONETICS = {
     cologne: Cologne,
     metaphone: Metaphone,
     soundex: Soundex

@@ -35,7 +35,7 @@ import NeedlemanWunschDistance from './NeedlemanWunsch';
 import QGramSimilarity from './qGram';
 import SmithWatermanDistance from './SmithWaterman';
 
-export const ALL_METRICS = {
+export const METRICS = {
     cosine: CosineSimilarity,
     damerau: DamerauLevenshteinDistance,
     dice: DiceSorensenCoefficient,
