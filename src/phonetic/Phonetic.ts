@@ -55,8 +55,54 @@ export abstract class Phonetic {
     protected static mappings: PhoneticMapping;
 
     // Phonetic map and options for the algorithm
-    protected readonly map: PhoneticMap;
     protected readonly options: PhoneticOptions;
+    protected readonly map: PhoneticMap;
+
+    /**
+     * Static method to add a new phonetic mapping.
+     * 
+     * @param {string} name - The name of the mapping
+     * @param {PhoneticMap} map - The phonetic mapping to be added
+     */
+    public static addMapping ( this: typeof Phonetic, name: string, map: PhoneticMap ) : void {
+
+        this.mappings[ name ] = map;
+
+    }
+
+    /**
+     * Static method to remove a phonetic mapping by name.
+     * 
+     * @param {string} name - The name of the mapping to be removed
+     */
+    public static removeMapping ( this: typeof Phonetic, name: string ) : void {
+
+        delete this.mappings[ name ];
+
+    }
+
+    /**
+     * Static method to get a phonetic mapping by name.
+     * 
+     * @param {string} name - The name of the mapping to retrieve
+     * @returns {PhoneticMap|undefined} - The phonetic mapping if found, otherwise undefined
+     */
+    public static getMapping ( this: typeof Phonetic, name: string ) : PhoneticMap | undefined {
+
+        return this.mappings[ name ];
+
+    }
+
+    /**
+     * Static method to list all available phonetic mappings.
+     * 
+     * @returns {string[]} - An array of names of all available phonetic mappings
+     */
+    public static listMappings ( this: typeof Phonetic ) : string[] {
+
+        return Object.keys( this.mappings );
+
+    }
 
     /**
      * Constructor for the Phonetic class.
