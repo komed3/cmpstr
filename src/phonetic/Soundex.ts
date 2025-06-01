@@ -68,20 +68,6 @@ export default class Soundex extends Phonetic {
     };
 
     /**
-     * Adjusts the phonetic code by removing leading zeros and
-     * ensuring the first character is uppercase.
-     * 
-     * @param {string} code - The phonetic code to adjust
-     * @param {string[]} chars - The characters used in the phonetic code
-     * @returns {string} - The adjusted phonetic code
-     */
-    protected override adjustCode ( code: string, chars: string[] ) : string {
-
-        return chars[ 0 ].toUpperCase() + code.slice( 1 ).replaceAll( '0', '' );
-
-    }
-
-    /**
      * Constructor for the Soundex class.
      * 
      * Initializes the Soundex phonetic algorithm with the mapping and options.
@@ -92,6 +78,20 @@ export default class Soundex extends Phonetic {
 
         // Call the parent Phonetic constructor
         super ( options );
+
+    }
+
+    /**
+     * Adjusts the phonetic code by removing leading zeros and ensuring the
+     * first character is uppercase.
+     * 
+     * @param {string} code - The phonetic code to adjust
+     * @param {string[]} chars - The characters used in the phonetic code
+     * @returns {string} - The adjusted phonetic code
+     */
+    protected override adjustCode ( code: string, chars: string[] ) : string {
+
+        return chars[ 0 ].toUpperCase() + code.slice( 1 ).replaceAll( '0', '' );
 
     }
 

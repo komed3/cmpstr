@@ -65,18 +65,6 @@ export default class Cologne extends Phonetic {
     };
 
     /**
-     * Adjusts the phonetic code by removing all '0's except the first character.
-     * 
-     * @param {string} code - The phonetic code to adjust
-     * @returns {string} - The adjusted phonetic code
-     */
-    protected override adjustCode ( code: string ) : string {
-
-        return code.slice( 0, 1 ) + code.slice( 1 ).replaceAll( '0', '' );
-
-    }
-
-    /**
      * Constructor for the Cologne class.
      * 
      * Initializes the Cologne phonetic algorithm with the mapping and options.
@@ -87,6 +75,18 @@ export default class Cologne extends Phonetic {
 
         // Call the parent Phonetic constructor
         super ( options );
+
+    }
+
+    /**
+     * Adjusts the phonetic code by removing all '0's except the first character.
+     * 
+     * @param {string} code - The phonetic code to adjust
+     * @returns {string} - The adjusted phonetic code
+     */
+    protected override adjustCode ( code: string ) : string {
+
+        return code.slice( 0, 1 ) + code.slice( 1 ).replaceAll( '0', '' );
 
     }
 
