@@ -4,7 +4,7 @@
 [![GitHub package.json version](https://img.shields.io/github/package-json/v/komed3/cmpstr?style=for-the-badge&logo=npm&logoColor=fff)](https://npmjs.com/package/cmpstr)
 [![npm bundle size](https://img.shields.io/bundlephobia/min/cmpstr?style=for-the-badge&logo=gitlfs&logoColor=fff)](https://bundlephobia.com/package/cmpstr)
 [![NPM Downloads](https://img.shields.io/npm/dy/cmpstr?style=for-the-badge&logo=transmission&logoColor=fff)](https://npmpackage.info/package/cmpstr?t=downloads)
-
+[![GitHub Actions Workflow Status](https://img.shields.io/github/actions/workflow/status/komed3/cmpstr/build.yml?style=for-the-badge&logo=builtbybit&logoColor=fff)](https://github.com/komed3/cmpstr/actions/workflows/build.yml)
 
 **CmpStr** is a lightweight and powerful npm package for calculating string similarity, finding the closest matches in arrays, performing phonetic searches, and much more. It supports a variety of built-in algorithms (e.g., Levenshtein, Dice-Sørensen, Damerau-Levenshtein, Soundex) and allows users to add custom algorithms and normalization filters.
 
