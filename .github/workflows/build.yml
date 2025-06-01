@@ -1,5 +1,5 @@
 # .github/workflows/build.yml
-name: Build dists
+name: Build CmpStr
 
 on:
   push:
@@ -9,23 +9,23 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout repository
+      - name: Checkout Repository
         uses: actions/checkout@v4
 
-      - name: Use Node.js
+      - name: Use Node.js 20.x
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
-          cache: 'npm'
+          node-version: 20
 
-      - name: Install dependencies
+      - name: Install Dependencies
         run: npm ci
 
-      - name: Run build script
-        run: rollup -c && tsc --project tsconfig.build.json
+      - name: Build with Rollup and TypeScript
+        run: |
+          npm run build
 
-      - name: Archive build artifacts
+      - name: Upload dist as artifact
         uses: actions/upload-artifact@v4
         with:
-          name: dist
-          path: dist
+          name: cmpstr-dist
+          path: dist/
