@@ -4,18 +4,19 @@
  * 
  * @see https://en.wikipedia.org/wiki/Phonetic_algorithm
  * 
- * A phonetic algorithm refers to a method for indexing words according to their pronunciation.
- * When the algorithm relies on orthography, it is significantly influenced by the spelling
- * conventions of the language for which it is intended: since the majority of phonetic algorithms
- * were created for English, they tend to be less effective for indexing words in other languages.
+ * A phonetic algorithm refers to a method for indexing words according to their
+ * pronunciation. When the algorithm relies on orthography, it is significantly
+ * influenced by the spelling conventions of the language for which it is intended:
+ * since the majority of phonetic algorithms were created for English, they tend
+ * to be less effective for indexing words in other languages.
  * 
- * Phonetic search has numerous applications, and one of the initial use cases has been in
- * trademark searches to verify that newly registered trademarks do not pose a risk of
- * infringing upon existing trademarks due to their pronunciation.
+ * Phonetic search has numerous applications, and one of the initial use cases has
+ * been in trademark searches to verify that newly registered trademarks do not
+ * pose a risk of infringing upon existing trademarks due to their pronunciation.
  * 
- * This module provides an abstract class for generating phonetic indices based on mappings
- * and rules. It allows for the implementation of various phonetic algorithms by extending
- * the abstract class.
+ * This module provides an abstract class for generating phonetic indices based
+ * on mappings and rules. It allows for the implementation of various phonetic
+ * algorithms by extending the abstract class.
  * 
  * @module Phonetic
  * @author Paul Köhler (komed3)

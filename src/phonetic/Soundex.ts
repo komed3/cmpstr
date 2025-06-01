@@ -1,14 +1,44 @@
+/**
+ * Soundex Phonetic Algorithm
+ * src/phonetic/Soudex.ts
+ * 
+ * @see https://en.wikipedia.org/wiki/Soundex
+ * 
+ * Soundex is a phonetic algorithm for indexing names by sound. It is used to
+ * encode words into a phonetic representation, allowing for the comparison of
+ * words based on their pronunciation rather than their spelling. This works
+ * by mapping letters to digits, ignoring certain letters, and applying specific
+ * rules to handle character combinations.
+ * 
+ * It is particularly useful for matching names that may be spelled differently
+ * but sound similar and commonly used in genealogical research and databases
+ * to find similar-sounding names.
+ * 
+ * The Soundex algorithm is not case-sensitive and ignores vowels and certain
+ * consonants. It outputs an array of strings that represents the phonetic code
+ * of the input, typically limited to the length of four characters.
+ * 
+ * @module Phonetic/Soundex
+ * @author Paul Köhler (komed3)
+ * @license MIT
+ */
+
 'use strict';
 
 import type { PhoneticMapping, PhoneticOptions } from '../utils/Types';
 import { Phonetic } from './Phonetic';
 
+/**
+ * Soundex class extends the Phonetic class to implement the Soundex phonetic algorithm.
+ */
 export default class Soundex extends Phonetic {
 
+    // Default options for the Soundex phonetic algorithm
     protected static override default: PhoneticOptions = {
         map: 'en', delimiter: ' ', length: 4, pad: '0', dedupe: true
     };
 
+    // Mapping for the Soundex phonetic algorithm
     protected static override mapping: PhoneticMapping = {
         en: {
             map: {
@@ -37,16 +67,32 @@ export default class Soundex extends Phonetic {
         }
     };
 
-    protected override adjustCode( code: string, chars: string[] ) : string {
+    /**
+     * Adjusts the phonetic code by removing leading zeros and
+     * ensuring the first character is uppercase.
+     * 
+     * @param {string} code - The phonetic code to adjust
+     * @param {string[]} chars - The characters used in the phonetic code
+     * @returns {string} - The adjusted phonetic code
+     */
+    protected override adjustCode ( code: string, chars: string[] ) : string {
 
         return chars[ 0 ].toUpperCase() + code.slice( 1 ).replaceAll( '0', '' );
 
     }
 
+    /**
+     * Constructor for the Soundex class.
+     * 
+     * Initializes the Soundex phonetic algorithm with a mapping and options.
+     * 
+     * @param {PhoneticOptions} [options] - Options for the Soundex phonetic algorithm
+     */
     constructor ( options: PhoneticOptions = {} ) {
 
         const { map = Soundex.default.map } = options;
 
+        // Call the parent Phonetic constructor with the mapping and options
         super (
             typeof map === 'string' ? Soundex.mapping[ map ] : map!,
             { ...Soundex.default, ...options }
