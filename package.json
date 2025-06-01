@@ -1,6 +1,6 @@
 {
   "name": "cmpstr",
-  "description": "Lightweight npm package to calculate string similarity",
+  "description": "CmpStr is a lightweight, fast and well performing package for calculating string similarity",
   "author": {
     "name": "komed3 (Paul Köhler)",
     "email": "webmaster@komed3.de",
@@ -11,31 +11,25 @@
   "license": "MIT",
   "keywords": [
     "string-similarity",
-    "string-comparison",
     "similarity-algorithms",
-    "phonetic-search",
-    "soundex",
-    "levenshtein-distance",
-    "damerau-levenshtein",
-    "jaro-winkler",
-    "cosine-similarity",
-    "dice-coefficient",
-    "jaccard-index",
-    "hamming-distance",
-    "longest-common-subsequence",
-    "needleman-wunsch",
-    "smith-waterman",
-    "q-gram",
+    "string-comparison",
     "similarity-matrix",
     "batch-operations",
     "normalization",
     "asynchronous",
     "custom-algorithms",
-    "text-processing",
-    "fuzzy-matching",
-    "string-matching",
-    "text-similarity",
-    "typescript-definitions"
+    "phonetic-search",
+    "cosine-similarity",
+    "damerau-levenshtein",
+    "dice-coefficient",
+    "hamming-distance",
+    "jaccard-index",
+    "jaro-winkler",
+    "levenshtein-distance",
+    "longest-common-subsequence",
+    "needleman-wunsch",
+    "q-gram",
+    "smith-waterman"
   ],
   "repository": {
     "type": "git",
@@ -44,6 +38,11 @@
   "bugs": {
     "url": "https://github.com/komed3/cmpstr/issues"
   },
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
   "main": "dist/cjs/CmpStr.js",
   "module": "dist/esm/CmpStr.js",
   "browser": "dist/browser/CmpStr.min.js",
