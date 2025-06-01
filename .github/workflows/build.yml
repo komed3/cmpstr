@@ -1,11 +1,15 @@
 # .github/workflows/build.yml
-name: Build CmpStr
+name: Lint & Build CmpStr
 
 on:
   push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
 
 jobs:
-  build:
+  lint:
+    name: TypeScript Linting
     runs-on: ubuntu-latest
 
     steps:
@@ -20,9 +24,28 @@ jobs:
       - name: Install Dependencies
         run: npm ci
 
-      - name: Build with Rollup and TypeScript
-        run: |
-          npm run build
+      - name: Type Checking with tsc
+        run: npm run lint
+
+  build:
+    name: Build & Package
+    runs-on: ubuntu-latest
+    needs: lint
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Use Node.js 20.x
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Install Dependencies
+        run: npm ci
+
+      - name: Build Project
+        run: npm run build
 
       - name: Upload dist as artifact
         uses: actions/upload-artifact@v4

@@ -25,7 +25,7 @@
  *    - Suitable for Node.js and legacy environments
  * 
  * 3. Browser Build (UMD):
- *    - Output files: dist/browser/CmpStr.js (unminified), dist/browser/CmpStr.min.js
+ *    - Output files: dist/CmpStr.js (unminified), dist/CmpStr.min.js (minified)
  *    - Format: UMD (Universal Module Definition)
  *    - Exposes the library as a global variable 'CmpStr' for direct use in browsers
  *    - Includes both a readable and a minified version (using Terser)
@@ -93,12 +93,12 @@ export default [
     {
         input: 'src/CmpStr.ts',
         output: [ {
-            file: 'dist/browser/CmpStr.js',
+            file: 'dist/CmpStr.js',
             format: 'umd',
             name: 'CmpStr',
             sourcemap: true
         }, {
-            file: 'dist/browser/CmpStr.min.js',
+            file: 'dist/CmpStr.min.js',
             format: 'umd',
             name: 'CmpStr',
             plugins: [ minify ],

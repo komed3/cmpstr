@@ -54,6 +54,7 @@
   "type": "module",
   "scripts": {
     "build": "rollup -c && tsc --project tsconfig.build.json",
+    "lint": "tsc --project tsconfig.lint.json",
     "clean": "rm -rf dist"
   },
   "devDependencies": {
