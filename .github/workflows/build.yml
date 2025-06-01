@@ -1,0 +1,33 @@
+# .github/workflows/build.yml
+name: Build dists
+
+on:
+  push:
+
+jobs:
+  build:
+    runs-on: [ self-hosted, Windows, X64 ]
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          set-safe-directory: false
+
+      - name: Use Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run build script
+        run: rollup -c && tsc --project tsconfig.build.json
+
+      - name: Archive build artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: dist
+          path: dist
