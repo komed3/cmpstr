@@ -44,7 +44,28 @@
   "bugs": {
     "url": "https://github.com/komed3/cmpstr/issues"
   },
+  "main": "dist/cjs/CmpStr.js",
+  "module": "dist/esm/CmpStr.js",
+  "browser": "dist/browser/CmpStr.min.js",
+  "types": "dist/types/CmpStr.d.ts",
+  "exports": {
+    "require": "./dist/cjs/CmpStr.js",
+    "import": "./dist/esm/CmpStr.js"
+  },
+  "type": "module",
+  "scripts": {
+    "build": "rollup -c && tsc --project tsconfig.build.json",
+    "clean": "rm -rf dist"
+  },
   "devDependencies": {
-    "@types/node": "^22.15.23"
+    "@rollup/plugin-commonjs": "^28.0.3",
+    "@rollup/plugin-node-resolve": "^16.0.1",
+    "@rollup/plugin-typescript": "^12.1.2",
+    "@types/node": "^22.15.23",
+    "rollup": "^4.41.1",
+    "terser": "^5.40.0",
+    "tslib": "^2.8.1",
+    "typescript": "^5.8.3",
+    "undici-types": "^7.10.0"
   }
 }
