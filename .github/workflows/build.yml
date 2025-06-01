@@ -6,13 +6,11 @@ on:
 
 jobs:
   build:
-    runs-on: [ self-hosted, Windows, X64 ]
+    runs-on: ubuntu-latest
 
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
-        with:
-          set-safe-directory: false
 
       - name: Use Node.js
         uses: actions/setup-node@v4
