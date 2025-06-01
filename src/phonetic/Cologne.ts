@@ -24,7 +24,7 @@
 
 'use strict';
 
-import type { PhoneticOptions } from '../utils/Types';
+import type { PhoneticMapping, PhoneticOptions } from '../utils/Types';
 import { Phonetic } from './Phonetic';
 
 /**
@@ -34,32 +34,12 @@ export default class Cologne extends Phonetic {
 
     // Default options for the Cologne phonetic algorithm
     protected static override default: PhoneticOptions = {
-        delimiter: ' ', length: -1, dedupe: true
+        map: 'cologne', delimiter: ' ', length: -1, dedupe: true
     };
 
-    /**
-     * Adjusts the phonetic code by removing all '0's except the first character.
-     * 
-     * @param {string} code - The phonetic code to adjust
-     * @returns {string} - The adjusted phonetic code
-     */
-    protected override adjustCode( code: string ) : string {
-
-        return code.slice( 0, 1 ) + code.slice( 1 ).replaceAll( '0', '' );
-
-    }
-
-    /**
-     * Constructor for the Cologne class.
-     * 
-     * Initializes the Cologne phonetic algorithm with the mapping and options.
-     * 
-     * @param {PhoneticOptions} [options] - Options for the Cologne phonetic algorithm
-     */
-    constructor ( options: PhoneticOptions = {} ) {
-
-        // Call the parent Phonetic constructor with the mapping and options
-        super ( {
+    // Mappings for the Cologne phonetic algorithm
+    protected static override mappings: PhoneticMapping = {
+        cologne: {
             map: {
                 a: '0', ä: '0', e: '0', i: '0', j: '0', o: '0', ö: '0', u: '0', ü: '0', y: '0',
                 b: '1', p: '1',
@@ -81,7 +61,32 @@ export default class Cologne extends Phonetic {
                 { char: 't', next: [ 'c', 's', 'z' ], code: '8' },
                 { char: 'x', prev: [ 'c', 'k', 'q' ], code: '8' }
             ]
-        }, { ...Cologne.default, ...options } );
+        }
+    };
+
+    /**
+     * Adjusts the phonetic code by removing all '0's except the first character.
+     * 
+     * @param {string} code - The phonetic code to adjust
+     * @returns {string} - The adjusted phonetic code
+     */
+    protected override adjustCode ( code: string ) : string {
+
+        return code.slice( 0, 1 ) + code.slice( 1 ).replaceAll( '0', '' );
+
+    }
+
+    /**
+     * Constructor for the Cologne class.
+     * 
+     * Initializes the Cologne phonetic algorithm with the mapping and options.
+     * 
+     * @param {PhoneticOptions} [options] - Options for the Cologne phonetic algorithm
+     */
+    constructor ( options: PhoneticOptions = {} ) {
+
+        // Call the parent Phonetic constructor
+        super ( options );
 
     }
 

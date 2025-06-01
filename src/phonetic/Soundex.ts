@@ -38,8 +38,8 @@ export default class Soundex extends Phonetic {
         map: 'en', delimiter: ' ', length: 4, pad: '0', dedupe: true
     };
 
-    // Mapping for the Soundex phonetic algorithm
-    protected static override mapping: PhoneticMapping = {
+    // Mappings for the Soundex phonetic algorithm
+    protected static override mappings: PhoneticMapping = {
         en: {
             map: {
                 a: '0', e: '0', h: '0', i: '0', o: '0', u: '0', w: '0', y: '0',
@@ -84,19 +84,14 @@ export default class Soundex extends Phonetic {
     /**
      * Constructor for the Soundex class.
      * 
-     * Initializes the Soundex phonetic algorithm with a mapping and options.
+     * Initializes the Soundex phonetic algorithm with the mapping and options.
      * 
      * @param {PhoneticOptions} [options] - Options for the Soundex phonetic algorithm
      */
     constructor ( options: PhoneticOptions = {} ) {
 
-        const { map = Soundex.default.map } = options;
-
-        // Call the parent Phonetic constructor with the mapping and options
-        super (
-            typeof map === 'string' ? Soundex.mapping[ map ] : map!,
-            { ...Soundex.default, ...options }
-        );
+        // Call the parent Phonetic constructor
+        super ( options );
 
     }
 

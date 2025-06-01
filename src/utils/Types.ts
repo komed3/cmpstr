@@ -74,7 +74,7 @@ export interface MetricResultSingle<R = MetricRaw> {
 export type MetricResult<R = MetricRaw> = MetricResultSingle<R> | MetricResultSingle<R>[];
 
 export interface PhoneticOptions {
-    map?: string | PhoneticMap;
+    map?: string;
     delimiter?: string;
     length?: number;
     pad?: string;
