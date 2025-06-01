@@ -74,12 +74,7 @@ export default class Soundex extends Phonetic {
      * 
      * @param {PhoneticOptions} [options] - Options for the Soundex phonetic algorithm
      */
-    constructor ( options: PhoneticOptions = {} ) {
-
-        // Call the parent Phonetic constructor
-        super ( options );
-
-    }
+    constructor ( options: PhoneticOptions = {} ) { super ( options ) }
 
     /**
      * Adjusts the phonetic code by removing leading zeros and ensuring the

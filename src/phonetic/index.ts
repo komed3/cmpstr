@@ -6,6 +6,7 @@
  * 
  * Phonetic algorithms:
  *  - Cologne
+ *  - Metaphone
  *  - Soundex
  * 
  * @author Paul Köhler (komed3)
@@ -15,9 +16,11 @@
 'use strict';
 
 import Cologne from './Cologne';
+import Metaphone from './Metaphone';
 import Soundex from './Soundex';
 
 export const ALL_PHONETICS = {
     cologne: Cologne,
+    metaphone: Metaphone,
     soundex: Soundex
 };
