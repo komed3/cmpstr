@@ -102,3 +102,24 @@ export interface PhoneticMap {
 };
 
 export type PhoneticMapping = Record<string, PhoneticMap>;
+
+export type DiffMode = 'line' | 'word' | 'char';
+
+export interface DiffOptions {
+    mode?: DiffMode;
+    ignoreWhitespace?: boolean;
+    ignoreCase?: boolean;
+    normalizeFlags?: NormalizeFlags;
+    contextLines?: number;
+    showChangeMagnitude?: boolean;
+    compact?: boolean;
+};
+
+export interface DiffEntry {
+    line: number;
+    add: string;
+    del: string;
+    addLen: number;
+    delLen: number;
+    magnitude: string;
+};
