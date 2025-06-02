@@ -66,7 +66,7 @@ export default [
 
     // ESM Build
     {
-        input: 'src/CmpStr.ts',
+        input: 'src/index.ts',
         output: {
             dir: 'dist/esm',
             format: 'esm',
@@ -78,7 +78,7 @@ export default [
 
     // CJS Build
     {
-        input: 'src/CmpStr.ts',
+        input: 'src/index.ts',
         output: {
             dir: 'dist/cjs',
             format: 'cjs',

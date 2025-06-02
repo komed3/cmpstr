@@ -43,13 +43,13 @@
     "README.md",
     "LICENSE"
   ],
-  "main": "dist/cjs/CmpStr.js",
-  "module": "dist/esm/CmpStr.js",
+  "main": "dist/cjs/index.js",
+  "module": "dist/esm/index.js",
   "browser": "dist/browser/CmpStr.min.js",
-  "types": "dist/types/CmpStr.d.ts",
+  "types": "dist/types/index.d.ts",
   "exports": {
-    "require": "./dist/cjs/CmpStr.js",
-    "import": "./dist/esm/CmpStr.js"
+    "require": "./dist/cjs/index.js",
+    "import": "./dist/esm/index.js"
   },
   "type": "module",
   "scripts": {

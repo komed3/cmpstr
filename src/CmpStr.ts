@@ -10,4 +10,4 @@ import { DiffCheck } from './utils/DiffCheck';
 import { METRICS } from './metric/index';
 import { PHONETICS } from './phonetic/index';
 
-export class CmpStr {};
+export default class CmpStr {};
