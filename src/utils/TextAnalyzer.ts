@@ -1,3 +1,19 @@
+/**
+ * TextAnalyzer Utility
+ * src/utils/TextAnalyzer.ts
+ * 
+ * The TextAnalyzer class provides a comprehensive set of methods for analyzing and
+ * extracting statistics from a given text. It supports word and sentence tokenization,
+ * character and word frequency analysis, syllable estimation, readability metrics
+ * (Flesch, Kincaid, LIX, WSTF), and various ratios and histograms. Designed for
+ * efficiency and flexibility, it is suitable for linguistic research, readability
+ * scoring, and text preprocessing tasks.
+ * 
+ * @module TextAnalyzer
+ * @author Paul Köhler (komed3)
+ * @license MIT
+ */
+
 'use strict';
 
 export class TextAnalyzer {
@@ -22,9 +38,19 @@ export class TextAnalyzer {
 
     private tokenize () : void {
 
-        this.words = this.text.toLowerCase().match( /\p{L}+/gu ) || [];
+        this.words = [], this.sentences = [];
 
-        this.sentences = this.text.split( /(?<=[.!?])\s+/ ).filter( s => s.trim().length > 0 );
+        const text: string = this.text;
+        const wordRegex: RegExp = /\p{L}+/gu;
+        let match: RegExpExecArray | null;
+
+        while ( ( match = wordRegex.exec( text ) ) !== null ) {
+
+            this.words.push( match[ 0 ].toLowerCase() );
+
+        }
+
+        this.sentences = text.split( /(?<=[.!?])\s+/ ).filter( Boolean );
 
     }
 
@@ -76,9 +102,9 @@ export class TextAnalyzer {
 
     public getAvgWordLength () : number {
 
-        const totalLen: number = this.words.reduce(
-            ( sum, w ) => sum + w.length, 0
-        );
+        let totalLen: number = 0;
+
+        for ( const w of this.words ) totalLen += w.length;
 
         return this.words.length ? totalLen / this.words.length : 0;
 
@@ -112,11 +138,23 @@ export class TextAnalyzer {
 
     public getUpperCaseRatio () : number {
 
-        const upper: RegExpMatchArray | [] = this.text.match( /[A-ZÄÖÜ]/g ) || [];
+        let upper: number = 0, letters: number = 0;
 
-        const letters: RegExpMatchArray | [] = this.text.match( /[A-Za-zÄÖÜäöüß]/g ) || [];
+        for ( let i = 0, len = this.text.length; i < len; i++ ) {
 
-        return letters.length ? upper.length / letters.length : 0;
+            const c: string = this.text[ i ];
+
+            if ( /[A-Za-zÄÖÜäöüß]/.test( c ) ) {
+
+                letters++;
+
+                if ( /[A-ZÄÖÜ]/.test( c ) ) upper++;
+
+            }
+
+        }
+
+        return letters ? upper / letters : 0;
 
     }
 
@@ -146,7 +184,9 @@ export class TextAnalyzer {
 
     public getLongWordRatio ( len: number = 7 ) : number {
 
-        const long: number = this.words.filter( w => w.length >= len ).length;
+        let long: number = 0;
+
+        for ( const w of this.words ) if ( w.length >= len ) long++;
 
         return this.words.length ? long / this.words.length : 0;
 
@@ -154,7 +194,9 @@ export class TextAnalyzer {
 
     public getShortWordRatio ( len: number = 3 ) : number {
 
-        const short: number = this.words.filter( w => w.length <= len ).length;
+        let short: number = 0;
+
+        for ( const w of this.words ) if ( w.length <= len ) short++;
 
         return this.words.length ? short / this.words.length : 0;
 
@@ -162,27 +204,41 @@ export class TextAnalyzer {
 
     public getSyllablesCount () : number {
 
-        return this.words.reduce(
-            ( sum, w ) => sum + this.estimateSyllables( w ), 0
-        );
+        let count: number = 0;
+
+        for ( const w of this.words ) count += this.estimateSyllables( w );
+
+        return count;
 
     }
 
     public getMonosyllabicWordCount () : number {
 
-        return this.words.filter( w => this.estimateSyllables( w ) === 1 ).length;
+        let count: number = 0;
+
+        for ( const w of this.words ) if ( this.estimateSyllables( w ) === 1 ) count++;
+
+        return count;
 
     }
 
     public getMinSyllablesWordCount ( min: number ) : number {
 
-        return this.words.filter( w => this.estimateSyllables( w ) >= min ).length;
+        let count: number = 0;
+
+        for ( const w of this.words ) if ( this.estimateSyllables( w ) >= min ) count++;
+
+        return count;
 
     }
 
     public getMaxSyllablesWordCount ( max: number ) : number {
 
-        return this.words.filter( w => this.estimateSyllables( w ) <= max ).length;
+        let count: number = 0;
+
+        for ( const w of this.words ) if ( this.estimateSyllables( w ) <= max ) count++;
+
+        return count;
 
     }
 
