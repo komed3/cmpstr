@@ -107,20 +107,24 @@ export type DiffMode = 'line' | 'word' | 'char';
 
 export interface DiffOptions {
     mode?: DiffMode;
-    ignoreWhitespace?: boolean;
-    ignoreCase?: boolean;
-    normalizeFlags?: NormalizeFlags;
+    caseInsensitive?: boolean;
     contextLines?: number;
     showChangeMagnitude?: boolean;
     maxMagnitudeSymbols?: number;
-    compact?: boolean;
 };
 
 export interface DiffEntry {
-    line: number;
-    ins: string;
-    del: string;
-    insLen: number;
-    delLen: number;
+    posA: number; posB: number;
+    del: string; ins: string;
+    size: number;
+};
+
+export interface DiffGroup {
+    line: number | undefined;
+    diffs: DiffEntry[];
+    delSize: number;
+    insSize: number;
+    totalSize: number;
+    baseLen: number;
     magnitude: string;
 };

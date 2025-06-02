@@ -1,7 +1,6 @@
 'use strict';
 
-import type { DiffOptions, DiffEntry } from './Types';
-import { Normalizer } from './Normalizer';
+import type { DiffOptions, DiffGroup, DiffEntry } from './Types';
 
 export class DiffChecker {
 
@@ -9,253 +8,242 @@ export class DiffChecker {
     private readonly b: string;
     private readonly options: Required<DiffOptions>;
 
-    private entries: DiffEntry[] = [];
+    private entries: DiffGroup[] = [];
     private diffRun: boolean = false;
 
     constructor ( a: string, b: string, options: DiffOptions = {} ) {
 
+        this.a = a, this.b = b;
+
         this.options = { ...{
             mode: 'word',
-            ignoreWhitespace: false,
-            ignoreCase: false,
-            normalizeFlags: '',
+            caseInsensitive: false,
             contextLines: 2,
             showChangeMagnitude: true,
-            maxMagnitudeSymbols: 5,
-            compact: true
+            maxMagnitudeSymbols: 5
         }, ...options };
-
-        this.a = this.normalize( a );
-        this.b = this.normalize( b );
 
         this.computeDiff();
 
     }
 
-    private normalize( text: string ) : string {
+    private tokenize ( input: string ) : string[] {
 
-        return Normalizer.normalize( text, this.options.normalizeFlags );
+        const { mode } = this.options;
 
-    }
+        switch ( mode ) {
 
-    private tokenize ( text: string ) : string[][] {
-
-        const token: string[][] = [];
-
-        for ( const line of text.split( /\r?\n/ ) ) {
-
-            switch ( this.options.mode ) {
-
-                case 'line': token.push( [ line.trim() ] ); break;
-
-                case 'word': token.push( line.trim().split( /\s+/ ) ); break;
-
-                case 'char': token.push( line.split( '' ) ); break;
-
-            }
+            case 'line': return [ input ];
+            case 'word': return input.split( /\s+/ );
+            case 'char': return [ ...input ];
 
         }
 
-        return token;
-
     }
 
-    private concat ( token: string[] ) : string {
+    private concat ( input: string[] ) : string {
 
-        switch ( this.options.mode ) {
+        const { mode } = this.options;
 
-            case 'line': // Same as word
-            case 'word': return token.join( ' ' );
-
-            case 'char': return token.join( '' );
-
-        }
+        return input.join( mode === 'word' ? ' ' : '' );
 
     }
 
     private computeDiff () : void {
 
-        const aLines: string[][] = this.tokenize( this.a );
-        const bLines: string[][] = this.tokenize( this.b );
-        const maxLen: number = Math.max( aLines.length, bLines.length );
+        if ( ! this.diffRun ) {
 
-        for ( let i = 0; i < maxLen; i++ ) {
+            const linesA: string[] = this.a.split( /\r?\n/ );
+            const linesB: string[] = this.b.split( /\r?\n/ );
+            const maxLen: number = Math.max( linesA.length, linesB.length );
 
-            const aLine: string[] = aLines[ i ] || [];
-            const bLine: string[] = bLines[ i ] || [];
+            for ( let i = 0; i < maxLen; i++ ) {
 
-            const { len, ins, del } = this.lineDiff( aLine, bLine );
-            const insLen: number = ins.length;
-            const delLen: number = del.length;
+                const a: string = linesA[ i ] || '';
+                const b: string = linesB[ i ] || '';
 
-            if ( insLen > 0 || delLen > 0 ) {
+                this.lineDiff( a, b, i );
 
-                this.entries.push( {
-                    line: i + 1,
-                    ins: this.concat( ins ),
-                    del: this.concat( del ),
-                    insLen, delLen,
-                    magnitude: this.buildMagnitude( insLen, delLen, len )
+            }
+
+            this.diffRun = true;
+
+        }
+
+    }
+
+    private lineDiff ( a: string, b: string, line: number ) : void {
+
+        const { mode, caseInsensitive } = this.options;
+
+        const baseLen = Math.max( a.length, b.length );
+        let A: string = a, B: string = b;
+
+        if ( caseInsensitive ) A = a.toLowerCase(), B = b.toLowerCase();
+
+        let diffs: DiffEntry[] = [];
+        let delSize: number = 0, insSize: number = 0;
+
+        if ( mode === 'line' ) {
+
+            if ( a !== b ) {
+
+                diffs.push( {
+                    posA: 0, posB: 0,
+                    del: a, ins: b,
+                    size: b.length - a.length
                 } );
 
+                delSize = a.length;
+                insSize = b.length;
+
+            }
+
+        } else {
+
+            diffs = this.preciseDiff( A, B );
+
+            delSize = diffs.reduce( ( s, d ) => s + d.del.length, 0 );
+            insSize = diffs.reduce( ( s, d ) => s + d.ins.length, 0 );
+
+        }
+
+        if ( diffs.length ) {
+
+            this.entries.push( {
+                line, diffs, delSize, insSize, baseLen,
+                totalSize: insSize - delSize,
+                magnitude: this.magnitude( insSize, delSize, baseLen )
+            } );
+
+        }
+
+    }
+
+    private preciseDiff ( a: string, b: string ) : DiffEntry[] {
+
+        const { mode } = this.options;
+
+        const tokenA: string[] = this.tokenize( a );
+        const tokenB: string[] = this.tokenize( b );
+        const lenA: number = tokenA.length, lenB: number = tokenB.length;
+
+        const diffs: DiffEntry[] = [];
+        let posA: number = 0, posB: number = 0;
+        let i: number = 0, j: number = 0;
+
+        const matches: Array<{ ai: number, bi: number, len: number }> = [];
+        let ai: number = 0, bi: number = 0;
+
+        while ( ai < lenA && bi < lenB ) {
+
+            if ( tokenA[ ai ] === tokenB[ bi ] ) {
+
+                let len: number = 1;
+
+                while (
+                    ai + len < lenA && bi + len < lenB &&
+                    tokenA[ ai + len ] === tokenB[ bi + len ]
+                ) len++;
+
+                matches.push( { ai, bi, len } );
+                ai += len, bi += len;
+
+            } else {
+
+                let found: boolean = false;
+
+                for ( let offset = 1; offset <= 3 && ! found; offset++ ) {
+
+                    if ( ai + offset < lenA && tokenA[ ai + offset ] === tokenB[ bi ] ) {
+
+                        matches.push( { ai: ai + offset, bi, len: 1 } );
+                        ai += offset + 1, bi += 1, found = true;
+
+                    }
+
+                    else if ( bi + offset < lenB && tokenA[ ai ] === tokenB[ bi + offset ] ) {
+
+                        matches.push( { ai, bi: bi + offset, len: 1 } );
+                        ai += 1, bi += offset + 1, found = true;
+
+                    }
+
+                }
+
+                if ( ! found ) ai++, bi++;
+
             }
 
         }
 
-        this.diffRun = true;
+        i = 0; j = 0; posA = 0; posB = 0;
 
-    }
+        for ( const m of matches ) {
 
-    private lineDiff ( a: string[], b: string[] ) : {
-        len: number; ins: string[]; del: string[];
-    } {
+            if ( i < m.ai || j < m.bi ) {
 
-        const ins: string[] = [], del: string[] = [];
-        const len = Math.max( a.length, b.length );
+                const delArr: string[] = tokenA.slice( i, m.ai );
+                const insArr: string[] = tokenB.slice( j, m.bi );
 
-        for ( let i = 0; i < len; i++ ) {
+                diffs.push( {
+                    posA, posB,
+                    del: this.concat( delArr ),
+                    ins: this.concat( insArr ),
+                    size: insArr.join( '' ).length - delArr.join( '' ).length
+                } );
 
-            const x:string = a[ i ], y: string = b[ i ];
-
-            if ( x !== y ) {
-
-                if ( x ) del.push( x );
-                if ( y ) ins.push( y );
+                posA += delArr.reduce( ( s, t ) => s + t.length, 0 );
+                posB += insArr.reduce( ( s, t ) => s + t.length, 0 );
 
             }
 
+            posA += tokenA.slice( m.ai, m.ai + m.len ).reduce( ( s, t ) => s + t.length, 0 );
+            posB += tokenB.slice( m.bi, m.bi + m.len ).reduce( ( s, t ) => s + t.length, 0 );
+            i = m.ai + m.len, j = m.bi + m.len;
+
         }
 
-        return { len, ins, del };
+        if ( i < lenA || j < lenB ) {
+
+            const delArr: string[] = tokenA.slice( i );
+            const insArr: string[] = tokenB.slice( j );
+
+            diffs.push( {
+                posA, posB,
+                del: this.concat( delArr ),
+                ins: this.concat( insArr ),
+                size: insArr.join( '' ).length - delArr.join( '' ).length
+            } );
+
+        }
+
+        return diffs.filter( d => d.del.length > 0 || d.ins.length > 0 );
 
     }
 
-    private buildMagnitude ( ins: number, del: number, baseLen: number ) : string {
+    private magnitude ( ins: number, del: number, baseLen: number ) : string {
+
+        const { maxMagnitudeSymbols } = this.options;
 
         const total: number = ins + del;
 
         if ( total === 0 || baseLen === 0 ) return '';
 
-        const magSize: number = Math.min(
-            this.options.maxMagnitudeSymbols,
-            Math.max( 1, Math.round(
-                total / baseLen * this.options.maxMagnitudeSymbols
-            ) )
-        );
+        const magLen: number = Math.min( maxMagnitudeSymbols, Math.max(
+            Math.round( total / baseLen * maxMagnitudeSymbols ), 1
+        ) );
 
-        const pCount: number = Math.round( ( ins / total ) * magSize );
-        const mCount: number = magSize - pCount;
+        const plus: number = Math.round( ( ins / total ) * magLen );
+        const minus: number = magLen - plus;
 
-        return '+'.repeat( pCount ) + '-'.repeat( mCount );
+        return '+'.repeat( plus ) + '-'.repeat( minus );
 
     }
 
-    public getStructuredDiff () : DiffEntry[] {
+    public getStructuredDiff () : DiffGroup[] {
 
         return this.entries;
-
-    }
-
-    public getASCIIDiff () : string {
-
-        if ( ! this.diffRun ) this.computeDiff();
-
-        let result: string[] = [];
-
-        const aLines: string[] = this.a.split( /\r?\n/ );
-        const bLines: string[] = this.b.split( /\r?\n/ );
-
-        for ( const entry of this.entries ) {
-
-            const start: number = Math.max(
-                entry.line - 1 - this.options.contextLines,
-                0
-            );
-
-            const end: number = Math.min(
-                Math.max( aLines.length, bLines.length ),
-                entry.line + this.options.contextLines
-            );
-
-            const header: string = `@@ -${entry.line},${entry.delLen} +${entry.line},${entry.insLen} @@`;
-            const mag: string = this.options.showChangeMagnitude ? ` ${entry.magnitude}` : '';
-
-            result.push( `${header}${mag}` );
-
-            for ( let i = start; i < end; i++ ) {
-
-                const aLine: string = aLines[ i ] ?? '';
-                const bLine: string = bLines[ i ] ?? '';
-
-                if ( i === entry.line - 1 ) {
-
-                    result.push( `- ${aLine}` );
-                    result.push( `+ ${bLine}` );
-
-                } else {
-
-                    result.push( `  ${aLine}` );
-
-                }
-
-            }
-
-        }
-
-        return result.join( '\n' );
-
-    }
-
-    public getCLIDiff () : string {
-
-        const cyan =   ( s: string ) => `\x1b[36m${s}\x1b[0m`;
-        const yellow = ( s: string ) => `\x1b[33m${s}\x1b[0m`;
-        const red =    ( s: string ) => `\x1b[31m${s}\x1b[0m`;
-        const green =  ( s: string ) => `\x1b[32m${s}\x1b[0m`;
-
-        let result: string[] = [];
-
-        const aLines: string[] = this.a.split( /\r?\n/ );
-        const bLines: string[] = this.b.split( /\r?\n/ );
-
-        for ( const entry of this.entries ) {
-
-            const start: number = Math.max(
-                entry.line - 1 - this.options.contextLines,
-                0
-            );
-
-            const end: number = Math.min(
-                Math.max( aLines.length, bLines.length ),
-                entry.line + this.options.contextLines
-            );
-
-            const header: string = `@@ -${entry.line},${entry.delLen} +${entry.line},${entry.insLen} @@`;
-            const mag: string = yellow( entry.magnitude.padEnd( 5, ' ' ) );
-
-            result.push( `${ cyan( header ) } ${mag}` );
-
-            for ( let i = start; i < end; i++ ) {
-
-                const aLine: string = aLines[ i ] ?? '';
-                const bLine: string = bLines[ i ] ?? '';
-
-                if ( i === entry.line - 1 ) {
-
-                    result.push( red( `- ${aLine}` ) );
-                    result.push( green( `+ ${bLine}` ) );
-
-                } else {
-
-                    result.push( `  ${aLine}` );
-
-                }
-
-            }
-
-        }
-
-        return result.join( '\n' );
 
     }
 
