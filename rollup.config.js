@@ -51,7 +51,7 @@
 import typescript from '@rollup/plugin-typescript';
 import { nodeResolve } from '@rollup/plugin-node-resolve';
 import commonjs from '@rollup/plugin-commonjs';
-import { minify } from 'terser';
+import terser from '@rollup/plugin-terser';
 
 const plugins = [
     nodeResolve(),
@@ -91,7 +91,7 @@ export default [
 
     // Browser Build (UMD)
     {
-        input: 'src/CmpStr.ts',
+        input: 'src/index.ts',
         output: [ {
             file: 'dist/CmpStr.js',
             format: 'umd',
@@ -101,7 +101,7 @@ export default [
             file: 'dist/CmpStr.min.js',
             format: 'umd',
             name: 'CmpStr',
-            plugins: [ minify ],
+            plugins: [ terser( { format: { comments: false } } ) ],
             sourcemap: true
         } ],
         plugins
