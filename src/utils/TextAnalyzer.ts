@@ -382,9 +382,9 @@ export class TextAnalyzer {
      */
     public getHonoresR () : number {
 
-        return ( 100 * Math.log( this.words.length ) ) / (
-            1 - this.getHapaxLegomena().length / ( this.wordHistogram.size ?? 1 )
-        );
+        return ( 100 * Math.log( this.words.length ) ) / ( 1 - (
+            this.getHapaxLegomena().length / ( this.wordHistogram.size ?? 1 )
+        ) );
 
     }
 
