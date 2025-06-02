@@ -112,14 +112,15 @@ export interface DiffOptions {
     normalizeFlags?: NormalizeFlags;
     contextLines?: number;
     showChangeMagnitude?: boolean;
+    maxMagnitudeSymbols?: number;
     compact?: boolean;
 };
 
 export interface DiffEntry {
     line: number;
-    add: string;
+    ins: string;
     del: string;
-    addLen: number;
+    insLen: number;
     delLen: number;
     magnitude: string;
 };

@@ -21,6 +21,7 @@ export class DiffChecker {
             normalizeFlags: '',
             contextLines: 2,
             showChangeMagnitude: true,
+            maxMagnitudeSymbols: 5,
             compact: true
         }, ...options };
 
@@ -83,18 +84,18 @@ export class DiffChecker {
             const aLine: string[] = aLines[ i ] || [];
             const bLine: string[] = bLines[ i ] || [];
 
-            const { add, del } = this.lineDiff( aLine, bLine );
-            const addLen: number = add.length;
+            const { len, ins, del } = this.lineDiff( aLine, bLine );
+            const insLen: number = ins.length;
             const delLen: number = del.length;
 
-            if ( addLen > 0 || delLen > 0 ) {
+            if ( insLen > 0 || delLen > 0 ) {
 
                 this.entries.push( {
                     line: i + 1,
-                    add: this.concat( add ),
+                    ins: this.concat( ins ),
                     del: this.concat( del ),
-                    addLen, delLen,
-                    magnitude: this.calcMagnitude( addLen + delLen )
+                    insLen, delLen,
+                    magnitude: this.buildMagnitude( insLen, delLen, len )
                 } );
 
             }
@@ -105,9 +106,11 @@ export class DiffChecker {
 
     }
 
-    private lineDiff ( a: string[], b: string[] ) : { add: string[], del: string[]; } {
+    private lineDiff ( a: string[], b: string[] ) : {
+        len: number; ins: string[]; del: string[];
+    } {
 
-        const add: string[] = [], del: string[] = [];
+        const ins: string[] = [], del: string[] = [];
         const len = Math.max( a.length, b.length );
 
         for ( let i = 0; i < len; i++ ) {
@@ -117,19 +120,33 @@ export class DiffChecker {
             if ( x !== y ) {
 
                 if ( x ) del.push( x );
-                if ( y ) add.push( y );
+                if ( y ) ins.push( y );
 
             }
 
         }
 
-        return { add, del };
+        return { len, ins, del };
 
     }
 
-    private calcMagnitude ( size: number ) : string {
+    private buildMagnitude ( ins: number, del: number, baseLen: number ) : string {
 
-        return '';
+        const total: number = ins + del;
+
+        if ( total === 0 || baseLen === 0 ) return '';
+
+        const magSize: number = Math.min(
+            this.options.maxMagnitudeSymbols,
+            Math.max( 1, Math.round(
+                total / baseLen * this.options.maxMagnitudeSymbols
+            ) )
+        );
+
+        const pCount: number = Math.round( ( ins / total ) * magSize );
+        const mCount: number = magSize - pCount;
+
+        return '+'.repeat( pCount ) + '-'.repeat( mCount );
 
     }
 
