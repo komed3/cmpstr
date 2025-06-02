@@ -122,7 +122,7 @@ export class DiffChecker {
 
     private preciseDiff ( a: string, b: string ) : DiffEntry[] {
 
-        const { mode } = this.options;
+        const reduceLen = ( s: number, t: string ) => s + t.length;
 
         const tokenA: string[] = this.tokenize( a );
         const tokenB: string[] = this.tokenize( b );
@@ -193,13 +193,13 @@ export class DiffChecker {
                     size: insArr.join( '' ).length - delArr.join( '' ).length
                 } );
 
-                posA += delArr.reduce( ( s, t ) => s + t.length, 0 );
-                posB += insArr.reduce( ( s, t ) => s + t.length, 0 );
+                posA += delArr.reduce( reduceLen, 0 );
+                posB += insArr.reduce( reduceLen, 0 );
 
             }
 
-            posA += tokenA.slice( m.ai, m.ai + m.len ).reduce( ( s, t ) => s + t.length, 0 );
-            posB += tokenB.slice( m.bi, m.bi + m.len ).reduce( ( s, t ) => s + t.length, 0 );
+            posA += tokenA.slice( m.ai, m.ai + m.len ).reduce( reduceLen, 0 );
+            posB += tokenB.slice( m.bi, m.bi + m.len ).reduce( reduceLen, 0 );
             i = m.ai + m.len, j = m.bi + m.len;
 
         }
