@@ -156,4 +156,107 @@ export class DiffChecker {
 
     }
 
+    public getASCIIDiff () : string {
+
+        if ( ! this.diffRun ) this.computeDiff();
+
+        let result: string[] = [];
+
+        const aLines: string[] = this.a.split( /\r?\n/ );
+        const bLines: string[] = this.b.split( /\r?\n/ );
+
+        for ( const entry of this.entries ) {
+
+            const start: number = Math.max(
+                entry.line - 1 - this.options.contextLines,
+                0
+            );
+
+            const end: number = Math.min(
+                Math.max( aLines.length, bLines.length ),
+                entry.line + this.options.contextLines
+            );
+
+            const header: string = `@@ -${entry.line},${entry.delLen} +${entry.line},${entry.insLen} @@`;
+            const mag: string = this.options.showChangeMagnitude ? ` ${entry.magnitude}` : '';
+
+            result.push( `${header}${mag}` );
+
+            for ( let i = start; i < end; i++ ) {
+
+                const aLine: string = aLines[ i ] ?? '';
+                const bLine: string = bLines[ i ] ?? '';
+
+                if ( i === entry.line - 1 ) {
+
+                    result.push( `- ${aLine}` );
+                    result.push( `+ ${bLine}` );
+
+                } else {
+
+                    result.push( `  ${aLine}` );
+
+                }
+
+            }
+
+        }
+
+        return result.join( '\n' );
+
+    }
+
+    public getCLIDiff () : string {
+
+        const cyan =   ( s: string ) => `\x1b[36m${s}\x1b[0m`;
+        const yellow = ( s: string ) => `\x1b[33m${s}\x1b[0m`;
+        const red =    ( s: string ) => `\x1b[31m${s}\x1b[0m`;
+        const green =  ( s: string ) => `\x1b[32m${s}\x1b[0m`;
+
+        let result: string[] = [];
+
+        const aLines: string[] = this.a.split( /\r?\n/ );
+        const bLines: string[] = this.b.split( /\r?\n/ );
+
+        for ( const entry of this.entries ) {
+
+            const start: number = Math.max(
+                entry.line - 1 - this.options.contextLines,
+                0
+            );
+
+            const end: number = Math.min(
+                Math.max( aLines.length, bLines.length ),
+                entry.line + this.options.contextLines
+            );
+
+            const header: string = `@@ -${entry.line},${entry.delLen} +${entry.line},${entry.insLen} @@`;
+            const mag: string = yellow( entry.magnitude.padEnd( 5, ' ' ) );
+
+            result.push( `${ cyan( header ) } ${mag}` );
+
+            for ( let i = start; i < end; i++ ) {
+
+                const aLine: string = aLines[ i ] ?? '';
+                const bLine: string = bLines[ i ] ?? '';
+
+                if ( i === entry.line - 1 ) {
+
+                    result.push( red( `- ${aLine}` ) );
+                    result.push( green( `+ ${bLine}` ) );
+
+                } else {
+
+                    result.push( `  ${aLine}` );
+
+                }
+
+            }
+
+        }
+
+        return result.join( '\n' );
+
+    }
+
 }
