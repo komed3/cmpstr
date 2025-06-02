@@ -109,6 +109,7 @@ export interface DiffOptions {
     mode?: DiffMode;
     caseInsensitive?: boolean;
     contextLines?: number;
+    groupedLines?: boolean;
     showChangeMagnitude?: boolean;
     maxMagnitudeSymbols?: number;
 };

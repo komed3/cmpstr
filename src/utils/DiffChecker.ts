@@ -18,7 +18,8 @@ export class DiffChecker {
         this.options = { ...{
             mode: 'word',
             caseInsensitive: false,
-            contextLines: 2,
+            contextLines: 1,
+            groupedLines: true,
             showChangeMagnitude: true,
             maxMagnitudeSymbols: 5
         }, ...options };
@@ -86,7 +87,7 @@ export class DiffChecker {
 
         if ( mode === 'line' ) {
 
-            if ( a !== b ) {
+            if ( A !== B ) {
 
                 diffs.push( {
                     posA: 0, posB: 0,
@@ -101,7 +102,7 @@ export class DiffChecker {
 
         } else {
 
-            diffs = this.preciseDiff( A, B );
+            diffs = this.preciseDiff( a, A, b, B );
 
             delSize = diffs.reduce( ( s, d ) => s + d.del.length, 0 );
             insSize = diffs.reduce( ( s, d ) => s + d.ins.length, 0 );
@@ -120,13 +121,16 @@ export class DiffChecker {
 
     }
 
-    private preciseDiff ( a: string, b: string ) : DiffEntry[] {
+    private preciseDiff ( a: string, A: string, b: string, B: string ) : DiffEntry[] {
 
         const reduceLen = ( s: number, t: string ) => s + t.length;
 
-        const tokenA: string[] = this.tokenize( a );
-        const tokenB: string[] = this.tokenize( b );
-        const lenA: number = tokenA.length, lenB: number = tokenB.length;
+        const origA: string[] = this.tokenize( a );
+        const origB: string[] = this.tokenize( b );
+        const tokenA: string[] = this.tokenize( A );
+        const tokenB: string[] = this.tokenize( B );
+        const lenA: number = tokenA.length;
+        const lenB: number = tokenB.length;
 
         const diffs: DiffEntry[] = [];
         let posA: number = 0, posB: number = 0;
@@ -183,8 +187,8 @@ export class DiffChecker {
 
             if ( i < m.ai || j < m.bi ) {
 
-                const delArr: string[] = tokenA.slice( i, m.ai );
-                const insArr: string[] = tokenB.slice( j, m.bi );
+                const delArr: string[] = origA.slice( i, m.ai );
+                const insArr: string[] = origB.slice( j, m.bi );
 
                 diffs.push( {
                     posA, posB,
@@ -206,8 +210,8 @@ export class DiffChecker {
 
         if ( i < lenA || j < lenB ) {
 
-            const delArr: string[] = tokenA.slice( i );
-            const insArr: string[] = tokenB.slice( j );
+            const delArr: string[] = origA.slice( i );
+            const insArr: string[] = origB.slice( j );
 
             diffs.push( {
                 posA, posB,
@@ -241,9 +245,29 @@ export class DiffChecker {
 
     }
 
+    private output ( cli: boolean ) : string {
+
+        const { mode, contextLines, groupedLines, showChangeMagnitude } = this.options;
+
+        return '';
+
+    }
+
     public getStructuredDiff () : DiffGroup[] {
 
         return this.entries;
+
+    }
+
+    public getASCIIDiff () : string {
+
+        return this.output( false );
+
+    }
+
+    public getCLIDiff () : string {
+
+        return this.output( true );
 
     }
 
