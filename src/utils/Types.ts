@@ -112,6 +112,7 @@ export interface DiffOptions {
     groupedLines?: boolean;
     showChangeMagnitude?: boolean;
     maxMagnitudeSymbols?: number;
+    lineBreak?: string;
 };
 
 export interface DiffEntry {
@@ -121,7 +122,7 @@ export interface DiffEntry {
 };
 
 export interface DiffGroup {
-    line: number | undefined;
+    line: number;
     diffs: DiffEntry[];
     delSize: number;
     insSize: number;
