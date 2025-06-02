@@ -70,8 +70,10 @@ export default [
         output: {
             dir: 'dist/esm',
             format: 'esm',
+            sourcemap: true,
             entryFileNames: '[name].js',
-            sourcemap: true
+            preserveModules: true,
+            preserveModulesRoot: 'src'
         },
         plugins
     },
@@ -82,9 +84,11 @@ export default [
         output: {
             dir: 'dist/cjs',
             format: 'cjs',
+            sourcemap: true,
             entryFileNames: '[name].js',
             exports: 'auto',
-            sourcemap: true
+            preserveModules: true,
+            preserveModulesRoot: 'src'
         },
         plugins
     },
