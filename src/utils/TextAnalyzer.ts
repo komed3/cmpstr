@@ -193,6 +193,21 @@ export class TextAnalyzer {
     }
 
     /**
+     * Gets the least common words (hapax legomena) in the text.
+     * 
+     * Hapax legomena are words that occur only once in the text.
+     * 
+     * @returns {string[]} - Array of hapax legomena
+     */
+    public getHapaxLegomena () : string[] {
+
+        return [ ...this.wordHistogram.entries() ]
+            .filter( ( [ , c ] ) => c === 1 )
+            .map( e => e[ 0 ] );
+
+    }
+
+    /**
      * Checks if the text contains any numbers.
      * 
      * @returns {boolean} - True if numbers are present, false otherwise
@@ -357,6 +372,19 @@ export class TextAnalyzer {
         for ( const w of this.words ) if ( this.estimateSyllables( w ) <= max ) count++;
 
         return count;
+
+    }
+
+    /**
+     * Calculates the Honore's R statistic for the text as a measure of lexical richness.
+     * 
+     * @returns {number} - The Honore's R statistic
+     */
+    public getHonoresR () : number {
+
+        return ( 100 * Math.log( this.words.length ) ) / (
+            1 - this.getHapaxLegomena().length / ( this.wordHistogram.size ?? 1 )
+        );
 
     }
 
