@@ -168,6 +168,24 @@ export class TextAnalyzer {
 
     }
 
+    public getMonosyllabicWordCount () : number {
+
+        return this.words.filter( w => this.estimateSyllables( w ) === 1 ).length;
+
+    }
+
+    public getMinSyllablesWordCount ( min: number ) : number {
+
+        return this.words.filter( w => this.estimateSyllables( w ) >= min ).length;
+
+    }
+
+    public getMaxSyllablesWordCount ( max: number ) : number {
+
+        return this.words.filter( w => this.estimateSyllables( w ) <= max ).length;
+
+    }
+
     public getReadingTime ( options?: { wpm?: number } ) : number {
 
         const wps: number = ( options?.wpm ?? 200 ) / 60;
@@ -194,6 +212,34 @@ export class TextAnalyzer {
             case 'kincaid': return ( 0.39 * asl ) + ( 11.8 * asw ) - 15.59;
 
         }
+
+    }
+
+    public getLIXScore () : number {
+
+        const w: number = this.words.length || 1;
+        const s: number = this.sentences.length || 1;
+        const l: number = this.getLongWordRatio() * w;
+
+        return ( w / s ) + ( l / w * 100 );
+
+    }
+
+    public getWSTFScore () : [ number, number, number, number ] {
+
+        const w: number = this.words.length || 1;
+
+        const h: number = this.getMinSyllablesWordCount( 3 ) / w * 100;
+        const s: number = this.getAvgSentenceLength();
+        const l: number = this.getLongWordRatio() * 100;
+        const m: number = this.getMonosyllabicWordCount() / w * 100;
+
+        return [
+            0.1935 * h + 0.1672 * s + 0.1297 * l - 0.0327 * m - 0.8750,
+            0.2007 * h + 0.1682 * s + 0.1373 * l              - 2.7790,
+            0.2963 * h + 0.1905 * s                           - 1.1144,
+            0.2744 * h + 0.2656 * s                           - 1.6930
+        ];
 
     }
 
