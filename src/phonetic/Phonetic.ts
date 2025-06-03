@@ -25,7 +25,7 @@
 
 'use strict';
 
-import type { PhoneticMapping, PhoneticMap, PhoneticOptions, RegistryService } from '../utils/Types';
+import type { PhoneticMapping, PhoneticMap, PhoneticOptions, RegistryService, PhoneticMappingService } from '../utils/Types';
 import { Registry } from '../utils/Registry';
 
 /**
@@ -47,99 +47,37 @@ export abstract class Phonetic {
      */
     protected static default: PhoneticOptions;
 
-    /**
-     * Phonetic mapping used for phonetic algorithms.
-     * 
-     * This mapping is used to convert words into their phonetic representation
-     * based on the specific phonetic algorithm implemented in the subclass.
-     */
-    protected static mappings: PhoneticMapping;
+    // Phonetic algorithm name for identification
+    private readonly algo: string;
 
     // Phonetic map and options for the algorithm
     protected readonly options: PhoneticOptions;
     protected readonly map: PhoneticMap;
 
     /**
-     * Static method to add a new phonetic mapping.
-     * 
-     * @param {string} name - The name of the mapping
-     * @param {PhoneticMap} map - The phonetic mapping to be added
-     */
-    public static addMapping ( this: typeof Phonetic, name: string, map: PhoneticMap ) : void {
-
-        this.mappings[ name ] = map;
-
-    }
-
-    /**
-     * Static method to remove a phonetic mapping by name.
-     * 
-     * @param {string} name - The name of the mapping to be removed
-     */
-    public static removeMapping ( this: typeof Phonetic, name: string ) : void {
-
-        delete this.mappings[ name ];
-
-    }
-
-    /**
-     * Static method to check if a phonetic mapping exists by name.
-     * 
-     * @param {string} name - The name of the mapping to check
-     * @returns {boolean} - True if the mapping exists, otherwise false
-     */
-    public static hasMapping ( this: typeof Phonetic, name: string ) : boolean {
-
-        return name in this.mappings;
-
-    }
-
-    /**
-     * Static method to get a phonetic mapping by name.
-     * 
-     * @param {string} name - The name of the mapping to retrieve
-     * @returns {PhoneticMap|undefined} - The phonetic mapping if found, otherwise undefined
-     */
-    public static getMapping ( this: typeof Phonetic, name: string ) : PhoneticMap | undefined {
-
-        return this.mappings[ name ];
-
-    }
-
-    /**
-     * Static method to list all available phonetic mappings.
-     * 
-     * @returns {string[]} - An array of names of all available phonetic mappings
-     */
-    public static listMappings ( this: typeof Phonetic ) : string[] {
-
-        return Object.keys( this.mappings );
-
-    }
-
-    /**
      * Constructor for the Phonetic class.
      * 
      * Initializes the phonetic algorithm with the specified options and mapping.
      * 
+     * @param {string} algo - The name of the algorithm (e.g. 'soundex')
      * @param {PhoneticOptions} options - Options for the phonetic algorithm
      * @throws {Error} - If the requested mapping is not declared
      */
-    constructor ( options: PhoneticOptions ) {
-
-        // Get the class constructor to access static properties
-        const cls: typeof Phonetic = this.constructor as typeof Phonetic;
+    constructor ( algo: string, options: PhoneticOptions ) {
 
         // Set the options by merging the default options with the provided ones
-        this.options = { ...( ( cls as any ).default ?? {} ), ...options };
+        this.options = { ...( ( this.constructor as any ).default ?? {} ), ...options };
 
         // Get the mapping based on the provided options
-        this.map = cls.mappings[ this.options.map! ];
+        const map = PhoneticMappingRegistry.get( algo, this.options.map! );
 
         // If the mapping is not defined, throw an error
-        if ( this.map === undefined ) throw new Error (
+        if ( map === undefined ) throw new Error (
             `requested mapping <${this.options.map}> is not declared`
         );
+
+        this.algo = algo;
+        this.map = map;
 
     }
 
@@ -402,6 +340,17 @@ export abstract class Phonetic {
     }
 
     /**
+     * Get the name of the phonetic algorithm.
+     * 
+     * @returns {string} - The name of the algorithm
+     */
+    public getAlgoName () : string {
+
+        return this.algo;
+
+    }
+
+    /**
      * Generates a phonetic index for the given input string.
      * 
      * @param {string} input - The input string to be indexed
@@ -442,3 +391,82 @@ export abstract class Phonetic {
  * enabling the use of various phonetic algorithms in a consistent manner.
  */
 export const PhoneticRegistry: RegistryService<any> = Registry( Phonetic );
+
+/**
+ * Phonetic Mapping Service
+ * 
+ * This service provides a simple interface to manage phonetic mappings across
+ * different phonetic algorithms. It allows adding, removing, checking existence,
+ * retrieving, and listing phonetic mappings for specified algorithms.
+ */
+export const PhoneticMappingRegistry: PhoneticMappingService = ( () => {
+
+    // Create a registry object to hold mappings
+    const mappings: Record<string, PhoneticMapping> = {};
+
+    // Helper function to retrieve mappings for a specific algorithm
+    const maps = ( algo: string ) : PhoneticMapping => mappings[ algo ] ?? {};
+
+    return {
+
+        /**
+         * Adds a phonetic mapping for a specific algorithm and ID.
+         * 
+         * @param {string} algo - The phonetic algorithm identifier (e.g., 'soundex', 'metaphone')
+         * @param {string} id - The unique identifier for the mapping
+         * @param {PhoneticMap} map - The phonetic map to be added, containing rules and mappings
+         * @param {boolean} [update=false] - Whether to allow overwriting an existing entry
+         * @throws {Error} If the mapping name already exists and update is false
+         */
+        add (
+            algo: string, id: string, map: PhoneticMap,
+            update: boolean = false
+        ) : void {
+
+            const mappings: PhoneticMapping = maps( algo );
+
+            if ( ! update && id in mappings ) throw new Error (
+                `entry <${id}> already exists / use <update=true> to overwrite`
+            );
+
+            mappings[ id ] = map;
+
+        },
+
+        /**
+         * Removes a phonetic mapping for a specific algorithm and ID.
+         * 
+         * @param {string} algo - The phonetic algorithm identifier
+         * @param {string} id - The unique identifier for the mapping to be removed
+         */
+        remove ( algo: string, id: string ) : void { delete maps( algo )[ id ] },
+
+        /**
+         * Checks if a phonetic mapping exists for a specific algorithm and ID.
+         * 
+         * @param {string} algo - The phonetic algorithm identifier
+         * @param {string} id - The unique identifier for the mapping to check
+         * @returns {boolean} - Returns true if the mapping exists, false otherwise
+         */
+        has ( algo: string, id: string ) : boolean { return id in maps( algo ) },
+
+        /**
+         * Retrieves a phonetic mapping for a specific algorithm and ID.
+         * 
+         * @param {string} algo - The phonetic algorithm identifier
+         * @param {string} id - The unique identifier for the mapping to retrieve
+         * @returns {PhoneticMap | undefined} - Returns the phonetic map if found, otherwise undefined
+         */
+        get ( algo: string, id: string ) : PhoneticMap | undefined { return maps( algo )[ id ] },
+
+        /**
+         * Lists all phonetic mappings for a specific algorithm.
+         * 
+         * @param {string} algo - The phonetic algorithm identifier
+         * @returns {string[]} - Returns an array of mapping IDs for the specified algorithm
+         */
+        list ( algo: string ) : string[] { return Object.keys( maps( algo ) ) }
+
+    };
+
+} )();

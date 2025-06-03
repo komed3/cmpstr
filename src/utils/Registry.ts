@@ -61,7 +61,7 @@ export function Registry<T> ( ctor: RegistryConstructor<T> ) : RegistryService<T
          * 
          * @param {string} name - The name of the class to remove
          */
-        remove ( name: string ) : void { delete registry[ name ]; },
+        remove ( name: string ) : void { delete registry[ name ] },
 
         /**
          * Check if a class is registered.
@@ -69,14 +69,14 @@ export function Registry<T> ( ctor: RegistryConstructor<T> ) : RegistryService<T
          * @param {string} name - The name of the class to check
          * @returns {boolean} - True if the class is registered, false otherwise
          */
-        has ( name: string ) : boolean { return name in registry; },
+        has ( name: string ) : boolean { return name in registry },
 
         /**
          * List all registered class names.
          * 
          * @returns {string[]} - An array of registered class names
          */
-        list () : string[] { return Object.keys( registry ); },
+        list () : string[] { return Object.keys( registry ) },
 
         /**
          * Get a registered class by name.

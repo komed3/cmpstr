@@ -102,7 +102,7 @@ export abstract class Metric<R = MetricRaw> {
      * Constructor for the Metric class.
      * Initializes the metric with two inputs (strings or arrays of strings) and options.
      * 
-     * @param {string} metric - The name of the metric (e.g., 'levenshtein')
+     * @param {string} metric - The name of the metric (e.g. 'levenshtein')
      * @param {MetricInput} a - First input string or array of strings
      * @param {MetricInput} b - Second input string or array of strings
      * @param {MetricOptions} options - Options for the metric computation

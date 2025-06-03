@@ -114,7 +114,7 @@ export interface PhoneticMap {
 export type PhoneticMapping = Record<string, PhoneticMap>;
 
 export interface PhoneticMappingService {
-    add: ( algo: string, id: string, map: PhoneticMap ) => void;
+    add: ( algo: string, id: string, map: PhoneticMap, update?: boolean ) => void;
     remove: ( algo: string, id: string ) => void;
     has: ( algo: string, id: string ) => boolean;
     get: ( algo: string, id: string ) => PhoneticMap | undefined;

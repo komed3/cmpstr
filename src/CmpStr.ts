@@ -7,27 +7,38 @@ import { Profiler } from './utils/Profiler';
 import { TextAnalyzer } from './utils/TextAnalyzer';
 
 import { MetricRegistry } from './metric';
-import { PhoneticRegistry, phoneticMap } from './phonetic';
+import { PhoneticRegistry, PhoneticMappingRegistry } from './phonetic';
 
 export default class CmpStr {
 
-    public static addFilter = Filter.add;
-    public static removeFilter = Filter.remove;
-    public static pauseFilter = Filter.pause;
-    public static resumeFilter = Filter.resume;
-    public static listFilter = Filter.list;
-    public static clearFilter = Filter.clear;
+    public static readonly filter = {
+        add: Filter.add,
+        remove: Filter.remove,
+        pause: Filter.pause,
+        resume: Filter.resume,
+        list: Filter.list,
+        clear: Filter.clear
+    };
 
-    public static addMetric = MetricRegistry.add;
-    public static removeMetric = MetricRegistry.remove;
-    public static hasMetric = MetricRegistry.has;
-    public static listMetric = MetricRegistry.list;
+    public static readonly metric = {
+        add: MetricRegistry.add,
+        remove: MetricRegistry.remove,
+        has: MetricRegistry.has,
+        list: MetricRegistry.list
+    };
 
-    public static addPhonetic = PhoneticRegistry.add;
-    public static removePhonetic = PhoneticRegistry.remove;
-    public static hasPhonetic = PhoneticRegistry.has;
-    public static listPhonetic = PhoneticRegistry.list;
-    public static phoneticMap = phoneticMap();
+    public static readonly phonetic = {
+        add: PhoneticRegistry.add,
+        remove: PhoneticRegistry.remove,
+        has: PhoneticRegistry.has,
+        list: PhoneticRegistry.list,
+        map: {
+            add: PhoneticMappingRegistry.add,
+            remove: PhoneticMappingRegistry.remove,
+            has: PhoneticMappingRegistry.has,
+            list: PhoneticMappingRegistry.list
+        }
+    };
 
     protected static readonly profiler = Profiler.getInstance();
     public static profilerReport = this.profiler.getAll;
