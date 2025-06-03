@@ -30,7 +30,7 @@ export class DiffChecker {
 
     }
 
-    private buildLines () : { linesA: string[], linesB: string[], maxLen: number; } {
+    private text2lines () : { linesA: string[], linesB: string[], maxLen: number; } {
 
         const linesA: string[] = this.a.trim().split( /\r?\n/ );
         const linesB: string[] = this.b.trim().split( /\r?\n/ );
@@ -64,7 +64,7 @@ export class DiffChecker {
 
         if ( ! this.diffRun ) {
 
-            const { linesA, linesB, maxLen } = this.buildLines();
+            const { linesA, linesB, maxLen } = this.text2lines();
 
             for ( let i = 0; i < maxLen; i++ ) {
 
@@ -114,8 +114,7 @@ export class DiffChecker {
 
             diffs = this.preciseDiff( a, A, b, B );
 
-            delSize = diffs.reduce( ( s, d ) => s + d.del.length, 0 );
-            insSize = diffs.reduce( ( s, d ) => s + d.ins.length, 0 );
+            for ( const d of diffs ) delSize += d.del.length, insSize += d.ins.length;
 
         }
 
@@ -124,7 +123,7 @@ export class DiffChecker {
             this.entries.push( {
                 line, diffs, delSize, insSize, baseLen,
                 totalSize: insSize - delSize,
-                magnitude: this.magnitude( insSize, delSize, baseLen )
+                magnitude: this.magnitude( delSize, insSize, baseLen )
             } );
 
         }
@@ -144,11 +143,8 @@ export class DiffChecker {
         const tokenB: string[] = this.tokenize( B );
         const lenA: number = tokenA.length;
         const lenB: number = tokenB.length;
-        const posArrA = posIndex( origA );
-        const posArrB = posIndex( origB );
-
-        const diffs: DiffEntry[] = [];
-        let i: number = 0, j: number = 0;
+        const posArrA: number[] = posIndex( origA );
+        const posArrB: number[] = posIndex( origB );
 
         const matches: Array<{ ai: number, bi: number, len: number }> = [];
         let ai: number = 0, bi: number = 0;
@@ -195,7 +191,8 @@ export class DiffChecker {
 
         }
 
-        i = 0, j = 0;
+        const diffs: DiffEntry[] = [];
+        let i: number = 0, j: number = 0;
 
         for ( const m of matches ) {
 
@@ -252,7 +249,7 @@ export class DiffChecker {
             this.grouped.push( {
                 start, end, delSize, insSize, totalSize,
                 line: group[ 0 ].line, entries: group,
-                magnitude: this.magnitude( insSize, delSize, baseLen )
+                magnitude: this.magnitude( delSize, insSize, baseLen )
             } );
 
         };
@@ -286,11 +283,11 @@ export class DiffChecker {
 
     }
 
-    private magnitude ( ins: number, del: number, baseLen: number ) : string {
+    private magnitude ( del: number, ins: number, baseLen: number ) : string {
 
         const { maxMagnitudeSymbols } = this.options;
 
-        const total: number = ins + del;
+        const total: number = del + ins;
 
         if ( total === 0 || baseLen === 0 ) return '';
 
@@ -309,7 +306,7 @@ export class DiffChecker {
 
         const { mode, contextLines, groupedLines, showChangeMagnitude, lineBreak } = this.options;
 
-        const { linesA, linesB, maxLen } = this.buildLines();
+        const { linesA, linesB, maxLen } = this.text2lines();
         const linePad: number = Math.max( 4, maxLen.toString().length );
 
         const highlight = ( s: string, ansi: string ) : string => cli ? `\x1b[${ansi}m${s}\x1b[0m` : s;
@@ -320,8 +317,8 @@ export class DiffChecker {
         const rd = ( s: string ) : string => highlight( s, '31' );
         const ye = ( s: string ) : string => highlight( s, '33' );
 
-        const del = ( s: string ) => cli ? `\x1b[37;41m${s}\x1b[31;49m` : `-[${s}]`;
-        const ins = ( s: string ) => cli ? `\x1b[37;42m${s}\x1b[32;49m` : `+[${s}]`;
+        const del = ( s: string ) : string => cli ? `\x1b[37;41m${s}\x1b[31;49m` : `-[${s}]`;
+        const ins = ( s: string ) : string => cli ? `\x1b[37;42m${s}\x1b[32;49m` : `+[${s}]`;
 
         const header = ( e: DiffGroup | DiffLine ) : void => {
 
