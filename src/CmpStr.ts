@@ -1,6 +1,6 @@
 'use strict';
 
-import type { CmpStrOptions } from './utils/Types';
+import type { MetricInput, CmpStrOptions, DiffOptions, NormalizeFlags } from './utils/Types';
 
 import { DiffChecker } from './utils/DiffChecker';
 import { Filter } from './utils/Filter';
@@ -13,7 +13,7 @@ import { PhoneticRegistry, PhoneticMappingRegistry } from './phonetic';
 
 const profiler = Profiler.getInstance();
 
-export default class CmpStr {
+export class CmpStr {
 
     public static readonly filter = {
         add: Filter.add,
@@ -49,18 +49,29 @@ export default class CmpStr {
         clear: profiler.clear
     }
 
-    protected source: string | string[] = '';
-
+    protected source: MetricInput | undefined;
+    protected normalized: MetricInput | undefined;
     protected options: CmpStrOptions = {};
 
-    constructor ( source?: string | string[], options?: CmpStrOptions ) {
+    constructor ( source?: MetricInput, options?: CmpStrOptions ) {
 
         if ( source ) this.setSource( source );
         if ( options ) this.setOptions( options );
 
     }
 
-    public setSource ( input: string | string[] ) : void { this.source = input }
+    protected normalize ( input: MetricInput, flags?: NormalizeFlags ) : MetricInput {
+
+        return Normalizer.normalize( input, flags ?? this.options.normalizeFlags ?? '' );
+
+    }
+
+    public setSource ( input: MetricInput ) : void {
+
+        this.source = input;
+        this.normalized = this.normalize( input );
+
+    }
 
     public setOptions ( options: CmpStrOptions ) : void { this.options = options };
 
@@ -69,8 +80,7 @@ export default class CmpStr {
         const deepMerge = ( s: any, t: any ) : any => (
             Object.keys( s ).forEach(
                 ( k ) => t[ k ] = s[ k ] && typeof s[ k ] === 'object'
-                    ? deepMerge( t[ k ], s[ k ] )
-                    : s[ k ]
+                    ? deepMerge( t[ k ], s[ k ] ) : s[ k ]
             ), t
         );
 
@@ -78,8 +88,29 @@ export default class CmpStr {
 
     }
 
-    public getSource () : string | string[] { return this.source }
+    public getSource () : MetricInput | undefined { return this.source }
+
+    public getNormalizedSource () : MetricInput | undefined { return this.normalized }
+
+    public getSourceAsString () : string {
+
+        return Array.isArray( this.source ) ? this.source.join( ' ' ) : this.source ?? '';
+
+    }
 
     public getOptions () : CmpStrOptions { return this.options }
+
+    public getSerializedOptions () : string { return JSON.stringify( this.options ) }
+
+    public analyze () : TextAnalyzer { return new TextAnalyzer ( this.getSourceAsString() ) }
+
+    public diff ( target: string, options?: DiffOptions ) : DiffChecker {
+
+        return new DiffChecker (
+            this.getSourceAsString(), target,
+            options ?? this.options.diffOptions ?? {}
+        );
+
+    }
 
 }

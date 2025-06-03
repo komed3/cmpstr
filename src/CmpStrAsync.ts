@@ -1,5 +1,5 @@
 'use strict';
 
-import CmpStr from './CmpStr';
+import { CmpStr } from './CmpStr';
 
-export default class CmpStrAsync extends CmpStr {};
+export class CmpStrAsync extends CmpStr {};
