@@ -29,9 +29,12 @@ export class DiffChecker {
 
     }
 
-    private splitLines ( input: string ) : string[] {
+    private buildLines () : { linesA: string[], linesB: string[], maxLen: number; } {
 
-        return input.trim().split( /\r?\n/ );
+        const linesA: string[] = this.a.trim().split( /\r?\n/ );
+        const linesB: string[] = this.b.trim().split( /\r?\n/ );
+
+        return { linesA, linesB, maxLen: Math.max( linesA.length, linesB.length ) };
 
     }
 
@@ -61,9 +64,7 @@ export class DiffChecker {
 
         if ( ! this.diffRun ) {
 
-            const linesA: string[] = this.splitLines( this.a );
-            const linesB: string[] = this.splitLines( this.b );
-            const maxLen: number = Math.max( linesA.length, linesB.length );
+            const { linesA, linesB, maxLen } = this.buildLines();
 
             for ( let i = 0; i < maxLen; i++ ) {
 
@@ -265,8 +266,8 @@ export class DiffChecker {
         const rd = ( s: string ) => highlight( s, '31' );
         const ye = ( s: string ) => highlight( s, '33' );
 
-        const del = ( s: string ) => cli ? `\x1b[37;41m${s}\x1b[0m` : `[-${s}]`;
-        const ins = ( s: string ) => cli ? `\x1b[37;42m${s}\x1b[0m` : `[+${s}]`;
+        const del = ( s: string ) => cli ? `\x1b[37;41m${s}\x1b[31;49m` : `[-${s}]`;
+        const ins = ( s: string ) => cli ? `\x1b[37;42m${s}\x1b[32;49m` : `[+${s}]`;
 
         const mark = ( line: string, diffs: DiffEntry[], type: 'del' | 'ins' ) : string => {
 
@@ -292,27 +293,27 @@ export class DiffChecker {
 
         };
 
-        const linesA: string[] = this.splitLines( this.a );
-        const linesB: string[] = this.splitLines( this.b );
+        const { linesA, linesB, maxLen } = this.buildLines();
+        const linePad: number = Math.max( 4, maxLen.toString().length );
 
         let out: string[] = [ '' ];
 
         for ( const e of this.entries ) {
 
-            out.push( `       ${ cy( `@@ -${ ( e.line + 1 ) },${e.delSize} +${( e.line + 1 ) },${e.insSize} @@` ) } ${ (
-                showChangeMagnitude ? ye( e.magnitude ) : ''
-            ) }` );
+            out.push( `${ ( ' '.repeat( linePad ) ) }   ${ (
+                cy( `@@ -${ ( e.line + 1 ) },${e.delSize} +${( e.line + 1 ) },${e.insSize} @@` )
+            ) } ${ ( showChangeMagnitude ? ye( e.magnitude ) : '' ) }` );
 
             for ( let i = e.line - contextLines; i <= e.line + contextLines; i++ ) {
 
                 if ( linesA[ i ] || linesB[ i ] ) {
 
-                    const lineNo: string = ( i + 1 ).toString().padStart( 4, ' ' );
+                    const lineNo: string = ( i + 1 ).toString().padStart( linePad, ' ' );
 
                     if ( i === e.line ) {
 
                         out.push( `${lineNo} ${ rd( `- ${ mark( linesA[ i ], e.diffs, 'del' ) }` ) }` );
-                        out.push( `     ${ gn( `+ ${ mark( linesB[ i ], e.diffs, 'ins' ) }` ) }` );
+                        out.push( `${ ' '.repeat( linePad ) } ${ gn( `+ ${ mark( linesB[ i ], e.diffs, 'ins' ) }` ) }` );
 
                     } else {
 
