@@ -321,6 +321,16 @@ export class DiffChecker {
         const del = ( s: string ) : string => cli ? `\x1b[37;41m${s}\x1b[31;49m` : `-[${s}]`;
         const ins = ( s: string ) : string => cli ? `\x1b[37;42m${s}\x1b[32;49m` : `+[${s}]`;
 
+        const block = ( start: number, end: number, forced?: number, headerEntry?: DiffGroup | DiffLine ) : void => {
+
+            if ( headerEntry ) header( headerEntry );
+
+            for ( let i = start; i <= end; i++ ) line( i, forced ?? i );
+
+            out.push( '' );
+
+        };
+
         const header = ( e: DiffGroup | DiffLine ) : void => {
 
             out.push( `${ ( ' '.repeat( linePad ) ) }   ${ (
@@ -377,35 +387,23 @@ export class DiffChecker {
 
         let out: string[] = [ '' ];
 
-        if ( expandLines ) {
+        switch ( true ) {
 
-            for ( let i = 0; i <= maxLen; i++ ) line( i, i );
+            case expandLines:
+                block( 0, maxLen );
+                break;
 
-            out.push( '' );
+            case groupedLines:
+                for ( const group of this.grouped ) block(
+                    group.start, group.end, undefined, group
+                );
+                break;
 
-        } else if ( groupedLines ) {
-
-            for ( const group of this.grouped ) {
-
-                header( group );
-
-                for ( let i = group.start; i <= group.end; i++ ) line( i, i );
-
-                out.push( '' );
-
-            }
-
-        } else {
-
-            for ( const entry of this.entries ) {
-
-                header( entry );
-
-                for ( let i = entry.line - contextLines; i <= entry.line + contextLines; i++ ) line( i, entry.line );
-
-                out.push( '' );
-
-            }
+            default:
+                for ( const entry of this.entries ) block(
+                    entry.line - contextLines, entry.line + contextLines, entry.line, entry
+                );
+                break;
 
         }
 
