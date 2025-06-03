@@ -121,12 +121,22 @@ export interface DiffEntry {
     size: number;
 };
 
-export interface DiffGroup {
+export interface DiffLine {
     line: number;
     diffs: DiffEntry[];
     delSize: number;
     insSize: number;
     totalSize: number;
     baseLen: number;
+    magnitude: string;
+};
+
+export interface DiffGroup {
+    start: number;
+    end: number;
+    entries: DiffLine[];
+    delSize: number;
+    insSize: number;
+    totalSize: number;
     magnitude: string;
 };

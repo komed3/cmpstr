@@ -1,6 +1,6 @@
 'use strict';
 
-import type { DiffOptions, DiffGroup, DiffEntry } from './Types';
+import type { DiffOptions, DiffLine, DiffEntry, DiffGroup } from './Types';
 
 export class DiffChecker {
 
@@ -8,7 +8,8 @@ export class DiffChecker {
     private readonly b: string;
     private readonly options: Required<DiffOptions>;
 
-    private entries: DiffGroup[] = [];
+    private entries: DiffLine[] = [];
+    private grouped: DiffGroup[] = [];
     private diffRun: boolean = false;
 
     constructor ( a: string, b: string, options: DiffOptions = {} ) {
@@ -73,6 +74,8 @@ export class DiffChecker {
                 this.lineDiff( a, b, i );
 
             }
+
+            this.findGroups();
 
             this.diffRun = true;
 
@@ -234,6 +237,54 @@ export class DiffChecker {
 
     }
 
+    private findGroups () : void {
+
+        const { contextLines } = this.options;
+
+        const addGroup = ( group: DiffLine[], start: number, end: number ) : void => {
+
+            const [ delSize, insSize, totalSize, baseLen ] = [
+                'delSize', 'insSize', 'totalSize', 'baseLen'
+            ].map( k => group.reduce(
+                ( sum, e ) => sum + ( e as any )[ k ], 0
+            ) );
+
+            this.grouped.push( {
+                start, end, entries: group, delSize, insSize, totalSize,
+                magnitude: this.magnitude( insSize, delSize, baseLen )
+            } );
+
+        };
+
+        let group: DiffLine[] = [];
+        let start = 0, end = 0;
+
+        for ( const entry of this.entries ) {
+
+            const s = Math.max( 0, entry.line - contextLines );
+            const e = entry.line + contextLines;
+
+            if ( ! group.length || s <= end + 1 ) {
+
+                if ( ! group.length ) start = s;
+
+                end = Math.max( end, e );
+                group.push( entry );
+
+            } else {
+
+                addGroup( group, start, end );
+
+                group = [ entry ], start = s, end = e;
+
+            }
+
+        }
+
+        if ( group.length ) addGroup( group, start, end );
+
+    }
+
     private magnitude ( ins: number, del: number, baseLen: number ) : string {
 
         const { maxMagnitudeSymbols } = this.options;
@@ -257,13 +308,13 @@ export class DiffChecker {
 
         const { mode, contextLines, groupedLines, showChangeMagnitude, lineBreak } = this.options;
 
-        const highlight = ( s: string, ansi: string ) => cli ? `\x1b[${ansi}m${s}\x1b[0m` : s;
+        const highlight = ( s: string, ansi: string ) : string => cli ? `\x1b[${ansi}m${s}\x1b[0m` : s;
 
-        const cy = ( s: string ) => highlight( s, '36' );
-        const gy = ( s: string ) => highlight( s, '90' );
-        const gn = ( s: string ) => highlight( s, '32' );
-        const rd = ( s: string ) => highlight( s, '31' );
-        const ye = ( s: string ) => highlight( s, '33' );
+        const cy = ( s: string ) : string => highlight( s, '36' );
+        const gy = ( s: string ) : string => highlight( s, '90' );
+        const gn = ( s: string ) : string => highlight( s, '32' );
+        const rd = ( s: string ) : string => highlight( s, '31' );
+        const ye = ( s: string ) : string => highlight( s, '33' );
 
         const del = ( s: string ) => cli ? `\x1b[37;41m${s}\x1b[31;49m` : `-[${s}]`;
         const ins = ( s: string ) => cli ? `\x1b[37;42m${s}\x1b[32;49m` : `+[${s}]`;
@@ -332,9 +383,15 @@ export class DiffChecker {
 
     }
 
-    public getStructuredDiff () : DiffGroup[] {
+    public getStructuredDiff () : DiffLine[] {
 
         return this.entries;
+
+    }
+
+    public getGroupedDiff () : DiffGroup[] {
+
+        return this.grouped;
 
     }
 
