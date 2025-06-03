@@ -1,7 +1,5 @@
 'use strict';
 
-import type {} from './utils/Types';
-
 import { DiffChecker } from './utils/DiffChecker';
 import { Filter } from './utils/Filter';
 import { Normalizer } from './utils/Normalizer';
@@ -9,7 +7,7 @@ import { Profiler } from './utils/Profiler';
 import { TextAnalyzer } from './utils/TextAnalyzer';
 
 import { MetricRegistry } from './metric';
-import { PhoneticRegistry } from './phonetic';
+import { PhoneticRegistry, phoneticMap } from './phonetic';
 
 export default class CmpStr {
 
@@ -29,9 +27,9 @@ export default class CmpStr {
     public static removePhonetic = PhoneticRegistry.remove;
     public static hasPhonetic = PhoneticRegistry.has;
     public static listPhonetic = PhoneticRegistry.list;
+    public static phoneticMap = phoneticMap();
 
     protected static readonly profiler = Profiler.getInstance();
-
     public static profilerReport = this.profiler.getAll;
     public static profilerClear = this.profiler.clear;
 

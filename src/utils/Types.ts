@@ -47,7 +47,7 @@ export interface RegistryService<T> {
     add: ( name: string, cls: RegistryConstructor<T>, update?: boolean ) => void;
     remove: ( name: string ) => void;
     has: ( name: string ) => boolean;
-    get: ( name: string ) => RegistryConstructor<T> | undefined;
+    get: ( name: string ) => RegistryConstructor<T>;
     list: () => string[];
 };
 
@@ -112,6 +112,14 @@ export interface PhoneticMap {
 };
 
 export type PhoneticMapping = Record<string, PhoneticMap>;
+
+export interface PhoneticMappingService {
+    add: ( algo: string, id: string, map: PhoneticMap ) => void;
+    remove: ( algo: string, id: string ) => void;
+    has: ( algo: string, id: string ) => boolean;
+    get: ( algo: string, id: string ) => PhoneticMap | undefined;
+    list: ( algo: string ) => string[];
+};
 
 export type DiffMode = 'line' | 'word';
 

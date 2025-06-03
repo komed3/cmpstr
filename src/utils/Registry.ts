@@ -45,7 +45,7 @@ export function Registry<T> ( ctor: RegistryConstructor<T> ) : RegistryService<T
         ) : void {
 
             if ( ! ( cls.prototype instanceof ctor ) ) throw new TypeError (
-                `class must extend ${ctor.name}`
+                `class must extend <${ctor.name}>`
             );
 
             if ( ! update && name in registry ) throw new Error (
@@ -72,19 +72,28 @@ export function Registry<T> ( ctor: RegistryConstructor<T> ) : RegistryService<T
         has ( name: string ) : boolean { return name in registry; },
 
         /**
-         * Get a registered class by name.
-         * 
-         * @param {string} name - The name of the class to retrieve
-         * @returns {RegistryConstructor<T> | undefined} - The class constructor if found, otherwise undefined
-         */
-        get ( name: string ) : RegistryConstructor<T> | undefined { return registry[ name ]; },
-
-        /**
          * List all registered class names.
          * 
          * @returns {string[]} - An array of registered class names
          */
-        list () : string[] { return Object.keys( registry ); }
+        list () : string[] { return Object.keys( registry ); },
+
+        /**
+         * Get a registered class by name.
+         * 
+         * @param {string} name - The name of the class to retrieve
+         * @returns {RegistryConstructor<T>} - The class constructor
+         * @throws {Error} If the class is not registered
+         */
+        get ( name: string ) : RegistryConstructor<T> {
+
+            if ( ! ( name in registry ) ) throw new Error (
+                `class <${name}> not registered for <${ctor.name}>`
+            );
+
+            return registry[ name ];
+
+        }
 
     };
 

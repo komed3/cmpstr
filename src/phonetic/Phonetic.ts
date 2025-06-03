@@ -83,6 +83,18 @@ export abstract class Phonetic {
     }
 
     /**
+     * Static method to check if a phonetic mapping exists by name.
+     * 
+     * @param {string} name - The name of the mapping to check
+     * @returns {boolean} - True if the mapping exists, otherwise false
+     */
+    public static hasMapping ( this: typeof Phonetic, name: string ) : boolean {
+
+        return name in this.mappings;
+
+    }
+
+    /**
      * Static method to get a phonetic mapping by name.
      * 
      * @param {string} name - The name of the mapping to retrieve
