@@ -160,3 +160,11 @@ export interface DiffGroup {
     totalSize: number;
     magnitude: string;
 };
+
+export interface CmpStrOptions {
+    metric?: string;
+    normalizeFlags?: NormalizeFlags;
+    metricOptions?: MetricOptions;
+    phoneticOptions?: PhoneticOptions;
+    diffOptions?: DiffOptions;
+};
