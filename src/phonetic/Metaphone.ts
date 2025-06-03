@@ -23,7 +23,7 @@
 'use strict';
 
 import type { PhoneticMapping, PhoneticOptions } from '../utils/Types';
-import { Phonetic } from './Phonetic';
+import { Phonetic, PhoneticRegistry } from './Phonetic';
 
 /**
  * Metaphone class extends the Phonetic class to implement the Metaphone phonetic algorithm.
@@ -136,3 +136,6 @@ export default class Metaphone extends Phonetic {
     }
 
 }
+
+// Register the Metaphone algorithm in the phonetic registry
+PhoneticRegistry.add( 'metaphone', Metaphone );

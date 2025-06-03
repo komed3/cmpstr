@@ -9,6 +9,7 @@ import { Profiler } from './utils/Profiler';
 import { TextAnalyzer } from './utils/TextAnalyzer';
 
 import { MetricRegistry } from './metric';
+import { PhoneticRegistry } from './phonetic';
 
 export default class CmpStr {
 
@@ -23,6 +24,11 @@ export default class CmpStr {
     public static removeMetric = MetricRegistry.remove;
     public static hasMetric = MetricRegistry.has;
     public static listMetric = MetricRegistry.list;
+
+    public static addPhonetic = PhoneticRegistry.add;
+    public static removePhonetic = PhoneticRegistry.remove;
+    public static hasPhonetic = PhoneticRegistry.has;
+    public static listPhonetic = PhoneticRegistry.list;
 
     protected static readonly profiler = Profiler.getInstance();
 

@@ -25,7 +25,7 @@
 'use strict';
 
 import type { PhoneticMapping, PhoneticOptions } from '../utils/Types';
-import { Phonetic } from './Phonetic';
+import { Phonetic, PhoneticRegistry } from './Phonetic';
 
 /**
  * Cologne class extends the Phonetic class to implement the Cologne phonetic algorithm.
@@ -86,3 +86,6 @@ export default class Cologne extends Phonetic {
     }
 
 }
+
+// Register the Cologne algorithm in the phonetic registry
+PhoneticRegistry.add( 'cologne', Cologne );

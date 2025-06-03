@@ -26,7 +26,7 @@
 'use strict';
 
 import type { PhoneticMapping, PhoneticOptions } from '../utils/Types';
-import { Phonetic } from './Phonetic';
+import { Phonetic, PhoneticRegistry } from './Phonetic';
 
 /**
  * Soundex class extends the Phonetic class to implement the Soundex phonetic algorithm.
@@ -91,3 +91,6 @@ export default class Soundex extends Phonetic {
     }
 
 }
+
+// Register the Soundex algorithm in the phonetic registry
+PhoneticRegistry.add( 'soundex', Soundex );
