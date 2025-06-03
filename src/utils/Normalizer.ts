@@ -7,7 +7,8 @@
  * 
  * This module provides a Normalizer class that allows for string normalization based
  * on various flags. It uses a pipeline of normalization functions that can be reused
- * and cached for efficiency.
+ * and cached for efficiency. The Normalizer can handle both single strings and arrays
+ * of strings, and supports synchronous and asynchronous normalization.
  * 
  * Supported flags:
  *  'd' :: Normalize to NFD (Normalization Form Decomposed)
@@ -104,14 +105,19 @@ export class Normalizer {
     }
 
     /**
-     * Normalizes the input string based on the provided flags.
+     * Normalizes the input string or array of strings based on the provided flags.
      * The flags are a string of characters that define the normalization steps.
      * 
-     * @param {string} input - The string to normalize
+     * @param {string | string[]} input - The string or array of strings to normalize
      * @param {NormalizeFlags} flags - A string of characters representing the normalization steps
-     * @returns {string} - The normalized string
+     * @returns {string | string[]} - The normalized string(s)
      */
-    static normalize ( input: string, flags: NormalizeFlags ) : string {
+    static normalize (
+        input: string | string[], flags: NormalizeFlags
+    ) : string | string[] {
+
+        // If input is an array, normalize each string in the array
+        if ( Array.isArray( input ) ) return input.map( s => this.normalize( s, flags ) ) as string[];
 
         // If input or flags are not provided, return the input as is
         if ( ! flags || typeof flags !== 'string' || ! input ) return input;
@@ -130,6 +136,27 @@ export class Normalizer {
 
         // Return the normalized result
         return res;
+
+    }
+
+    /**
+     * Asynchronously normalizes the input string or array of strings based on the
+     * provided flags. This method is useful for handling large inputs or when
+     * normalization needs to be done in a non-blocking way.
+     * 
+     * @param {string | string[]} input - The string or array of strings to normalize
+     * @param {NormalizeFlags} flags - A string of characters representing the normalization steps
+     * @returns {Promise<string | string[]>} - A promise that resolves to the normalized string(s)
+     */
+    static async normalizeAsync (
+        input: string | string[], flags: NormalizeFlags
+    ) : Promise<string | string[]> {
+
+        return await ( Array.isArray( input )
+            // If input is an array, normalize each string in the array asynchronously
+            ? Promise.all( input.map( s => this.normalize( s, flags ) ) as string[] )
+            // If input is a single string, normalize it asynchronously
+            : Promise.resolve( this.normalize( input, flags ) ) );
 
     }
 
