@@ -87,7 +87,7 @@ export class DiffChecker {
 
         const { mode, caseInsensitive } = this.options;
 
-        const baseLen = Math.max( a.length, b.length );
+        const baseLen: number = Math.max( a.length, b.length );
         let A: string = a, B: string = b;
 
         if ( caseInsensitive ) A = a.toLowerCase(), B = b.toLowerCase();
@@ -250,19 +250,20 @@ export class DiffChecker {
             ) );
 
             this.grouped.push( {
-                start, end, entries: group, delSize, insSize, totalSize,
+                start, end, delSize, insSize, totalSize,
+                line: group[ 0 ].line, entries: group,
                 magnitude: this.magnitude( insSize, delSize, baseLen )
             } );
 
         };
 
         let group: DiffLine[] = [];
-        let start = 0, end = 0;
+        let start: number = 0, end: number = 0;
 
         for ( const entry of this.entries ) {
 
-            const s = Math.max( 0, entry.line - contextLines );
-            const e = entry.line + contextLines;
+            const s: number = Math.max( 0, entry.line - contextLines );
+            const e: number = entry.line + contextLines;
 
             if ( ! group.length || s <= end + 1 ) {
 
@@ -308,6 +309,9 @@ export class DiffChecker {
 
         const { mode, contextLines, groupedLines, showChangeMagnitude, lineBreak } = this.options;
 
+        const { linesA, linesB, maxLen } = this.buildLines();
+        const linePad: number = Math.max( 4, maxLen.toString().length );
+
         const highlight = ( s: string, ansi: string ) : string => cli ? `\x1b[${ansi}m${s}\x1b[0m` : s;
 
         const cy = ( s: string ) : string => highlight( s, '36' );
@@ -318,6 +322,36 @@ export class DiffChecker {
 
         const del = ( s: string ) => cli ? `\x1b[37;41m${s}\x1b[31;49m` : `-[${s}]`;
         const ins = ( s: string ) => cli ? `\x1b[37;42m${s}\x1b[32;49m` : `+[${s}]`;
+
+        const header = ( e: DiffGroup | DiffLine ) : void => {
+
+            out.push( `${ ( ' '.repeat( linePad ) ) }   ${ (
+                cy( `@@ -${ ( e.line + 1 ) },${e.delSize} +${( e.line + 1 ) },${e.insSize} @@` )
+            ) } ${ ( showChangeMagnitude ? ye( e.magnitude ) : '' ) }` );
+
+        };
+
+        const line = ( i: number, forced: number ) : void => {
+
+            if ( linesA[ i ] || linesB[ i ] ) {
+
+                const entry: DiffLine | undefined = this.entries.find( e => e.line === i );
+                const lineNo: string = ( i + 1 ).toString().padStart( linePad, ' ' );
+
+                if ( entry && forced === i ) {
+
+                    out.push( `${lineNo} ${ rd( `- ${ mark( linesA[ i ], entry.diffs, 'del' ) }` ) }` );
+                    out.push( `${ ' '.repeat( linePad ) } ${ gn( `+ ${ mark( linesB[ i ], entry.diffs, 'ins' ) }` ) }` );
+
+                } else {
+
+                    out.push( `${lineNo}   ${ gy( linesA[ i ] ) }` );
+
+                }
+
+            }
+
+        };
 
         const mark = ( line: string, diffs: DiffEntry[], type: 'del' | 'ins' ) : string => {
 
@@ -343,39 +377,31 @@ export class DiffChecker {
 
         };
 
-        const { linesA, linesB, maxLen } = this.buildLines();
-        const linePad: number = Math.max( 4, maxLen.toString().length );
-
         let out: string[] = [ '' ];
 
-        for ( const e of this.entries ) {
+        if ( groupedLines ) {
 
-            out.push( `${ ( ' '.repeat( linePad ) ) }   ${ (
-                cy( `@@ -${ ( e.line + 1 ) },${e.delSize} +${( e.line + 1 ) },${e.insSize} @@` )
-            ) } ${ ( showChangeMagnitude ? ye( e.magnitude ) : '' ) }` );
+            for ( const group of this.grouped ) {
 
-            for ( let i = e.line - contextLines; i <= e.line + contextLines; i++ ) {
+                header( group );
 
-                if ( linesA[ i ] || linesB[ i ] ) {
+                for ( let i = group.start; i <= group.end; i++ ) line( i, i );
 
-                    const lineNo: string = ( i + 1 ).toString().padStart( linePad, ' ' );
-
-                    if ( i === e.line ) {
-
-                        out.push( `${lineNo} ${ rd( `- ${ mark( linesA[ i ], e.diffs, 'del' ) }` ) }` );
-                        out.push( `${ ' '.repeat( linePad ) } ${ gn( `+ ${ mark( linesB[ i ], e.diffs, 'ins' ) }` ) }` );
-
-                    } else {
-
-                        out.push( `${lineNo}   ${ gy( linesA[ i ] ) }` );
-
-                    }
-
-                }
+                out.push( '' );
 
             }
 
-            out.push( '' );
+        } else {
+
+            for ( const entry of this.entries ) {
+
+                header( entry );
+
+                for ( let i = entry.line - contextLines; i <= entry.line + contextLines; i++ ) line( i, entry.line );
+
+                out.push( '' );
+
+            }
 
         }
 

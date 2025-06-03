@@ -132,6 +132,7 @@ export interface DiffLine {
 };
 
 export interface DiffGroup {
+    line: number;
     start: number;
     end: number;
     entries: DiffLine[];
