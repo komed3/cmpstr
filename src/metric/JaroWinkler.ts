@@ -35,7 +35,7 @@ export interface JaroWinklerRaw {
 /**
  * JaroWinklerDistance class extends the Metric class to implement the Jaro-Winkler algorithm.
  */
-export default class JaroWinklerDistance extends Metric<JaroWinklerRaw> {
+export class JaroWinklerDistance extends Metric<JaroWinklerRaw> {
 
     /**
      * Constructor for the JaroWinklerDistance class.

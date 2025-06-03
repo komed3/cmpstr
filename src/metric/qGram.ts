@@ -31,7 +31,7 @@ export interface QGramRaw {
 /**
  * QGramSimilarity class extends the Metric class to implement the q-Gram similarity algorithm.
  */
-export default class QGramSimilarity extends Metric<QGramRaw> {
+export class QGramSimilarity extends Metric<QGramRaw> {
 
     /**
      * Constructor for the QGramSimilarity class.

@@ -29,7 +29,7 @@ export interface SmithWatermanRaw {
 /**
  * SmithWatermanDistance class extends the Metric class to implement the Smith-Waterman algorithm.
  */
-export default class SmithWatermanDistance extends Metric<SmithWatermanRaw> {
+export class SmithWatermanDistance extends Metric<SmithWatermanRaw> {
 
     /**
      * Constructor for the SmithWaterman class.

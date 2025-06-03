@@ -31,7 +31,7 @@ import { Phonetic, PhoneticRegistry } from './Phonetic';
 /**
  * Soundex class extends the Phonetic class to implement the Soundex phonetic algorithm.
  */
-export default class Soundex extends Phonetic {
+export class Soundex extends Phonetic {
 
     // Default options for the Soundex phonetic algorithm
     protected static override default: PhoneticOptions = {

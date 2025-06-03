@@ -31,7 +31,7 @@ export interface JaccardRaw {
 /**
  * JaccardIndex class extends the Metric class to implement the Jaccard Index algorithm.
  */
-export default class JaccardIndex extends Metric<JaccardRaw> {
+export class JaccardIndex extends Metric<JaccardRaw> {
 
     /**
      * Constructor for the JaccardIndex class.

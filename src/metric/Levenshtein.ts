@@ -32,7 +32,7 @@ export interface LevenshteinRaw {
 /**
  * LevenshteinDistance class extends the Metric class to implement the Levenshtein distance algorithm.
  */
-export default class LevenshteinDistance extends Metric<LevenshteinRaw> {
+export class LevenshteinDistance extends Metric<LevenshteinRaw> {
 
     /**
      * Constructor for the Levenshtein class.

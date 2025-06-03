@@ -34,7 +34,7 @@ export interface LCSRaw {
 /**
  * LCSMetric class extends the Metric class to implement the Longest Common Subsequence algorithm.
  */
-export default class LCSMetric extends Metric<LCSRaw> {
+export class LCSMetric extends Metric<LCSRaw> {
 
     /**
      * Constructor for the LCSMetric class.

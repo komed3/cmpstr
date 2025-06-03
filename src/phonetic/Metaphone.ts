@@ -28,7 +28,7 @@ import { Phonetic, PhoneticRegistry } from './Phonetic';
 /**
  * Metaphone class extends the Phonetic class to implement the Metaphone phonetic algorithm.
  */
-export default class Metaphone extends Phonetic {
+export class Metaphone extends Phonetic {
 
     // Default options for the Metaphone phonetic algorithm
     protected static override default: PhoneticOptions = {

@@ -30,7 +30,7 @@ import { Phonetic, PhoneticRegistry } from './Phonetic';
 /**
  * Cologne class extends the Phonetic class to implement the Cologne phonetic algorithm.
  */
-export default class Cologne extends Phonetic {
+export class Cologne extends Phonetic {
 
     // Default options for the Cologne phonetic algorithm
     protected static override default: PhoneticOptions = {

@@ -26,7 +26,7 @@ export interface HammingRaw {
 /**
  * HammingDistance class extends the Metric class to implement the Hamming distance.
  */
-export default class HammingDistance extends Metric<HammingRaw> {
+export class HammingDistance extends Metric<HammingRaw> {
 
     /**
      * Constructor for the Hamming class.

@@ -32,7 +32,7 @@ export interface NeedlemanRaw {
 /**
  * NeedlemanWunschDistance class extends the Metric class to implement the Needleman-Wunsch algorithm.
  */
-export default class NeedlemanWunschDistance extends Metric<NeedlemanRaw> {
+export class NeedlemanWunschDistance extends Metric<NeedlemanRaw> {
 
     /**
      * Constructor for the NeedlemanWunsch class.
