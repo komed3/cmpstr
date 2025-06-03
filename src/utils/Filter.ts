@@ -203,6 +203,31 @@ export class Filter {
     }
 
     /**
+     * Applies all active filters for a given hook to the input string asynchronously.
+     * Each filter function may return a Promise or a plain string; all are awaited in order.
+     * 
+     * @param {string} hook - The name of the hook
+     * @param {string} input - The input string to be filtered
+     * @returns {Promise<string>} - The filtered input string
+     */
+    public static async applyAsync ( hook: string, input: string ) : Promise<string> {
+
+        // Get the filter array for the specified hook
+        const filter: FilterEntry[] | undefined = this.filters.get( hook );
+
+        // If no filters are found for the hook or if no filters are active, return the input unchanged
+        if ( ! filter || filter.every( f => ! f.active ) ) return input;
+
+        let res: string = input;
+
+        // Apply each active filter function to the input string, awaiting each result
+        // Support both sync and async filter functions
+        for ( const f of filter ) if ( f.active ) res = await Promise.resolve( f.fn( res ) );
+
+        return res;
+    }
+
+    /**
      * Clears all filters or filters for a specific hook.
      * 
      * @param {string} [hook] - Optional name of the hook to clear filters for
