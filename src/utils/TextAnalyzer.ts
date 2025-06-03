@@ -113,33 +113,21 @@ export class TextAnalyzer {
      * 
      * @return {number} - Length of the text
      */
-    public getLength () : number {
-
-        return this.text.length;
-
-    }
+    public getLength () : number { return this.text.length }
 
     /**
      * Gets the number of words in the text.
      * 
      * @return {number} - Count of words
      */
-    public getWordCount () : number {
-
-        return this.words.length;
-
-    }
+    public getWordCount () : number { return this.words.length }
 
     /**
      * Gets the number of sentences in the text.
      * 
      * @return {number} - Count of sentences
      */
-    public getSentenceCount () : number {
-
-      return this.sentences.length;
-
-    }
+    public getSentenceCount () : number { return this.sentences.length }
 
     /**
      * Gets the average word length in the text.
@@ -212,11 +200,7 @@ export class TextAnalyzer {
      * 
      * @returns {boolean} - True if numbers are present, false otherwise
      */
-    public hasNumbers () : boolean {
-
-        return /\d/.test( this.text );
-
-    }
+    public hasNumbers () : boolean { return /\d/.test( this.text ) }
 
     /**
      * Calculates the ratio of uppercase letters to total letters in the text.

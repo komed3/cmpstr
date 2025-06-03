@@ -585,43 +585,27 @@ export class DiffChecker {
      * 
      * @returns {DiffLine[]} - Array of line-level diffs
      */
-    public getStructuredDiff () : DiffLine[] {
-
-        return this.entries;
-
-    }
+    public getStructuredDiff () : DiffLine[] { return this.entries }
 
     /**
      * Returns the grouped diff as an array of DiffGroup objects.
      * 
      * @returns {DiffGroup[]} - Array of grouped diffs
      */
-    public getGroupedDiff () : DiffGroup[] {
-
-        return this.grouped;
-
-    }
+    public getGroupedDiff () : DiffGroup[] { return this.grouped }
 
     /**
      * Returns the unified diff as a plain ASCII string.
      * 
      * @returns {string} - Unified diff (ASCII)
      */
-    public getASCIIDiff () : string {
-
-        return this.output( false );
-
-    }
+    public getASCIIDiff () : string { return this.output( false ) }
 
     /**
      * Returns the unified diff as a CLI-colored string.
      * 
      * @returns {string} - Unified diff (CLI colors)
      */
-    public getCLIDiff () : string {
-
-        return this.output( true );
-
-    }
+    public getCLIDiff () : string { return this.output( true ) }
 
 }

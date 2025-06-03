@@ -129,11 +129,7 @@ export class Profiler {
      * Resets the profiler by clearing the store.
      * This method is useful for starting a new profiling session.
      */
-    public clear () : void {
-
-        this.store.clear();
-
-    }
+    public clear () : void { this.store.clear() }
 
     /**
      * Runs a synchronous function and profiles its execution time and memory usage.
@@ -194,10 +190,6 @@ export class Profiler {
      * 
      * @returns {ProfilerEntry<any>[]} - An array of profiler entries
      */
-    public getAll () : ProfilerEntry<any>[] {
-
-        return [ ...this.store ];
-
-    }
+    public getAll () : ProfilerEntry<any>[] { return [ ...this.store ] }
 
 }

@@ -148,11 +148,7 @@ export class HashTable<K extends string, T> {
      * @param {string} key - The key to check
      * @returns {boolean} - True if the key exists, false otherwise
      */
-    public has ( key: string ) : boolean {
-
-        return this.table.has( key );
-
-    }
+    public has ( key: string ) : boolean { return this.table.has( key ) }
 
     /**
      * Retrieves the entry from the hash table by its key.
@@ -160,11 +156,7 @@ export class HashTable<K extends string, T> {
      * @param {string} key - The key to look up
      * @returns {T|undefined} - The entry if found, undefined otherwise
      */
-    public get ( key: string ) : T | undefined {
-
-        return this.table.get( key );
-
-    }
+    public get ( key: string ) : T | undefined { return this.table.get( key ) }
 
     /**
      * Adds an entry to the hash table.
@@ -194,31 +186,19 @@ export class HashTable<K extends string, T> {
      * 
      * @param {string} key - The key of the entry to delete
      */
-    public delete ( key: string ) : void {
-
-        this.table.delete( key );
-
-    }
+    public delete ( key: string ) : void { this.table.delete( key ) }
 
     /**
      * Clears the hash table.
      * This method removes all entries from the hash table.
      */
-    public clear () : void {
-
-        this.table.clear();
-
-    }
+    public clear () : void { this.table.clear() }
 
     /**
      * Returns the current size of the hash table.
      * 
      * @returns {number} - The number of entries in the hash table
      */
-    public size () : number {
-
-        return this.table.size;
-
-    }
+    public size () : number { return this.table.size }
 
 }
