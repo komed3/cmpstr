@@ -10,7 +10,7 @@
  * automatically. The class is optimized for minimal overhead and can be used for fine-
  * grained performance profiling.
  * 
- * @module Profiler
+ * @module Utils/Profiler
  * @author Paul Köhler (komed3)
  * @license MIT
  */

@@ -12,7 +12,7 @@
  * It supports different types of buffers (Uint16Array, number[], Set, Map) and allows
  * for acquiring buffers of specific sizes while managing a maximum pool size.
  * 
- * @module Pool
+ * @module Utils/Pool
  * @author Paul Köhler (komed3)
  * @license MIT
  */
