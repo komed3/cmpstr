@@ -110,6 +110,7 @@ export interface DiffOptions {
     caseInsensitive?: boolean;
     contextLines?: number;
     groupedLines?: boolean;
+    expandLines?: boolean;
     showChangeMagnitude?: boolean;
     maxMagnitudeSymbols?: number;
     lineBreak?: string;

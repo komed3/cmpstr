@@ -21,6 +21,7 @@ export class DiffChecker {
             caseInsensitive: false,
             contextLines: 1,
             groupedLines: true,
+            expandLines: false,
             showChangeMagnitude: true,
             maxMagnitudeSymbols: 5,
             lineBreak: '\n'
@@ -304,7 +305,7 @@ export class DiffChecker {
 
     private output ( cli: boolean ) : string {
 
-        const { mode, contextLines, groupedLines, showChangeMagnitude, lineBreak } = this.options;
+        const { mode, contextLines, groupedLines, expandLines, showChangeMagnitude, lineBreak } = this.options;
 
         const { linesA, linesB, maxLen } = this.text2lines();
         const linePad: number = Math.max( 4, maxLen.toString().length );
@@ -376,7 +377,13 @@ export class DiffChecker {
 
         let out: string[] = [ '' ];
 
-        if ( groupedLines ) {
+        if ( expandLines ) {
+
+            for ( let i = 0; i <= maxLen; i++ ) line( i, i );
+
+            out.push( '' );
+
+        } else if ( groupedLines ) {
 
             for ( const group of this.grouped ) {
 
