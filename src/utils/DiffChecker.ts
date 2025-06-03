@@ -130,7 +130,10 @@ export class DiffChecker {
 
     private preciseDiff ( a: string, A: string, b: string, B: string ) : DiffEntry[] {
 
-        const reduceLen = ( s: number, t: string ) => s + t.length;
+        const posIndex = ( t: string[] ) => t.reduce(
+            ( p, _, i ) => ( p.push( i ? p[ i - 1 ] + t[ i - 1 ].length + 1 : 0 ), p ),
+            [] as number[]
+        );
 
         const origA: string[] = this.tokenize( a );
         const origB: string[] = this.tokenize( b );
@@ -138,9 +141,10 @@ export class DiffChecker {
         const tokenB: string[] = this.tokenize( B );
         const lenA: number = tokenA.length;
         const lenB: number = tokenB.length;
+        const posArrA = posIndex( origA );
+        const posArrB = posIndex( origB );
 
         const diffs: DiffEntry[] = [];
-        let posA: number = 0, posB: number = 0;
         let i: number = 0, j: number = 0;
 
         const matches: Array<{ ai: number, bi: number, len: number }> = [];
@@ -188,7 +192,7 @@ export class DiffChecker {
 
         }
 
-        i = 0; j = 0; posA = 0; posB = 0;
+        i = 0, j = 0;
 
         for ( const m of matches ) {
 
@@ -198,19 +202,15 @@ export class DiffChecker {
                 const insArr: string[] = origB.slice( j, m.bi );
 
                 diffs.push( {
-                    posA, posB,
+                    posA: posArrA[ i ] ?? 0,
+                    posB: posArrB[ j ] ?? 0,
                     del: this.concat( delArr ),
                     ins: this.concat( insArr ),
                     size: insArr.join( '' ).length - delArr.join( '' ).length
                 } );
 
-                posA += delArr.reduce( reduceLen, 0 );
-                posB += insArr.reduce( reduceLen, 0 );
-
             }
 
-            posA += tokenA.slice( m.ai, m.ai + m.len ).reduce( reduceLen, 0 );
-            posB += tokenB.slice( m.bi, m.bi + m.len ).reduce( reduceLen, 0 );
             i = m.ai + m.len, j = m.bi + m.len;
 
         }
@@ -221,7 +221,8 @@ export class DiffChecker {
             const insArr: string[] = origB.slice( j );
 
             diffs.push( {
-                posA, posB,
+                posA: posArrA[ i ] ?? 0,
+                posB: posArrB[ j ] ?? 0,
                 del: this.concat( delArr ),
                 ins: this.concat( insArr ),
                 size: insArr.join( '' ).length - delArr.join( '' ).length
@@ -261,10 +262,35 @@ export class DiffChecker {
         const cy = ( s: string ) => highlight( s, '36' );
         const gy = ( s: string ) => highlight( s, '90' );
         const gn = ( s: string ) => highlight( s, '32' );
-        const GN = ( s: string ) => highlight( s, '37;42' );
         const rd = ( s: string ) => highlight( s, '31' );
-        const RD = ( s: string ) => highlight( s, '37;41' );
         const ye = ( s: string ) => highlight( s, '33' );
+
+        const del = ( s: string ) => cli ? `\x1b[37;41m${s}\x1b[0m` : `[-${s}]`;
+        const ins = ( s: string ) => cli ? `\x1b[37;42m${s}\x1b[0m` : `[+${s}]`;
+
+        const mark = ( line: string, diffs: DiffEntry[], type: 'del' | 'ins' ) : string => {
+
+            if ( ! diffs.length || mode === 'line' ) return line;
+
+            let res: string = '', idx: number = 0;
+
+            for ( const d of diffs ) {
+
+                const pos: number = type === 'del' ? d.posA : d.posB;
+                const val: string = type === 'del' ? d.del : d.ins;
+
+                if ( ! val ) continue;
+
+                if ( pos > idx ) res += line.slice( idx, pos );
+
+                res += ( type === 'del' ? del( val ) : ins( val ) );
+                idx = pos + val.length;
+
+            }
+
+            return res + line.slice( idx );
+
+        };
 
         const linesA: string[] = this.splitLines( this.a );
         const linesB: string[] = this.splitLines( this.b );
@@ -285,8 +311,8 @@ export class DiffChecker {
 
                     if ( i === e.line ) {
 
-                        out.push( `${lineNo} ${ rd( `- ${linesA[ i ]}` ) }` );
-                        out.push( `     ${ gn( `+ ${linesB[ i ]}` ) }` );
+                        out.push( `${lineNo} ${ rd( `- ${ mark( linesA[ i ], e.diffs, 'del' ) }` ) }` );
+                        out.push( `     ${ gn( `+ ${ mark( linesB[ i ], e.diffs, 'ins' ) }` ) }` );
 
                     } else {
 
