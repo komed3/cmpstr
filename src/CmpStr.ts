@@ -2,10 +2,11 @@
 
 import type {} from './utils/Types';
 
-import { Normalizer } from './utils/Normalizer';
-import { Filter } from './utils/Filter';
-import { TextAnalyzer } from './utils/TextAnalyzer';
 import { DiffChecker } from './utils/DiffChecker';
+import { Filter } from './utils/Filter';
+import { Normalizer } from './utils/Normalizer';
+import { Profiler } from './utils/Profiler';
+import { TextAnalyzer } from './utils/TextAnalyzer';
 
 import { METRICS } from './metric/index';
 import { PHONETICS } from './phonetic/index';
