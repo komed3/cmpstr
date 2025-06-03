@@ -25,7 +25,8 @@
 
 'use strict';
 
-import type { PhoneticMapping, PhoneticMap, PhoneticOptions } from '../utils/Types';
+import type { PhoneticMapping, PhoneticMap, PhoneticOptions, RegistryService } from '../utils/Types';
+import { Registry } from '../utils/Registry';
 
 /**
  * Abstract class representing a phonetic algorithm.
@@ -421,3 +422,11 @@ export abstract class Phonetic {
     }
 
 }
+
+/**
+ * Phonetic registry service for managing phonetic implementations.
+ * 
+ * This registry allows for dynamic registration and retrieval of phonetic classes,
+ * enabling the use of various phonetic algorithms in a consistent manner.
+ */
+export const PhoneticRegistry: RegistryService<any> = Registry( Phonetic );

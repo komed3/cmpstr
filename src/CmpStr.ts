@@ -8,9 +8,6 @@ import { Normalizer } from './utils/Normalizer';
 import { Profiler } from './utils/Profiler';
 import { TextAnalyzer } from './utils/TextAnalyzer';
 
-import { METRICS } from './metric/index';
-import { PHONETICS } from './phonetic/index';
-
 export default class CmpStr {
 
     public static addFilter = Filter.add;

@@ -27,7 +27,12 @@
 
 'use strict';
 
-import type { MetricMode, MetricInput, MetricOptions, MetricCompute, MetricRaw, MetricResult, MetricResultSingle } from '../utils/Types';
+import type {
+    MetricMode, MetricInput, MetricOptions, MetricCompute, MetricRaw,
+    MetricResult, MetricResultSingle, RegistryService
+} from '../utils/Types';
+
+import { Registry } from '../utils/Registry';
 import { HashTable } from '../utils/HashTable';
 import { Profiler } from '../utils/Profiler';
 
@@ -528,3 +533,11 @@ export abstract class Metric<R = MetricRaw> {
     }
 
 }
+
+/**
+ * Metric registry service for managing metric implementations.
+ * 
+ * This registry allows for dynamic registration and retrieval of metric classes,
+ * enabling the use of various string similarity metrics in a consistent manner.
+ */
+export const MetricRegistry: RegistryService<Metric<MetricRaw>> = Registry( Metric );

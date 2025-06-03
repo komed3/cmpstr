@@ -7,12 +7,12 @@ export interface PoolConfig {
   maxSize: number;
   maxItemSize: number;
   allowOversize: boolean;
-}
+};
 
 export interface PoolBuffer<T> {
   buffer: T;
   size: number;
-}
+};
 
 export type NormalizerFn = ( input: string ) => string;
 
@@ -39,7 +39,17 @@ export interface FilterEntry {
     priority: number;
     active: boolean;
     overrideable: boolean;
-}
+};
+
+export type RegistryConstructor<T> = abstract new ( ...args: any[] ) => T;
+
+export interface RegistryService<T> {
+    register: ( name: string, cls: RegistryConstructor<T>, update?: boolean ) => void;
+    remove: ( name: string ) => void;
+    has: ( name: string ) => boolean;
+    get: ( name: string ) => RegistryConstructor<T> | undefined;
+    list: () => string[];
+};
 
 export type MetricInput = string | string[];
 
@@ -61,7 +71,7 @@ export type MetricRaw = Record<string, any>;
 export interface MetricCompute<R = MetricRaw> {
     res: number;
     raw?: R;
-}
+};
 
 export interface MetricResultSingle<R = MetricRaw> {
     metric: string;
