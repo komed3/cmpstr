@@ -20,7 +20,7 @@
 'use strict';
 
 import type { MetricInput, MetricOptions, MetricCompute } from '../utils/Types';
-import { Metric } from './Metric';
+import { Metric, MetricRegistry } from './Metric';
 import { Pool } from '../utils/Pool';
 
 export interface JaccardRaw {
@@ -93,3 +93,6 @@ export default class JaccardIndex extends Metric<JaccardRaw> {
     }
 
 }
+
+// Register the Jaccard index in the metric registry
+MetricRegistry.add( 'jaccard', JaccardIndex );

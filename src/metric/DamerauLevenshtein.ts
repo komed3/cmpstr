@@ -21,7 +21,7 @@
 'use strict';
 
 import type { MetricInput, MetricOptions, MetricCompute } from '../utils/Types';
-import { Metric } from './Metric';
+import { Metric, MetricRegistry } from './Metric';
 import { Pool } from '../utils/Pool';
 
 export interface DamerauRaw {
@@ -32,7 +32,7 @@ export interface DamerauRaw {
 /**
  * DamerauLevenshteinDistance class extends the Metric class to implement the Damerau-Levenshtein algorithm.
  */
-export default class DamerauLevenshteinDistance extends Metric<DamerauRaw> {
+export class DamerauLevenshteinDistance extends Metric<DamerauRaw> {
 
     /**
      * Constructor for the DamerauLevenshteinDistance class.
@@ -145,3 +145,6 @@ export default class DamerauLevenshteinDistance extends Metric<DamerauRaw> {
     }
 
 }
+
+// Register the Damerau-Levenshtein distance in the metric registry
+MetricRegistry.add( 'damerau', DamerauLevenshteinDistance );

@@ -22,7 +22,7 @@
 'use strict';
 
 import type { MetricInput, MetricOptions, MetricCompute } from '../utils/Types';
-import { Metric } from './Metric';
+import { Metric, MetricRegistry } from './Metric';
 import { Pool } from '../utils/Pool';
 
 export interface DiceRaw {
@@ -33,7 +33,7 @@ export interface DiceRaw {
 /**
  * DiceSorensenCoefficient class extends the Metric class to implement the Dice-Sørensen coefficient.
  */
-export default class DiceSorensenCoefficient extends Metric<DiceRaw> {
+export class DiceSorensenCoefficient extends Metric<DiceRaw> {
 
     /**
      * Constructor for the DiceSorensen class.
@@ -113,3 +113,6 @@ export default class DiceSorensenCoefficient extends Metric<DiceRaw> {
     }
 
 }
+
+// Register the Dice-Sørensen coefficient in the metric registry
+MetricRegistry.add( 'dice', DiceSorensenCoefficient );

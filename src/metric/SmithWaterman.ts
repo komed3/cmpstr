@@ -18,7 +18,7 @@
 'use strict';
 
 import type { MetricInput, MetricOptions, MetricCompute } from '../utils/Types';
-import { Metric } from './Metric';
+import { Metric, MetricRegistry } from './Metric';
 import { Pool } from '../utils/Pool';
 
 export interface SmithWatermanRaw {
@@ -127,3 +127,6 @@ export default class SmithWatermanDistance extends Metric<SmithWatermanRaw> {
     }
 
 }
+
+// Register the Smith-Waterman algorithm in the metric registry
+MetricRegistry.add( 'smithWaterman', SmithWatermanDistance );

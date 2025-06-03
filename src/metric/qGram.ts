@@ -20,7 +20,7 @@
 'use strict';
 
 import type { MetricInput, MetricOptions, MetricCompute } from '../utils/Types';
-import { Metric } from './Metric';
+import { Metric, MetricRegistry } from './Metric';
 import { Pool } from '../utils/Pool';
 
 export interface QGramRaw {
@@ -113,3 +113,6 @@ export default class QGramSimilarity extends Metric<QGramRaw> {
     }
 
 }
+
+// Register the q-Gram similariry in the metric registry
+MetricRegistry.add( 'qGram', QGramSimilarity );

@@ -17,7 +17,7 @@
 'use strict';
 
 import type { MetricInput, MetricOptions, MetricCompute } from '../utils/Types';
-import { Metric } from './Metric';
+import { Metric, MetricRegistry } from './Metric';
 
 export interface HammingRaw {
     dist: number;
@@ -103,3 +103,6 @@ export default class HammingDistance extends Metric<HammingRaw> {
     }
 
 }
+
+// Register the Hamming distance in the metric registry
+MetricRegistry.add( 'hamming', HammingDistance );

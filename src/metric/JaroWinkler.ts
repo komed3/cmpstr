@@ -21,7 +21,7 @@
 'use strict';
 
 import type { MetricInput, MetricOptions, MetricCompute } from '../utils/Types';
-import { Metric } from './Metric';
+import { Metric, MetricRegistry } from './Metric';
 import { Pool } from '../utils/Pool';
 
 export interface JaroWinklerRaw {
@@ -161,3 +161,6 @@ export default class JaroWinklerDistance extends Metric<JaroWinklerRaw> {
     }
 
 }
+
+// Register the Jaro-Winkler distance in the metric registry
+MetricRegistry.add( 'jaroWinkler', JaroWinklerDistance );

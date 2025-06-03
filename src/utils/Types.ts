@@ -44,7 +44,7 @@ export interface FilterEntry {
 export type RegistryConstructor<T> = abstract new ( ...args: any[] ) => T;
 
 export interface RegistryService<T> {
-    register: ( name: string, cls: RegistryConstructor<T>, update?: boolean ) => void;
+    add: ( name: string, cls: RegistryConstructor<T>, update?: boolean ) => void;
     remove: ( name: string ) => void;
     has: ( name: string ) => boolean;
     get: ( name: string ) => RegistryConstructor<T> | undefined;

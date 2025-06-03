@@ -39,7 +39,7 @@ export function Registry<T> ( ctor: RegistryConstructor<T> ) : RegistryService<T
          * @throws {TypeError} If the class does not extend the base constructor
          * @throws {Error} If the class name already exists and update is false
          */
-        register (
+        add (
             name: string, cls: RegistryConstructor<T>,
             update: boolean = false
         ) : void {

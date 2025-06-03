@@ -22,7 +22,7 @@
 'use strict';
 
 import type { MetricInput, MetricOptions, MetricCompute } from '../utils/Types';
-import { Metric } from './Metric';
+import { Metric, MetricRegistry } from './Metric';
 import { Pool } from '../utils/Pool';
 
 export interface CosineRaw {
@@ -34,7 +34,7 @@ export interface CosineRaw {
 /**
  * CosineSimilarity class extends the Metric class to implement the Cosine similarity algorithm.
  */
-export default class CosineSimilarity extends Metric<CosineRaw> {
+export class CosineSimilarity extends Metric<CosineRaw> {
 
     /**
      * Constructor for the CosineSimilarity class.
@@ -136,3 +136,6 @@ export default class CosineSimilarity extends Metric<CosineRaw> {
     }
 
 }
+
+// Register the Cosine similarity in the metric registry
+MetricRegistry.add( 'cosine', CosineSimilarity );

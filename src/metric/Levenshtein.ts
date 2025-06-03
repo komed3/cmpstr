@@ -21,7 +21,7 @@
 'use strict';
 
 import type { MetricInput, MetricOptions, MetricCompute } from '../utils/Types';
-import { Metric } from './Metric';
+import { Metric, MetricRegistry } from './Metric';
 import { Pool } from '../utils/Pool';
 
 export interface LevenshteinRaw {
@@ -121,3 +121,6 @@ export default class LevenshteinDistance extends Metric<LevenshteinRaw> {
     }
 
 }
+
+// Register the Levenshtein distance in the metric registry
+MetricRegistry.add( 'levenshtein', LevenshteinDistance );
