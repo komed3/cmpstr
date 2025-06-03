@@ -103,7 +103,7 @@ export interface PhoneticMap {
 
 export type PhoneticMapping = Record<string, PhoneticMap>;
 
-export type DiffMode = 'line' | 'word' | 'char';
+export type DiffMode = 'line' | 'word';
 
 export interface DiffOptions {
     mode?: DiffMode;

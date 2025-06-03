@@ -46,7 +46,6 @@ export class DiffChecker {
 
             case 'line': return [ input ];
             case 'word': return input.split( /\s+/ );
-            case 'char': return [ ...input ];
 
         }
 
@@ -266,8 +265,8 @@ export class DiffChecker {
         const rd = ( s: string ) => highlight( s, '31' );
         const ye = ( s: string ) => highlight( s, '33' );
 
-        const del = ( s: string ) => cli ? `\x1b[37;41m${s}\x1b[31;49m` : `[-${s}]`;
-        const ins = ( s: string ) => cli ? `\x1b[37;42m${s}\x1b[32;49m` : `[+${s}]`;
+        const del = ( s: string ) => cli ? `\x1b[37;41m${s}\x1b[31;49m` : `-[${s}]`;
+        const ins = ( s: string ) => cli ? `\x1b[37;42m${s}\x1b[32;49m` : `+[${s}]`;
 
         const mark = ( line: string, diffs: DiffEntry[], type: 'del' | 'ins' ) : string => {
 
