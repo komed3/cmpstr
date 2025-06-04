@@ -36,6 +36,9 @@ import { Registry } from '../utils/Registry';
 import { HashTable } from '../utils/HashTable';
 import { Profiler } from '../utils/Profiler';
 
+// Get the singleton profiler instance for performance monitoring
+const profiler = Profiler.getInstance();
+
 /**
  * Abstract class representing a generic string metric.
  * 
@@ -60,9 +63,6 @@ export abstract class Metric<R = MetricRaw> {
     // Indicates whether the metric is symmetric (same result for inputs in any order)
     protected readonly symmetric: boolean;
 
-    // Optional profiler
-    private readonly profiler: Profiler | undefined;
-
     /**
      * Result of the metric computation, which can be a single result or an array of results.
      * This will be populated after running the metric.
@@ -85,11 +85,7 @@ export abstract class Metric<R = MetricRaw> {
      */
     protected static swap ( a: string, b: string, m: number, n: number ) : [
         string, string, number, number
-    ] {
-
-        return m > n ? [ b, a, n, m ] : [ a, b, m, n ];
-
-    }
+    ] { return m > n ? [ b, a, n, m ] : [ a, b, m, n ] }
 
     /**
      * Clamps the similarity result between 0 and 1.
@@ -97,11 +93,7 @@ export abstract class Metric<R = MetricRaw> {
      * @param {number} res - The input similarity to clamp
      * @returns {number} - The clamped similarity (0 to 1)
      */
-    protected static clamp ( res: number ) : number {
-
-        return Math.max( 0, Math.min( 1, res ) );
-
-    }
+    protected static clamp ( res: number ) : number { return Math.max( 0, Math.min( 1, res ) ) }
 
     /**
      * Constructor for the Metric class.
@@ -127,19 +119,14 @@ export abstract class Metric<R = MetricRaw> {
         this.a = Array.isArray( a ) ? a : [ a ];
         this.b = Array.isArray( b ) ? b : [ b ];
 
+        // Validate inputs: ensure they are not empty
+        if ( this.a.length === 0 || this.b.length === 0 ) throw new Error(
+            `inputs <a> and <b> must not be empty`
+        );
+
         // Set options
         this.options = options;
         this.symmetric = symmetric;
-
-        // Validate inputs: ensure they are not empty
-        if ( this.a.length === 0 || this.b.length === 0 ) {
-
-            throw new Error( `inputs a and b must not be empty` );
-
-        }
-
-        // Optionally profiler
-        this.profiler = this.options.debug ? Profiler.getInstance() : undefined;
 
     }
 
@@ -177,10 +164,7 @@ export abstract class Metric<R = MetricRaw> {
      * @returns {MetricCompute<R>} - The result of the metric computation
      * @throws {Error} - If not overridden in a subclass
      */
-    protected compute (
-        a: string, b: string, m: number, n: number,
-        maxLen: number
-    ) : MetricCompute<R> {
+    protected compute ( a: string, b: string, m: number, n: number, maxLen: number ) : MetricCompute<R> {
 
         throw new Error ( `method compute() must be overridden in a subclass` );
 
@@ -209,7 +193,8 @@ export abstract class Metric<R = MetricRaw> {
 
         if ( ! result ) {
 
-            const fn = () : MetricCompute<R> => {
+            // If the profiler is enabled, measure; else, just run
+            result = profiler.run( () : MetricCompute<R> => {
 
                 // Generate a cache key based on the metric and pair of strings `a` and `b`
                 const key: string | false = Metric.cache.key( this.metric, [ a, b ], this.symmetric );
@@ -231,10 +216,7 @@ export abstract class Metric<R = MetricRaw> {
 
                 } )();
 
-            };
-
-            // If profiler is active, measure; else, just run
-            result = this.profiler?.run( fn ) ?? fn();
+            } );
 
         }
 
@@ -255,7 +237,7 @@ export abstract class Metric<R = MetricRaw> {
      */
     private async runSingleAsync ( a: string, b: string ) : Promise<MetricResultSingle<R>> {
 
-        return this.runSingle( a, b );
+        return Promise.resolve( this.runSingle( a, b ) );
 
     }
 
@@ -270,11 +252,9 @@ export abstract class Metric<R = MetricRaw> {
         const results: MetricResultBatch<R> = [];
 
         // Loop through each combination of strings in a[] and b[]
-        for ( const a of this.a ) { for ( const b of this.b ) {
-
-            results.push( this.runSingle( a, b ) );
-
-        } }
+        for ( const a of this.a ) for ( const b of this.b ) results.push(
+            this.runSingle( a, b )
+        );
 
         // Populate the results
         // `this.results` will be an array of MetricResultSingle
@@ -293,11 +273,9 @@ export abstract class Metric<R = MetricRaw> {
         const results: MetricResultBatch<R> = [];
 
         // Loop through each combination of strings in a[] and b[]
-        for ( const a of this.a ) { for ( const b of this.b ) {
-
-            results.push( await this.runSingleAsync( a, b ) );
-
-        } }
+        for ( const a of this.a ) for ( const b of this.b ) results.push(
+            await this.runSingleAsync( a, b )
+        );
 
         // Populate the results
         // `this.results` will be an array of MetricResultSingle
@@ -316,11 +294,9 @@ export abstract class Metric<R = MetricRaw> {
         const results: MetricResultBatch<R> = [];
 
         // Compute metric for each corresponding pair
-        for ( let i = 0; i < this.a.length; i++ ) {
-
-            results.push( this.runSingle( this.a[ i ], this.b[ i ] ) );
-
-        }
+        for ( let i = 0; i < this.a.length; i++ ) results.push(
+            this.runSingle( this.a[ i ], this.b[ i ] )
+        );
 
         // Populate the results
         // `this.results` will be an array of MetricResultSingle
@@ -339,11 +315,9 @@ export abstract class Metric<R = MetricRaw> {
         const results: MetricResultBatch<R> = [];
 
         // Compute metric for each corresponding pair
-        for ( let i = 0; i < this.a.length; i++ ) {
-
-            results.push( await this.runSingleAsync( this.a[ i ], this.b[ i ] ) );
-
-        }
+        for ( let i = 0; i < this.a.length; i++ ) results.push(
+            await this.runSingleAsync( this.a[ i ], this.b[ i ] )
+        );
 
         // Populate the results
         // `this.results` will be an array of MetricResultSingle
@@ -359,11 +333,7 @@ export abstract class Metric<R = MetricRaw> {
      * 
      * @returns {boolean} - True if either input is an array with more than one element
      */
-    public isBatch () : boolean {
-
-        return this.a.length > 1 || this.b.length > 1;
-
-    }
+    public isBatch () : boolean { return this.a.length > 1 || this.b.length > 1 }
 
     /**
      * Check if the inputs are in single mode.
@@ -373,11 +343,7 @@ export abstract class Metric<R = MetricRaw> {
      * 
      * @returns {boolean} - True if both inputs are single strings
      */
-    public isSingle () : boolean {
-
-        return ! this.isBatch();
-
-    }
+    public isSingle () : boolean { return ! this.isBatch() }
 
     /**
      * Check if the inputs are in pairwise mode.
@@ -405,11 +371,7 @@ export abstract class Metric<R = MetricRaw> {
      * 
      * @returns {boolean} - True if the metric is symmetric
      */
-    public isSymmetrical () : boolean {
-
-        return this.symmetric;
-
-    }
+    public isSymmetrical () : boolean { return this.symmetric }
 
     /**
      * Determine which mode to run the metric in.
@@ -420,11 +382,7 @@ export abstract class Metric<R = MetricRaw> {
      * @param {MetricMode} [mode] - The mode to run the metric in (optional)
      * @returns {MetricMode} - The determined mode
      */
-    public whichMode ( mode?: MetricMode ) : MetricMode {
-
-        return mode = mode ?? this.options?.mode ?? 'default';
-
-    }
+    public whichMode ( mode?: MetricMode ) : MetricMode { return mode ?? this.options?.mode ?? 'default' }
 
     /**
      * Clear the cached results of the metric.
@@ -433,11 +391,7 @@ export abstract class Metric<R = MetricRaw> {
      * any previously computed results. It can be useful for re-running the metric
      * with new inputs or options.
      */
-    public clear () : void {
-
-        this.results = undefined;
-
-    }
+    public clear () : void { this.results = undefined }
 
     /**
      * Run the metric computation based on the specified mode.
@@ -517,11 +471,7 @@ export abstract class Metric<R = MetricRaw> {
      * 
      * @returns {string} - The name of the metric
      */
-    public getMetricName () : string {
-
-        return this.metric;
-
-    }
+    public getMetricName () : string { return this.metric }
 
     /**
      * Get the result of the metric computation.
@@ -532,11 +482,9 @@ export abstract class Metric<R = MetricRaw> {
     public getResults () : MetricResult<R> {
 
         // Ensure that the metric has been run before getting the result
-        if ( this.results === undefined ) {
-
-            throw new Error ( `run() must be called before getResult()` );
-
-        }
+        if ( this.results === undefined ) throw new Error (
+            `run() must be called before getResult()`
+        );
 
         // Return the result(s)
         return this.results;

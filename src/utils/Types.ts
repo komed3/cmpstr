@@ -66,7 +66,6 @@ export type MetricMode = 'default' | 'batch' | 'single' | 'pairwise';
 
 export interface MetricOptions {
     mode?: MetricMode;
-    debug?: boolean;
     delimiter?: string;
     pad?: string;
     q?: number;
