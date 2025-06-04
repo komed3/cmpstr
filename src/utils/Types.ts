@@ -163,8 +163,9 @@ export interface DiffGroup {
 
 export interface CmpStrOptions {
     metric?: string;
-    normalizeFlags?: NormalizeFlags;
     metricOptions?: MetricOptions;
+    normalizeFlags?: NormalizeFlags;
+    phonetic?: string;
     phoneticOptions?: PhoneticOptions;
     diffOptions?: DiffOptions;
 };

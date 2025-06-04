@@ -37,4 +37,7 @@ import './NeedlemanWunsch';
 import './qGram';
 import './SmithWaterman';
 
-export { MetricRegistry } from './Metric';
+export {
+    MetricRegistry,
+    type Metric, MetricCls
+} from './Metric';

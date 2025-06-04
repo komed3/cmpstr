@@ -470,3 +470,5 @@ export const PhoneticMappingRegistry: PhoneticMappingService = ( () => {
     };
 
 } )();
+
+export type PhoneticCls = new ( ...args: any[] ) => Phonetic;

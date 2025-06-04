@@ -541,3 +541,5 @@ export abstract class Metric<R = MetricRaw> {
  * enabling the use of various string similarity metrics in a consistent manner.
  */
 export const MetricRegistry: RegistryService<Metric<MetricRaw>> = Registry( Metric );
+
+export type MetricCls<MetricRaw> = new ( ...args: any[] ) => Metric<MetricRaw>;
