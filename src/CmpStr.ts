@@ -14,7 +14,7 @@ import { TextAnalyzer } from './utils/TextAnalyzer';
 import { MetricRegistry, Metric, MetricCls } from './metric';
 import { PhoneticRegistry, PhoneticMappingRegistry, PhoneticCls } from './phonetic';
 
-const profiler = Profiler.getInstance();
+const profilerInstance = Profiler.getInstance();
 
 export class CmpStr<R = MetricRaw> {
 
@@ -48,9 +48,9 @@ export class CmpStr<R = MetricRaw> {
     };
 
     public static readonly profiler = {
-        last: profiler.getLast,
-        report: profiler.getAll,
-        clear: profiler.clear
+        last: profilerInstance.getLast,
+        report: profilerInstance.getAll,
+        clear: profilerInstance.clear
     }
 
     public static readonly clearCache = {
