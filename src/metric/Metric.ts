@@ -462,6 +462,9 @@ export abstract class Metric<R = MetricRaw> {
             // Batch mode runs the metric on all combinations of a[] and b[]
             case 'batch': this.runBatch(); break;
 
+            // Single mode runs the metric on the first elements of a[] and b[]
+            case 'single': this.results = this.runSingle( this.a[ 0 ], this.b[ 0 ] ); break;
+
             // Pairwise mode runs the metric on corresponding pairs of a[] and b[]
             case 'pairwise': if ( this.isPairwise() ) this.runPairwise(); break;
 
@@ -495,6 +498,9 @@ export abstract class Metric<R = MetricRaw> {
 
             // Batch mode runs the metric on all combinations of a[] and b[]
             case 'batch': await this.runBatchAsync(); break;
+
+            // Single mode runs the metric on the first elements of a[] and b[]
+            case 'single': this.results = await this.runSingleAsync( this.a[ 0 ], this.b[ 0 ] ); break;
 
             // Pairwise mode runs the metric on corresponding pairs of a[] and b[]
             case 'pairwise': if ( this.isPairwise() ) await this.runPairwiseAsync(); break;

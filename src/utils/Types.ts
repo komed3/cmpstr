@@ -53,7 +53,7 @@ export interface RegistryService<T> {
 
 export type MetricInput = string | string[];
 
-export type MetricMode = 'default' | 'batch' | 'pairwise';
+export type MetricMode = 'default' | 'batch' | 'single' | 'pairwise';
 
 export interface MetricOptions {
     mode?: MetricMode;

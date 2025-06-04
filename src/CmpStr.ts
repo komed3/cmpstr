@@ -231,6 +231,27 @@ export class CmpStr<R = MetricRaw> {
 
     public isReady () : boolean { try { this.readyCheck(); return true; } catch { return false; } }
 
+    public test (
+        target?: MetricInput, options?: CmpStrOptions,
+        metric?: string, raw?: boolean
+    ) : number | MetricResult<R> {
+
+        return this.compute(
+            undefined, target, options, 'single', metric, raw
+        ) as number | MetricResult<R>;
+    }
+
+    public batchTest (
+        target?: MetricInput, options?: CmpStrOptions,
+        metric?: string, raw?: boolean
+    ) : number[] | MetricResult<R> {
+
+        return this.compute(
+            undefined, target, options, 'batch', metric, raw
+        ) as number[] | MetricResult<R>;
+
+    }
+
     public analyze ( options?: CmpStrOptions ) : TextAnalyzer {
 
         const src = this.prepareInput( this.source, options?.normalizeFlags, 'input' );
