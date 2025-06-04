@@ -58,11 +58,6 @@ export class CmpStr<R = MetricRaw> {
         metric: Metric.clear
     };
 
-    protected readonly err = {
-        missingMetric: new Error ( `CmpStr <metric> must be set, call setMetric()` ),
-        missingSource: new Error ( `CmpStr <source> must be set, call setSource()` )
-    };
-
     protected source?: MetricInput;
     protected normalized?: MetricInput;
     protected options: CmpStrOptions = {};
@@ -86,11 +81,44 @@ export class CmpStr<R = MetricRaw> {
 
     }
 
+    protected asArr ( input: any | any[] ) : any[] {
+
+        return Array.isArray( input ) ? input : [ input ];
+
+    }
+
+    protected searchArr ( s: MetricInput, t: MetricInput ) : { index: number, match: string }[] {
+
+        const res: { index: number, match: string }[] = [];
+
+        this.asArr( s ).forEach( ( s, i ) => {
+            s.includes( t ) && res.push( { index: i, match: s } )
+        } );
+
+        return res;
+
+    }
+
+    protected sourceCheck ( source?: MetricInput ) : void {
+
+        if ( ! ( source ?? this.source ) ) throw new Error (
+            `CmpStr <source> must be set, call setSource()`
+        );
+
+    }
+
+    protected metricCheck ( metric?: string | MetricCls<R> ) : void {
+
+        if ( ! ( metric ?? this.metric ?? this.options.metric ) ) throw new Error (
+            `CmpStr <metric> must be set, call setMetric()`
+        );
+
+    }
+
     protected readyCheck ( source?: MetricInput, metric?: string | MetricCls<R> ) : void {
 
-        if ( ! ( source ?? this.source ) ) throw this.err.missingSource;
-
-        if ( ! ( metric ?? this.metric ?? this.options.metric ) ) throw this.err.missingMetric;
+        this.sourceCheck( source );
+        this.metricCheck( metric );
 
     }
 
@@ -120,7 +148,7 @@ export class CmpStr<R = MetricRaw> {
 
     protected resolveMetric ( metric?: string | MetricCls<R> ) : MetricCls<R> {
 
-        if ( ! metric && ! this.metric && ! this.options.metric ) throw this.err.missingMetric;
+        this.metricCheck( metric );
 
         return ( typeof metric === 'string'
             ? MetricRegistry.get( metric )
@@ -282,15 +310,30 @@ export class CmpStr<R = MetricRaw> {
 
     }
 
-    public analyze ( options?: CmpStrOptions ) : TextAnalyzer {
+    public search ( target: string, flags?: NormalizeFlags ) : { index: number, match: string }[] {
 
-        const src = this.prepareInput( this.source, options?.normalizeFlags, 'input' );
+        this.sourceCheck();
+
+        const src = this.prepareInput( this.source, flags, 'input' );
+        const tgt = this.prepareInput( target, flags, 'input' );
+
+        return this.searchArr( src!, tgt! );
+
+    }
+
+    public analyze ( flags?: NormalizeFlags ) : TextAnalyzer {
+
+        this.sourceCheck();
+
+        const src = this.prepareInput( this.source, flags, 'input' );
 
         return new TextAnalyzer ( Array.isArray( src ) ? src.join( ' ' ) : ( src ?? '' ) );
 
     }
 
     public diff ( target: string, options?: DiffOptions ) : DiffChecker {
+
+        this.sourceCheck();
 
         return new DiffChecker (
             this.getSourceAsString(), target,

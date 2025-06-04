@@ -25,7 +25,11 @@
 
 'use strict';
 
-import type { PhoneticMapping, PhoneticMap, PhoneticOptions, RegistryService, PhoneticMappingService } from '../utils/Types';
+import type {
+    PhoneticMapping, PhoneticMap, PhoneticOptions, RegistryService,
+    PhoneticMappingService
+} from '../utils/Types';
+
 import { Registry } from '../utils/Registry';
 
 /**
@@ -471,4 +475,10 @@ export const PhoneticMappingRegistry: PhoneticMappingService = ( () => {
 
 } )();
 
+/**
+ * Type definition for the Phonetic class constructor.
+ * 
+ * This type is used to create instances of the Phonetic class, allowing for
+ * dynamic instantiation of phonetic algorithms. 
+ */
 export type PhoneticCls = new ( ...args: any[] ) => Phonetic;
