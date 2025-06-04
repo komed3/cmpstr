@@ -173,6 +173,18 @@ export class CmpStr<R = MetricRaw> {
 
     }
 
+    public reset () : this {
+
+        this.source = undefined;
+        this.normalized = undefined;
+        this.options = {};
+
+        this.metric = undefined;
+
+        return this;
+
+    }
+
     public getSource () : MetricInput | undefined { return this.source }
 
     public getNormalizedSource () : MetricInput | undefined { return this.normalized }
@@ -186,5 +198,28 @@ export class CmpStr<R = MetricRaw> {
     public getSerializedOptions () : string { return JSON.stringify( this.options ) }
 
     public isReady () : boolean { try { this.readyCheck(); return true; } catch { return false; } }
+
+    public clear () : void {
+
+        Normalizer.clear();
+
+    }
+
+    public analyze ( options?: CmpStrOptions ) : TextAnalyzer {
+
+        const src = this.prepareInput( this.source, options?.normalizeFlags, 'input' );
+
+        return new TextAnalyzer ( Array.isArray( src ) ? src.join( ' ' ) : ( src ?? '' ) );
+
+    }
+
+    public diff ( target: string, options?: DiffOptions ) : DiffChecker {
+
+        return new DiffChecker (
+            this.getSourceAsString(), target,
+            options ?? this.options.diffOptions ?? {}
+        );
+
+    }
 
 }
