@@ -31,5 +31,5 @@ import './Soundex';
 
 export {
     PhoneticRegistry, PhoneticMappingRegistry,
-    type Phonetic, PhoneticCls
+    Phonetic, PhoneticCls
 } from './Phonetic';

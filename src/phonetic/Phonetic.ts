@@ -31,6 +31,7 @@ import type {
 } from '../utils/Types';
 
 import { Registry } from '../utils/Registry';
+import { HashTable } from '../utils/HashTable';
 
 /**
  * Abstract class representing a phonetic algorithm.
@@ -42,6 +43,9 @@ import { Registry } from '../utils/Registry';
  * @abstract
  */
 export abstract class Phonetic {
+
+    // Cache for indexed words to avoid redundant calculations
+    private static cache: HashTable<string, string> = new HashTable ();
 
     /**
      * Default phonetic options.
@@ -57,6 +61,11 @@ export abstract class Phonetic {
     // Phonetic map and options for the algorithm
     protected readonly options: PhoneticOptions;
     protected readonly map: PhoneticMap;
+
+    /**
+     * Static method to clear the cache of indexed words.
+     */
+    public static clear () : void { this.cache.clear() }
 
     /**
      * Constructor for the Phonetic class.
@@ -303,8 +312,22 @@ export abstract class Phonetic {
         // Loop over each word in the input array
         for ( const word of words ) {
 
-            // Get the phonetic code for the word
-            const code: string = this.encode( word );
+            // Generate a cache key based on the algorithm and word
+            const key: string | false = Phonetic.cache.key( this.algo, [ word ] );
+
+            // If the key exists in the cache, return the cached result
+            // Otherwise, encode the word using the algorithm
+            const code: string = Phonetic.cache.get( key || '' ) ?? ( () => {
+
+                // Get the phonetic code for the word
+                const res: string = this.encode( word );
+
+                // If a key was generated, store the result in the cache
+                if ( key ) Phonetic.cache.set( key, res );
+
+                return res;
+
+            } )();
 
             // If a code is generated, add them to the index
             if ( code && code.length ) index.push( this.equalLen( code ) );

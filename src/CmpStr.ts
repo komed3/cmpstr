@@ -12,7 +12,7 @@ import { Profiler } from './utils/Profiler';
 import { TextAnalyzer } from './utils/TextAnalyzer';
 
 import { MetricRegistry, Metric, MetricCls } from './metric';
-import { PhoneticRegistry, PhoneticMappingRegistry, PhoneticCls } from './phonetic';
+import { PhoneticRegistry, PhoneticMappingRegistry, Phonetic, PhoneticCls } from './phonetic';
 
 const profiler = Profiler.getInstance();
 
@@ -55,7 +55,8 @@ export class CmpStr<R = MetricRaw> {
 
     public static readonly clearCache = {
         normalizer: Normalizer.clear,
-        metric: Metric.clear
+        metric: Metric.clear,
+        phonetic: Phonetic.clear
     };
 
     protected source?: MetricInput;
