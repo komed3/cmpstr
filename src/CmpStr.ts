@@ -14,7 +14,7 @@ import { TextAnalyzer } from './utils/TextAnalyzer';
 import { MetricRegistry, Metric, MetricCls } from './metric';
 import { PhoneticRegistry, PhoneticMappingRegistry, PhoneticCls } from './phonetic';
 
-const profilerInstance = Profiler.getInstance();
+const profiler = Profiler.getInstance();
 
 export class CmpStr<R = MetricRaw> {
 
@@ -48,9 +48,9 @@ export class CmpStr<R = MetricRaw> {
     };
 
     public static readonly profiler = {
-        last: profilerInstance.getLast,
-        report: profilerInstance.getAll,
-        clear: profilerInstance.clear
+        last: profiler.getLast.bind( profiler ),
+        report: profiler.getAll.bind( profiler ),
+        clear: profiler.clear.bind( profiler )
     }
 
     public static readonly clearCache = {
@@ -63,20 +63,21 @@ export class CmpStr<R = MetricRaw> {
     protected options: CmpStrOptions = {};
     protected metric?: MetricCls<R>;
 
-    constructor ( source?: MetricInput, opt?: CmpStrOptions ) {
+    constructor ( source?: MetricInput, metric?: string, opt?: CmpStrOptions ) {
 
         if ( source ) this.setSource( source );
+        if ( metric ) this.setMetric( metric );
         if ( opt ) this.setOptions( opt );
 
     }
 
-    protected deepMerge ( s: any, t: any ) : any {
+    protected deepMerge ( s: Record<string, any>, t: Record<string, any> ) : Record<string, any> {
 
         return (
-            Object.keys( s ).forEach(
+            Object.keys( s ?? {} ).forEach(
                 ( k ) => t[ k ] = s[ k ] && typeof s[ k ] === 'object'
                     ? this.deepMerge( t[ k ], s[ k ] ) : s[ k ]
-            ), t
+            ), t ?? {}
         );
 
     }
