@@ -173,4 +173,18 @@ export class CmpStr<R = MetricRaw> {
 
     }
 
+    public getSource () : MetricInput | undefined { return this.source }
+
+    public getNormalizedSource () : MetricInput | undefined { return this.normalized }
+
+    public getSourceAsString () : string { return (
+        Array.isArray( this.source ) ? this.source.join( ' ' ) : this.source ?? ''
+    ) }
+
+    public getOptions () : CmpStrOptions { return this.options }
+
+    public getSerializedOptions () : string { return JSON.stringify( this.options ) }
+
+    public isReady () : boolean { try { this.readyCheck(); return true; } catch { return false; } }
+
 }
