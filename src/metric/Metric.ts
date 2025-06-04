@@ -70,6 +70,11 @@ export abstract class Metric<R = MetricRaw> {
     private results: MetricResult<R> | undefined;
 
     /**
+     * Static method to clear the cache of metric computations.
+     */
+    public static clear () : void { this.cache.clear() }
+
+    /**
      * Swaps two strings and their lengths if the first is longer than the second.
      * 
      * @param {string} a - First string
@@ -78,7 +83,7 @@ export abstract class Metric<R = MetricRaw> {
      * @param {number} n - Length of the second string
      * @returns {[string, string, number, number]} - Swapped strings and lengths
      */
-    public static swap ( a: string, b: string, m: number, n: number ) : [
+    protected static swap ( a: string, b: string, m: number, n: number ) : [
         string, string, number, number
     ] {
 
@@ -92,7 +97,7 @@ export abstract class Metric<R = MetricRaw> {
      * @param {number} res - The input similarity to clamp
      * @returns {number} - The clamped similarity (0 to 1)
      */
-    public static clamp ( res: number ) : number {
+    protected static clamp ( res: number ) : number {
 
         return Math.max( 0, Math.min( 1, res ) );
 

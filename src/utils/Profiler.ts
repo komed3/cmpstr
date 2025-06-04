@@ -37,7 +37,7 @@ export class Profiler {
      * Sets the environment based on the available global objects.
      * Detects if running in Node.js or browser and sets the ENV property accordingly.
      */
-    public static detectEnv () : void {
+    protected static detectEnv () : void {
 
         // Check for Node.js environment
         if ( typeof process !== 'undefined' ) Profiler.ENV = 'nodejs';
@@ -191,5 +191,12 @@ export class Profiler {
      * @returns {ProfilerEntry<any>[]} - An array of profiler entries
      */
     public getAll () : ProfilerEntry<any>[] { return [ ...this.store ] }
+
+    /**
+     * Retrieves the last profiler entry stored in the profiler.
+     * 
+     * @returns {ProfilerEntry<any> | undefined} - The last profiler entry or undefined if no entries exist
+     */
+    public getLast () : ProfilerEntry<any> | undefined { return this.getAll().pop() }
 
 }

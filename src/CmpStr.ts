@@ -11,7 +11,7 @@ import { Normalizer } from './utils/Normalizer';
 import { Profiler } from './utils/Profiler';
 import { TextAnalyzer } from './utils/TextAnalyzer';
 
-import { MetricRegistry, MetricCls } from './metric';
+import { MetricRegistry, Metric, MetricCls } from './metric';
 import { PhoneticRegistry, PhoneticMappingRegistry, PhoneticCls } from './phonetic';
 
 const profiler = Profiler.getInstance();
@@ -48,13 +48,19 @@ export class CmpStr<R = MetricRaw> {
     };
 
     public static readonly profiler = {
+        last: profiler.getLast,
         report: profiler.getAll,
         clear: profiler.clear
     }
 
+    public static readonly clearCache = {
+        normalizer: Normalizer.clear,
+        metric: Metric.clear
+    };
+
     protected readonly err = {
-        metric: new Error ( `CmpStr <metric> must be set, call setMetric()` ),
-        source: new Error ( `CmpStr <source> must be set, call setSource()` )
+        missingMetric: new Error ( `CmpStr <metric> must be set, call setMetric()` ),
+        missingSource: new Error ( `CmpStr <source> must be set, call setSource()` )
     };
 
     protected source?: MetricInput;
@@ -82,9 +88,9 @@ export class CmpStr<R = MetricRaw> {
 
     protected readyCheck ( source?: MetricInput, metric?: string | MetricCls<R> ) : void {
 
-        if ( ! ( source ?? this.source ) ) throw this.err.source;
+        if ( ! ( source ?? this.source ) ) throw this.err.missingSource;
 
-        if ( ! ( metric ?? this.metric ?? this.options.metric ) ) throw this.err.metric;
+        if ( ! ( metric ?? this.metric ?? this.options.metric ) ) throw this.err.missingMetric;
 
     }
 
@@ -114,15 +120,12 @@ export class CmpStr<R = MetricRaw> {
 
     protected resolveMetric ( metric?: string | MetricCls<R> ) : MetricCls<R> {
 
-        if ( ! metric && ! this.metric && ! this.options.metric ) throw this.err.metric;
+        if ( ! metric && ! this.metric && ! this.options.metric ) throw this.err.missingMetric;
 
-        if ( typeof metric === 'string' ) return MetricRegistry.get( metric ) as MetricCls<R>;
-
-        if ( metric ) return metric;
-
-        if ( this.metric ) return this.metric;
-
-        return MetricRegistry.get( this.options.metric! ) as MetricCls<R>;
+        return ( typeof metric === 'string'
+            ? MetricRegistry.get( metric )
+            : metric ?? this.metric ?? MetricRegistry.get( this.options.metric! )
+        ) as MetricCls<R>;
 
     }
 
@@ -140,8 +143,7 @@ export class CmpStr<R = MetricRaw> {
 
     public setSource ( input: MetricInput ) : this {
 
-        this.source = input;
-        this.normalized = this.prepareInput( input );
+        this.source = input, this.normalized = this.prepareInput( input );
 
         return this;
 
@@ -189,21 +191,19 @@ export class CmpStr<R = MetricRaw> {
 
     public getNormalizedSource () : MetricInput | undefined { return this.normalized }
 
-    public getSourceAsString () : string { return (
-        Array.isArray( this.source ) ? this.source.join( ' ' ) : this.source ?? ''
-    ) }
+    public getSourceAsString () : string {
+
+        return Array.isArray( this.source )
+            ? this.source.join( ' ' )
+            : this.source ?? '';
+
+    }
 
     public getOptions () : CmpStrOptions { return this.options }
 
     public getSerializedOptions () : string { return JSON.stringify( this.options ) }
 
     public isReady () : boolean { try { this.readyCheck(); return true; } catch { return false; } }
-
-    public clear () : void {
-
-        Normalizer.clear();
-
-    }
 
     public analyze ( options?: CmpStrOptions ) : TextAnalyzer {
 
