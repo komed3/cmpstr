@@ -52,10 +52,15 @@ export class CmpStr<R = MetricRaw> {
         clear: profiler.clear
     }
 
-    protected source: MetricInput | undefined;
-    protected normalized: MetricInput | undefined;
+    protected readonly err = {
+        metric: new Error ( `CmpStr <metric> must be set, call setMetric()` ),
+        source: new Error ( `CmpStr <source> must be set, call setSource()` )
+    };
+
+    protected source?: MetricInput;
+    protected normalized?: MetricInput;
     protected options: CmpStrOptions = {};
-    protected metric: MetricCls<R> | undefined;
+    protected metric?: MetricCls<R>;
 
     constructor ( source?: MetricInput, opt?: CmpStrOptions ) {
 
@@ -75,105 +80,96 @@ export class CmpStr<R = MetricRaw> {
 
     }
 
-    protected normalize ( input: MetricInput, flags?: NormalizeFlags ) : MetricInput {
+    protected readyCheck ( source?: MetricInput, metric?: string | MetricCls<R> ) : void {
+
+        if ( ! ( source ?? this.source ) ) throw this.err.source;
+
+        if ( ! ( metric ?? this.metric ?? this.options.metric ) ) throw this.err.metric;
+
+    }
+
+    protected normalizeInput ( input: MetricInput, flags?: NormalizeFlags ) : MetricInput {
 
         return Normalizer.normalize( input, flags ?? this.options.normalizeFlags ?? '' );
 
     }
 
-    protected compute (
-        a: MetricInput, b: MetricInput, opt: MetricOptions,
-        mode?: MetricMode
-    ) : MetricResult<R> {
+    protected filterInput ( input: MetricInput, hook: string = 'input' ) : MetricInput {
 
-        const cmp = new this.metric!( a, b, opt );
-
-        cmp.run( mode );
-
-        return cmp.getResults();
+        return Array.isArray( input )
+            ? input.map( s => Filter.apply( hook, s ) )
+            : Filter.apply( hook, input as string );
 
     }
 
-    public setSource ( input: MetricInput ) : CmpStr<R> {
+    protected prepareInput (
+        input?: MetricInput, flags?: NormalizeFlags, hook: string = 'input'
+    ) : MetricInput | undefined {
 
-        this.source = input, this.normalized = this.normalize( input );
+        return input === undefined ? undefined : this.filterInput(
+            this.normalizeInput( input, flags ), hook
+        );
+
+    }
+
+    protected resolveMetric ( metric?: string | MetricCls<R> ) : MetricCls<R> {
+
+        if ( ! metric && ! this.metric && ! this.options.metric ) throw this.err.metric;
+
+        if ( typeof metric === 'string' ) return MetricRegistry.get( metric ) as MetricCls<R>;
+
+        if ( metric ) return metric;
+
+        if ( this.metric ) return this.metric;
+
+        return MetricRegistry.get( this.options.metric! ) as MetricCls<R>;
+
+    }
+
+    protected resolveOptions ( options?: CmpStrOptions ) : CmpStrOptions {
+
+        return options ? this.deepMerge( options, { ...this.options } ) : { ...this.options };
+
+    }
+
+    protected resolveRaw ( raw?: boolean, options?: CmpStrOptions ) : boolean {
+
+        return typeof raw === 'boolean' ? raw : options?.raw ?? this.options.raw ?? false;
+
+    }
+
+    public setSource ( input: MetricInput ) : this {
+
+        this.source = input;
+        this.normalized = this.prepareInput( input );
 
         return this;
 
     }
 
-    public setOptions ( opt: CmpStrOptions ) : CmpStr<R> {
+    public setOptions ( opt: CmpStrOptions ) : this {
 
         this.options = opt;
 
-        return this;
-
-    };
-
-    public mergeOptions ( opt: CmpStrOptions ) : CmpStr<R> {
-
-        this.setOptions( this.deepMerge( this.options, opt ) );
+        if ( opt.metric ) this.setMetric( opt.metric );
 
         return this;
 
     }
 
-    public setMetric ( metric: string ) : CmpStr<R> {
+    public mergeOptions ( opt: CmpStrOptions ) : this {
+
+        this.setOptions( this.deepMerge( opt, this.options ) );
+
+        return this;
+
+    }
+
+    public setMetric ( metric: string ) : this {
 
         this.metric = MetricRegistry.get( metric ) as MetricCls<R>;
 
         return this;
-
-    }
-
-    public getSource () : MetricInput | undefined { return this.source }
-
-    public getNormalizedSource () : MetricInput | undefined { return this.normalized }
-
-    public getSourceAsString () : string {
-
-        return Array.isArray( this.source ) ? this.source.join( ' ' ) : this.source ?? '';
-
-    }
-
-    public getOptions () : CmpStrOptions { return this.options }
-
-    public getSerializedOptions () : string { return JSON.stringify( this.options ) }
-
-    public isReady () {}
-
-    public test () {}
-
-    public batchTest () {}
-
-    public pairs () {}
-
-    public match () {}
-
-    public closest () {}
-
-    public furthest () {}
-
-    public similarityMatrix () {}
-
-    public search () {}
-
-    public phoneticIndex () {}
-
-    public phoneticTest () {}
-
-    public phoneticSearch () {}
-
-    public clear () {}
-
-    public analyze () : TextAnalyzer { return new TextAnalyzer ( this.getSourceAsString() ) }
-
-    public diff ( target: string, options?: DiffOptions ) : DiffChecker {
-
-        return new DiffChecker (
-            this.getSourceAsString(), target,
-            options ?? this.options.diffOptions ?? {}
-        );
 
     }
 

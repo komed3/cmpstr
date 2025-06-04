@@ -165,6 +165,7 @@ export interface CmpStrOptions {
     metric?: string;
     metricOptions?: MetricOptions;
     normalizeFlags?: NormalizeFlags;
+    raw?: boolean;
     phonetic?: string;
     phoneticOptions?: PhoneticOptions;
     diffOptions?: DiffOptions;
