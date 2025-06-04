@@ -176,7 +176,7 @@ export class CmpStr<R = MetricRaw> {
 
         this.readyCheck( src, met );
 
-        const cmp = new met ( src!, tgt!, opt.metricOptions ?? {} );
+        const cmp = new met ( src!, tgt ?? '', opt.metricOptions ?? {} );
 
         cmp.run( mode );
 
@@ -348,7 +348,7 @@ export class CmpStr<R = MetricRaw> {
 
         return new DiffChecker (
             this.getSourceAsString(), target,
-            options ?? this.options.diffOptions ?? {}
+            this.resolveOptions( { diffOptions: options } ).diffOptions
         );
 
     }
