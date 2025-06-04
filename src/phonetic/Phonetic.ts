@@ -32,6 +32,10 @@ import type {
 
 import { Registry } from '../utils/Registry';
 import { HashTable } from '../utils/HashTable';
+import { Profiler } from '../utils/Profiler';
+
+// Get the singleton profiler instance for performance monitoring
+const profiler = Profiler.getInstance();
 
 /**
  * Abstract class representing a phonetic algorithm.
@@ -388,7 +392,9 @@ export abstract class Phonetic {
         const { delimiter = ' ' } = this.options;
 
         // Split the input string by the specified delimiter and loop over it
-        return this.loop( input.split( delimiter ).filter( Boolean ) ).filter( Boolean );
+        return profiler.run( () => this.loop(
+            input.split( delimiter ).filter( Boolean )
+        ).filter( Boolean ) );
 
     }
 
@@ -403,9 +409,9 @@ export abstract class Phonetic {
         const { delimiter = ' ' } = this.options;
 
         // Split the input string by the specified delimiter and loop over it asynchronously
-        return ( await this.loopAsync(
+        return ( await profiler.runAsync( async () => await this.loopAsync(
             input.split( delimiter ).filter( Boolean )
-        ) ).filter( Boolean );
+        ) ) ).filter( Boolean );
 
     }
 
