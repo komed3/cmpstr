@@ -81,7 +81,9 @@ export interface MetricResultSingle<R = MetricRaw> {
     raw?: R;
 };
 
-export type MetricResult<R = MetricRaw> = MetricResultSingle<R> | MetricResultSingle<R>[];
+export type MetricResultBatch<R = MetricRaw> = MetricResultSingle<R>[];
+
+export type MetricResult<R = MetricRaw> = MetricResultSingle<R> | MetricResultBatch<R>;
 
 export interface PhoneticOptions {
     map?: string;

@@ -28,8 +28,8 @@
 'use strict';
 
 import type {
-    MetricMode, MetricInput, MetricOptions, MetricCompute, MetricRaw,
-    MetricResult, MetricResultSingle, RegistryService
+    MetricMode, MetricInput, MetricOptions, MetricCompute, MetricRaw, MetricResult,
+    MetricResultSingle, MetricResultBatch, RegistryService
 } from '../utils/Types';
 
 import { Registry } from '../utils/Registry';
@@ -267,7 +267,7 @@ export abstract class Metric<R = MetricRaw> {
      */
     private runBatch () : void {
 
-        const results: MetricResultSingle<R>[] = [];
+        const results: MetricResultBatch<R> = [];
 
         // Loop through each combination of strings in a[] and b[]
         for ( const a of this.a ) { for ( const b of this.b ) {
@@ -290,7 +290,7 @@ export abstract class Metric<R = MetricRaw> {
      */
     private async runBatchAsync () : Promise<void> {
 
-        const results: MetricResultSingle<R>[] = [];
+        const results: MetricResultBatch<R> = [];
 
         // Loop through each combination of strings in a[] and b[]
         for ( const a of this.a ) { for ( const b of this.b ) {
@@ -313,7 +313,7 @@ export abstract class Metric<R = MetricRaw> {
      */
     private runPairwise () : void {
 
-        const results: MetricResultSingle<R>[] = [];
+        const results: MetricResultBatch<R> = [];
 
         // Compute metric for each corresponding pair
         for ( let i = 0; i < this.a.length; i++ ) {
@@ -336,7 +336,7 @@ export abstract class Metric<R = MetricRaw> {
      */
     private async runPairwiseAsync () : Promise<void> {
 
-        const results: MetricResultSingle<R>[] = [];
+        const results: MetricResultBatch<R> = [];
 
         // Compute metric for each corresponding pair
         for ( let i = 0; i < this.a.length; i++ ) {
@@ -553,4 +553,13 @@ export abstract class Metric<R = MetricRaw> {
  */
 export const MetricRegistry: RegistryService<Metric<MetricRaw>> = Registry( Metric );
 
-export type MetricCls<MetricRaw> = new ( ...args: any[] ) => Metric<MetricRaw>;
+/**
+ * Type definition for a class constructor that extends the Metric class.
+ * 
+ * This type represents a constructor function for a class that extends the Metric
+ * class. It can be used to create instances of specific metric implementations,
+ * such as Levenshtein or Jaro-Winkler.
+ * 
+ * @template R - The type of the raw result, defaulting to `MetricRaw`.
+ */
+export type MetricCls<R = MetricRaw> = new ( ...args: any[] ) => Metric<R>;
