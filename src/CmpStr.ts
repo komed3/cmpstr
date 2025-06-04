@@ -1,6 +1,9 @@
 'use strict';
 
-import type { MetricInput, CmpStrOptions, DiffOptions, NormalizeFlags } from './utils/Types';
+import type {
+    CmpStrOptions, NormalizeFlags, DiffOptions,
+    MetricInput, MetricOptions, MetricMode, MetricRaw, MetricResult
+} from './utils/Types';
 
 import { DiffChecker } from './utils/DiffChecker';
 import { Filter } from './utils/Filter';
@@ -8,12 +11,12 @@ import { Normalizer } from './utils/Normalizer';
 import { Profiler } from './utils/Profiler';
 import { TextAnalyzer } from './utils/TextAnalyzer';
 
-import { MetricRegistry } from './metric';
-import { PhoneticRegistry, PhoneticMappingRegistry } from './phonetic';
+import { MetricRegistry, MetricCls } from './metric';
+import { PhoneticRegistry, PhoneticMappingRegistry, PhoneticCls } from './phonetic';
 
 const profiler = Profiler.getInstance();
 
-export class CmpStr {
+export class CmpStr<R = MetricRaw> {
 
     public static readonly filter = {
         add: Filter.add,
@@ -52,11 +55,23 @@ export class CmpStr {
     protected source: MetricInput | undefined;
     protected normalized: MetricInput | undefined;
     protected options: CmpStrOptions = {};
+    protected metric: MetricCls<R> | undefined;
 
-    constructor ( source?: MetricInput, options?: CmpStrOptions ) {
+    constructor ( source?: MetricInput, opt?: CmpStrOptions ) {
 
         if ( source ) this.setSource( source );
-        if ( options ) this.setOptions( options );
+        if ( opt ) this.setOptions( opt );
+
+    }
+
+    protected deepMerge ( s: any, t: any ) : any {
+
+        return (
+            Object.keys( s ).forEach(
+                ( k ) => t[ k ] = s[ k ] && typeof s[ k ] === 'object'
+                    ? this.deepMerge( t[ k ], s[ k ] ) : s[ k ]
+            ), t
+        );
 
     }
 
@@ -66,25 +81,48 @@ export class CmpStr {
 
     }
 
-    public setSource ( input: MetricInput ) : void {
+    protected compute (
+        a: MetricInput, b: MetricInput, opt: MetricOptions,
+        mode?: MetricMode
+    ) : MetricResult<R> {
 
-        this.source = input;
-        this.normalized = this.normalize( input );
+        const cmp = new this.metric!( a, b, opt );
+
+        cmp.run( mode );
+
+        return cmp.getResults();
 
     }
 
-    public setOptions ( options: CmpStrOptions ) : void { this.options = options };
+    public setSource ( input: MetricInput ) : CmpStr<R> {
 
-    public mergeOptions ( options: CmpStrOptions ) : void {
+        this.source = input, this.normalized = this.normalize( input );
 
-        const deepMerge = ( s: any, t: any ) : any => (
-            Object.keys( s ).forEach(
-                ( k ) => t[ k ] = s[ k ] && typeof s[ k ] === 'object'
-                    ? deepMerge( t[ k ], s[ k ] ) : s[ k ]
-            ), t
-        );
+        return this;
 
-        this.setOptions( deepMerge( this.options, options ) );
+    }
+
+    public setOptions ( opt: CmpStrOptions ) : CmpStr<R> {
+
+        this.options = opt;
+
+        return this;
+
+    };
+
+    public mergeOptions ( opt: CmpStrOptions ) : CmpStr<R> {
+
+        this.setOptions( this.deepMerge( this.options, opt ) );
+
+        return this;
+
+    }
+
+    public setMetric ( metric: string ) : CmpStr<R> {
+
+        this.metric = MetricRegistry.get( metric ) as MetricCls<R>;
+
+        return this;
 
     }
 
