@@ -169,10 +169,10 @@ export class CmpStr<R = MetricRaw> {
         metric?: string | MetricCls<R>
     ) : MetricResult<R> {
 
-        const opt = this.resolveOptions( { metricOptions: options ?? {} } );
-        const src = this.prepareInput( source ?? this.source, opt.normalizeFlags, 'input' );
-        const tgt = this.prepareInput( target, opt.normalizeFlags, 'input' );
-        const met = this.resolveMetric( metric ?? opt.metric );
+        const opt: CmpStrOptions = this.resolveOptions( { metricOptions: options ?? {} } );
+        const src: MetricInput | undefined = this.prepareInput( source ?? this.source, opt.normalizeFlags, 'input' );
+        const tgt: MetricInput | undefined = this.prepareInput( target, opt.normalizeFlags, 'input' );
+        const met: MetricCls<R> = this.resolveMetric( metric ?? opt.metric );
 
         this.readyCheck( src, met );
 
@@ -314,10 +314,21 @@ export class CmpStr<R = MetricRaw> {
 
         this.sourceCheck();
 
-        const src = this.prepareInput( this.source, flags, 'input' );
-        const tgt = this.prepareInput( target, flags, 'input' );
+        const src: MetricInput = this.prepareInput( this.source, flags, 'input' )!;
+        const tgt: MetricInput = this.prepareInput( target, flags, 'input' )!;
 
-        return this.searchArr( src!, tgt! );
+        return this.searchArr( src, tgt );
+
+    }
+
+    public matrix ( target?: MetricInput, options?: MetricOptions, metric?: string ) : number[][] {
+
+        const src: string[] = this.asArr( this.source ?? target );
+        const tgt: string[] = this.asArr( target );
+
+        return src.map( a => (
+            this.compute( a, tgt, options, 'batch', metric ) as MetricResultBatch<R>
+        ).map( b => b.res ) );
 
     }
 
@@ -325,9 +336,9 @@ export class CmpStr<R = MetricRaw> {
 
         this.sourceCheck();
 
-        const src = this.prepareInput( this.source, flags, 'input' );
+        const src: MetricInput = this.prepareInput( this.source, flags, 'input' )!;
 
-        return new TextAnalyzer ( Array.isArray( src ) ? src.join( ' ' ) : ( src ?? '' ) );
+        return new TextAnalyzer ( Array.isArray( src ) ? src.join( ' ' ) : src );
 
     }
 
