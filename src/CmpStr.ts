@@ -141,6 +141,32 @@ export class CmpStr<R = MetricRaw> {
 
     }
 
+    protected compute (
+        source?: MetricInput, target?: MetricInput,
+        options?: CmpStrOptions, mode?: MetricMode,
+        metric?: string | MetricCls<R>,
+        raw?: boolean
+    ) : MetricResult<R> | number | number[] {
+
+        const opt = this.resolveOptions( options );
+        const src = this.prepareInput( source ?? this.source, opt.normalizeFlags, 'input' );
+        const tgt = this.prepareInput( target, opt.normalizeFlags, 'input' );
+        const met = this.resolveMetric( metric ?? opt.metric );
+
+        this.readyCheck( src, met );
+
+        const cmp = new met ( src!, tgt!, opt.metricOptions ?? {} );
+
+        cmp.run( mode );
+
+        const result = cmp.getResults();
+
+        return this.resolveRaw( raw, opt ) ? result : (
+            Array.isArray( result ) ? result.map( r => r.res ) : result.res
+        );
+
+    }
+
     public setSource ( input: MetricInput ) : this {
 
         this.source = input, this.normalized = this.prepareInput( input );
