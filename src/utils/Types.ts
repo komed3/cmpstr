@@ -25,6 +25,15 @@ export interface ProfilerEntry<T> {
     meta?: Record<string, any>;
 };
 
+export interface ProfilerService<T> {
+    enable: () => void;
+    disable: () => void;
+    clear: () => void;
+    report: () => ProfilerEntry<T>[],
+    last: () => ProfilerEntry<T> | undefined,
+    total: () => { time: number, mem: number };
+};
+
 export type FilterFn = ( input: string ) => string;
 
 export interface FilterOptions {

@@ -17,7 +17,7 @@
 
 'use strict';
 
-import type { ProfilerEntry } from './Types';
+import type { ProfilerEntry, ProfilerService } from './Types';
 
 /**
  * Profiler class for measuring execution time and memory usage of functions.
@@ -247,9 +247,9 @@ export class Profiler {
      * Returns the services provided by the Profiler class.
      * This allows for easy access to the profiler's methods.
      * 
-     * @returns {Record<string, () => any>} - An object containing methods to control the profiler
+     * @returns {ProfilerService<any>} - An object containing methods to control the profiler
      */
-    public services: Record<string, () => any> = {
+    public services: ProfilerService<any> = {
         enable: this.enable.bind( this ),
         disable: this.disable.bind( this ),
         clear: this.clear.bind( this ),

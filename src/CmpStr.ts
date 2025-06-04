@@ -47,11 +47,7 @@ export class CmpStr<R = MetricRaw> {
         }
     };
 
-    public static readonly profiler = {
-        last: profiler.getLast.bind( profiler ),
-        report: profiler.getAll.bind( profiler ),
-        clear: profiler.clear.bind( profiler )
-    }
+    public static readonly profiler = profiler.services;
 
     public static readonly clearCache = {
         normalizer: Normalizer.clear,
