@@ -140,6 +140,32 @@ export class CmpStr<R = MetricRaw> {
 
     public getSerializedOptions () : string { return JSON.stringify( this.options ) }
 
+    public isReady () {}
+
+    public test () {}
+
+    public batchTest () {}
+
+    public pairs () {}
+
+    public match () {}
+
+    public closest () {}
+
+    public furthest () {}
+
+    public similarityMatrix () {}
+
+    public search () {}
+
+    public phoneticIndex () {}
+
+    public phoneticTest () {}
+
+    public phoneticSearch () {}
+
+    public clear () {}
+
     public analyze () : TextAnalyzer { return new TextAnalyzer ( this.getSourceAsString() ) }
 
     public diff ( target: string, options?: DiffOptions ) : DiffChecker {
