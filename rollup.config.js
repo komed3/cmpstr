@@ -60,9 +60,10 @@ import fs from 'fs';
 const version = JSON.parse( fs.readFileSync( './package.json' ) ).version;
 const commit = execSync( 'git rev-parse --short HEAD' ).toString().trim();
 const date = new Date().toISOString().replace( /([^0-9])/g, '' ).substring( 2, 8 );
+const build = `CmpStr v${version} dev-${commit}-${ date }`;
 
 console.log( `-`.repeat( 80 ) );
-console.log( `\x1b[36m[BUILD] \x1b[33mCmpStr v${version} build-${commit}-${ date }\x1b[0m` );
+console.log( `\x1b[36m[BUILD] \x1b[33m${build}\x1b[0m` );
 console.log( `-`.repeat( 80 ) );
 
 const plugins = [
@@ -85,7 +86,7 @@ const beautify = prettier( {
 } )
 
 const banner = `/**
- * CmpStr v${version} build-${commit}-${ date }
+ * ${build}
  * This is a lightweight, fast and well performing library for calculating string similarity.
  * (c) 2023-${ new Date().getFullYear() } Paul Köhler @komed3 / MIT License
  * Visit https://github.com/komed3/cmpstr and https://npmjs.org/package/cmpstr
