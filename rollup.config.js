@@ -83,9 +83,11 @@ const beautify = prettier( {
     jsxSingleQuote: true,
     trailingComma: 'none',
     objectWrap: 'collapse'
-} )
+} );
 
-const banner = `/**
+const banner = `// ${build} by Paul Köhler @komed3 / MIT License`;
+
+const preamble = `/**
  * ${build}
  * This is a lightweight, fast and well performing library for calculating string similarity.
  * (c) 2023-${ new Date().getFullYear() } Paul Köhler @komed3 / MIT License
@@ -103,7 +105,8 @@ export default [
             entryFileNames: '[name].js',
             preserveModules: true,
             preserveModulesRoot: 'src',
-            sourcemap: true
+            sourcemap: true,
+            banner
         },
         plugins: [ ...plugins, beautify ]
     },
@@ -118,7 +121,8 @@ export default [
             exports: 'auto',
             preserveModules: true,
             preserveModulesRoot: 'src',
-            sourcemap: true
+            sourcemap: true,
+            banner
         },
         plugins: [ ...plugins, beautify ]
     },
@@ -130,7 +134,8 @@ export default [
             file: 'dist/CmpStr.js',
             format: 'umd',
             name: 'CmpStr',
-            sourcemap: true
+            sourcemap: true,
+            banner: preamble
         },
         plugins
     },
@@ -143,7 +148,7 @@ export default [
             format: 'umd',
             name: 'CmpStr',
             plugins: [ terser( {
-                format: { comments: false, preamble: banner },
+                format: { comments: false, preamble },
                 compress: { passes: 6 }
             } ) ],
             sourcemap: true
