@@ -182,10 +182,13 @@ export interface CmpStrOptions {
     diffOptions?: DiffOptions;
 };
 
-export type CmpStrParams = [
-    target: string, opt?: MetricOptions, flags?: NormalizeFlags,
-    metric?: string, raw?: boolean
-];
+export interface CmpStrParams {
+    flags?: NormalizeFlags;
+    opt?: MetricOptions;
+    raw?: boolean;
+    metric?: string;
+    source?: MetricInput;
+};
 
 export interface CmpStrResult {
     target: string;
