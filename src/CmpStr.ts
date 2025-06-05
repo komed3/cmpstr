@@ -148,11 +148,6 @@ export class CmpStr<R = MetricRaw> {
 
         switch ( cond ) {
 
-            case 'source': if ( ! ( test ?? this.source ) ) throw new Error (
-                `CmpStr <source> must be set, call setSource(), ` +
-                `allowed are strings or arrays of strings`
-            ); break;
-
             case 'metric': if ( ! ( test ?? this.metric ?? this.options.metric ) ) throw new Error (
                 `CmpStr <metric> must be set, call setMetric(), ` +
                 `use CmpStr.metric.list() for available metrics`
@@ -162,6 +157,11 @@ export class CmpStr<R = MetricRaw> {
                 `CmpStr <phonetic> must be set, call setPhonetic(), ` +
                 `use CmpStr.phonetic.list() for available phonetic algorithms`
             );
+
+            case 'source': case 'normalized': if ( ! ( test ?? this.source ) ) throw new Error (
+                `CmpStr <source> must be set, call setSource(), ` +
+                `allowed are strings or arrays of strings`
+            ); break;
 
             default: throw new Error ( `Cmpstr condition <${cond}> unknown` );
 
@@ -339,6 +339,26 @@ export class CmpStr<R = MetricRaw> {
     ) : T {
 
         return this.batchSorted( target, 'asc', args ).slice( 0, n ) as T;
+
+    }
+
+    public search ( needle: string, flags?: NormalizeFlags ) : string[] {
+
+        this.check( [ 'normalized' ] );
+
+        const test: string = this.prepare( needle, flags ) as string;
+
+        return this.asArr( this.normalized ).filter( s => s.includes( test ) );
+
+    }
+
+    public matrix ( input: string[], args?: CmpStrParams ) : number[][] {
+
+        input = this.prepare( input, args?.flags ) as string[];
+
+        return input.map( a => ( this.batchTest( a, {
+            ...args, ...{ source: input, flags: '', raw: true }
+        } ) as MetricResultBatch<R> ).map( b => b.res ) );
 
     }
 
