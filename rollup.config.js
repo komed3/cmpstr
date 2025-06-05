@@ -52,6 +52,7 @@ import typescript from '@rollup/plugin-typescript';
 import { nodeResolve } from '@rollup/plugin-node-resolve';
 import commonjs from '@rollup/plugin-commonjs';
 import terser from '@rollup/plugin-terser';
+import prettier from 'rollup-plugin-prettier';
 
 const plugins = [
     nodeResolve(),
@@ -61,6 +62,24 @@ const plugins = [
         declaration: false
     } )
 ];
+
+const beautify = prettier( {
+    parser: 'babel',
+    tabWidth: 2,
+    bracketSpacing: true,
+    bracketSameLine: true,
+    singleQuote: true,
+    jsxSingleQuote: true,
+    trailingComma: 'none'
+} )
+
+const banner = `/*!
+ * CmpStr Library v3.0.0
+ * CmpStr is a lightweight, fast and well performing package for calculating string similarity
+ * (c) ${ new Date().getFullYear() } Paul Köhler @komed3
+ * MIT License
+ * https://github.com/komed3/cmpstr
+ */`;
 
 export default [
 
@@ -75,7 +94,7 @@ export default [
             preserveModules: true,
             preserveModulesRoot: 'src'
         },
-        plugins
+        plugins: [ ...plugins, beautify ]
     },
 
     // CJS Build
@@ -90,24 +109,34 @@ export default [
             preserveModules: true,
             preserveModulesRoot: 'src'
         },
-        plugins
+        plugins: [ ...plugins, beautify ]
     },
 
     // Browser Build (UMD)
     {
         input: 'src/index.ts',
-        output: [ {
+        output: {
             file: 'dist/CmpStr.js',
             format: 'umd',
             name: 'CmpStr',
             sourcemap: true
-        }, {
+        },
+        plugins
+    },
+
+    // Minified Browser Build (UMD)
+    {
+        input: 'src/index.ts',
+        output: {
             file: 'dist/CmpStr.min.js',
             format: 'umd',
             name: 'CmpStr',
-            plugins: [ terser( { format: { comments: false } } ) ],
+            plugins: [ terser( {
+                format: { comments: false, preamble: banner },
+                compress: { passes: 6 }
+            } ) ],
             sourcemap: true
-        } ],
+        },
         plugins
     }
 
