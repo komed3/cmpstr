@@ -54,9 +54,19 @@ import commonjs from '@rollup/plugin-commonjs';
 import terser from '@rollup/plugin-terser';
 import prettier from 'rollup-plugin-prettier';
 
+import { execSync } from 'child_process';
+import fs from 'fs';
+
+const version = JSON.parse( fs.readFileSync( './package.json' ) ).version;
+const commit = execSync( 'git rev-parse --short HEAD' ).toString().trim();
+const date = new Date().toISOString().replace( /([^0-9])/g, '' ).substring( 2, 8 );
+
+console.log( `-`.repeat( 80 ) );
+console.log( `\x1b[36m[BUILD] \x1b[33mCmpStr v${version} build-${commit}-${ date }\x1b[0m` );
+console.log( `-`.repeat( 80 ) );
+
 const plugins = [
-    nodeResolve(),
-    commonjs(),
+    nodeResolve(), commonjs(),
     typescript( {
         tsconfig: './tsconfig.json',
         declaration: false
@@ -70,15 +80,15 @@ const beautify = prettier( {
     bracketSameLine: true,
     singleQuote: true,
     jsxSingleQuote: true,
-    trailingComma: 'none'
+    trailingComma: 'none',
+    objectWrap: 'collapse'
 } )
 
-const banner = `/*!
- * CmpStr Library v3.0.0
- * CmpStr is a lightweight, fast and well performing package for calculating string similarity
- * (c) ${ new Date().getFullYear() } Paul Köhler @komed3
- * MIT License
- * https://github.com/komed3/cmpstr
+const banner = `/**
+ * CmpStr v${version} build-${commit}-${ date }
+ * This is a lightweight, fast and well performing library for calculating string similarity.
+ * (c) 2023-${ new Date().getFullYear() } Paul Köhler @komed3 / MIT License
+ * Visit https://github.com/komed3/cmpstr and https://npmjs.org/package/cmpstr
  */`;
 
 export default [
