@@ -356,13 +356,15 @@ export class CmpStr<R = MetricRaw> {
 
     }
 
-    public search ( needle: string, flags?: NormalizeFlags ) : string[] {
+    public search ( needle: string, haystack?: string[], flags?: NormalizeFlags ) : string[] {
 
-        this.check( [ 'normalized' ] );
+        this.check( [ 'source', haystack ] );
 
         const test: string = this.prepare( needle, flags ) as string;
+        const src: string[] = this.asArr( haystack ?? this.source );
+        const hstk: string[] = this.prepare( src, flags ) as string[];
 
-        return this.asArr( this.normalized ).filter( s => s.includes( test ) );
+        return src.filter( ( _, i ) => hstk[ i ].includes( test ) );
 
     }
 
@@ -381,6 +383,18 @@ export class CmpStr<R = MetricRaw> {
     public phoneticIndex ( input?: string, args?: CmpStrPhoneticParams ) : string {
 
         return this.index( input, args ).join( ' ' );
+
+    }
+
+    public phoneticSearch ( needle: string, haystack: string[], args?: CmpStrPhoneticParams ) : string[] {
+
+        this.check( [ 'source', haystack ], [ 'phonetic', args?.algo ] );
+
+        const test: string = this.index( needle, args ).join( ' ' );
+        const src: string[] = this.asArr( haystack ?? this.source );
+        const hstk: string[] = src.map( s => this.index( s, args ).join( ' ' ) );
+
+        return src.filter( ( _, i ) => hstk[ i ].includes( test ) );
 
     }
 
