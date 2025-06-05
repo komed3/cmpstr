@@ -1,18 +1,18 @@
 'use strict';
 
 import type {
-    CmpStrOptions, CmpStrResult, NormalizeFlags, MetricOptions, PhoneticOptions, DiffOptions,
-    MetricInput, MetricMode, MetricRaw, MetricResult, MetricResultSingle, MetricResultBatch
+    CmpStrOptions, NormalizeFlags,
+    MetricInput, MetricRaw
 } from './utils/Types';
 
-import { DiffChecker } from './utils/DiffChecker';
 import { Filter } from './utils/Filter';
 import { Normalizer } from './utils/Normalizer';
 import { Profiler } from './utils/Profiler';
-import { TextAnalyzer } from './utils/TextAnalyzer';
 
-import { MetricRegistry, Metric, MetricCls } from './metric';
-import { PhoneticRegistry, PhoneticMappingRegistry, Phonetic, PhoneticCls } from './phonetic';
+import { Metric, MetricCls, MetricRegistry as metric } from './metric';
+import { Phonetic, PhoneticCls, PhoneticRegistry as phonetic, PhoneticMappingRegistry } from './phonetic';
+
+const registry = { metric, phonetic };
 
 const profiler = Profiler.getInstance();
 
@@ -28,17 +28,17 @@ export class CmpStr<R = MetricRaw> {
     };
 
     public static readonly metric = {
-        add: MetricRegistry.add,
-        remove: MetricRegistry.remove,
-        has: MetricRegistry.has,
-        list: MetricRegistry.list
+        add: metric.add,
+        remove: metric.remove,
+        has: metric.has,
+        list: metric.list
     };
 
     public static readonly phonetic = {
-        add: PhoneticRegistry.add,
-        remove: PhoneticRegistry.remove,
-        has: PhoneticRegistry.has,
-        list: PhoneticRegistry.list,
+        add: phonetic.add,
+        remove: phonetic.remove,
+        has: phonetic.has,
+        list: phonetic.list,
         map: {
             add: PhoneticMappingRegistry.add,
             remove: PhoneticMappingRegistry.remove,
@@ -62,22 +62,13 @@ export class CmpStr<R = MetricRaw> {
     protected metric?: MetricCls<R>;
     protected phonetic?: PhoneticCls;
 
-    constructor ( source?: MetricInput, metric?: string, opt?: CmpStrOptions ) {
+    constructor ( source?: MetricInput, metric?: string, opt?: CmpStrOptions, phonetic?: string ) {
 
-        if ( source ) this.setSource( source );
-        if ( metric ) this.setMetric( metric );
-        if ( opt ) this.setOptions( opt );
+        if ( source ) this.set( 'source', source );
+        if ( opt ) this.set( 'options', opt );
 
-    }
-
-    protected deepMerge ( s: Record<string, any>, t: Record<string, any> ) : Record<string, any> {
-
-        return (
-            Object.keys( s ?? {} ).forEach(
-                ( k ) => t[ k ] = s[ k ] && typeof s[ k ] === 'object'
-                    ? this.deepMerge( t[ k ], s[ k ] ) : s[ k ]
-            ), t ?? {}
-        );
+        if ( metric ) this.set( 'metric', metric );
+        if ( phonetic ) this.set( 'phonetic', phonetic );
 
     }
 
@@ -87,184 +78,70 @@ export class CmpStr<R = MetricRaw> {
 
     }
 
-    protected asString ( input: any | any[] ) : string {
+    protected asStr ( input: any | any[] ) : string {
 
         return String ( Array.isArray( input ) ? input.join( ' ' ) : input );
 
     }
 
-    protected searchArr ( s: MetricInput, t: MetricInput ) : { index: number, match: string }[] {
+    protected deepMerge<T extends Record<string, any>> ( s: T, t: T ) : T {
 
-        const res: { index: number, match: string }[] = [];
-
-        this.asArr( s ).forEach( ( s, i ) => {
-            s.includes( t ) && res.push( { index: i, match: s } )
-        } );
-
-        return res;
+        return Object.keys( s ?? {} ).forEach(
+            ( k ) => ( t as any )[ k ] = s[ k ] && typeof s[ k ] === 'object'
+                ? this.deepMerge( ( t as any )[ k ], s[ k ] ) : s[ k ]
+        ), t ?? {};
 
     }
 
-    protected sourceCheck ( source?: MetricInput ) : void {
+    protected normalize ( input: MetricInput, flags?: NormalizeFlags ) : MetricInput {
 
-        if ( ! ( source ?? this.source ) ) throw new Error (
-            `CmpStr <source> must be set, call setSource()`
-        );
+        const { normalizeFlags } = this.options;
 
-    }
-
-    protected metricCheck ( metric?: string | MetricCls<R> ) : void {
-
-        if ( ! ( metric ?? this.metric ?? this.options.metric ) ) throw new Error (
-            `CmpStr <metric> must be set, call setMetric()`
-        );
+        return Normalizer.normalize( input, flags ?? normalizeFlags ?? '' );
 
     }
 
-    protected phoneticCheck ( phonetic?: string | PhoneticCls ) : void {
+    protected set ( key: string, val: any ) : this {
 
-        if ( ! ( phonetic ?? this.phonetic ?? this.options.phonetic ) ) throw new Error (
-            `CmpStr <phonetic> must be set, call setPhonetic()`
-        );
+        switch ( key ) {
 
-    }
+            case 'source': case 'src':
+                this.source = val, this.normalized = this.normalize( val );
+                break;
 
-    protected readyCheck ( source?: MetricInput, metric?: string | MetricCls<R> ) : void {
+            case 'options': case 'opt':
+                this.options = val instanceof Object ? val : {};
+                break;
 
-        this.sourceCheck( source );
-        this.metricCheck( metric );
+            case 'metric': case 'phonetic':
+                this[ key ] = registry[ key ].get( val ) as any;
+                break;
 
-    }
+            default: throw new Error ( `key <${key}> is not supported` );
 
-    protected normalizeInput ( input: MetricInput, flags?: NormalizeFlags ) : MetricInput {
-
-        return Normalizer.normalize( input, flags ?? this.options.normalizeFlags ?? '' );
-
-    }
-
-    protected filterInput ( input: MetricInput, hook: string = 'input' ) : MetricInput {
-
-        return Array.isArray( input )
-            ? input.map( s => Filter.apply( hook, s ) )
-            : Filter.apply( hook, input as string );
-
-    }
-
-    protected prepareInput (
-        input?: MetricInput, flags?: NormalizeFlags, hook: string = 'input'
-    ) : MetricInput | undefined {
-
-        return input === undefined ? undefined : this.filterInput(
-            this.normalizeInput( input, flags ), hook
-        );
-
-    }
-
-    protected resolveOptions ( options?: CmpStrOptions ) : CmpStrOptions {
-
-        return options ? this.deepMerge( options, { ...this.options } ) : { ...this.options };
-
-    }
-
-    protected resolveMetric ( metric?: string | MetricCls<R> ) : MetricCls<R> {
-
-        this.metricCheck( metric );
-
-        return ( typeof metric === 'string' ? MetricRegistry.get( metric )
-            : metric ?? this.metric ?? MetricRegistry.get( this.options.metric! )
-        ) as MetricCls<R>;
-
-    }
-
-    protected resolvePhonetic ( algo?: string | PhoneticCls ) : PhoneticCls {
-
-        return ( typeof algo === 'string' ? PhoneticRegistry.get( algo )
-            : algo ?? this.phonetic ?? PhoneticRegistry.get( this.options.phonetic! )
-        ) as PhoneticCls;
-
-    }
-
-    protected resolveResult ( result: MetricResult<R>, raw?: boolean ) : MetricResult<R> | CmpStrResult | CmpStrResult[] {
-
-        return raw ? result : Array.isArray( result )
-            ? result.map( r => ( { target: r.b, match: r.res } ) )
-            : { target: result.b, match: result.res };
-
-    }
-
-    protected compute<T = MetricResult<R> | CmpStrResult | CmpStrResult[]> (
-        source?: MetricInput, target?: MetricInput, options?: MetricOptions,
-        mode?: MetricMode, metric?: string | MetricCls<R>, raw?: boolean
-    ) : T {
-
-        const opt: CmpStrOptions = this.resolveOptions( { metricOptions: options ?? {} } );
-        const src: MetricInput | undefined = this.prepareInput( source ?? this.source, undefined, 'input' );
-        const tgt: MetricInput | undefined = this.prepareInput( target, undefined, 'input' );
-        const cls: MetricCls<R> = this.resolveMetric( metric ?? opt.metric );
-
-        this.readyCheck( src, cls );
-
-        const cmp = new cls ( src!, tgt ?? '', opt.metricOptions ?? {} );
-
-        cmp.run( mode );
-
-        return this.resolveResult( cmp.getResults(), raw ?? this.options.raw ?? false ) as T;
-
-    }
-
-    protected createIndex ( source?: string, options?: PhoneticOptions, algo?: string | PhoneticCls ) : string[] {
-
-        const opt: CmpStrOptions = this.resolveOptions( { phoneticOptions: options ?? {} } );
-        const src: string = this.asString( source ?? this.source );
-        const cls: PhoneticCls = this.resolvePhonetic( algo ?? opt.phonetic );
-
-        this.sourceCheck( src ), this.phoneticCheck( cls );
-
-        const phonetic = new cls ( opt.phoneticOptions );
-
-        return phonetic.getIndex( src );
-
-    }
-
-    public setSource ( input: MetricInput ) : this {
-
-        this.source = input, this.normalized = this.prepareInput( input );
+        }
 
         return this;
 
     }
 
-    public setOptions ( opt: CmpStrOptions ) : this {
+    public setSource ( source: MetricInput ) : this { return this.set( 'source', source ) }
 
-        this.options = opt;
-
-        if ( opt.metric ) this.setMetric( opt.metric );
-
-        return this;
-
-    }
+    public setOptions ( opt: CmpStrOptions ) : this { return this.set( 'options', opt ) }
 
     public mergeOptions ( opt: CmpStrOptions ) : this {
 
-        this.setOptions( this.deepMerge( opt, this.options ) );
-
-        return this;
+        return this.set( 'options', this.deepMerge<CmpStrOptions>( this.options, opt ) );
 
     }
 
-    public setMetric ( metric: string ) : this {
+    public setMetric ( name: string ) : this { return this.set( 'metric', name ) }
 
-        this.metric = MetricRegistry.get( metric ) as MetricCls<R>;
+    public setPhonetic ( name: string ) : this { return this.set( 'phonetic', name ) }
 
-        return this;
+    public clone () : CmpStr<R> {
 
-    }
-
-    public setPhonetic ( algo: string ) : this {
-
-        this.phonetic = PhoneticRegistry.get( algo ) as PhoneticCls;
-
-        return this;
+        return Object.assign( Object.create( Object.getPrototypeOf( this ) ), this );
 
     }
 
@@ -285,137 +162,14 @@ export class CmpStr<R = MetricRaw> {
 
     public getNormalizedSource () : MetricInput | undefined { return this.normalized }
 
-    public getSourceAsString () : string { return this.asString( this.source ) }
+    public getSourceAsString () : string { return this.asStr( this.source ) }
+
+    public getSourceAsArray () : string[] { return this.asArr( this.source ) }
 
     public getOptions () : CmpStrOptions { return this.options }
 
+    public getOption ( key: keyof CmpStrOptions ) : any { return this.options[ key ] }
+
     public getSerializedOptions () : string { return JSON.stringify( this.options ) }
-
-    public isReady () : boolean { try { this.readyCheck(); return true; } catch { return false; } }
-
-    public test<T = CmpStrResult | MetricResultSingle<R>> (
-        target?: MetricInput, options?: MetricOptions,
-        metric?: string, raw?: boolean
-    ) : T {
-
-        return this.compute<T>( undefined, target, options, 'single', metric, raw ) as T;
-
-    }
-
-    public compare ( target?: MetricInput, options?: MetricOptions, metric?: string ) : number {
-
-        return this.test<CmpStrResult>( target, options, metric ).match;
-
-    }
-
-    public batchTest<T = CmpStrResult[] | MetricResultBatch<R>> (
-        target?: MetricInput, options?: MetricOptions,
-        metric?: string, raw?: boolean
-    ) : T {
-
-        return this.compute<T>( undefined, target, options, 'batch', metric, raw ) as T;
-
-    }
-
-    public batchSorted<T = CmpStrResult[] | MetricResultBatch<R>> (
-        target?: MetricInput, dir: 'desc' | 'asc' = 'desc', options?: MetricOptions,
-        metric?: string, raw?: boolean
-    ) : T {
-
-        return this.resolveResult(
-            this.batchTest<MetricResultBatch<R>>( target, options, metric, true )
-                .sort( ( a, b ) => dir === 'asc' ? a.res - b.res : b.res - a.res ),
-            raw ?? this.options.raw
-        ) as T;
-
-    }
-
-    public pairs<T = CmpStrResult[] | MetricResultBatch<R>> (
-        target?: MetricInput, options?: MetricOptions,
-        metric?: string, raw?: boolean
-    ) : T {
-
-        return this.compute<T>( undefined, target, options, 'pairwise', metric, raw ) as T;
-
-    }
-
-    public match<T = CmpStrResult[] | MetricResultBatch<R>> (
-        target?: MetricInput, threshold: number = 0.8, options?: MetricOptions,
-        metric?: string, raw?: boolean
-    ) : T {
-
-        return this.resolveResult(
-            this.batchTest<MetricResultBatch<R>>( target, options, metric, true )
-                .filter( r => r.res >= threshold )
-                .sort( ( a, b ) => b.res - a.res ),
-            raw ?? this.options.raw
-        ) as T;
-
-    }
-
-    public closest<T = CmpStrResult[] | MetricResultBatch<R>> (
-        target?: MetricInput, n: number = 1, options?: MetricOptions,
-        metric?: string, raw?: boolean
-    ) : T {
-
-        return this.batchSorted( target, 'desc', options, metric, raw ).slice( 0, n ) as T;
-
-    }
-
-    public furthest<T = CmpStrResult[] | MetricResultBatch<R>> (
-        target?: MetricInput, n: number = 1, options?: MetricOptions,
-        metric?: string, raw?: boolean
-    ) : T {
-
-        return this.batchSorted( target, 'asc', options, metric, raw ).slice( 0, n ) as T;
-
-    }
-
-    public search ( target: string, flags?: NormalizeFlags ) : { index: number, match: string }[] {
-
-        this.sourceCheck();
-
-        const src: MetricInput = this.prepareInput( this.source, flags, 'input' )!;
-        const tgt: MetricInput = this.prepareInput( target, flags, 'input' )!;
-
-        return this.searchArr( src, tgt );
-
-    }
-
-    public matrix ( target?: MetricInput, options?: MetricOptions, metric?: string ) : number[][] {
-
-        const src: string[] = this.asArr( this.source ?? target );
-        const tgt: string[] = this.asArr( target );
-
-        return src.map( a => this.compute<MetricResultBatch<R>>(
-            a, tgt, options, 'batch', metric, true
-        ).map( b => b.res ) );
-
-    }
-
-    public phoneticIndex ( options?: PhoneticOptions, algo?: string ) : string {
-
-        return this.createIndex( undefined, options, algo ).join( ' ' );
-
-    }
-
-    public analyze ( flags?: NormalizeFlags ) : TextAnalyzer {
-
-        this.sourceCheck();
-
-        return new TextAnalyzer ( this.asString( this.prepareInput( this.source, flags, 'input' ) ) );
-
-    }
-
-    public diff ( target: string, options?: DiffOptions ) : DiffChecker {
-
-        this.sourceCheck();
-
-        return new DiffChecker (
-            this.getSourceAsString(), target,
-            this.resolveOptions( { diffOptions: options } ).diffOptions
-        );
-
-    }
 
 }
