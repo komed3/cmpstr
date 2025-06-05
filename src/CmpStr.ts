@@ -356,9 +356,11 @@ export class CmpStr<R = MetricRaw> {
 
         input = this.prepare( input, args?.flags ) as string[];
 
-        return input.map( a => ( this.batchTest( a, {
-            ...args, ...{ source: input, flags: '', raw: true }
-        } ) as MetricResultBatch<R> ).map( b => b.res ) );
+        return input.map( a => input.map( b => (
+            this.compute<MetricResultSingle<R>>(
+                b, { flags: '', raw: true, source: a }, 'single'
+            ).res ?? 0
+        ) ) );
 
     }
 
