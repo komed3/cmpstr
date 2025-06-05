@@ -266,11 +266,7 @@ export abstract class Phonetic {
      * @param {string} word - The input word to be converted
      * @returns {string[]} - An array of characters from the input word
      */
-    protected word2Chars ( word: string ) : string[] {
-
-        return word.toLowerCase().split( '' );
-
-    }
+    protected word2Chars ( word: string ) : string[] { return word.toLowerCase().split( '' ) }
 
     /**
      * Determines whether to exit early based on the current phonetic code length.
@@ -280,6 +276,8 @@ export abstract class Phonetic {
      * @returns {boolean} - True if the code length exceeds the specified limit, false otherwise
      */
     protected exitEarly ( code: string, i: number ) : boolean {
+
+        void [ i ];
 
         const { length = -1 } = this.options;
 
@@ -294,11 +292,7 @@ export abstract class Phonetic {
      * @param {string[]} chars - Characters to be removed from the code
      * @returns {string} - The adjusted phonetic code
      */
-    protected adjustCode ( code: string, chars: string[] ) : string {
-
-        return code;
-
-    }
+    protected adjustCode ( code: string, chars: string[] ) : string { void [ chars ]; return code }
 
     /**
      * Processes an array of words to generate their phonetic indices.
@@ -375,11 +369,7 @@ export abstract class Phonetic {
      * 
      * @returns {string} - The name of the algorithm
      */
-    public getAlgoName () : string {
-
-        return this.algo;
-
-    }
+    public getAlgoName () : string { return this.algo }
 
     /**
      * Generates a phonetic index for the given input string.

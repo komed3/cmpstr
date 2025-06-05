@@ -3,7 +3,13 @@
   "compilerOptions": {
     "noEmit": true,
     "strict": true,
-    "noImplicitAny": true
+    "noUncheckedSideEffectImports": true,
+    "noImplicitAny": true,
+    "noUnusedParameters": true,
+    "noUnusedLocals": true,
+    "noImplicitOverride": true,
+    "noImplicitReturns": true,
+    "noImplicitThis": true
   },
   "include": [ "src" ]
 }

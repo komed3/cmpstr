@@ -146,9 +146,9 @@ export abstract class Metric<R = MetricRaw> {
         if ( a === b ) return { res: 1 };
 
         // If the lengths of both strings is less than 2, return a similarity of 0
-        else if ( m == 0 || n == 0 || ( m < 2 && n < 2 ) ) return { res: 0 };
+        if ( m == 0 || n == 0 || ( m < 2 && n < 2 ) ) return { res: 0 };
 
-        else undefined;
+        return undefined;
 
     }
 

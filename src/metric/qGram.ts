@@ -78,11 +78,9 @@ export class QGramSimilarity extends Metric<QGramRaw> {
      * 
      * @param {string} a - First string
      * @param {string} b - Second string
-     * @param {number} m - Length of the first string
-     * @param {number} n - Length of the second string
      * @return {MetricCompute<QGramRaw>} - Object containing the similarity result and raw values
      */
-    protected override compute ( a: string, b: string, m: number, n: number ) : MetricCompute<QGramRaw> {
+    protected override compute ( a: string, b: string ) : MetricCompute<QGramRaw> {
 
         // Get q from options or use default "2"
         const { q = 2 } = this.options;
