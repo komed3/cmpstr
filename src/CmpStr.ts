@@ -55,9 +55,9 @@ export class CmpStr<R = MetricRaw> {
         phonetic: Phonetic.clear
     };
 
+    protected options: CmpStrOptions = {};
     protected source?: MetricInput;
     protected normalized?: MetricInput;
-    protected options: CmpStrOptions = {};
 
     protected metric?: MetricCls<R>;
     protected phonetic?: PhoneticCls;
@@ -105,23 +105,54 @@ export class CmpStr<R = MetricRaw> {
 
         switch ( key ) {
 
-            case 'source': case 'src':
-                this.source = val, this.normalized = this.normalize( val );
-                break;
-
             case 'options': case 'opt':
                 this.options = val instanceof Object ? val : {};
+                break;
+
+            case 'source': case 'src':
+                this.source = val, this.normalized = this.normalize( val );
                 break;
 
             case 'metric': case 'phonetic':
                 this[ key ] = registry[ key ].get( val ) as any;
                 break;
 
-            default: throw new Error ( `key <${key}> is not supported` );
+            default: throw new Error ( `CmpStr key <${key}> is not supported` );
 
         }
 
         return this;
+
+    }
+
+    protected condition ( cond: string, test?: any ) : void {
+
+        switch ( cond ) {
+
+            case 'source': if ( ! ( test ?? this.source ) ) throw new Error (
+                `CmpStr <source> must be set, call setSource(), ` +
+                `allowed are strings or arrays of strings`
+            ); break;
+
+            case 'metric': if ( ! ( test ?? this.metric ?? this.options.metric ) ) throw new Error (
+                `CmpStr <metric> must be set, call setMetric(), ` +
+                `use CmpStr.metric.list() for available metrics`
+            ); break;
+
+            case 'phonetic': if ( ! ( test ?? this.phonetic ?? this.options.phonetic ) ) throw new Error (
+                `CmpStr <phonetic> must be set, call setPhonetic(), ` +
+                `use CmpStr.phonetic.list() for available algorithms`
+            );
+
+            default: throw new Error ( `Cmpstr condition <${cond}> unknown` );
+
+        }
+
+    }
+
+    protected check ( ...cond: [ string, any? ][] ) : void {
+
+        for ( const [ c, t ] of cond ) this.condition( c, t );
 
     }
 
@@ -155,6 +186,13 @@ export class CmpStr<R = MetricRaw> {
         this.phonetic = undefined;
 
         return this;
+
+    }
+
+    public isReady () : boolean {
+
+        try { this.check( [ 'source' ], [ 'metric' ] ); return true }
+        catch { return false }
 
     }
 
