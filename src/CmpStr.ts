@@ -161,11 +161,12 @@ export class CmpStr<R = MetricRaw> {
 
     }
 
-    protected resolveResult ( res: MetricResult<R>, raw?: boolean ) : MetricResult<R> | CmpStrResult | CmpStrResult[] {
+    protected resolveResult ( result: MetricResult<R>, raw?: boolean ) : MetricResult<R> | CmpStrResult | CmpStrResult[] {
 
-        return raw ? res : Array.isArray( res )
-            ? res.map( r => ( { target: r.b, match: r.res } ) )
-            : { target: res.b, match: res.res };
+        return raw ? result : Array.isArray( result )
+            ? result.filter( r => ! this.options.removeZero || r.res > 0 )
+                    .map( r => ( { target: r.b, match: r.res } ) )
+            : { target: result.b, match: result.res };
 
     }
 
