@@ -183,13 +183,13 @@ export abstract class Metric<R = MetricRaw> {
     private runSingle ( a: string, b: string ) : MetricResultSingle<R> {
 
         // Type safety: convert inputs to strings
-        a = String ( a ), b = String ( b );
+        let A = a = String ( a ), B = b = String ( b );
 
         // Get lengths
-        let m: number = a.length, n: number = b.length;
+        let m: number = A.length, n: number = B.length;
 
         // Pre-compute trivial cases (identical, empty, etc.)
-        let result: MetricCompute<R> | undefined = this.preCompute( a, b, m, n );
+        let result: MetricCompute<R> | undefined = this.preCompute( A, B, m, n );
 
         if ( ! result ) {
 
@@ -197,17 +197,17 @@ export abstract class Metric<R = MetricRaw> {
             result = profiler.run( () : MetricCompute<R> => {
 
                 // Generate a cache key based on the metric and pair of strings `a` and `b`
-                const key: string | false = Metric.cache.key( this.metric, [ a, b ], this.symmetric );
+                const key: string | false = Metric.cache.key( this.metric, [ A, B ], this.symmetric );
 
                 // If the key exists in the cache, return the cached result
                 // Otherwise, compute the metric using the algorithm
                 return Metric.cache.get( key || '' ) ?? ( () => {
 
                     // If the metric is symmetrical, swap `a` and `b` (shorter string first)
-                    if ( this.symmetric ) [ a, b, m, n ] = Metric.swap( a, b, m, n );
+                    if ( this.symmetric ) [ A, B, m, n ] = Metric.swap( A, B, m, n );
 
                     // Compute the similarity using the algorithm
-                    const res = this.compute( a, b, m, n, Math.max( m, n ) );
+                    const res = this.compute( A, B, m, n, Math.max( m, n ) );
 
                     // If a key was generated, store the result in the cache
                     if ( key ) Metric.cache.set( key, res );
