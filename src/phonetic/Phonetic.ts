@@ -438,7 +438,7 @@ export const PhoneticMappingRegistry: PhoneticMappingService = ( () => {
     const mappings: Record<string, PhoneticMapping> = {};
 
     // Helper function to retrieve mappings for a specific algorithm
-    const maps = ( algo: string ) : PhoneticMapping => mappings[ algo ] ?? {};
+    const maps = ( algo: string ) : PhoneticMapping => ( mappings[ algo ] ||= {} );
 
     return {
 
