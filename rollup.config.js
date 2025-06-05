@@ -99,10 +99,10 @@ export default [
         output: {
             dir: 'dist/esm',
             format: 'esm',
-            sourcemap: true,
             entryFileNames: '[name].js',
             preserveModules: true,
-            preserveModulesRoot: 'src'
+            preserveModulesRoot: 'src',
+            sourcemap: true
         },
         plugins: [ ...plugins, beautify ]
     },
@@ -113,11 +113,11 @@ export default [
         output: {
             dir: 'dist/cjs',
             format: 'cjs',
-            sourcemap: true,
             entryFileNames: '[name].js',
             exports: 'auto',
             preserveModules: true,
-            preserveModulesRoot: 'src'
+            preserveModulesRoot: 'src',
+            sourcemap: true
         },
         plugins: [ ...plugins, beautify ]
     },
