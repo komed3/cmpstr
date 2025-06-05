@@ -1,13 +1,15 @@
 'use strict';
 
 import type {
-    CmpStrOptions, NormalizeFlags,
-    MetricInput, MetricRaw
+    CmpStrOptions, CmpStrParams, CmpStrResult, NormalizeFlags, DiffOptions,
+    MetricInput, MetricMode, MetricRaw, MetricResult, MetricResultSingle
 } from './utils/Types';
 
-import { Filter } from './utils/Filter';
 import { Normalizer } from './utils/Normalizer';
+import { Filter } from './utils/Filter';
 import { Profiler } from './utils/Profiler';
+import { TextAnalyzer } from './utils/TextAnalyzer';
+import { DiffChecker } from './utils/DiffChecker';
 
 import { Metric, MetricCls, MetricRegistry as metric } from './metric';
 import { Phonetic, PhoneticCls, PhoneticRegistry as phonetic, PhoneticMappingRegistry } from './phonetic';
@@ -84,12 +86,14 @@ export class CmpStr<R = MetricRaw> {
 
     }
 
-    protected deepMerge<T extends Record<string, any>> ( s: T, t: T ) : T {
+    protected deepMerge<T extends Record<string, any>> ( s: T | undefined, t: T | undefined ) : T {
 
-        return Object.keys( s ?? {} ).forEach(
-            ( k ) => ( t as any )[ k ] = s[ k ] && typeof s[ k ] === 'object'
-                ? this.deepMerge( ( t as any )[ k ], s[ k ] ) : s[ k ]
-        ), t ?? {};
+        ( s as any ) ||= {}, ( t as any ) ||= {};
+
+        return Object.keys( s! ).forEach(
+            ( k ) => ( t as any )[ k ] = s![ k ] && typeof s![ k ] === 'object'
+                ? this.deepMerge( ( t as any )[ k ], s![ k ] ) : s![ k ]
+        ), t ?? {} as T;
 
     }
 
@@ -98,6 +102,25 @@ export class CmpStr<R = MetricRaw> {
         const { normalizeFlags } = this.options;
 
         return Normalizer.normalize( input, flags ?? normalizeFlags ?? '' );
+
+    }
+
+    protected filter ( input: MetricInput, hook: string = 'input' ) : MetricInput {
+
+        return Array.isArray( input )
+            ? input.map( s => Filter.apply( hook, s ) )
+            : Filter.apply( hook, input as string );
+
+    }
+
+    protected prepare (
+        input?: MetricInput, flags?: NormalizeFlags,
+        hook: string = 'input'
+    ) : MetricInput | undefined {
+
+        return input === undefined ? undefined : (
+            this.filter( this.normalize( input, flags ), hook )
+        );
 
     }
 
@@ -149,6 +172,47 @@ export class CmpStr<R = MetricRaw> {
     protected check ( ...cond: [ string, any? ][] ) : void {
 
         for ( const [ c, t ] of cond ) this.condition( c, t );
+
+    }
+
+    protected resolveCls<T extends MetricCls<R> | PhoneticCls> (
+        key: 'metric' | 'phonetic', cls?: string | T
+    ) : T {
+
+        return ( typeof cls === 'string' ? registry[ key ].get( cls )
+            : cls ?? this[ key ] ?? registry[ key ].get( this.options[ key ]! )
+        ) as T;
+
+    }
+
+    protected resolveResult<T extends MetricResult<R> | CmpStrResult | CmpStrResult[]> (
+        result: MetricResult<R>, raw?: boolean
+    ) : T {
+
+        return ( raw ?? this.options.raw ? result : Array.isArray( result )
+            ? result.map( r => ( { target: r.b, match: r.res } ) )
+            : { target: result.b, match: result.res }
+        ) as T;
+
+    }
+
+    protected compute<T extends MetricResult<R> | CmpStrResult | CmpStrResult[]> (
+        source?: MetricInput, mode?: MetricMode, ...args: CmpStrParams
+    ) : T {
+
+        let [ target, opt, flags, metric, raw ] = args;
+
+        const src: MetricInput | undefined = this.prepare( source ?? this.source, flags );
+        const tgt: MetricInput = this.prepare( target ?? '' )!;
+        const cls: MetricCls<R> = this.resolveCls<MetricCls<R>>( 'metric', metric );
+
+        this.check( [ 'source', src ], [ 'metric', cls ] );
+
+        const cmp = new cls! ( src, tgt, this.deepMerge( this.options.metricOptions, opt ) );
+
+        cmp.run( mode );
+
+        return this.resolveResult<T>( cmp.getResults(), raw ) as T;
 
     }
 
@@ -205,5 +269,30 @@ export class CmpStr<R = MetricRaw> {
     public getOption ( key: keyof CmpStrOptions ) : any { return this.options[ key ] }
 
     public getSerializedOptions () : string { return JSON.stringify( this.options ) }
+
+    public test<T extends CmpStrResult | MetricResultSingle<R>> ( ...args: CmpStrParams ) : T {
+
+        return this.compute<T>( undefined, 'single', ...args ) as T;
+
+    }
+
+    public analyze ( input?: string ) : TextAnalyzer {
+
+        this.check( [ 'source', input ] );
+
+        return new TextAnalyzer ( this.asStr( input ?? this.source ) );
+
+    }
+
+    public diff ( target: string, opt?: DiffOptions, source?: string ) : DiffChecker {
+
+        this.check( [ 'source', source ] );
+
+        return new DiffChecker (
+            this.asStr( source ?? this.source ), target,
+            this.deepMerge<DiffOptions>( this.options.diffOptions, opt )
+        );
+
+    }
 
 }
