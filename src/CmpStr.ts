@@ -1,7 +1,7 @@
 'use strict';
 
 import type {
-    CmpStrOptions, CmpStrParams, CmpStrResult, NormalizeFlags, DiffOptions,
+    CmpStrOptions, CmpStrParams, CmpStrPhoneticParams, CmpStrResult, NormalizeFlags, DiffOptions,
     MetricInput, MetricMode, MetricRaw, MetricResult, MetricResultSingle, MetricResultBatch
 } from './utils/Types';
 
@@ -114,8 +114,7 @@ export class CmpStr<R = MetricRaw> {
     }
 
     protected prepare (
-        input?: MetricInput, flags?: NormalizeFlags,
-        hook: string = 'input'
+        input?: MetricInput, flags?: NormalizeFlags, hook: string = 'input'
     ) : MetricInput | undefined {
 
         return input === undefined ? undefined : (
@@ -213,6 +212,21 @@ export class CmpStr<R = MetricRaw> {
         cmp.run( mode );
 
         return this.resolveResult<T>( cmp.getResults(), raw ) as T;
+
+    }
+
+    protected index ( input?: string, args?: CmpStrPhoneticParams ) : string[] {
+
+        const { flags, opt, algo } = args ?? {};
+
+        const src: string = this.prepare( this.asStr( input ?? this.source ?? '' ), flags ) as string;
+        const cls: PhoneticCls = this.resolveCls<PhoneticCls>( 'phonetic', algo );
+
+        this.check( [ 'source', src ], [ 'phonetic', cls ] );
+
+        const phonetic = new cls! ( this.deepMerge( this.options.phoneticOptions, opt ) );
+
+        return phonetic.getIndex( src );
 
     }
 
@@ -361,6 +375,12 @@ export class CmpStr<R = MetricRaw> {
                 b, { flags: '', raw: true, source: a }, 'single'
             ).res ?? 0
         ) ) );
+
+    }
+
+    public phoneticIndex ( input?: string, args?: CmpStrPhoneticParams ) : string {
+
+        return this.index( input, args ).join( ' ' );
 
     }
 

@@ -190,6 +190,12 @@ export interface CmpStrParams {
     source?: MetricInput;
 };
 
+export interface CmpStrPhoneticParams {
+    flags?: NormalizeFlags;
+    opt?: PhoneticOptions;
+    algo?: string;
+};
+
 export interface CmpStrResult {
     target: string;
     match: number;
