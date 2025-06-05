@@ -105,17 +105,13 @@ export class CmpStr<R = MetricRaw> {
 
         switch ( key ) {
 
-            case 'options': case 'opt':
-                this.options = val instanceof Object ? val : {};
-                break;
+            case 'options': case 'opt': this.options = val instanceof Object ? val : {}; break;
 
-            case 'source': case 'src':
-                this.source = val, this.normalized = this.normalize( val );
-                break;
+            case 'source': case 'src': this.source = val;
 
-            case 'metric': case 'phonetic':
-                this[ key ] = registry[ key ].get( val ) as any;
-                break;
+            case 'normalized': this.normalized = this.normalize( val ); break;
+
+            case 'metric': case 'phonetic': this[ key ] = registry[ key ].get( val ) as any; break;
 
             default: throw new Error ( `CmpStr key <${key}> is not supported` );
 
@@ -141,7 +137,7 @@ export class CmpStr<R = MetricRaw> {
 
             case 'phonetic': if ( ! ( test ?? this.phonetic ?? this.options.phonetic ) ) throw new Error (
                 `CmpStr <phonetic> must be set, call setPhonetic(), ` +
-                `use CmpStr.phonetic.list() for available algorithms`
+                `use CmpStr.phonetic.list() for available phonetic algorithms`
             );
 
             default: throw new Error ( `Cmpstr condition <${cond}> unknown` );
