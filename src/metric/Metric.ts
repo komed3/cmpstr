@@ -166,6 +166,8 @@ export abstract class Metric<R = MetricRaw> {
      */
     protected compute ( a: string, b: string, m: number, n: number, maxLen: number ) : MetricCompute<R> {
 
+        void [ a, b, m, n, maxLen ];
+
         throw new Error ( `method compute() must be overridden in a subclass` );
 
     }
