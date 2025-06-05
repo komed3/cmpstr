@@ -2,7 +2,7 @@
 
 import type {
     CmpStrOptions, NormalizeFlags, DiffOptions, MetricInput, MetricOptions, MetricMode,
-    MetricRaw, MetricResult, MetricResultSingle, MetricResultBatch
+    CmpStrResult, MetricRaw, MetricResult, MetricResultSingle, MetricResultBatch
 } from './utils/Types';
 
 import { DiffChecker } from './utils/DiffChecker';
@@ -161,11 +161,18 @@ export class CmpStr<R = MetricRaw> {
 
     }
 
-    protected compute (
-        source?: MetricInput, target?: MetricInput,
-        options?: MetricOptions, mode?: MetricMode,
-        metric?: string | MetricCls<R>
-    ) : MetricResult<R> {
+    protected resolveResult ( res: MetricResult<R>, raw?: boolean ) : MetricResult<R> | CmpStrResult | CmpStrResult[] {
+
+        return raw ? res : Array.isArray( res )
+            ? res.map( r => ( { target: r.b, match: r.res } ) )
+            : { target: res.b, match: res.res };
+
+    }
+
+    protected compute<T = MetricResult<R> | CmpStrResult | CmpStrResult[]> (
+        source?: MetricInput, target?: MetricInput, options?: MetricOptions,
+        mode?: MetricMode, metric?: string | MetricCls<R>, raw?: boolean
+    ) : T {
 
         const opt: CmpStrOptions = this.resolveOptions( { metricOptions: options ?? {} } );
         const src: MetricInput | undefined = this.prepareInput( source ?? this.source, opt.normalizeFlags, 'input' );
@@ -178,7 +185,7 @@ export class CmpStr<R = MetricRaw> {
 
         cmp.run( mode );
 
-        return cmp.getResults();
+        return this.resolveResult( cmp.getResults(), raw ?? this.options.raw ?? false ) as T;
 
     }
 
@@ -244,67 +251,81 @@ export class CmpStr<R = MetricRaw> {
 
     public isReady () : boolean { try { this.readyCheck(); return true; } catch { return false; } }
 
-    public test ( target?: MetricInput, options?: MetricOptions, metric?: string ) : MetricResultSingle<R> {
+    public test<T = CmpStrResult | MetricResultSingle<R>> (
+        target?: MetricInput, options?: MetricOptions,
+        metric?: string, raw?: boolean
+    ) : T {
 
-        return this.compute( undefined, target, options, 'single', metric ) as MetricResultSingle<R>;
+        return this.compute<T>( undefined, target, options, 'single', metric, raw ) as T;
 
     }
 
     public compare ( target?: MetricInput, options?: MetricOptions, metric?: string ) : number {
 
-        return this.test( target, options, metric ).res;
+        return this.test<CmpStrResult>( target, options, metric ).match;
 
     }
 
-    public batch ( target?: MetricInput, options?: MetricOptions, metric?: string ) : MetricResultBatch<R> {
+    public batchTest<T = CmpStrResult[] | MetricResultBatch<R>> (
+        target?: MetricInput, options?: MetricOptions,
+        metric?: string, raw?: boolean
+    ) : T {
 
-        return this.compute( undefined, target, options, 'batch', metric ) as MetricResultBatch<R>;
-
-    }
-
-    public batchSorted (
-        target?: MetricInput, dir: 'desc' | 'asc' = 'desc',
-        options?: MetricOptions, metric?: string
-    ) : MetricResultBatch<R> {
-
-        return this.batch( target, options, metric ).sort(
-            ( a, b ) => dir === 'asc' ? a.res - b.res : b.res - a.res
-        );
+        return this.compute<T>( undefined, target, options, 'batch', metric, raw ) as T;
 
     }
 
-    public pairs ( target?: MetricInput, options?: MetricOptions, metric?: string ) : MetricResultBatch<R> {
+    public batchSorted<T = CmpStrResult[] | MetricResultBatch<R>> (
+        target?: MetricInput, dir: 'desc' | 'asc' = 'desc', options?: MetricOptions,
+        metric?: string, raw?: boolean
+    ) : T {
 
-        return this.compute( undefined, target, options, 'pairwise', metric ) as MetricResultBatch<R>;
-
-    }
-
-    public match (
-        target?: MetricInput, threshold: number = 0.8,
-        options?: MetricOptions, metric?: string
-    ) : MetricResultBatch<R> {
-
-        return this.batch( target, options, metric )
-            .filter( r => r.res >= threshold )
-            .sort( ( a, b ) => b.res - a.res );
+        return this.resolveResult(
+            this.batchTest<MetricResultBatch<R>>( target, options, metric, true )
+                .sort( ( a, b ) => dir === 'asc' ? a.res - b.res : b.res - a.res ),
+            raw ?? this.options.raw
+        ) as T;
 
     }
 
-    public closest (
-        target?: MetricInput, n: number = 1,
-        options?: MetricOptions, metric?: string
-    ) : MetricResultBatch<R> {
+    public pairs<T = CmpStrResult[] | MetricResultBatch<R>> (
+        target?: MetricInput, options?: MetricOptions,
+        metric?: string, raw?: boolean
+    ) : T {
 
-        return this.batchSorted( target, 'desc', options, metric ).slice( 0, n );
+        return this.compute<T>( undefined, target, options, 'pairwise', metric, raw ) as T;
 
     }
 
-    public furthest (
-        target?: MetricInput, n: number = 1,
-        options?: MetricOptions, metric?: string
-    ) : MetricResultBatch<R> {
+    public match<T = CmpStrResult[] | MetricResultBatch<R>> (
+        target?: MetricInput, threshold: number = 0.8, options?: MetricOptions,
+        metric?: string, raw?: boolean
+    ) : T {
 
-        return this.batchSorted( target, 'asc', options, metric ).slice( 0, n );
+        return this.resolveResult(
+            this.batchTest<MetricResultBatch<R>>( target, options, metric, true )
+                .filter( r => r.res >= threshold )
+                .sort( ( a, b ) => b.res - a.res ),
+            raw ?? this.options.raw
+        ) as T;
+
+    }
+
+    public closest<T = CmpStrResult[] | MetricResultBatch<R>> (
+        target?: MetricInput, n: number = 1, options?: MetricOptions,
+        metric?: string, raw?: boolean
+    ) : T {
+
+        return this.batchSorted( target, 'desc', options, metric, raw ).slice( 0, n ) as T;
+
+    }
+
+    public furthest<T = CmpStrResult[] | MetricResultBatch<R>> (
+        target?: MetricInput, n: number = 1, options?: MetricOptions,
+        metric?: string, raw?: boolean
+    ) : T {
+
+        return this.batchSorted( target, 'asc', options, metric, raw ).slice( 0, n ) as T;
 
     }
 
@@ -324,8 +345,8 @@ export class CmpStr<R = MetricRaw> {
         const src: string[] = this.asArr( this.source ?? target );
         const tgt: string[] = this.asArr( target );
 
-        return src.map( a => (
-            this.compute( a, tgt, options, 'batch', metric ) as MetricResultBatch<R>
+        return src.map( a => this.compute<MetricResultBatch<R>>(
+            a, tgt, options, 'batch', metric, true
         ).map( b => b.res ) );
 
     }

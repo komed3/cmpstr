@@ -180,3 +180,8 @@ export interface CmpStrOptions {
     phoneticOptions?: PhoneticOptions;
     diffOptions?: DiffOptions;
 };
+
+export interface CmpStrResult {
+    target: string;
+    match: number;
+};
