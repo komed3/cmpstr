@@ -3,6 +3,7 @@
   "compilerOptions": {
     "noEmit": true,
     "strict": true,
+    "alwaysStrict": true,
     "noUncheckedSideEffectImports": true,
     "noImplicitAny": true,
     "noUnusedParameters": true,

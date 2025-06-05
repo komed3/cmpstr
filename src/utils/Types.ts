@@ -1,5 +1,21 @@
 'use strict';
 
+export interface ProfilerEntry<T> {
+    time: number;
+    mem: number;
+    res: T;
+    meta?: Record<string, any>;
+};
+
+export interface ProfilerService<T> {
+    enable: () => void;
+    disable: () => void;
+    clear: () => void;
+    report: () => ProfilerEntry<T>[],
+    last: () => ProfilerEntry<T> | undefined,
+    total: () => { time: number, mem: number };
+};
+
 export type PoolType = 'uint16' | 'number[]' | 'set' | 'map';
 
 export interface PoolConfig {
@@ -17,22 +33,6 @@ export interface PoolBuffer<T> {
 export type NormalizerFn = ( input: string ) => string;
 
 export type NormalizeFlags = string;
-
-export interface ProfilerEntry<T> {
-    time: number;
-    mem: number;
-    res: T;
-    meta?: Record<string, any>;
-};
-
-export interface ProfilerService<T> {
-    enable: () => void;
-    disable: () => void;
-    clear: () => void;
-    report: () => ProfilerEntry<T>[],
-    last: () => ProfilerEntry<T> | undefined,
-    total: () => { time: number, mem: number };
-};
 
 export type FilterFn = ( input: string ) => string;
 
