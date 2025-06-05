@@ -1,4 +1,25 @@
-# .github/workflows/build.yml
+# --------------------------------------------------------------------------------
+# 
+# Workflow: Lint & Build CmpStr
+# 
+# This GitHub Actions workflow performs automated type-checking, linting, and
+# building for the CmpStr project. It is triggered on every push and pull request
+# targeting the main branch.
+# 
+# The workflow consists of two jobs:
+# 
+# 1. Lint (TypeScript Linting):
+#    - Installs dependencies
+#    - Runs TypeScript-based linting and type-checking via `npm run lint`
+# 
+# 2. Build (Build & Package):
+#    - Runs after the Lint job completes successfully
+#    - Installs dependencies
+#    - Builds the project using `npm run build`
+#    - Uploads the resulting `dist/` directory as an artifact
+# 
+# --------------------------------------------------------------------------------
+
 name: Lint & Build CmpStr
 
 on:
