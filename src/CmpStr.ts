@@ -1,8 +1,8 @@
 'use strict';
 
 import type {
-    CmpStrOptions, NormalizeFlags, DiffOptions, MetricInput, MetricOptions, MetricMode,
-    CmpStrResult, MetricRaw, MetricResult, MetricResultSingle, MetricResultBatch
+    CmpStrOptions, CmpStrResult, NormalizeFlags, MetricOptions, PhoneticOptions, DiffOptions,
+    MetricInput, MetricMode, MetricRaw, MetricResult, MetricResultSingle, MetricResultBatch
 } from './utils/Types';
 
 import { DiffChecker } from './utils/DiffChecker';
@@ -58,7 +58,9 @@ export class CmpStr<R = MetricRaw> {
     protected source?: MetricInput;
     protected normalized?: MetricInput;
     protected options: CmpStrOptions = {};
+
     protected metric?: MetricCls<R>;
+    protected phonetic?: PhoneticCls;
 
     constructor ( source?: MetricInput, metric?: string, opt?: CmpStrOptions ) {
 
@@ -82,6 +84,12 @@ export class CmpStr<R = MetricRaw> {
     protected asArr ( input: any | any[] ) : any[] {
 
         return Array.isArray( input ) ? input : [ input ];
+
+    }
+
+    protected asString ( input: any | any[] ) : string {
+
+        return String ( Array.isArray( input ) ? input.join( ' ' ) : input );
 
     }
 
@@ -109,6 +117,14 @@ export class CmpStr<R = MetricRaw> {
 
         if ( ! ( metric ?? this.metric ?? this.options.metric ) ) throw new Error (
             `CmpStr <metric> must be set, call setMetric()`
+        );
+
+    }
+
+    protected phoneticCheck ( phonetic?: string | PhoneticCls ) : void {
+
+        if ( ! ( phonetic ?? this.phonetic ?? this.options.phonetic ) ) throw new Error (
+            `CmpStr <phonetic> must be set, call setPhonetic()`
         );
 
     }
@@ -144,20 +160,27 @@ export class CmpStr<R = MetricRaw> {
 
     }
 
+    protected resolveOptions ( options?: CmpStrOptions ) : CmpStrOptions {
+
+        return options ? this.deepMerge( options, { ...this.options } ) : { ...this.options };
+
+    }
+
     protected resolveMetric ( metric?: string | MetricCls<R> ) : MetricCls<R> {
 
         this.metricCheck( metric );
 
-        return ( typeof metric === 'string'
-            ? MetricRegistry.get( metric )
+        return ( typeof metric === 'string' ? MetricRegistry.get( metric )
             : metric ?? this.metric ?? MetricRegistry.get( this.options.metric! )
         ) as MetricCls<R>;
 
     }
 
-    protected resolveOptions ( options?: CmpStrOptions ) : CmpStrOptions {
+    protected resolvePhonetic ( algo?: string | PhoneticCls ) : PhoneticCls {
 
-        return options ? this.deepMerge( options, { ...this.options } ) : { ...this.options };
+        return ( typeof algo === 'string' ? PhoneticRegistry.get( algo )
+            : algo ?? this.phonetic ?? PhoneticRegistry.get( this.options.phonetic! )
+        ) as PhoneticCls;
 
     }
 
@@ -176,17 +199,31 @@ export class CmpStr<R = MetricRaw> {
     ) : T {
 
         const opt: CmpStrOptions = this.resolveOptions( { metricOptions: options ?? {} } );
-        const src: MetricInput | undefined = this.prepareInput( source ?? this.source, opt.normalizeFlags, 'input' );
-        const tgt: MetricInput | undefined = this.prepareInput( target, opt.normalizeFlags, 'input' );
-        const met: MetricCls<R> = this.resolveMetric( metric ?? opt.metric );
+        const src: MetricInput | undefined = this.prepareInput( source ?? this.source, undefined, 'input' );
+        const tgt: MetricInput | undefined = this.prepareInput( target, undefined, 'input' );
+        const cls: MetricCls<R> = this.resolveMetric( metric ?? opt.metric );
 
-        this.readyCheck( src, met );
+        this.readyCheck( src, cls );
 
-        const cmp = new met ( src!, tgt ?? '', opt.metricOptions ?? {} );
+        const cmp = new cls ( src!, tgt ?? '', opt.metricOptions ?? {} );
 
         cmp.run( mode );
 
         return this.resolveResult( cmp.getResults(), raw ?? this.options.raw ?? false ) as T;
+
+    }
+
+    protected createIndex ( source?: string, options?: PhoneticOptions, algo?: string | PhoneticCls ) : string[] {
+
+        const opt: CmpStrOptions = this.resolveOptions( { phoneticOptions: options ?? {} } );
+        const src: string = this.asString( source ?? this.source );
+        const cls: PhoneticCls = this.resolvePhonetic( algo ?? opt.phonetic );
+
+        this.sourceCheck( src ), this.phoneticCheck( cls );
+
+        const phonetic = new cls ( opt.phoneticOptions );
+
+        return phonetic.getIndex( src );
 
     }
 
@@ -224,6 +261,14 @@ export class CmpStr<R = MetricRaw> {
 
     }
 
+    public setPhonetic ( algo: string ) : this {
+
+        this.phonetic = PhoneticRegistry.get( algo ) as PhoneticCls;
+
+        return this;
+
+    }
+
     public reset () : this {
 
         this.source = undefined;
@@ -231,6 +276,7 @@ export class CmpStr<R = MetricRaw> {
         this.options = {};
 
         this.metric = undefined;
+        this.phonetic = undefined;
 
         return this;
 
@@ -240,11 +286,7 @@ export class CmpStr<R = MetricRaw> {
 
     public getNormalizedSource () : MetricInput | undefined { return this.normalized }
 
-    public getSourceAsString () : string {
-
-        return Array.isArray( this.source ) ? this.source.join( ' ' ) : this.source ?? '';
-
-    }
+    public getSourceAsString () : string { return this.asString( this.source ) }
 
     public getOptions () : CmpStrOptions { return this.options }
 
@@ -352,13 +394,17 @@ export class CmpStr<R = MetricRaw> {
 
     }
 
+    public phoneticIndex ( options?: PhoneticOptions, algo?: string ) : string {
+
+        return this.createIndex( undefined, options, algo ).join( ' ' );
+
+    }
+
     public analyze ( flags?: NormalizeFlags ) : TextAnalyzer {
 
         this.sourceCheck();
 
-        const src: MetricInput = this.prepareInput( this.source, flags, 'input' )!;
-
-        return new TextAnalyzer ( Array.isArray( src ) ? src.join( ' ' ) : src );
+        return new TextAnalyzer ( this.asString( this.prepareInput( this.source, flags, 'input' ) ) );
 
     }
 
