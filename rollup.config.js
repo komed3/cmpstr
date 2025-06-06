@@ -25,13 +25,13 @@
  *    - Suitable for Node.js and legacy environments
  * 
  * 3. Browser Build (UMD):
- *    - Output files: dist/umd/CmpStr.js (unminified), dist/umd/CmpStr.min.js (minified)
+ *    - Output files: dist/CmpStr.umd.js (unminified), dist/CmpStr.umd.min.js (minified)
  *    - Format: UMD (Universal Module Definition)
  *    - Exposes the library as a global variable 'CmpStr' for direct use in browsers
  *    - Includes both a readable and a minified version (using Terser)
  * 
  * 4. Browser Build (EMS):
- *   - Output files: dist/umd/CmpStr.esm.js (unminified), dist/umd/CmpStr.esm.min.js (minified)
+ *   - Output files: dist/CmpStr.esm.js (unminified), dist/CmpStr.esm.min.js (minified)
  *   - Format: ES module (import/export syntax)
  *   - Suitable for modern browsers that support ES modules
  * 
@@ -142,7 +142,7 @@ export default [
     {
         input: 'src/index.ts',
         output: {
-            file: 'dist/umd/CmpStr.js',
+            file: 'dist/CmpStr.umd.js',
             format: 'umd',
             name: 'CmpStr',
             sourcemap: true,
@@ -155,7 +155,7 @@ export default [
     {
         input: 'src/index.ts',
         output: {
-            file: 'dist/umd/CmpStr.min.js',
+            file: 'dist/CmpStr.umd.min.js',
             format: 'umd',
             name: 'CmpStr',
             plugins: [ minify ],
@@ -168,7 +168,7 @@ export default [
     {
         input: 'src/index.ts',
         output: {
-            file: 'dist/umd/CmpStr.esm.js',
+            file: 'dist/CmpStr.esm.js',
             format: 'es',
             sourcemap: true,
             banner: preamble
@@ -180,8 +180,8 @@ export default [
     {
         input: 'src/index.ts',
         output: {
-            file: 'dist/umd/CmpStr.esm.min.js',
-            format: 'es',
+            file: 'dist/CmpStr.esm.min.js',
+            format: 'esm',
             plugins: [ minify ],
             sourcemap: true
         },

@@ -44,9 +44,9 @@
     "LICENSE"
   ],
   "main": "dist/cjs/index.js",
-  "module": "dist/esm/index.js",
-  "browser": "dist/umd/CmpStr.min.js",
   "types": "dist/types/index.d.ts",
+  "module": "dist/esm/index.js",
+  "browser": "dist/CmpStr.umd.min.js",
   "exports": {
     "require": "./dist/cjs/index.js",
     "import": "./dist/esm/index.js"
