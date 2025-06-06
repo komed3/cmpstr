@@ -455,7 +455,9 @@ export interface CmpStrPhoneticParams {
  * CmpStrResult represents a simplified result for user-facing API methods.
  */
 export interface CmpStrResult {
-    // The target string that was compared
+    // The source string
+    source: string;
+    // The target string
     target: string;
     // The similarity score (0..1)
     match: number;

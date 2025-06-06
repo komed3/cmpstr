@@ -365,8 +365,8 @@ export class CmpStr<R = MetricRaw> {
     ) : T {
 
         return ( raw ?? this.options.raw ? result : Array.isArray( result )
-            ? result.map( r => ( { target: r.b, match: r.res } ) )
-            : { target: result.b, match: result.res }
+            ? result.map( r => ( { source: r.a, target: r.b, match: r.res } ) )
+            : { source: result.a, target: result.b, match: result.res }
         ) as T;
 
     }

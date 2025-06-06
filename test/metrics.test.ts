@@ -17,7 +17,7 @@ describe( 'CmpStr > Metric', () => {
         const cmp = new CmpStr ( 'hello', 'dice', { normalizeFlags: 'i' } );
         const res = cmp.closest( [ 'Hallo', 'hola', 'hey' ], 1 );
 
-        expect( res ).toEqual( [ { target: 'hallo', match: 0.5 } ] );
+        expect( res ).toEqual( [ { source: 'hello', target: 'hallo', match: 0.5 } ] );
 
     } );
 
@@ -45,9 +45,9 @@ describe( 'CmpStr > Metric', () => {
         const res = cmp.pairs( [ 'hallo', 'allo', 'hey' ] );
 
         expect( res ).toEqual( [
-            { target: 'hallo', match: 0.88 },
-            { target: 'allo', match: 0 },
-            { target: 'hey', match: 0.575 }
+            { source: 'hello', target: 'hallo', match: 0.88 },
+            { source: 'hi', target: 'allo', match: 0 },
+            { source: 'hola', target: 'hey', match: 0.575 }
         ] );
 
         expect( () => { cmp.pairs( [ 'hallo', 'allo' ] ) } ).toThrowError(

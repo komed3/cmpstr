@@ -6,7 +6,7 @@
 [![NPM Downloads](https://img.shields.io/npm/dy/cmpstr?style=for-the-badge&logo=transmission&logoColor=fff)](https://npmpackage.info/package/cmpstr?t=downloads)
 [![GitHub Actions Workflow Status](https://img.shields.io/github/actions/workflow/status/komed3/cmpstr/build.yml?style=for-the-badge&logo=educative&logoColor=fff)](https://github.com/komed3/cmpstr/actions/workflows/build.yml)
 [![Static Badge](https://img.shields.io/badge/ESM_%26_CJS-TypeScript?style=for-the-badge&logo=typescript&logoColor=fff&label=TypeScript&color=violet)]()
-[![Static Badge](https://img.shields.io/badge/yes-JavaScript?style=for-the-badge&logo=javascript&logoColor=fff&label=Browser&color=violet)]()
+[![Static Badge](https://img.shields.io/badge/UMD-JavaScript?style=for-the-badge&logo=javascript&logoColor=fff&label=Browser&color=violet)]()
 [![Static Badge](https://img.shields.io/badge/docs-docs?style=for-the-badge&logo=readthedocs&logoColor=fff&color=blue)]()
 
 **CmpStr** is a modern, extensible and highly abstracted TypeScript library for advanced string comparison, similarity measurement, phonetic indexing and text analysis. It is lightweight, does not need any dependencies, supports a variety of built-in algorithms (e.g., Levenshtein, Dice-Sørensen, Damerau-Levenshtein, Soundex) and allows users to add custom metrics, phonetic mappings and normalization filters.
