@@ -22,8 +22,8 @@
 'use strict';
 
 import type {
-    CmpStrOptions, CmpStrParams, CmpStrPhoneticParams, CmpStrResult, NormalizeFlags, DiffOptions,
-    MetricInput, MetricMode, MetricRaw, MetricResult, MetricResultSingle, MetricResultBatch
+    CmpStrParams, CmpStrPhoneticParams, CmpStrResult, NormalizeFlags, MetricInput,
+    MetricMode, MetricRaw, MetricResult, MetricResultSingle, MetricResultBatch
 } from './utils/Types';
 
 import { CmpStr } from './CmpStr';
@@ -152,6 +152,239 @@ export class CmpStrAsync<R = MetricRaw> extends CmpStr<R> {
 
         // Asynchronously compute the phonetic index and return it
         return phonetic.getIndexAsync( src );
+
+    }
+
+    /**
+     * ---------------------------------------------------------------------------------
+     * Public asynchronously methods for string comparison and phonetic indexing
+     * ---------------------------------------------------------------------------------
+     * 
+     * These methods provide the asynchronous core functionality for string comparison,
+     * phonetic indexing and metric computation, allowing for non-blocking operations.
+     */
+
+    /**
+     * Asynchronously performs a single metric comparison between the source and target.
+     * 
+     * @param {string} target - The target string
+     * @param {CmpStrParams} [args] - Additional parameters
+     * @returns {Promise<T>} - The metric result
+     */
+    public async testAsync<T extends CmpStrResult | MetricResultSingle<R>> (
+        target: string, args?: CmpStrParams
+    ) : Promise<T> {
+
+        return this.computeAsync<T>( target, args, 'single' );
+
+    }
+
+    /**
+     * Asynchronously performs a single metric comparison and returns only the numeric score.
+     * 
+     * @param {string} target - The target string
+     * @param {CmpStrParams} [args] - Additional parameters
+     * @returns {Promise<number>} - The similarity score (0..1)
+     */
+    public async compareAsync ( target: string, args?: CmpStrParams ) : Promise<number> {
+
+        return ( await this.computeAsync<MetricResultSingle<R>>( target, {
+            ...args, ...{ raw: true }
+        }, 'single' ) ).res;
+
+    }
+
+    /**
+     * Asynchronously performs a batch metric comparison between the source and target.
+     * 
+     * @param {MetricInput} target - The target string or array
+     * @param {CmpStrParams} [args] - Additional parameters
+     * @returns {Promise<T>} - The batch metric results
+     */
+    public async batchTestAsync<T extends CmpStrResult[] | MetricResultBatch<R>> (
+        target: MetricInput, args?: CmpStrParams
+    ) : Promise<T> {
+
+        return this.computeAsync<T>( target, args, 'batch' );
+
+    }
+
+    /**
+     * Asynchronously performs a batch metric comparison and returns results sorted by score.
+     * 
+     * @param {MetricInput} target - The target string or array
+     * @param {'desc'|'asc'} [dir='desc'] - Sort direction
+     * @param {CmpStrParams} [args] - Additional parameters
+     * @returns {Promise<T>} - The sorted batch results
+     */
+    public async batchSortedAsync<T extends CmpStrResult[] | MetricResultBatch<R>> (
+        target: MetricInput, dir: 'desc' | 'asc' = 'desc', args?: CmpStrParams
+    ) : Promise<T> {
+
+        const arr = await this.batchTestAsync<MetricResultBatch<R>>( target, {
+            ...args, ...{ raw: true }
+        } );
+
+        return this.resolveResult(
+            arr.sort( ( a, b ) => dir === 'asc' ? a.res - b.res : b.res - a.res ),
+            args?.raw ?? this.options.raw
+        ) as T;
+
+    }
+
+    /**
+     * Asynchronously performs a pairwise metric comparison between the source and target arrays.
+     * 
+     * @param {MetricInput} target - The target array
+     * @param {CmpStrParams} [args] - Additional parameters
+     * @returns {Promise<T>} - The pairwise metric results
+     */
+    public async pairsAsync<T extends CmpStrResult[] | MetricResultBatch<R>> (
+        target: MetricInput, args?: CmpStrParams
+    ) : Promise<T> {
+
+        return this.computeAsync<T>( target, args, 'pairwise' );
+
+    }
+
+    /**
+     * Asynchronously performs a batch comparison and returns only results above the threshold.
+     * 
+     * @param {MetricInput} target - The target string or array
+     * @param {number} threshold - The similarity threshold (0..1)
+     * @param {CmpStrParams} [args] - Additional parameters
+     * @returns {Promise<T>} - The filtered batch results
+     */
+    public async matchAsync<T extends CmpStrResult[] | MetricResultBatch<R>> (
+        target: MetricInput, threshold: number, args?: CmpStrParams
+    ) : Promise<T> {
+
+        const arr = await this.batchTestAsync<MetricResultBatch<R>>( target, {
+            ...args, ...{ raw: true }
+        } );
+
+        return this.resolveResult(
+            arr.filter( r => r.res >= threshold ).sort( ( a, b ) => b.res - a.res ),
+            args?.raw ?? this.options.raw
+        ) as T;
+
+    }
+
+    /**
+     * Asynchronously returns the n closest matches from a batch comparison.
+     * 
+     * @param {MetricInput} target - The target string or array
+     * @param {number} [n=1] - Number of closest matches
+     * @param {CmpStrParams} [args] - Additional parameters
+     * @returns {Promise<T>} - The closest matches
+     */
+    public async closestAsync<T extends CmpStrResult[] | MetricResultBatch<R>> (
+        target: MetricInput, n: number = 1, args?: CmpStrParams
+    ) : Promise<T> {
+
+        return ( await this.batchSortedAsync( target, 'desc', args ) ).slice( 0, n ) as T;
+
+    }
+
+    /**
+     * Asynchronously returns the n furthest matches from a batch comparison.
+     * 
+     * @param {MetricInput} target - The target string or array
+     * @param {number} [n=1] - Number of furthest matches
+     * @param {CmpStrParams} [args] - Additional parameters
+     * @returns {Promise<T>} - The furthest matches
+     */
+    public async furthestAsync<T extends CmpStrResult[] | MetricResultBatch<R>> (
+        target: MetricInput, n: number = 1, args?: CmpStrParams
+    ) : Promise<T> {
+
+        return ( await this.batchSortedAsync( target, 'asc', args ) ).slice( 0, n ) as T;
+
+    }
+
+    /**
+     * Asynchronously performs a normalized and filtered substring search.
+     * 
+     * @param {string} needle - The search string
+     * @param {string[]} [haystack] - The array to search in (defaults to source)
+     * @param {NormalizeFlags} [flags] - Normalization flags
+     * @returns {Promise<string[]>} - Array of matching entries
+     */
+    public async searchAsync (
+        needle: string, haystack?: string[], flags?: NormalizeFlags
+    ) : Promise<string[]> {
+
+        this.check( [ 'source', haystack ] );
+
+        // Prepare the needle and haystack, normalizing and filtering them
+        const test: string = await this.prepareAsync( needle, flags ) as string;
+        const src: string[] = this.asArr( haystack ?? this.source );
+        const hstk: string[] = await this.prepareAsync( src, flags ) as string[];
+
+        // Asynchronously filter the haystack based on the normalized test string
+        return Promise.all( hstk.map( async ( h, i ) => h.includes( test ) ? src[ i ] : null ) )
+            .then( results => results.filter( ( v ) : v is string => v !== null ) );
+
+    }
+
+    /**
+     * Asynchronously computes a similarity matrix for the given input array.
+     * 
+     * @param {string[]} input - The input array
+     * @param {CmpStrParams} [args] - Additional parameters
+     * @returns {Promise<number[][]>} - The similarity matrix
+     */
+    public async matrixAsync ( input: string[], args?: CmpStrParams ) : Promise<number[][]> {
+
+        input = await this.prepareAsync( input, args?.flags ) as string[];
+
+        return Promise.all( input.map( async a => (
+            Promise.all( input.map( async b => (
+                await this.computeAsync<MetricResultSingle<R>>(
+                    b, { flags: '', raw: true, source: a }, 'single'
+                )
+            ).res ?? 0 ) )
+        ) ) );
+
+    }
+
+    /**
+     * Asynchronously computes the phonetic index for a string using the configured algorithm.
+     * 
+     * @param {string} [input] - The input string
+     * @param {CmpStrPhoneticParams} [args] - Phonetic options
+     * @returns {Promise<string>} - The phonetic index as a string
+     */
+    public async phoneticIndexAsync ( input?: string, args?: CmpStrPhoneticParams ) : Promise<string> {
+
+        return ( await this.indexAsync( input, args ) ).join( ' ' );
+
+    }
+
+    /**
+     * Asynchronously performs a phonetic-aware search in the haystack.
+     * 
+     * @param {string} needle - The search string
+     * @param {string[]} haystack - The array to search in (defaults to source)
+     * @param {CmpStrPhoneticParams} [args] - Phonetic options
+     * @returns {Promise<string[]>} - Array of matching entries
+     */
+    public async phoneticSearchAsync (
+        needle: string, haystack: string[], args?: CmpStrPhoneticParams
+    ) : Promise<string[]> {
+
+        this.check( [ 'source', haystack ], [ 'phonetic', args?.algo ] );
+
+        // Compute the phonetic index for the needle and haystack
+        const test: string = ( await this.indexAsync( needle, args ) ).join( ' ' );
+        const src: string[] = this.asArr( haystack ?? this.source );
+        const hstk: string[] = await Promise.all( src.map( s => (
+            this.indexAsync( s, args ).then( arr => arr.join( ' ' ) )
+        ) ) );
+
+        // Asynchronously filter the haystack based on the phonetic index of the test string
+        return Promise.all( hstk.map( async ( h, i ) => h.includes( test ) ? src[ i ] : null ) )
+            .then( results => results.filter( ( v ) : v is string => v !== null ) );
 
     }
 
