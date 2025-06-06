@@ -30,4 +30,30 @@ describe( 'CmpStr > Metric', () => {
 
     } );
 
+    it( 'Needleman-Wunsch Distance', () => {
+
+        const cmp = new CmpStr ( [ 'Meyer', 'Müller', 'Miller', 'Meyers', 'Meier' ], 'needlemanWunsch' );
+        const res = cmp.match( 'Maier', 0.6 );
+
+        expect( res ).toHaveLength( 4 );
+
+    } );
+
+    it( 'Jaro-Winkler Distance', () => {
+
+        const cmp = new CmpStr ( [ 'hello', 'hi', 'hola' ] ).setMetric( 'jaroWinkler' );
+        const res = cmp.pairs( [ 'hallo', 'allo', 'hey' ] );
+
+        expect( res ).toEqual( [
+            { target: 'hallo', match: 0.88 },
+            { target: 'allo', match: 0 },
+            { target: 'hey', match: 0.575 }
+        ] );
+
+        expect( () => { cmp.pairs( [ 'hallo', 'allo' ] ) } ).toThrowError(
+            `mode <pairwise> requires arrays of equal length`
+        );
+
+    } );
+
 } );
