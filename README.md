@@ -43,12 +43,14 @@ Minimal usage example:
 ```js
 import { CmpStr } from 'cmpstr';
 
-const cmp = new CmpStr ( [ 'hello', 'hola' ], 'levenshtein', {
+const cmp = new CmpStr( [ 'hello', 'hola' ], 'levenshtein', {
   normalizeFlags: 'i'
 } );
 
 const result = cmp.test( 'Hallo' );
-console.log( result ); // { target: 'hallo', match: 0.8 }
+
+console.log( result );
+// { target: 'hallo', match: 0.8 }
 ```
 
 For asynchronous workloads:
@@ -56,10 +58,12 @@ For asynchronous workloads:
 ```js
 import { CmpStrAsync } from 'cmpstr';
 
-const cmp = new CmpStrAsync ( [
+const cmp = new CmpStrAsync( [
   'Meyer', 'Müller', 'Miller', 'Meyers', 'Meier'
 ] ).setPhonetic( 'soundex' );
 
 const result = await cmp.phoneticSearchAsync( 'Maier' );
-console.log( result ); // [ 'Meyer', 'Meier' ]
+
+console.log( result );
+// [ 'Meyer', 'Meier' ]
 ```
