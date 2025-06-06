@@ -780,11 +780,11 @@ export class CmpStr<R = MetricRaw> {
      * Performs a phonetic-aware search in the haystack.
      * 
      * @param {string} needle - The search string
-     * @param {string[]} haystack - The array to search in (defaults to source)
+     * @param {string[]} [haystack] - The array to search in (defaults to source)
      * @param {CmpStrPhoneticParams} [args] - Phonetic options
      * @returns {string[]} - Array of matching entries
      */
-    public phoneticSearch ( needle: string, haystack: string[], args?: CmpStrPhoneticParams ) : string[] {
+    public phoneticSearch ( needle: string, haystack?: string[], args?: CmpStrPhoneticParams ) : string[] {
 
         this.check( [ 'source', haystack ], [ 'phonetic', args?.algo ] );
 
