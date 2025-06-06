@@ -25,10 +25,15 @@
  *    - Suitable for Node.js and legacy environments
  * 
  * 3. Browser Build (UMD):
- *    - Output files: dist/CmpStr.js (unminified), dist/CmpStr.min.js (minified)
+ *    - Output files: dist/umd/CmpStr.js (unminified), dist/umd/CmpStr.min.js (minified)
  *    - Format: UMD (Universal Module Definition)
  *    - Exposes the library as a global variable 'CmpStr' for direct use in browsers
  *    - Includes both a readable and a minified version (using Terser)
+ * 
+ * 4. Browser Build (EMS):
+ *   - Output files: dist/umd/CmpStr.esm.js (unminified), dist/umd/CmpStr.esm.min.js (minified)
+ *   - Format: ES module (import/export syntax)
+ *   - Suitable for modern browsers that support ES modules
  * 
  * Plugins:
  * --------
@@ -36,6 +41,7 @@
  * - @rollup/plugin-node-resolve: Resolves Node.js modules for browser compatibility
  * - @rollup/plugin-commonjs: Converts CommonJS modules to ES6 for Rollup consumption
  * - terser: Minifies the browser bundle for production use
+ * - prettier: Formats the output files for better readability
  * 
  * Usage:
  * ------
@@ -62,9 +68,14 @@ const commit = execSync( 'git rev-parse --short HEAD' ).toString().trim();
 const date = new Date().toISOString().replace( /([^0-9])/g, '' ).substring( 2, 8 );
 const build = `CmpStr v${version} dev-${commit}-${ date }`;
 
-console.log( `-`.repeat( 80 ) );
-console.log( `\x1b[36m[BUILD] \x1b[33m${build}\x1b[0m` );
-console.log( `-`.repeat( 80 ) );
+const banner = `// ${build} by Paul Köhler @komed3 / MIT License`;
+
+const preamble = `/**
+ * ${build}
+ * This is a lightweight, fast and well performing library for calculating string similarity.
+ * (c) 2023-${ new Date().getFullYear() } Paul Köhler @komed3 / MIT License
+ * Visit https://github.com/komed3/cmpstr and https://npmjs.org/package/cmpstr
+ */`;
 
 const plugins = [
     nodeResolve(), commonjs(),
@@ -85,14 +96,14 @@ const beautify = prettier( {
     objectWrap: 'collapse'
 } );
 
-const banner = `// ${build} by Paul Köhler @komed3 / MIT License`;
+const minify = terser( {
+    format: { comments: false, preamble },
+    compress: { passes: 6 }
+} );
 
-const preamble = `/**
- * ${build}
- * This is a lightweight, fast and well performing library for calculating string similarity.
- * (c) 2023-${ new Date().getFullYear() } Paul Köhler @komed3 / MIT License
- * Visit https://github.com/komed3/cmpstr and https://npmjs.org/package/cmpstr
- */`;
+console.log( `-`.repeat( 80 ) );
+console.log( `\x1b[36m[BUILD] \x1b[33m${build}\x1b[0m` );
+console.log( `-`.repeat( 80 ) );
 
 export default [
 
@@ -131,7 +142,7 @@ export default [
     {
         input: 'src/index.ts',
         output: {
-            file: 'dist/CmpStr.js',
+            file: 'dist/umd/CmpStr.js',
             format: 'umd',
             name: 'CmpStr',
             sourcemap: true,
@@ -144,13 +155,34 @@ export default [
     {
         input: 'src/index.ts',
         output: {
-            file: 'dist/CmpStr.min.js',
+            file: 'dist/umd/CmpStr.min.js',
             format: 'umd',
             name: 'CmpStr',
-            plugins: [ terser( {
-                format: { comments: false, preamble },
-                compress: { passes: 6 }
-            } ) ],
+            plugins: [ minify ],
+            sourcemap: true
+        },
+        plugins
+    },
+
+    // Browser Build (EMS)
+    {
+        input: 'src/index.ts',
+        output: {
+            file: 'dist/umd/CmpStr.esm.js',
+            format: 'es',
+            sourcemap: true,
+            banner: preamble
+        },
+        plugins
+    },
+
+    // Minified Browser Build (EMS)
+    {
+        input: 'src/index.ts',
+        output: {
+            file: 'dist/umd/CmpStr.esm.min.js',
+            format: 'es',
+            plugins: [ minify ],
             sourcemap: true
         },
         plugins

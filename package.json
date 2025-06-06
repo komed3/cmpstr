@@ -45,7 +45,7 @@
   ],
   "main": "dist/cjs/index.js",
   "module": "dist/esm/index.js",
-  "browser": "dist/browser/CmpStr.min.js",
+  "browser": "dist/umd/CmpStr.min.js",
   "types": "dist/types/index.d.ts",
   "exports": {
     "require": "./dist/cjs/index.js",
