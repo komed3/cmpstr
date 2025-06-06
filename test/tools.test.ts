@@ -1,7 +1,22 @@
 import { describe, it, expect } from 'vitest';
-import { DiffChecker, Normalizer, TextAnalyzer } from '../src';
+import { CmpStr, DiffChecker, Normalizer, TextAnalyzer } from '../src';
 
 describe( 'CmpStr > Tools', () => {
+
+    it( 'Similarity Matrix', () => {
+
+        const cmp = new CmpStr ().setMetric( 'dice' );
+        const res = cmp.matrix( [ 'hallo', 'hello', 'hi', 'hola', 'hey' ] );
+
+        expect( res ).toEqual( [
+            [ 1, 0.5, 0, 0, 0 ],
+            [ 0.5, 1, 0, 0, 1/3 ],
+            [ 0, 0, 1, 0, 0 ],
+            [ 0, 0, 0, 1, 0 ],
+            [ 0, 1/3, 0, 0, 1 ]
+        ] );
+
+    } );
 
     it( 'Normalizer', () => {
 
