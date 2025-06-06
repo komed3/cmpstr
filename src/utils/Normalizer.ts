@@ -59,7 +59,7 @@ export class Normalizer {
     private static getPipeline ( flags: NormalizeFlags ) : NormalizerFn {
 
         // Return the cached pipeline if it exists
-        if ( this.pipeline.has( flags ) ) return this.pipeline.get( flags )!;
+        if ( Normalizer.pipeline.has( flags ) ) return Normalizer.pipeline.get( flags )!;
 
         // Define the normalization steps based on the flags
         const steps: NormalizerFn[] = [];
@@ -97,7 +97,7 @@ export class Normalizer {
         };
 
         // Cache the compiled function for the given flags
-        this.pipeline.set( flags, compiled );
+        Normalizer.pipeline.set( flags, compiled );
 
         // Return the compiled normalization function
         return compiled;
@@ -117,22 +117,22 @@ export class Normalizer {
     ) : string | string[] {
 
         // If input is an array, normalize each string in the array
-        if ( Array.isArray( input ) ) return input.map( s => this.normalize( s, flags ) ) as string[];
+        if ( Array.isArray( input ) ) return input.map( s => Normalizer.normalize( s, flags ) ) as string[];
 
         // If input or flags are not provided, return the input as is
         if ( ! flags || typeof flags !== 'string' || ! input ) return input;
 
         // Generate a cache key based on the flags and input
-        const key: string | false = this.cache.key( flags, [ input ] );
+        const key: string | false = Normalizer.cache.key( flags, [ input ] );
 
         // If the key exists in the cache, return the cached result
-        if ( key && this.cache.has( key ) ) return this.cache.get( key )!;
+        if ( key && Normalizer.cache.has( key ) ) return Normalizer.cache.get( key )!;
 
         // Normalize the input using the pipeline for the given flags
-        const res: string = this.getPipeline( flags )( input );
+        const res: string = Normalizer.getPipeline( flags )( input );
 
         // If a key was generated, store the result in the cache
-        if ( key ) this.cache.set( key, res );
+        if ( key ) Normalizer.cache.set( key, res );
 
         // Return the normalized result
         return res;
@@ -154,9 +154,9 @@ export class Normalizer {
 
         return await ( Array.isArray( input )
             // If input is an array, normalize each string in the array asynchronously
-            ? Promise.all( input.map( s => this.normalize( s, flags ) ) as string[] )
+            ? Promise.all( input.map( s => Normalizer.normalize( s, flags ) ) as string[] )
             // If input is a single string, normalize it asynchronously
-            : Promise.resolve( this.normalize( input, flags ) ) );
+            : Promise.resolve( Normalizer.normalize( input, flags ) ) );
 
     }
 
@@ -166,8 +166,8 @@ export class Normalizer {
      */
     static clear () : void {
 
-        this.pipeline.clear();
-        this.cache.clear();
+        Normalizer.pipeline.clear();
+        Normalizer.cache.clear();
 
     }
 

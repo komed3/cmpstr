@@ -36,7 +36,7 @@ export class Filter {
      */
     private static find ( hook: string, id: string ) : FilterEntry | undefined {
 
-        return this.filters.get( hook )?.find( f => f.id === id );
+        return Filter.filters.get( hook )?.find( f => f.id === id );
 
     }
 
@@ -57,7 +57,7 @@ export class Filter {
         const { priority = 10, active = true, overrideable = true } = options;
 
         // Check if the filter already exists
-        const filter: FilterEntry[] = this.filters.get( hook ) ?? [];
+        const filter: FilterEntry[] = Filter.filters.get( hook ) ?? [];
         const index: number = filter.findIndex( f => f.id === id );
 
         // If the filter already exists and is not overrideable, return false
@@ -78,7 +78,7 @@ export class Filter {
         filter.sort( ( a, b ) => a.priority - b.priority );
 
         // Update the filters map
-        this.filters.set( hook, filter );
+        Filter.filters.set( hook, filter );
 
         return true;
 
@@ -94,7 +94,7 @@ export class Filter {
     public static remove ( hook: string, id: string ) : boolean {
 
         // Get the filter array for the specified hook
-        const filter: FilterEntry[] | undefined = this.filters.get( hook );
+        const filter: FilterEntry[] | undefined = Filter.filters.get( hook );
 
         // If the filter array does not exist, return false
         if ( ! filter ) return false;
@@ -125,7 +125,7 @@ export class Filter {
     public static pause ( hook: string, id: string ) : boolean {
 
         // Find the filter entry by hook and id
-        const f: FilterEntry | undefined = this.find( hook, id );
+        const f: FilterEntry | undefined = Filter.find( hook, id );
 
         if ( ! f ) return false;
 
@@ -146,7 +146,7 @@ export class Filter {
     public static resume ( hook: string, id: string ) : boolean {
 
         // Find the filter entry by hook and id
-        const f: FilterEntry | undefined = this.find( hook, id );
+        const f: FilterEntry | undefined = Filter.find( hook, id );
 
         if ( ! f ) return false;
 
@@ -167,7 +167,7 @@ export class Filter {
     public static list ( hook: string, active: boolean = false ) : string[] {
 
         // Get the filter array for the specified hook
-        const filter: FilterEntry[] = this.filters.get( hook ) ?? [];
+        const filter: FilterEntry[] = Filter.filters.get( hook ) ?? [];
 
         const list: string[] = [];
 
@@ -188,7 +188,7 @@ export class Filter {
     public static apply ( hook: string, input: string ) : string {
 
         // Get the filter array for the specified hook
-        const filter: FilterEntry[] | undefined = this.filters.get( hook );
+        const filter: FilterEntry[] | undefined = Filter.filters.get( hook );
 
         // If no filters are found for the hook or if no filters are active, return the input unchanged
         if ( ! filter || filter.every( f => ! f.active ) ) return input;
@@ -213,7 +213,7 @@ export class Filter {
     public static async applyAsync ( hook: string, input: string ) : Promise<string> {
 
         // Get the filter array for the specified hook
-        const filter: FilterEntry[] | undefined = this.filters.get( hook );
+        const filter: FilterEntry[] | undefined = Filter.filters.get( hook );
 
         // If no filters are found for the hook or if no filters are active, return the input unchanged
         if ( ! filter || filter.every( f => ! f.active ) ) return input;
@@ -235,10 +235,10 @@ export class Filter {
     public static clear ( hook?: string ) : void {
 
         // If a specific hook is provided, delete its filters
-        if ( hook ) this.filters.delete( hook );
+        if ( hook ) Filter.filters.delete( hook );
 
         // If no hook is provided, clear all filters
-        else this.filters.clear();
+        else Filter.filters.clear();
 
     }
 
