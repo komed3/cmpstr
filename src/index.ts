@@ -42,6 +42,9 @@
 
 'use strict';
 
+// Export the types and interfaces for the library
+export * from './utils/Types';
+
 // Export the main CmpStr class and its async variant
 export { CmpStr } from './CmpStr';
 export { CmpStrAsync } from './CmpStrAsync';

@@ -1,6 +1,6 @@
 # --------------------------------------------------------------------------------
 # 
-# Workflow: Lint & Build CmpStr
+# Workflow: Build
 # 
 # This GitHub Actions workflow performs automated type-checking, linting, and
 # building for the CmpStr project. It is triggered on every push and pull request
@@ -12,7 +12,12 @@
 #    - Installs dependencies
 #    - Runs TypeScript-based linting and type-checking via `npm run lint`
 # 
-# 2. Build (Build & Package):
+# 2. Test (Run Tests):
+#    - Runs after the Lint job completes successfully
+#    - Installs dependencies
+#    - Executes tests using `npm test`
+# 
+# 3. Build (Build & Package):
 #    - Runs after the Lint job completes successfully
 #    - Installs dependencies
 #    - Builds the project using `npm run build`
@@ -20,7 +25,7 @@
 # 
 # --------------------------------------------------------------------------------
 
-name: Lint & Build CmpStr
+name: Build
 
 on:
   push:
@@ -41,6 +46,7 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 20
+          cache: npm
 
       - name: Install Dependencies
         run: npm ci
@@ -48,10 +54,9 @@ jobs:
       - name: Type Checking with tsc
         run: npm run lint
 
-  build:
-    name: Build & Package
+  test:
+    name: Run Tests
     runs-on: ubuntu-latest
-    needs: lint
 
     steps:
       - name: Checkout Repository
@@ -61,6 +66,28 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 20
+          cache: npm
+
+      - name: Install Dependencies
+        run: npm ci
+
+      - name: Run Tests
+        run: npm test
+
+  build:
+    name: Build & Package
+    runs-on: ubuntu-latest
+    needs: [ lint, test ]
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Use Node.js 20.x
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
 
       - name: Install Dependencies
         run: npm ci
