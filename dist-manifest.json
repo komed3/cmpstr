@@ -1,0 +1,35 @@
+{
+  "static": [
+    "package.json",
+    "README.md",
+    "LICENSE",
+    "dist/CmpStr.esm.js",
+    "dist/CmpStr.esm.js.map",
+    "dist/CmpStr.esm.min.js",
+    "dist/CmpStr.esm.min.js.map",
+    "dist/CmpStr.umd.js",
+    "dist/CmpStr.umd.js.map",
+    "dist/CmpStr.umd.min.js",
+    "dist/CmpStr.umd.min.js.map"
+  ],
+  "dynamic": {
+    "sourceRoot": "src",
+    "dtsOnly": [
+      "metric/index.ts",
+      "phonetic/index.ts",
+      "utils/Types.ts"
+    ],
+    "targets": {
+      "full": [
+        "dist/esm/{dir}/{name}.js",
+        "dist/esm/{dir}/{name}.js.map",
+        "dist/cjs/{dir}/{name}.js",
+        "dist/cjs/{dir}/{name}.js.map",
+        "dist/types/{dir}/{name}.d.ts"
+      ],
+      "dts": [
+        "dist/types/{dir}/{name}.d.ts"
+      ]
+    }
+  }
+}
