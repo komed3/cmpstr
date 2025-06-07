@@ -1,43 +1,35 @@
 {
   "name": "cmpstr",
-  "description": "lightweight npm package to calculate string similarity",
+  "description": "CmpStr is a lightweight, fast and well performing package for calculating string similarity",
   "author": {
-    "name" : "komed3 (Paul Köhler)",
-    "email" : "webmaster@komed3.de",
-    "url" : "https://komed3.de"
+    "name": "komed3 (Paul Köhler)",
+    "email": "webmaster@komed3.de",
+    "url": "https://komed3.de"
   },
-  "homepage": "https://github.com/komed3/cmpstr#readme",
-  "version": "2.0.3",
-  "main": "src/index.js",
-  "types": "src/index.d.ts",
+  "homepage": "https://github.com/komed3/cmpstr",
+  "version": "3.0.0",
   "license": "MIT",
   "keywords": [
     "string-similarity",
-    "string-comparison",
     "similarity-algorithms",
-    "phonetic-search",
-    "soundex",
-    "levenshtein-distance",
-    "damerau-levenshtein",
-    "jaro-winkler",
-    "cosine-similarity",
-    "dice-coefficient",
-    "jaccard-index",
-    "hamming-distance",
-    "longest-common-subsequence",
-    "needleman-wunsch",
-    "smith-waterman",
-    "q-gram",
+    "string-comparison",
     "similarity-matrix",
     "batch-operations",
     "normalization",
     "asynchronous",
     "custom-algorithms",
-    "text-processing",
-    "fuzzy-matching",
-    "string-matching",
-    "text-similarity",
-    "typescript-definitions"
+    "phonetic-search",
+    "cosine-similarity",
+    "damerau-levenshtein",
+    "dice-coefficient",
+    "hamming-distance",
+    "jaccard-index",
+    "jaro-winkler",
+    "levenshtein-distance",
+    "longest-common-subsequence",
+    "needleman-wunsch",
+    "q-gram",
+    "smith-waterman"
   ],
   "repository": {
     "type": "git",
@@ -45,5 +37,38 @@
   },
   "bugs": {
     "url": "https://github.com/komed3/cmpstr/issues"
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
+  "main": "dist/cjs/index.js",
+  "types": "dist/types/index.d.ts",
+  "module": "dist/esm/index.js",
+  "browser": "dist/CmpStr.umd.min.js",
+  "exports": {
+    "require": "./dist/cjs/index.js",
+    "import": "./dist/esm/index.js"
+  },
+  "type": "module",
+  "scripts": {
+    "test": "vitest run",
+    "build": "rollup -c && tsc --project tsconfig.build.json",
+    "lint": "tsc --project tsconfig.lint.json",
+    "clean": "rm -rf dist"
+  },
+  "devDependencies": {
+    "@rollup/plugin-commonjs": "^28.0.3",
+    "@rollup/plugin-node-resolve": "^16.0.1",
+    "@rollup/plugin-terser": "^0.4.4",
+    "@rollup/plugin-typescript": "^12.1.2",
+    "@types/node": "^22.15.23",
+    "prettier": "^3.5.3",
+    "rollup": "^4.41.1",
+    "rollup-plugin-prettier": "^4.1.2",
+    "tslib": "^2.8.1",
+    "typescript": "^5.8.3",
+    "vitest": "^3.2.2"
   }
 }

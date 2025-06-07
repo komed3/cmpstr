@@ -1,0 +1,63 @@
+# --------------------------------------------------------------------------------
+# 
+# Workflow: CodeQL Analysis
+# 
+# This GitHub Actions workflow performs static code analysis using GitHub CodeQL
+# to detect potential security vulnerabilities and quality issues in the CmpStr
+# project.
+# 
+# CodeQL is a security analysis engine that examines your codebase for known
+# patterns of vulnerabilities such as injection flaws, logic errors, or unsafe
+# dependencies.
+# 
+# This will automatically run after a successful merge.
+# 
+# --------------------------------------------------------------------------------
+
+name: CodeQL Analysis
+
+on:
+  pull_request:
+    branches: [ main ]
+    types: [ closed ]
+  workflow_dispatch:
+
+jobs:
+  analyze:
+    if: ${{ github.event.pull_request.merged }}
+    name: Analyze with CodeQL
+    runs-on: ubuntu-latest
+    permissions:
+      security-events: write
+      actions: read
+      contents: read
+
+    strategy:
+      fail-fast: false
+      matrix:
+        language: [ 'javascript-typescript' ]
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Use Node.js 20.x
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Initialize CodeQL
+        uses: github/codeql-action/init@v3
+        with:
+          languages: ${{ matrix.language }}
+
+      - name: Install Dependencies
+        run: npm ci
+
+      - name: Build Project
+        run: npm run build
+
+      - name: Perform CodeQL Analysis
+        uses: github/codeql-action/analyze@v3
+        with:
+          category: "/language:${{ matrix.language }}"

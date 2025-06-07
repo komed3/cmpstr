@@ -1,0 +1,218 @@
+# --------------------------------------------------------------------------------
+# 
+# Workflow: Lint, Build & Pack
+# 
+# This GitHub Actions workflow performs automated type-checking, linting, and
+# building for the CmpStr project. It is triggered on every push and pull request
+# targeting the main branch.
+# 
+# The workflow consists of two jobs:
+# 
+# 1. Lint (TypeScript Linting):
+#    - Installs dependencies
+#    - Runs TypeScript-based linting and type-checking via `npm run lint`
+# 
+# 2. Test (Run Tests):
+#    - Runs after the Lint job completes successfully
+#    - Installs dependencies
+#    - Executes tests using `npm test`
+# 
+# 3. Build (Build & Package):
+#    - Runs after the Lint job completes successfully
+#    - Installs dependencies
+#    - Builds the project using `npm run build`
+#    - Uploads the resulting `dist/` directory as an artifact
+# 
+# 4. Check (Ready for Release):
+#    - Runs after the Build job completes successfully
+#    - Downloads the `dist/` artifact
+#    - Packs the project into an npm tarball using `npm pack`
+#    - Unpacks the tarball to validate the presence of expected files
+#    - Using `dist-manifest.json` for validating files
+#    - Uploads the tarball as an artifact for further use
+# 
+# --------------------------------------------------------------------------------
+
+name: Build
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  lint:
+    name: TypeScript Linting
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Use Node.js 20.x
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install Dependencies
+        run: npm ci
+
+      - name: Type Checking with `tsc`
+        run: npm run lint
+
+  test:
+    name: Run Tests
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Use Node.js 20.x
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install Dependencies
+        run: npm ci
+
+      - name: Run Tests
+        run: npm test
+
+  build:
+    name: Build Project
+    runs-on: ubuntu-latest
+    needs: [ lint, test ]
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Use Node.js 20.x
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install Dependencies
+        run: npm ci
+
+      - name: Build Project
+        run: npm run build
+
+      - name: Upload dist as Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: cmpstr-dist
+          path: dist/
+          if-no-files-found: error
+          compression-level: 9
+
+  check:
+    name: Ready for Release?
+    runs-on: ubuntu-latest
+    needs: [ build ]
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Use Node.js 20.x
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Download dist Artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: cmpstr-dist
+          path: dist/
+
+      - name: Pack npm Tarball
+        run: npm pack
+
+      - name: Unpack Tarball for Validation
+        run: |
+          mkdir extracted
+          tar -xzf cmpstr-*.tgz -C extracted
+
+      - name: Validate Dist Files
+        run: |
+          set -e
+          manifest="dist-manifest.json"
+          base_dir="extracted/package"
+          missing=0
+
+          echo "Validating static files from manifest …"
+
+          for path in $(jq -r '.static[]' "$manifest"); do
+            full_path="$base_dir/$path"
+            if [[ ! -f "$full_path" ]]; then
+              echo -e "\e[31mMissing: $full_path\e[0m"
+              missing=1
+            else
+              echo -e "\e[32mFound: $full_path\e[0m"
+            fi
+          done
+
+          echo "Validating dynamic files from manifest …"
+
+          src_root=$(jq -r '.dynamic.sourceRoot' "$manifest")
+          dts_only=($(jq -r '.dynamic.dtsOnly[]' "$manifest"))
+          full_targets=($(jq -r '.dynamic.targets.full[]' "$manifest"))
+          dts_targets=($(jq -r '.dynamic.targets.dts[]' "$manifest"))
+
+          while IFS= read -r -d '' src_file; do
+            relative_path="${src_file#"$src_root"/}"
+            base_path="${relative_path%.ts}"
+            dir_path=$(dirname "$relative_path")
+            file_name=$(basename "$base_path")
+
+            check_mode="full"
+
+            for dts in "${dts_only[@]}"; do
+              if [[ "$relative_path" == "$dts" ]]; then
+                check_mode="dts"
+                break
+              fi
+            done
+
+            if [[ "$check_mode" == "dts" ]]; then
+              expected=("${dts_targets[@]}")
+            else
+              expected=("${full_targets[@]}")
+            fi
+
+            for pattern in "${expected[@]}"; do
+              rel_path="${pattern//\{dir\}/$dir_path}"
+              rel_path="${rel_path//\{name\}/$file_name}"
+              full_path="$base_dir/$rel_path"
+
+              if [[ ! -f "$full_path" ]]; then
+                echo -e "\e[31mMissing: $full_path\e[0m"
+                missing=1
+              else
+                echo -e "\e[32mFound: $full_path\e[0m"
+              fi
+            done
+
+          done < <(find "$src_root" -name "*.ts" -print0)
+
+          if [[ "$missing" -eq 1 ]]; then
+            echo -e "\e[41m One or more expected files are missing in the tarball \e[0m"
+            exit 1
+          else
+            echo -e "\e[42m All expected files are present \e[0m"
+          fi
+
+      - name: Upload Tarball as Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: cmpstr-tgz
+          path: cmpstr-*.tgz
+          if-no-files-found: error
+          compression-level: 0
