@@ -27,6 +27,7 @@
 #    - Runs after the Build job completes successfully
 #    - Downloads the `dist/` artifact
 #    - Packs the project into an npm tarball using `npm pack`
+#    - Unpacks the tarball to validate the presence of expected files
 #    - Uploads the tarball as an artifact for further use
 # 
 # --------------------------------------------------------------------------------
@@ -140,7 +141,34 @@ jobs:
 
       - name: Validate Dist Files
         run: |
-          echo "Scanning src/ for TypeScript source files …"
+          missing=0
+
+          echo "Validating root and bundled files …"
+
+          required_static_files=(
+            "extracted/package/package.json"
+            "extracted/package/README.md"
+            "extracted/package/LICENSE"
+            "extracted/package/dist/CmpStr.esm.js"
+            "extracted/package/dist/CmpStr.esm.js.map"
+            "extracted/package/dist/CmpStr.esm.min.js"
+            "extracted/package/dist/CmpStr.esm.min.js.map"
+            "extracted/package/dist/CmpStr.umd.js"
+            "extracted/package/dist/CmpStr.umd.js.map"
+            "extracted/package/dist/CmpStr.umd.min.js"
+            "extracted/package/dist/CmpStr.umd.min.js.map"
+          )
+
+          for path in "${required_static_files[@]}"; do
+            if [[ ! -f "$path" ]]; then
+              echo -e "\e[31mMissing: $path\e[0m"
+              missing=1
+            else
+              echo -e "\e[32mFound: $path\e[0m"
+            fi
+          done
+
+          echo "Scanning src/ for vadidating dist files …"
 
           dts_only_files=("metric/index.ts" "phonetic/index.ts" "utils/Types.ts")
 
@@ -178,17 +206,17 @@ jobs:
                 echo -e "\e[31mMissing: $path\e[0m"
                 missing=1
               else
-                echo -e "\e[31mFound: $path\e[0m"
+                echo -e "\e[32mFound: $path\e[0m"
               fi
             done
 
           done < <(find src/ -name "*.ts" -print0)
 
           if [[ "$missing" -eq 1 ]]; then
-            echo -e "\e[37;41mOne or more expected files are missing in the tarball.\e[0m"
+            echo -e "\e[41mOne or more expected files are missing in the tarball.\e[0m"
             exit 1
           else
-            echo -e "\e[37;42mAll expected files are present.\e[0m"
+            echo -e "\e[42mAll expected files are present.\e[0m"
           fi
 
       - name: Upload Tarball as Artifact
