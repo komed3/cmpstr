@@ -139,7 +139,7 @@ jobs:
 
       - name: Validate Critical Files
         run: |
-          cd extracted/package
+          cd validation/package
           test -f dist/esm/index.js || (echo "Missing dist/esm/index.js" && exit 1)
           test -f dist/cjs/index.js || (echo "Missing dist/cjs/index.js" && exit 1)
           test -f dist/types/index.d.ts || (echo "Missing dist/types/index.d.ts" && exit 1)
