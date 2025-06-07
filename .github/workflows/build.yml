@@ -140,27 +140,36 @@ jobs:
 
       - name: Validate Dist Files
         run: |
-          missing=0
-
           echo "Scanning src/ for TypeScript source files …"
 
-          find src/ -name "*.ts" | while read src_file; do
+          dts_only_files=("metric/index.ts" "phonetic/index.ts" "utils/Types.ts")
+
+          while IFS= read -r -d '' src_file; do
             relative_path="${src_file#src/}"
             base_path="${relative_path%.ts}"
             dir_path=$(dirname "$relative_path")
+            file_name=$(basename "$base_path")
 
-            # Special case Types.ts – skip ESM/CJS
-            if [[ "$relative_path" == "utils/Types.ts" ]]; then
+            check_mode="full"
+
+            for dts in "${dts_only_files[@]}"; do
+              if [[ "$relative_path" == "$dts" ]]; then
+                check_mode="dts"
+                break
+              fi
+            done
+
+            if [[ "$check_mode" == "dts" ]] then
               expected_paths=(
-                "extracted/package/dist/types/$dir_path/Types.d.ts"
+                "extracted/package/dist/types/$dir_path/$file_name.d.ts"
               )
             else
               expected_paths=(
-                "extracted/package/dist/esm/$dir_path/$(basename "$base_path").js"
-                "extracted/package/dist/esm/$dir_path/$(basename "$base_path").js.map"
-                "extracted/package/dist/cjs/$dir_path/$(basename "$base_path").js"
-                "extracted/package/dist/cjs/$dir_path/$(basename "$base_path").js.map"
-                "extracted/package/dist/types/$dir_path/$(basename "$base_path").d.ts"
+                "extracted/package/dist/esm/$dir_path/$file_name.js"
+                "extracted/package/dist/esm/$dir_path/$file_name.js.map"
+                "extracted/package/dist/cjs/$dir_path/$file_name.js"
+                "extracted/package/dist/cjs/$dir_path/$file_name.js.map"
+                "extracted/package/dist/types/$dir_path/$file_name.d.ts"
               )
             fi
 
@@ -172,7 +181,8 @@ jobs:
                 echo -e "\e[31mFound: $path\e[0m"
               fi
             done
-          done
+
+          done < <(find src/ -name "*.ts" -print0)
 
           if [[ "$missing" -eq 1 ]]; then
             echo -e "\e[37;41mOne or more expected files are missing in the tarball.\e[0m"
