@@ -361,31 +361,4 @@ export class CmpStrAsync<R = MetricRaw> extends CmpStr<R> {
 
     }
 
-    /**
-     * Asynchronously performs a phonetic-aware search in the haystack.
-     * 
-     * @param {string} needle - The search string
-     * @param {string[]} [haystack] - The array to search in (defaults to source)
-     * @param {CmpStrPhoneticParams} [args] - Phonetic options
-     * @returns {Promise<string[]>} - Array of matching entries
-     */
-    public async phoneticSearchAsync (
-        needle: string, haystack?: string[], args?: CmpStrPhoneticParams
-    ) : Promise<string[]> {
-
-        this.check( [ 'source', haystack ], [ 'phonetic', args?.algo ] );
-
-        // Compute the phonetic index for the needle and haystack
-        const test: string = ( await this.indexAsync( needle, args ) ).join( ' ' );
-        const src: string[] = this.asArr( haystack ?? this.source );
-        const hstk: string[] = await Promise.all( src.map( s => (
-            this.indexAsync( s, args ).then( arr => arr.join( ' ' ) )
-        ) ) );
-
-        // Asynchronously filter the haystack based on the phonetic index of the test string
-        return Promise.all( hstk.map( async ( h, i ) => h.includes( test ) ? src[ i ] : null ) )
-            .then( results => results.filter( ( v ) : v is string => v !== null ) );
-
-    }
-
 };

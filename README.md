@@ -24,7 +24,7 @@ Started in 2023 as a small project only supporting two algorithms, it was rework
 - Phonetic algorithms (Cologne, Soundex, Metaphone) with mapping registry
 - Flexible normalization and filtering pipeline for all inputs
 - Batch, pairwise, and single comparison with detailed, type-safe results
-- Phonetic-aware search and indexing
+- Phonetic-aware search, comparison and indexing
 - Readability and text analysis utilities (syllables, word stats, etc.)
 - Unified diff and difference reporting (line/word, ASCII/CLI)
 - Full TypeScript type safety, extensibility, and profiling support
@@ -42,7 +42,7 @@ npm install cmpstr
 
 Minimal usage example:
 
-```js
+```ts
 import { CmpStr } from 'cmpstr';
 
 const cmp = new CmpStr( [ 'hello', 'hola' ], 'levenshtein', {
@@ -57,14 +57,13 @@ console.log( result );
 
 For asynchronous workloads:
 
-```js
+```ts
 import { CmpStrAsync } from 'cmpstr';
 
-const cmp = new CmpStrAsync( [
-  'Meyer', 'Müller', 'Miller', 'Meyers', 'Meier'
-] ).setPhonetic( 'soundex' );
+const cmp = new CmpStrAsync( [ 'Meyer', 'Müller', 'Miller', 'Meyers', 'Meier' ] );
+cmp.setPhonetic( 'soundex' );
 
-const result = await cmp.phoneticSearchAsync( 'Maier' );
+const result = await cmp.searchAsync( 'Maier' );
 
 console.log( result );
 // [ 'Meyer', 'Meier' ]
