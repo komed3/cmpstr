@@ -23,7 +23,7 @@
 #    - Builds the project using `npm run build`
 #    - Uploads the resulting `dist/` directory as an artifact
 # 
-# 4. Pack (Ready for Release):
+# 4. Check (Ready for Release):
 #    - Runs after the Build job completes successfully
 #    - Downloads the `dist/` artifact
 #    - Packs the project into an npm tarball using `npm pack`
@@ -106,8 +106,10 @@ jobs:
         with:
           name: cmpstr-dist
           path: dist/
+          if-no-files-found: error
+          compression-level: 9
 
-  pack:
+  check:
     name: Ready for Release?
     runs-on: ubuntu-latest
     needs: [ build ]
@@ -131,9 +133,60 @@ jobs:
       - name: Pack npm Tarball
         run: npm pack
 
+      - name: Unpack Tarball for Validation
+        run: |
+          mkdir extracted
+          tar -xzf cmpstr-*.tgz -C extracted
+
+      - name: Validate Dist Files
+        run: |
+          cd extracted/package
+
+          missing=0
+
+          echo "Scanning `src/` for TypeScript source files …"
+
+          find ../../src -name "*.ts" | while read src_file; do
+            relative_path="${src_file#../../src/}"
+            base_path="${relative_path%.ts}"
+            dir_path=$(dirname "$relative_path")
+
+            # Special case `Types.ts` – skip ESM/CJS
+            if [[ "$relative_path" == "utils/Types.ts" ]]; then
+              expected_paths=(
+                "dist/types/$dir_path/Types.d.ts"
+              )
+            else
+              expected_paths=(
+                "dist/esm/$dir_path/$(basename "$base_path").js"
+                "dist/esm/$dir_path/$(basename "$base_path").js.map"
+                "dist/cjs/$dir_path/$(basename "$base_path").js"
+                "dist/cjs/$dir_path/$(basename "$base_path").js.map"
+                "dist/types/$dir_path/$(basename "$base_path").d.ts"
+              )
+            fi
+
+            for path in "${expected_paths[@]}"; do
+              if [[ ! -f "$path" ]]; then
+                echo "\x1b[31mMissing `$path`\x1b[0m"
+                missing=1
+              else
+                echo "\x1b[31mFound `$path`\x1b[0m"
+              fi
+            done
+          done
+
+          if [[ "$missing" -eq 1 ]]; then
+            echo "\x1b[37;41mOne or more expected files are missing in the tarball.\x1b[0m"
+            exit 1
+          else
+            echo "\x1b[37;42mAll expected files are present.\x1b[0m"
+          fi
+
       - name: Upload Tarball as Artifact
         uses: actions/upload-artifact@v4
         with:
           name: cmpstr-tgz
           path: cmpstr-*.tgz
+          if-no-files-found: error
           compression-level: 0
