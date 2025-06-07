@@ -26,7 +26,7 @@ import type { RegistryService, RegistryConstructor } from './Types';
 export function Registry<T> ( ctor: RegistryConstructor<T> ) : RegistryService<T> {
 
     // Create a registry object to hold class constructors
-    const registry: Record<string, RegistryConstructor<T>> = {};
+    const registry: Record<string, RegistryConstructor<T>> = Object.create( null );
 
     return {
 

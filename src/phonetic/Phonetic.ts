@@ -425,10 +425,10 @@ export const PhoneticRegistry: RegistryService<any> = Registry( Phonetic );
 export const PhoneticMappingRegistry: PhoneticMappingService = ( () => {
 
     // Create a registry object to hold mappings
-    const mappings: Record<string, PhoneticMapping> = {};
+    const mappings: Record<string, PhoneticMapping> = Object.create( null );
 
     // Helper function to retrieve mappings for a specific algorithm
-    const maps = ( algo: string ) : PhoneticMapping => ( mappings[ algo ] ||= {} );
+    const maps = ( algo: string ) : PhoneticMapping => ( mappings[ algo ] ||= Object.create( null ) );
 
     return {
 

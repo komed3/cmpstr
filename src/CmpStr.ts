@@ -130,7 +130,7 @@ export class CmpStr<R = MetricRaw> {
      */
 
     // The options for the CmpStr instance, the source input, and the normalized input
-    protected options: CmpStrOptions = {};
+    protected options: CmpStrOptions = Object.create( null );
     protected source?: MetricInput;
     protected normalized?: MetricInput;
 
@@ -198,7 +198,7 @@ export class CmpStr<R = MetricRaw> {
      */
     protected deepMerge<T extends Record<string, any>> ( s: T | undefined, t: T | undefined ) : T {
 
-        ( s as any ) ||= {}, ( t as any ) ||= {};
+        ( s as any ) ||= Object.create( null ), ( t as any ) ||= Object.create( null );
 
         return Object.keys( s! ).forEach(
             ( k ) => ( t as any )[ k ] = s![ k ] && typeof s![ k ] === 'object'
