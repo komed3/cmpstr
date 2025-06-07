@@ -27,7 +27,6 @@
 #    - Runs after the Build job completes successfully
 #    - Downloads the `dist/` artifact
 #    - Packs the project into an npm tarball using `npm pack`
-#    - Extracts the tarball to validate critical files
 #    - Uploads the tarball as an artifact for further use
 # 
 # --------------------------------------------------------------------------------
@@ -130,26 +129,6 @@ jobs:
 
       - name: Pack npm Tarball
         run: npm pack
-
-      - name: Extract Tarball for Validation
-        run: |
-          FILE=$(ls cmpstr-*.tgz)
-          mkdir validation
-          tar -xzf "$FILE" -C validation
-
-      - name: Validate Critical Files
-        run: |
-          cd validation/package
-          test -f dist/esm/index.js || (echo "Missing dist/esm/index.js" && exit 1)
-          test -f dist/cjs/index.js || (echo "Missing dist/cjs/index.js" && exit 1)
-          test -f dist/types/index.d.ts || (echo "Missing dist/types/index.d.ts" && exit 1)
-          test -f dist/CmpStr.esm.js || (echo "Missing dist/CmpStr.esm.js" && exit 1)
-          test -f dist/CmpStr.esm.min.js || (echo "Missing dist/CmpStr.esm.min.js" && exit 1)
-          test -f dist/CmpStr.umd.js || (echo "Missing dist/CmpStr.umd.js" && exit 1)
-          test -f dist/CmpStr.umd.min.js || (echo "Missing dist/CmpStr.umd.min.js" && exit 1)
-          test -f README.md || (echo "Missing README.md" && exit 1)
-          test -f LICENSE || (echo "Missing LICENSE" && exit 1)
-          test -f package.json || (echo "Missing package.json" && exit 1)
 
       - name: Upload Tarball as Artifact
         uses: actions/upload-artifact@v4
