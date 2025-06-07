@@ -5,6 +5,7 @@
 [![npm bundle size](https://img.shields.io/bundlephobia/min/cmpstr?style=for-the-badge&logo=gitlfs&logoColor=fff)](https://bundlephobia.com/package/cmpstr)
 [![NPM Downloads](https://img.shields.io/npm/dy/cmpstr?style=for-the-badge&logo=transmission&logoColor=fff)](https://npmpackage.info/package/cmpstr?t=downloads)
 [![GitHub Actions Workflow Status](https://img.shields.io/github/actions/workflow/status/komed3/cmpstr/build.yml?style=for-the-badge&logo=educative&logoColor=fff)](https://github.com/komed3/cmpstr/actions/workflows/build.yml)
+[![GitHub Actions Workflow Status](https://img.shields.io/github/actions/workflow/status/komed3/cmpstr/codeql.yml?style=for-the-badge&logo=paperswithcode&logoColor=fff&label=CodeQL)](https://github.com/komed3/cmpstr/actions/workflows/codeql.yml)
 [![Static Badge](https://img.shields.io/badge/ESM_%26_CJS-TypeScript?style=for-the-badge&logo=typescript&logoColor=fff&label=TypeScript&color=violet)]()
 [![Static Badge](https://img.shields.io/badge/UMD-JavaScript?style=for-the-badge&logo=javascript&logoColor=fff&label=Browser&color=violet)]()
 [![Static Badge](https://img.shields.io/badge/docs-docs?style=for-the-badge&logo=readthedocs&logoColor=fff&color=blue)]()
@@ -50,7 +51,7 @@ const cmp = new CmpStr( [ 'hello', 'hola' ], 'levenshtein', {
 const result = cmp.test( 'Hallo' );
 
 console.log( result );
-// { target: 'hallo', match: 0.8 }
+// { source: 'hello', target: 'hallo', match: 0.8 }
 ```
 
 For asynchronous workloads:

@@ -4,7 +4,7 @@
 # 
 # This GitHub Actions workflow performs automated type-checking, linting, and
 # building for the CmpStr project. It is triggered on every push and pull request
-# targeting the main branch.
+# targeting the master branch.
 # 
 # The workflow consists of two jobs:
 # 
@@ -37,9 +37,9 @@ name: Build
 
 on:
   push:
-    branches: [ main ]
+    branches: [ master ]
   pull_request:
-    branches: [ main ]
+    branches: [ master ]
 
 jobs:
   lint:

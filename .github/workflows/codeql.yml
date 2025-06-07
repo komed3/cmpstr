@@ -10,21 +10,26 @@
 # patterns of vulnerabilities such as injection flaws, logic errors, or unsafe
 # dependencies.
 # 
-# This will automatically run after a successful merge.
+# This will run on every push to the `master` branch, analyzing the codebase
+# for JavaScript and TypeScript files. The workflow includes steps to:
+# 
+#    - Checkout the repository
+#    - Set up Node.js environment
+#    - Initialize CodeQL with the specified languages
+#    - Install project dependencies
+#    - Build the project
+#    - Perform the CodeQL analysis
 # 
 # --------------------------------------------------------------------------------
 
-name: CodeQL Analysis
+name: Analyze
 
 on:
-  pull_request:
-    branches: [ main ]
-    types: [ closed ]
-  workflow_dispatch:
+  push:
+    branches: [ master ]
 
 jobs:
   analyze:
-    if: ${{ github.event.pull_request.merged }}
     name: Analyze with CodeQL
     runs-on: ubuntu-latest
     permissions:
@@ -45,6 +50,7 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 20
+          cache: 'npm'
 
       - name: Initialize CodeQL
         uses: github/codeql-action/init@v3
