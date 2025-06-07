@@ -101,7 +101,7 @@ jobs:
       - name: Build Project
         run: npm run build
 
-      - name: Upload `dist/` as Artifact
+      - name: Upload dist as Artifact
         uses: actions/upload-artifact@v4
         with:
           name: cmpstr-dist
@@ -124,7 +124,7 @@ jobs:
           node-version: 20
           cache: npm
 
-      - name: Download `dist/` Artifact
+      - name: Download dist Artifact
         uses: actions/download-artifact@v4
         with:
           name: cmpstr-dist
@@ -140,47 +140,45 @@ jobs:
 
       - name: Validate Dist Files
         run: |
-          cd extracted/package
-
           missing=0
 
-          echo "Scanning `src/` for TypeScript source files …"
+          echo "Scanning src/ for TypeScript source files …"
 
-          find ../../src -name "*.ts" | while read src_file; do
-            relative_path="${src_file#../../src/}"
+          find src/ -name "*.ts" | while read src_file; do
+            relative_path="${src_file#src/}"
             base_path="${relative_path%.ts}"
             dir_path=$(dirname "$relative_path")
 
-            # Special case `Types.ts` – skip ESM/CJS
+            # Special case Types.ts – skip ESM/CJS
             if [[ "$relative_path" == "utils/Types.ts" ]]; then
               expected_paths=(
-                "dist/types/$dir_path/Types.d.ts"
+                "extracted/package/dist/types/$dir_path/Types.d.ts"
               )
             else
               expected_paths=(
-                "dist/esm/$dir_path/$(basename "$base_path").js"
-                "dist/esm/$dir_path/$(basename "$base_path").js.map"
-                "dist/cjs/$dir_path/$(basename "$base_path").js"
-                "dist/cjs/$dir_path/$(basename "$base_path").js.map"
-                "dist/types/$dir_path/$(basename "$base_path").d.ts"
+                "extracted/package/dist/esm/$dir_path/$(basename "$base_path").js"
+                "extracted/package/dist/esm/$dir_path/$(basename "$base_path").js.map"
+                "extracted/package/dist/cjs/$dir_path/$(basename "$base_path").js"
+                "extracted/package/dist/cjs/$dir_path/$(basename "$base_path").js.map"
+                "extracted/package/dist/types/$dir_path/$(basename "$base_path").d.ts"
               )
             fi
 
             for path in "${expected_paths[@]}"; do
               if [[ ! -f "$path" ]]; then
-                echo "\x1b[31mMissing `$path`\x1b[0m"
+                echo -e "\e[31mMissing: $path\e[0m"
                 missing=1
               else
-                echo "\x1b[31mFound `$path`\x1b[0m"
+                echo -e "\e[31mFound: $path\e[0m"
               fi
             done
           done
 
           if [[ "$missing" -eq 1 ]]; then
-            echo "\x1b[37;41mOne or more expected files are missing in the tarball.\x1b[0m"
+            echo -e "\e[37;41mOne or more expected files are missing in the tarball.\e[0m"
             exit 1
           else
-            echo "\x1b[37;42mAll expected files are present.\x1b[0m"
+            echo -e "\e[37;42mAll expected files are present.\e[0m"
           fi
 
       - name: Upload Tarball as Artifact
