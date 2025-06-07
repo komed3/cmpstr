@@ -28,6 +28,7 @@
 #    - Downloads the `dist/` artifact
 #    - Packs the project into an npm tarball using `npm pack`
 #    - Unpacks the tarball to validate the presence of expected files
+#    - Using `dist-manifest.json` for validating files
 #    - Uploads the tarball as an artifact for further use
 # 
 # --------------------------------------------------------------------------------
@@ -202,10 +203,10 @@ jobs:
           done < <(find "$src_root" -name "*.ts" -print0)
 
           if [[ "$missing" -eq 1 ]]; then
-            echo -e "\e[41mOne or more expected files are missing in the tarball.\e[0m"
+            echo -e "\e[41m One or more expected files are missing in the tarball \e[0m"
             exit 1
           else
-            echo -e "\e[42mAll expected files are present.\e[0m"
+            echo -e "\e[42m All expected files are present \e[0m"
           fi
 
       - name: Upload Tarball as Artifact
