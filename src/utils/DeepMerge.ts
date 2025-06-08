@@ -58,7 +58,9 @@ export function has<T extends Record<string, any>> (
     t: T, path: string
 ) : boolean {
 
-    return parse( path ).reduce( ( o, k ) => o && k in o ? o[ k ] : undefined, t ) !== undefined;
+    return parse( path ).reduce(
+        ( o, k ) => o && k in o ? o[ k ] : undefined, t
+    ) !== undefined;
 
 }
 
@@ -131,14 +133,17 @@ export function del<T extends Record<string, any>> (
 
         const key: string | number = k[ i ];
 
+        // Delete the key if it is not an object or if it is the last key in the path
         if ( ! o || typeof o !== 'object' ) return false;
         if ( i === k.length - 1 ) return delete o[ key ];
         if ( ! r( o[ key ], k, i + 1 ) ) return false;
 
+        // If preserveEmpty is false, check if the object or array is empty
         if ( ! preserveEmpty ) {
 
             const val: any = o[ key ];
 
+            // If the value is an empty array or object, delete the key
             if ( typeof val === 'object' && (
                 ( Array.isArray( val ) && val.every( v => v == null ) ) ||
                 ( ! Array.isArray( val ) && Object.keys( val ).length === 0 )

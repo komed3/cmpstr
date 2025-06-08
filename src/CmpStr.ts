@@ -212,6 +212,59 @@ export class CmpStr<R = MetricRaw> {
     }
 
     /**
+     * Checks a condition and throws if not met.
+     * 
+     * @param {string} cond - The condition type
+     * @param {any} [test] - Optional value to test
+     * @throws {Error} If the condition is not met
+     */
+    protected assert ( cond: string, test?: any ) : void {
+
+        switch ( cond ) {
+
+            // Check if the metric class is set
+            case 'metric': if ( ! ( test ?? this.processors.metric ?? this.options.metric ) )
+                throw new Error (
+                    `CmpStr <metric> must be set, call setMetric(), ` +
+                    `use CmpStr.metric.list() for available metrics`
+                );
+                break;
+
+            // Check if the phonetic class is set
+            case 'phonetic': if ( ! ( test ?? this.processors.phonetic ?? this.options.processors?.phonetic?.algo ) )
+                throw new Error (
+                    `CmpStr <phonetic> pre-processor must be set, call setPhonetic(), ` +
+                    `use CmpStr.phonetic.list() for available phonetic algorithms`
+                );
+                break;
+
+            // Check if the source input is set
+            case 'source': if ( ! ( test ?? this.source ) )
+                throw new Error (
+                    `CmpStr <source> must be set, call setSource(), ` +
+                    `allowed are strings or arrays of strings`
+                );
+                break;
+
+            // Trow an error for unknown conditions
+            default: throw new Error ( `Cmpstr condition <${cond}> unknown` );
+
+        }
+
+    }
+
+    /**
+     * Checks multiple conditions.
+     * 
+     * @param {[ string, any? ][]} cond - Array of [ condition, value ] pairs
+     */
+    protected assertAll ( ...cond: [ string, any? ][] ) : void {
+
+        for ( const [ c, test ] of cond ) this.assert( c, test );
+
+    }
+
+    /**
      * ---------------------------------------------------------------------------------
      * Public Setters and Getters for CmpStr
      * ---------------------------------------------------------------------------------
@@ -396,6 +449,18 @@ export class CmpStr<R = MetricRaw> {
         this.source = undefined;
 
         return this;
+
+    }
+
+    /**
+     * Checks if the instance is ready for comparison (source and metric set).
+     * 
+     * @returns {boolean} - True if ready, false otherwise
+     */
+    public isReady () : boolean {
+
+        try { this.assertAll( [ 'source' ], [ 'metric' ] ); return true }
+        catch { return false }
 
     }
 
