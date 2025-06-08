@@ -430,8 +430,6 @@ export interface CmpStrOptions {
     opt?: MetricOptions;
     // Pre-processors for input preparation
     processors?: CmpStrProcessors;
-    // Options for diffing
-    diffOptions?: DiffOptions;
 };
 
 /**

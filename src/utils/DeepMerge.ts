@@ -103,17 +103,17 @@ export function set<T extends Record<string, any>> (
  * @returns {T} - The merged object
  */
 export function merge<T extends Record<string, any>> (
-    t: T | undefined, obj: T | undefined
+    t: T | undefined = Object.create( null ),
+    o: T | undefined = Object.create( null )
 ) : T {
 
-    // If either object is undefined, create an empty object
-    ( t as any ) ??= Object.create( null ), ( obj as any ) ??= Object.create( null );
-
     // Iterate over the keys of the source object and merge them into the target object
-    return Object.keys( obj! ).forEach(
-        ( k ) => ( t as any )[ k ] = obj![ k ] && typeof obj![ k ] === 'object'
-            ? merge( ( t as any )[ k ], obj![ k ] ) : obj![ k ]
-    ), t ?? {} as T;
+    return Object.keys( o ).forEach( k => (
+        ( t as any )[ k ] = o[ k ] && typeof o[ k ] === 'object' && ! Array.isArray( o[ k ] )
+            ? merge( typeof t[ k ] === 'object' && ! Array.isArray( t[ k ] )
+                ? t[ k ] : Object.create( null ), o[ k ] )
+            : o[ k ]
+    ) ), t;
 
 }
 
