@@ -1,15 +1,17 @@
 'use strict';
 
 import type {
-    CmpStrOptions, CmpStrProcessors, CmpStrResult, NormalizeFlags, PhoneticOptions,
-    MetricRaw, MetricInput, MetricMode, MetricResult, MetricResultSingle
+    CmpStrOptions, CmpStrProcessors, CmpStrResult, NormalizeFlags, DiffOptions, PhoneticOptions,
+    MetricRaw, MetricInput, MetricMode, MetricResult, MetricResultSingle, MetricResultBatch
 } from './utils/Types';
 
 import * as DeepMerge from './utils/DeepMerge';
+import { DiffChecker } from './utils/DiffChecker';
 import { Filter } from './utils/Filter';
 import { Normalizer } from './utils/Normalizer';
 import { Profiler } from './utils/Profiler';
 import { factory } from './utils/Registry';
+import { TextAnalyzer } from './utils/TextAnalyzer';
 
 import { MetricRegistry, Metric } from './metric';
 import { PhoneticRegistry, PhoneticMappingRegistry, Phonetic } from './phonetic';
@@ -55,6 +57,10 @@ export class CmpStr<R = MetricRaw> {
         phonetic: Phonetic.clear
     };
 
+    public static analyze ( input: string ) : TextAnalyzer { return new TextAnalyzer ( input ) }
+
+    public static diff ( a: string, b: string, opt?: DiffOptions ) : DiffChecker { return new DiffChecker ( a, b, opt ) }
+
     public static create<R = MetricRaw> ( opt?: string | CmpStrOptions ) : CmpStr<R> { return new CmpStr ( opt ) }
 
     protected options: CmpStrOptions = Object.create( null );
@@ -79,7 +85,9 @@ export class CmpStr<R = MetricRaw> {
             case 'phonetic': if ( ! CmpStr.phonetic.has( test ) ) throw new Error (
                 `CmpStr <phonetic> must be set, call setPhonetic(), ` +
                 `use CmpStr.phonetic.list() for available phonetic algorithms`
-            );
+            ); break;
+
+            default: throw new Error ( `Cmpstr condition <${cond}> unknown` );
 
         }
 
@@ -175,13 +183,19 @@ export class CmpStr<R = MetricRaw> {
 
     public setOption ( path: string, value: any ) : this { DeepMerge.set( this.options, path, value ); return this }
 
+    public rmvOption ( path: string ) : this { DeepMerge.rmv( this.options, path ); return this }
+
     public setRaw ( enable: boolean ) : this { return this.setOption( 'raw', enable ) }
 
     public setMetric ( name: string ) : this { return this.setOption( 'metric', name ) }
 
     public setFlags ( flags: NormalizeFlags ) : this { return this.setOption( 'flags', flags ) }
 
+    public rmvFlags () : this { return this.rmvOption( 'flags' ) }
+
     public setProcessors ( opt: CmpStrProcessors ) : this { return this.setOption( 'processors', opt ) }
+
+    public rmvProcessors () : this { return this.rmvOption( 'processors' ) }
 
     public getOptions () : CmpStrOptions { return this.options }
 
@@ -200,6 +214,22 @@ export class CmpStr<R = MetricRaw> {
     public compare ( a: MetricInput, b: MetricInput, opt?: CmpStrOptions ) : number {
 
         return this.compute<MetricResultSingle<R>>( a, b, opt, 'single', true ).res;
+
+    }
+
+    public batchTest<T extends CmpStrResult[] | MetricResultBatch<R>> (
+        a: MetricInput, b: MetricInput, opt?: CmpStrOptions
+    ) : T {
+
+        return this.compute<T>( a, b, opt, 'batch' ) as T;
+
+    }
+
+    public phoneticIndex ( input: string, algo?: string, opt?: PhoneticOptions ) : string {
+
+        const { algo: a, opt: o } = this.options.processors?.phonetic ?? {};
+
+        return this.index( input, { algo: ( algo ?? a )!, opt: opt ?? o } ) as string;
 
     }
 

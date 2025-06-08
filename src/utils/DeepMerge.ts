@@ -12,7 +12,7 @@
  *   - `set`:   Assign a value to a nested path
  *   - `merge`: Deeply merge two objects
  *   - `has`:   Check whether a path exists
- *   - `del`:   Delete a value at a path
+ *   - `rmv`:   Delete a value at a path
  * 
  * @module Utils/DeepMerge
  * @author Paul Köhler
@@ -99,7 +99,7 @@ export function set<T extends Record<string, any>> (
  * Deeply merge two objects, where the second object overrides the first.
  * 
  * @param {T} t - The target object to merge into
- * @param {T} obj - The source object to merge from
+ * @param {T} o - The source object to merge from
  * @returns {T} - The merged object
  */
 export function merge<T extends Record<string, any>> (
@@ -125,7 +125,7 @@ export function merge<T extends Record<string, any>> (
  * @param {boolean} [preserveEmpty=false] - Whether to preserve empty objects/arrays
  * @returns {T} - The modified object with the value deleted at the specified path
  */
-export function del<T extends Record<string, any>> (
+export function rmv<T extends Record<string, any>> (
     t: T, path: string, preserveEmpty: boolean = false
 ) : T {
 
