@@ -18,17 +18,40 @@
 import type { RegistryService, RegistryConstructor } from './Types';
 
 /**
+ * Global registry object to hold multiple registries.
+ * Each registry is keyed by a string identifier.
+ * 
+ * @type {Record<string, RegistryService<any>>}
+ */
+export const registry: Record<string, RegistryService<any>> = Object.create( null );
+
+/**
+ * Factory object to hold factory functions for creating instances.
+ * This is used to create instances of registered classes.
+ * 
+ * @type {Record<string, ( cls: string, ...args: any[] ) => InstanceType<any>>}
+ */
+export const factory: Record<string, ( cls: string, ...args: any[] ) => InstanceType<any>> = Object.create( null );
+
+/**
  * Registry function to create a service for managing class constructors.
  * 
+ * @param {string} reg - The name of the registry
  * @param {RegistryConstructor<T>} ctor - The base constructor that all registered classes must extend
  * @returns {RegistryService<T>} - An object with methods to register, remove, check, get, and list classes
+ * @throws {Error} If the registry already exists (overwriting is forbidden)
  */
-export function Registry<T> ( ctor: RegistryConstructor<T> ) : RegistryService<T> {
+export function Registry<T> ( reg: string, ctor: RegistryConstructor<T> ) : RegistryService<T> {
+
+    // Throws an error if the registry already exists
+    if ( reg in registry || reg in factory ) throw new Error (
+        `registry <${reg}> already exists / overwriting is forbidden`
+    );
 
     // Create a registry object to hold class constructors
-    const registry: Record<string, RegistryConstructor<T>> = Object.create( null );
+    const classes: Record<string, RegistryConstructor<T>> = Object.create( null );
 
-    return {
+    const service: RegistryService<T> = {
 
         /**
          * Register a new extension of the base class.
@@ -48,11 +71,11 @@ export function Registry<T> ( ctor: RegistryConstructor<T> ) : RegistryService<T
                 `class must extend <${ctor.name}>`
             );
 
-            if ( ! update && name in registry ) throw new Error (
+            if ( ! update && name in classes ) throw new Error (
                 `entry <${name}> already exists / use <update=true> to overwrite`
             );
 
-            registry[ name ] = cls;
+            classes[ name ] = cls;
 
         },
 
@@ -61,7 +84,7 @@ export function Registry<T> ( ctor: RegistryConstructor<T> ) : RegistryService<T
          * 
          * @param {string} name - The name of the class to remove
          */
-        remove ( name: string ) : void { delete registry[ name ] },
+        remove ( name: string ) : void { delete classes[ name ] },
 
         /**
          * Check if a class is registered.
@@ -69,14 +92,14 @@ export function Registry<T> ( ctor: RegistryConstructor<T> ) : RegistryService<T
          * @param {string} name - The name of the class to check
          * @returns {boolean} - True if the class is registered, false otherwise
          */
-        has ( name: string ) : boolean { return name in registry },
+        has ( name: string ) : boolean { return name in classes },
 
         /**
          * List all registered class names.
          * 
          * @returns {string[]} - An array of registered class names
          */
-        list () : string[] { return Object.keys( registry ) },
+        list () : string[] { return Object.keys( classes ) },
 
         /**
          * Get a registered class by name.
@@ -91,21 +114,24 @@ export function Registry<T> ( ctor: RegistryConstructor<T> ) : RegistryService<T
                 `class <${name}> not registered for <${ctor.name}>`
             );
 
-            return registry[ name ];
+            return classes[ name ];
 
         }
 
     };
 
-}
+    // Register the service in the global registry
+    registry[ reg ] = service;
 
-/**
- * Global registry object to hold multiple registries.
- * Each registry is keyed by a string identifier.
- * 
- * @type {Record<string, RegistryService<any>>}
- */
-export const registry: Record<string, RegistryService<any>> = Object.create( null );
+    // Create a factory function for creating instances from the registry
+    factory[ reg ] = ( cls: string, ...args: any[] ) : InstanceType<RegistryConstructor<T>> => (
+        createFromRegistry<RegistryConstructor<T>>( reg, cls, ...args )
+    );
+
+    // Return the service object
+    return service;
+
+}
 
 /**
  * Resolve a class constructor from a specific registry.

@@ -32,7 +32,7 @@ import type {
     MetricResultSingle, MetricResultBatch, RegistryService
 } from '../utils/Types';
 
-import { Registry, registry } from '../utils/Registry';
+import { Registry } from '../utils/Registry';
 import { HashTable } from '../utils/HashTable';
 import { Profiler } from '../utils/Profiler';
 
@@ -516,10 +516,7 @@ export abstract class Metric<R = MetricRaw> {
  * This registry allows for dynamic registration and retrieval of metric classes,
  * enabling the use of various string similarity metrics in a consistent manner.
  */
-export const MetricRegistry: RegistryService<Metric<MetricRaw>> = Registry( Metric );
-
-// Register the Metric class in the global registry system
-registry[ 'metric' ] = MetricRegistry;
+export const MetricRegistry: RegistryService<Metric<MetricRaw>> = Registry( 'metric', Metric );
 
 /**
  * Type definition for a class constructor that extends the Metric class.

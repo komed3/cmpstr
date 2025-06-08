@@ -30,7 +30,7 @@ import type {
     PhoneticMappingService
 } from '../utils/Types';
 
-import { Registry, registry } from '../utils/Registry';
+import { Registry } from '../utils/Registry';
 import { HashTable } from '../utils/HashTable';
 import { Profiler } from '../utils/Profiler';
 
@@ -413,10 +413,7 @@ export abstract class Phonetic {
  * This registry allows for dynamic registration and retrieval of phonetic classes,
  * enabling the use of various phonetic algorithms in a consistent manner.
  */
-export const PhoneticRegistry: RegistryService<Phonetic> = Registry( Phonetic );
-
-// Register the Metric class in the global registry system
-registry[ 'phonetic' ] = PhoneticRegistry;
+export const PhoneticRegistry: RegistryService<Phonetic> = Registry( 'phonetic', Phonetic );
 
 /**
  * Type definition for the Phonetic class constructor.
