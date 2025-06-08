@@ -116,9 +116,26 @@ export class CmpStr<R = MetricRaw> {
         phonetic: Phonetic.clear
     };
 
-    protected source?: MetricInput;
-    protected options: CmpStrOptions = Object.create( null );
+    /**
+     * --------------------------------------------------------------------------------
+     * Instance properties and methods for CmpStr operations
+     * --------------------------------------------------------------------------------
+     * 
+     * Instance properties for managing the source input and options.
+     * The main constructor for creating a CmpStr instance.
+     */
 
+    // The options for the CmpStr instance and the source input
+    protected options: CmpStrOptions = Object.create( null );
+    protected source?: MetricInput;
+
+    /**
+     * Constructs a new CmpStr instance.
+     * 
+     * @param {MetricInput} [source] - The source string or array of strings
+     * @param {string} [metric] - The metric algorithm name
+     * @param {CmpStrOptions} [opt] - Additional options
+     */
     constructor ( source?: MetricInput, metric?: string, opt?: string | CmpStrOptions ) {
 
         if ( source ) this.setSource( source );
@@ -129,22 +146,70 @@ export class CmpStr<R = MetricRaw> {
 
     }
 
+    /**
+     * ---------------------------------------------------------------------------------
+     * Protected utility methods for internal use
+     * ---------------------------------------------------------------------------------
+     * 
+     * These methods provide utility functions for converting inputs, merging options,
+     * normalizing inputs, filtering, and preparing inputs for comparison.
+     */
+
+    /**
+     * Converts any input to an array of strings.
+     * 
+     * @param {any|any[]} input - The input value
+     * @returns {any[]} - The input as an array
+     */
     protected asArr ( input: any | any[] ) : any[] {
 
         return Array.isArray( input ) ? input : [ input ];
 
     }
 
+    /**
+     * Converts any input to a single string.
+     * 
+     * @param {any|any[]} input - The input value
+     * @returns {string} - The input as a string
+     */
     protected asStr ( input: any | any[], delimiter: string = ' ' ) : string {
 
         return String ( Array.isArray( input ) ? input.join( delimiter ) : input );
 
     }
 
+    /**
+     * ---------------------------------------------------------------------------------
+     * Public Setters and Getters for CmpStr
+     * ---------------------------------------------------------------------------------
+     * 
+     * These methods provides an interface to set and get properties of the CmpStr
+     * instance, such as source input, options, metric, phonetic algorithm, and more.
+     */
+
+    /**
+     * Sets the source string or array.
+     * 
+     * @param {MetricInput} source - The source input
+     * @returns {this}
+     */
     public setSource ( source: MetricInput ) : this { this.source = source; return this }
 
+    /**
+     * Sets the options object.
+     * 
+     * @param {CmpStrOptions} opt - The options
+     * @returns {this}
+     */
     public setOptions ( opt: CmpStrOptions ) : this { this.options = opt; return this }
 
+    /**
+     * Sets the options from a serialized JSON string.
+     * 
+     * @param {string} opt - The serialized options string
+     * @returns {this}
+     */
     public setSerializedOptions ( opt: string ) : this {
 
         this.options = JSON.parse( opt );
@@ -152,6 +217,13 @@ export class CmpStr<R = MetricRaw> {
 
     }
 
+    /**
+     * Sets a specific option by path.
+     * 
+     * @param {string} path - The path to the option
+     * @param {any} value - The value to set
+     * @returns {this}
+     */
     public setOption ( path: string, value: any ) : this {
 
         set<CmpStrOptions>( this.options, path, value );
@@ -159,6 +231,12 @@ export class CmpStr<R = MetricRaw> {
 
     }
 
+    /**
+     * Deep merges and sets new options.
+     * 
+     * @param {CmpStrOptions} opt - The options to merge
+     * @returns {this}
+     */
     public mergeOptions ( opt: CmpStrOptions ) : this {
 
         merge<CmpStrOptions>( this.options, opt );
@@ -166,16 +244,48 @@ export class CmpStr<R = MetricRaw> {
 
     }
 
+    /**
+     * Returns the current source input.
+     * 
+     * @returns {MetricInput|undefined} - The source input
+     */
     public getSource () : MetricInput | undefined { return this.source; }
 
+    /**
+     * Returns the source as a single string.
+     * 
+     * @returns {string} - The source as a string
+     */
     public getSourceAsString () : string { return this.asStr( this.source ) }
 
+    /**
+     * Returns the source as an array of strings.
+     * 
+     * @returns {string[]} - The source as an array
+     */
     public getSourceAsArray () : string[] { return this.asArr( this.source ) }
 
+    /**
+     * Returns the current options object.
+     * 
+     * @returns {CmpStrOptions} - The options
+     */
     public getOptions () : CmpStrOptions { return this.options }
 
+    /**
+     * Returns the options as a JSON string.
+     * 
+     * @returns {string} - The serialized options
+     */
     public getSerializedOptions () : string { return JSON.stringify( this.options ) }
 
+    /**
+     * Returns a specific option by path, with an optional default value.
+     * 
+     * @param {string} path - The path to the option
+     * @param {any} [def] - The default value if the option is not found
+     * @returns {any} - The option value or default
+     */
     public getOption ( path: string, def?: any ) : any {
 
         return get<CmpStrOptions, any>( this.options, path, def );
