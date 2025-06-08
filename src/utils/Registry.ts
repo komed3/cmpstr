@@ -98,3 +98,29 @@ export function Registry<T> ( ctor: RegistryConstructor<T> ) : RegistryService<T
     };
 
 }
+
+/**
+ * Global registry object to hold multiple registries.
+ * Each registry is keyed by a string identifier.
+ * 
+ * @type {Record<string, RegistryService<any>>}
+ */
+export const registry: Record<string, RegistryService<any>> = Object.create( null );
+
+/**
+ * Resolve a class constructor from a specific registry.
+ * 
+ * @param {string} reg - The name of the registry
+ * @param {string} name - The name of the class to resolve
+ * @returns {T|undefined} - The class constructor if found, otherwise undefined
+ * @throws {ReferenceError} If the registry does not exist
+ */
+export function resolveCls<T extends RegistryConstructor<any>> ( reg: string, name: string ) : T | undefined {
+
+    if ( ! ( reg in registry ) ) throw new ReferenceError (
+        `registry <${reg}> does not exist`
+    );
+
+    return registry[ reg ]?.get( name ) as T;
+
+}
