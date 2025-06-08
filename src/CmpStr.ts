@@ -1,13 +1,15 @@
 'use strict';
 
 import type {
-    CmpStrOptions, CmpStrProcessors, NormalizeFlags, MetricRaw,
+    CmpStrOptions, CmpStrProcessors, CmpStrResult, NormalizeFlags, PhoneticOptions,
+    MetricRaw, MetricInput, MetricMode, MetricResult
 } from './utils/Types';
 
 import * as DeepMerge from './utils/DeepMerge';
 import { Filter } from './utils/Filter';
 import { Normalizer } from './utils/Normalizer';
 import { Profiler } from './utils/Profiler';
+import { factory } from './utils/Registry';
 
 import { MetricRegistry, Metric } from './metric';
 import { PhoneticRegistry, PhoneticMappingRegistry, Phonetic } from './phonetic';
@@ -65,6 +67,74 @@ export class CmpStr<R = MetricRaw> {
 
     }
 
+    protected normalize ( input: MetricInput, f?: NormalizeFlags ) : MetricInput {
+
+        return Normalizer.normalize( input, f ?? this.options.flags ?? '' );
+
+    }
+
+    protected filter ( input: MetricInput, hook: string = 'input' ) : MetricInput {
+
+        return Filter.apply( hook, input as string );
+
+    }
+
+    protected index ( input: MetricInput, { algo, opt }: {
+        algo: string, opt?: PhoneticOptions
+    } ) : MetricInput {
+
+        const phonetic: Phonetic = factory.phonetic( algo, opt );
+        const delimiter = opt?.delimiter ?? ' ';
+
+        return Array.isArray( input )
+            ? input.map( s => phonetic.getIndex( s ).join( delimiter ) )
+            : phonetic.getIndex( input ).join( delimiter );
+
+    }
+
+    protected prepare ( input: MetricInput, opt?: CmpStrOptions ) : MetricInput {
+
+        const { flags, processors } = opt ?? {};
+
+        if ( flags?.length ) input = this.normalize( input, flags );
+
+        input = this.filter( input, 'input' );
+
+        if ( processors?.phonetic ) input = this.index( input, processors.phonetic );
+
+        return input;
+
+    }
+
+    protected compute<T extends MetricResult<R> | CmpStrResult | CmpStrResult[]> (
+        a: MetricInput, b: MetricInput, opt?: CmpStrOptions,
+        mode?: MetricMode, raw?: boolean
+    ) : T {
+
+        opt = DeepMerge.merge( this.options, opt ) ?? {};
+
+        const A: MetricInput = this.prepare( a, opt );
+        const B: MetricInput = this.prepare( b, opt );
+
+        const cmp: Metric<R> = factory.metric( opt.metric!, A, B, opt?.opt );
+
+        cmp.run( mode );
+
+        return this.output( cmp.getResults(), raw );
+
+    }
+
+    protected output<T extends MetricResult<R> | CmpStrResult | CmpStrResult[]> (
+        result: MetricResult<R>, raw?: boolean
+    ) : T {
+
+        return ( raw ?? this.options.raw ? result : Array.isArray( result )
+            ? result.map( r => ( { source: r.a, target: r.b, match: r.res } ) )
+            : { source: result.a, target: result.b, match: result.res }
+        ) as T;
+
+    }
+
     public clone () : CmpStr<R> { return Object.assign( Object.create( Object.getPrototypeOf( this ) ), this ) }
 
     public reset () : this { for ( const k in this.options ) delete ( this.options as any )[ k ]; return this }
@@ -90,5 +160,11 @@ export class CmpStr<R = MetricRaw> {
     public getSerializedOptions () : string { return JSON.stringify( this.options ) }
 
     public getOption ( path: string ) : any { return DeepMerge.get( this.options, path ) }
+
+    public test ( a: MetricInput, b: MetricInput, opt?: CmpStrOptions ) {
+
+        return this.compute( a, b, opt, 'single' );
+
+    }
 
 }

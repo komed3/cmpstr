@@ -433,34 +433,6 @@ export interface CmpStrOptions {
 };
 
 /**
- * CmpStrParams provides additional parameters for comparison methods.
- */
-export interface CmpStrParams {
-    // Normalization flags
-    flags?: NormalizeFlags;
-    // Metric options
-    opt?: MetricOptions;
-    // Whether to return raw results
-    raw?: boolean;
-    // Metric algorithm name
-    metric?: string;
-    // Source input override
-    source?: MetricInput;
-};
-
-/**
- * CmpStrPhoneticParams provides additional parameters for phonetic methods.
- */
-export interface CmpStrPhoneticParams {
-    // Normalization flags
-    flags?: NormalizeFlags;
-    // Phonetic options
-    opt?: PhoneticOptions;
-    // Phonetic algorithm name override
-    algo?: string;
-};
-
-/**
  * CmpStrResult represents a simplified result for user-facing API methods.
  */
 export interface CmpStrResult {
