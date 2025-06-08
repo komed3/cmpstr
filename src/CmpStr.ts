@@ -30,8 +30,8 @@ import { Normalizer } from './utils/Normalizer';
 import { Filter } from './utils/Filter';
 import { Profiler } from './utils/Profiler';
 
-import { Metric, MetricRegistry as metric } from './metric';
-import { Phonetic, PhoneticRegistry as phonetic, PhoneticMappingRegistry } from './phonetic';
+import { Metric, MetricCls, MetricRegistry as metric } from './metric';
+import { Phonetic, PhoneticCls, PhoneticRegistry as phonetic, PhoneticMappingRegistry } from './phonetic';
 
 // Import the Metric and Phonetic classes and their registries
 const registry = { metric, phonetic };
@@ -126,8 +126,11 @@ export class CmpStr<R = MetricRaw> {
      */
 
     // The options for the CmpStr instance and the source input
-    protected options: CmpStrOptions = Object.create( null );
     protected source?: MetricInput;
+    protected options: CmpStrOptions = Object.create( null );
+
+    // Instances for lazily loaded classes
+    protected instances: Record<string, new ( ...args: any[] ) => any> = Object.create( null );
 
     /**
      * Constructs a new CmpStr instance.
@@ -138,8 +141,13 @@ export class CmpStr<R = MetricRaw> {
      */
     constructor ( source?: MetricInput, metric?: string, opt?: string | CmpStrOptions ) {
 
+        // Set the source input if provided
         if ( source ) this.setSource( source );
 
+        // Resolve and set the metric class if provided
+        if ( metric ) this.setMetric( metric );
+
+        // Set the options, either from a serialized string or an object
         if ( opt ) typeof opt === 'string'
             ? this.setSerializedOptions( opt )
             : this.setOptions( opt );
@@ -180,6 +188,25 @@ export class CmpStr<R = MetricRaw> {
     }
 
     /**
+     * Resolves a class from registry or instance.
+     * 
+     * @param {keyof typeof registry} reg - Registry type
+     * @param {string|T} [cls] - Class name or instance
+     * @returns {T|undefined} - The resolved class or undefined
+     */
+    protected resolveCls<T extends new ( ...args: any[] ) => any> (
+        reg: keyof typeof registry, cls?: string | T, path?: string
+    ) : T | undefined {
+
+        return ( typeof cls === 'string' ? registry[ reg ].get( cls )
+            : cls ?? this.instances[ reg ] ?? (
+                path ? registry[ reg ].get( this.getOption( path ) ) : undefined
+            )
+        ) as T | undefined;
+
+    }
+
+    /**
      * ---------------------------------------------------------------------------------
      * Public Setters and Getters for CmpStr
      * ---------------------------------------------------------------------------------
@@ -213,6 +240,19 @@ export class CmpStr<R = MetricRaw> {
     public setSerializedOptions ( opt: string ) : this {
 
         this.options = JSON.parse( opt );
+        return this;
+
+    }
+
+    /**
+     * Sets the metric class by name.
+     * 
+     * @param {string} name - The metric name
+     * @returns {this}
+     */
+    public setMetric ( name: string ) : this {
+
+        set( this.instances, 'metric', this.resolveCls( 'metric', name ) );
         return this;
 
     }
