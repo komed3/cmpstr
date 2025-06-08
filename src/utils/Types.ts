@@ -407,18 +407,24 @@ export interface DiffGroup {
  * CmpStrOptions configures the behavior of a CmpStr instance.
  */
 export interface CmpStrOptions {
+    // Whether to return raw metric results
+    raw?: boolean;
+    // Normalization flags
+    flags?: NormalizeFlags;
     // Metric algorithm name
     metric?: string;
     // Options for the metric algorithm
-    metricOptions?: MetricOptions;
-    // Normalization flags
-    normalizeFlags?: NormalizeFlags;
-    // Whether to return raw metric results
-    raw?: boolean;
-    // Phonetic algorithm name
-    phonetic?: string;
-    // Options for the phonetic algorithm
-    phoneticOptions?: PhoneticOptions;
+    opt?: MetricOptions;
+    // Pre-processors for input preparation
+    processors?: {
+        // Phonetic indexing
+        phonetic?: {
+            // Phonetic algorithm name
+            algo: string;
+            // Options for the phonetic algorithm
+            opt?: PhoneticOptions;
+        };
+    };
     // Options for diffing
     diffOptions?: DiffOptions;
 };
