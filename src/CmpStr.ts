@@ -30,13 +30,11 @@ import { Normalizer } from './utils/Normalizer';
 import { Filter } from './utils/Filter';
 import { Profiler } from './utils/Profiler';
 
-import { Metric, MetricCls, MetricRegistry as metric } from './metric';
-import { Phonetic, PhoneticCls, PhoneticRegistry as phonetic, PhoneticMappingRegistry } from './phonetic';
+import { registry, resolveCls } from './utils/Registry';
+import { Metric, MetricCls } from './metric';
+import { Phonetic, PhoneticMappingRegistry } from './phonetic';
 
-// Import the Metric and Phonetic classes and their registries
-const registry = { metric, phonetic };
-
-// Import the Profiler instance for global profiling
+// Get the Profiler instance for global profiling
 const profiler = Profiler.getInstance();
 
 /**
@@ -76,10 +74,10 @@ export class CmpStr<R = MetricRaw> {
      * @see Metric
      */
     public static readonly metric = {
-        add: metric.add,
-        remove: metric.remove,
-        has: metric.has,
-        list: metric.list
+        add: registry.metric.add,
+        remove: registry.metric.remove,
+        has: registry.metric.has,
+        list: registry.metric.list
     };
 
     /**
@@ -88,10 +86,10 @@ export class CmpStr<R = MetricRaw> {
      * @see Phonetic
      */
     public static readonly phonetic = {
-        add: phonetic.add,
-        remove: phonetic.remove,
-        has: phonetic.has,
-        list: phonetic.list,
+        add: registry.phonetic.add,
+        remove: registry.phonetic.remove,
+        has: registry.phonetic.has,
+        list: registry.phonetic.list,
         map: {
             add: PhoneticMappingRegistry.add,
             remove: PhoneticMappingRegistry.remove,
@@ -188,25 +186,6 @@ export class CmpStr<R = MetricRaw> {
     }
 
     /**
-     * Resolves a class from registry or instance.
-     * 
-     * @param {keyof typeof registry} reg - Registry type
-     * @param {string|T} [cls] - Class name or instance
-     * @returns {T|undefined} - The resolved class or undefined
-     */
-    protected resolveCls<T extends new ( ...args: any[] ) => any> (
-        reg: keyof typeof registry, cls?: string | T, path?: string
-    ) : T | undefined {
-
-        return ( typeof cls === 'string' ? registry[ reg ].get( cls )
-            : cls ?? this.instances[ reg ] ?? (
-                path ? registry[ reg ].get( this.getOption( path ) ) : undefined
-            )
-        ) as T | undefined;
-
-    }
-
-    /**
      * ---------------------------------------------------------------------------------
      * Public Setters and Getters for CmpStr
      * ---------------------------------------------------------------------------------
@@ -252,7 +231,7 @@ export class CmpStr<R = MetricRaw> {
      */
     public setMetric ( name: string ) : this {
 
-        set( this.instances, 'metric', this.resolveCls( 'metric', name ) );
+        set( this.instances, 'metric', resolveCls<MetricCls<R>>( 'metric', name ) );
         return this;
 
     }
