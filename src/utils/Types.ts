@@ -404,6 +404,19 @@ export interface DiffGroup {
 };
 
 /**
+ * CmpStrProcessors defines pre-processors for input strings before comparison.
+ */
+export interface CmpStrProcessors {
+    // Phonetic indexing
+    phonetic?: {
+        // Phonetic algorithm name
+        algo: string;
+        // Options for the phonetic algorithm
+        opt?: PhoneticOptions;
+    };
+};
+
+/**
  * CmpStrOptions configures the behavior of a CmpStr instance.
  */
 export interface CmpStrOptions {
@@ -416,15 +429,7 @@ export interface CmpStrOptions {
     // Options for the metric algorithm
     opt?: MetricOptions;
     // Pre-processors for input preparation
-    processors?: {
-        // Phonetic indexing
-        phonetic?: {
-            // Phonetic algorithm name
-            algo: string;
-            // Options for the phonetic algorithm
-            opt?: PhoneticOptions;
-        };
-    };
+    processors?: CmpStrProcessors;
     // Options for diffing
     diffOptions?: DiffOptions;
 };

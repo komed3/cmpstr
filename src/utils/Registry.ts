@@ -111,16 +111,38 @@ export const registry: Record<string, RegistryService<any>> = Object.create( nul
  * Resolve a class constructor from a specific registry.
  * 
  * @param {string} reg - The name of the registry
- * @param {string} name - The name of the class to resolve
+ * @param {T|string} cls - The class itself or name of the class to resolve
  * @returns {T|undefined} - The class constructor if found, otherwise undefined
  * @throws {ReferenceError} If the registry does not exist
  */
-export function resolveCls<T extends RegistryConstructor<any>> ( reg: string, name: string ) : T | undefined {
+export function resolveCls<T extends RegistryConstructor<any>> (
+    reg: string, cls: T | string
+) : T {
 
     if ( ! ( reg in registry ) ) throw new ReferenceError (
         `registry <${reg}> does not exist`
     );
 
-    return registry[ reg ]?.get( name ) as T;
+    return ( typeof cls === 'string' ? registry[ reg ]?.get( cls ) : cls ) as T;
+
+}
+
+/**
+ * Create an instance of a class from a specific registry.
+ * 
+ * @param {string} reg - The name of the registry
+ * @param {T|string} cls - The class itself or name of the class to instantiate
+ * @param {...any} args - Arguments to pass to the class constructor
+ * @returns {T} - An instance of the class
+ * @throws {Error} If the class cannot be instantiated
+ */
+export function createFromRegistry<T extends RegistryConstructor<any>>(
+    reg: string, cls: T | string, ...args: any[]
+) : T {
+
+    cls = resolveCls<T>( reg, cls );
+
+    try { return new ( cls as InstanceType<T> ) ( ...args ); }
+    catch ( err ) { throw new Error ( `cannot instantiate class <${cls}>` ); }
 
 }
