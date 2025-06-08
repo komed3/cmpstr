@@ -116,11 +116,11 @@ export class CmpStr<R = MetricRaw> {
         const A: MetricInput = this.prepare( a, opt );
         const B: MetricInput = this.prepare( b, opt );
 
-        const cmp: Metric<R> = factory.metric( opt.metric!, A, B, opt?.opt );
+        const metric: Metric<R> = factory.metric( opt.metric!, A, B, opt?.opt );
 
-        cmp.run( mode );
+        metric.run( mode );
 
-        return this.output( cmp.getResults(), raw );
+        return this.output( metric.getResults(), raw );
 
     }
 

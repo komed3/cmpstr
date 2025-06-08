@@ -68,7 +68,7 @@ export function Registry<T> ( reg: string, ctor: RegistryConstructor<T> ) : Regi
         ) : void {
 
             if ( ! ( cls.prototype instanceof ctor ) ) throw new TypeError (
-                `class must extend <${ctor.name}>`
+                `class must extend <${reg}>`
             );
 
             if ( ! update && name in classes ) throw new Error (
@@ -110,8 +110,8 @@ export function Registry<T> ( reg: string, ctor: RegistryConstructor<T> ) : Regi
          */
         get ( name: string ) : RegistryConstructor<T> {
 
-            if ( ! ( name in registry ) ) throw new Error (
-                `class <${name}> not registered for <${ctor.name}>`
+            if ( ! ( name in classes ) ) throw new Error (
+                `class <${name}> not registered for <${reg}>`
             );
 
             return classes[ name ];
