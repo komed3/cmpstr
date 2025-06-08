@@ -2,7 +2,7 @@
 
 import type {
     CmpStrOptions, CmpStrProcessors, CmpStrResult, NormalizeFlags, PhoneticOptions,
-    MetricRaw, MetricInput, MetricMode, MetricResult
+    MetricRaw, MetricInput, MetricMode, MetricResult, MetricResultSingle
 } from './utils/Types';
 
 import * as DeepMerge from './utils/DeepMerge';
@@ -67,6 +67,30 @@ export class CmpStr<R = MetricRaw> {
 
     }
 
+    assert ( cond: string, test?: any ) : void {
+
+        switch ( cond ) {
+
+            case 'metric': if ( ! CmpStr.metric.has( test ) ) throw new Error (
+                `CmpStr <metric> must be set, call setMetric(), ` +
+                `use CmpStr.metric.list() for available metrics`
+            ); break;
+
+            case 'phonetic': if ( ! CmpStr.phonetic.has( test ) ) throw new Error (
+                `CmpStr <phonetic> must be set, call setPhonetic(), ` +
+                `use CmpStr.phonetic.list() for available phonetic algorithms`
+            );
+
+        }
+
+    }
+
+    assertMany ( ...cond: [ string, any? ][] ) : void {
+
+        for ( const [ c, test ] of cond ) this.assert( c, test );
+
+    }
+
     protected normalize ( input: MetricInput, f?: NormalizeFlags ) : MetricInput {
 
         return Normalizer.normalize( input, f ?? this.options.flags ?? '' );
@@ -82,6 +106,8 @@ export class CmpStr<R = MetricRaw> {
     protected index ( input: MetricInput, { algo, opt }: {
         algo: string, opt?: PhoneticOptions
     } ) : MetricInput {
+
+        this.assert( 'phonetic', algo );
 
         const phonetic: Phonetic = factory.phonetic( algo, opt );
         const delimiter = opt?.delimiter ?? ' ';
@@ -112,6 +138,8 @@ export class CmpStr<R = MetricRaw> {
     ) : T {
 
         opt = DeepMerge.merge( this.options, opt ) ?? {};
+
+        this.assert( 'metric', opt.metric );
 
         const A: MetricInput = this.prepare( a, opt );
         const B: MetricInput = this.prepare( b, opt );
@@ -161,9 +189,17 @@ export class CmpStr<R = MetricRaw> {
 
     public getOption ( path: string ) : any { return DeepMerge.get( this.options, path ) }
 
-    public test ( a: MetricInput, b: MetricInput, opt?: CmpStrOptions ) {
+    public test<T extends CmpStrResult | MetricResultSingle<R>> (
+        a: MetricInput, b: MetricInput, opt?: CmpStrOptions
+    ) : T {
 
-        return this.compute( a, b, opt, 'single' );
+        return this.compute<T>( a, b, opt, 'single' );
+
+    }
+
+    public compare ( a: MetricInput, b: MetricInput, opt?: CmpStrOptions ) : number {
+
+        return this.compute<MetricResultSingle<R>>( a, b, opt, 'single', true ).res;
 
     }
 
