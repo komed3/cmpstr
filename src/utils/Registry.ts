@@ -138,7 +138,7 @@ export function resolveCls<T extends RegistryConstructor<any>> (
  */
 export function createFromRegistry<T extends RegistryConstructor<any>>(
     reg: string, cls: T | string, ...args: any[]
-) : T {
+) : InstanceType<T> {
 
     cls = resolveCls<T>( reg, cls );
 
