@@ -23,16 +23,16 @@
 
 'use strict';
 
-import type { CmpStrOptions, MetricInput, MetricRaw } from './utils/Types';
+import type { CmpStrOptions, MetricInput, MetricRaw, RegistryConstructor } from './utils/Types';
 
-import { set, get, merge } from './utils/DeepMerge';
+import { get, set, merge, del } from './utils/DeepMerge';
 import { Normalizer } from './utils/Normalizer';
 import { Filter } from './utils/Filter';
 import { Profiler } from './utils/Profiler';
 
 import { registry, resolveCls } from './utils/Registry';
 import { Metric, MetricCls } from './metric';
-import { Phonetic, PhoneticMappingRegistry } from './phonetic';
+import { Phonetic, PhoneticCls, PhoneticMappingRegistry } from './phonetic';
 
 // Get the Profiler instance for global profiling
 const profiler = Profiler.getInstance();
@@ -123,12 +123,12 @@ export class CmpStr<R = MetricRaw> {
      * The main constructor for creating a CmpStr instance.
      */
 
+    // Processor class constructors, lazily loaded
+    protected processors: Record<string, new ( ...args: any[] ) => any> = Object.create( null );
+
     // The options for the CmpStr instance and the source input
     protected source?: MetricInput;
     protected options: CmpStrOptions = Object.create( null );
-
-    // Instances for lazily loaded classes
-    protected instances: Record<string, new ( ...args: any[] ) => any> = Object.create( null );
 
     /**
      * Constructs a new CmpStr instance.
@@ -186,6 +186,32 @@ export class CmpStr<R = MetricRaw> {
     }
 
     /**
+     * Gets the resolved class constructor for a given processor type and name.
+     * 
+     * @param {T} processor - The processor type (e.g., 'metric', 'phonetic')
+     * @param {string} name - The name of the processor
+     * @return {T} - The resolved class constructor
+     */
+    protected setProcessor<T extends RegistryConstructor<any>> (
+        processor: keyof typeof registry, name: string
+    ) : void {
+
+        set( this.processors, processor, resolveCls<T>( processor, name ) );
+
+    }
+
+    /**
+     * Gets the resolved class constructor for a given processor type and name.
+     * 
+     * @param {T} processor - The processor type (e.g., 'metric', 'phonetic')
+     */
+    protected clearProcessor ( processor: keyof typeof registry ) : void {
+
+        del( this.processors, processor );
+
+    }
+
+    /**
      * ---------------------------------------------------------------------------------
      * Public Setters and Getters for CmpStr
      * ---------------------------------------------------------------------------------
@@ -224,19 +250,6 @@ export class CmpStr<R = MetricRaw> {
     }
 
     /**
-     * Sets the metric class by name.
-     * 
-     * @param {string} name - The metric name
-     * @returns {this}
-     */
-    public setMetric ( name: string ) : this {
-
-        set( this.instances, 'metric', resolveCls<MetricCls<R>>( 'metric', name ) );
-        return this;
-
-    }
-
-    /**
      * Sets a specific option by path.
      * 
      * @param {string} path - The path to the option
@@ -259,6 +272,44 @@ export class CmpStr<R = MetricRaw> {
     public mergeOptions ( opt: CmpStrOptions ) : this {
 
         merge<CmpStrOptions>( this.options, opt );
+        return this;
+
+    }
+
+    /**
+     * Sets the similarity metric by name.
+     * 
+     * @param {string} name - The metric name
+     * @returns {this}
+     */
+    public setMetric ( name: string ) : this {
+
+        this.setProcessor<MetricCls<R>>( 'metric', name );
+        return this;
+
+    }
+
+    /**
+     * Sets the phonetic algorithm to use as pre-processor.
+     * 
+     * @param {string} name - The phonetic algorithm name
+     * @returns {this}
+     */
+    public setPhonetic ( name: string ) : this {
+
+        this.setProcessor<PhoneticCls>( 'phonetic', name );
+        return this;
+
+    }
+
+    /**
+     * Remove the phonetic pre-processor.
+     * 
+     * @returns {this}
+     */
+    public removePhonetic () : this {
+
+        this.clearProcessor( 'phonetic' );
         return this;
 
     }
@@ -302,12 +353,11 @@ export class CmpStr<R = MetricRaw> {
      * Returns a specific option by path, with an optional default value.
      * 
      * @param {string} path - The path to the option
-     * @param {any} [def] - The default value if the option is not found
      * @returns {any} - The option value or default
      */
-    public getOption ( path: string, def?: any ) : any {
+    public getOption ( path: string ) : any {
 
-        return get<CmpStrOptions, any>( this.options, path, def );
+        return get<CmpStrOptions, any>( this.options, path );
 
     }
 
@@ -341,9 +391,9 @@ export class CmpStr<R = MetricRaw> {
      */
     public reset () : this {
 
+        this.processors = {};
         this.options = {};
         this.source = undefined;
-        this.instances = {};
 
         return this;
 
