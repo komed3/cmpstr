@@ -311,4 +311,42 @@ export class CmpStr<R = MetricRaw> {
 
     }
 
+    /**
+     * ---------------------------------------------------------------------------------
+     * Managing methods for CmpStr
+     * ---------------------------------------------------------------------------------
+     * 
+     * These methods provide generic functionality for cloning, resetting and checking
+     * readiness for operation within the CmpStr instance.
+     */
+
+    /**
+     * Creates a shallow clone of the current instance.
+     * 
+     * @returns {CmpStr<R>} - The cloned instance
+     */
+    public clone () : CmpStr<R> {
+
+        return Object.assign(
+            Object.create( Object.getPrototypeOf( this ) ),
+            this
+        );
+
+    }
+
+    /**
+     * Resets the instance, clearing all data and options.
+     * 
+     * @returns {this}
+     */
+    public reset () : this {
+
+        this.options = {};
+        this.source = undefined;
+        this.instances = {};
+
+        return this;
+
+    }
+
 }
