@@ -43,6 +43,34 @@ import { Phonetic } from './phonetic';
 export class CmpStrAsync<R = MetricRaw> extends CmpStr<R> {
 
     /**
+     * --------------------------------------------------------------------------------
+     * Instanciate the CmpStrAsync class
+     * --------------------------------------------------------------------------------
+     * 
+     * Methods to create a new CmpStrAsync instance with the given options.
+     * Using the static `create` method is recommended to ensure proper instantiation.
+     */
+
+    /**
+     * Creates a new CmpStrAsync instance with the given options.
+     * 
+     * @param {string|CmpStrOptions} [opt] - Optional serialized or options object
+     * @returns {CmpStrAsync<R>} - A new CmpStrAsync instance
+     */
+    public static override create<R = MetricRaw> ( opt?: string | CmpStrOptions ) : CmpStrAsync<R> {
+
+        return new CmpStrAsync ( opt );
+
+    }
+
+    /**
+     * Creates a new CmpStrAsync instance calliing the super constructor.
+     * 
+     * @param {string | CmpStrOptions} [opt] - Optional serialized or options object
+     */
+    protected constructor ( opt?: string | CmpStrOptions ) { super ( opt ) }
+
+    /**
      * ---------------------------------------------------------------------------------
      * Protected asynchronously utility methods for internal use
      * ---------------------------------------------------------------------------------

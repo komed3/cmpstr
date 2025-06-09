@@ -138,11 +138,11 @@ export class CmpStr<R = MetricRaw> {
 
     /**
      * --------------------------------------------------------------------------------
-     * Instance properties and methods for CmpStr operations
+     * Instanciate the CmpStr class
      * --------------------------------------------------------------------------------
      * 
-     * These properties and methods provide the core functionality of the CmpStr class,
-     * allowing for string comparison, phonetic indexing, filtering, and search.
+     * Methods to create a new CmpStr instance with the given options.
+     * Using the static `create` method is recommended to ensure proper instantiation.
      */
 
     /**
