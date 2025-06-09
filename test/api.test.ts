@@ -41,8 +41,8 @@ describe( 'CmpStr > API', () => {
 
         expect( CmpStr.profiler.total() ).toEqual( { time: 0, mem: 0 } );
 
-        const cmp = new CmpStr( 'kitten', 'levenshtein' );
-        cmp.test( 'sitting' );
+        const cmp = CmpStr.create().setMetric( 'levenshtein' );
+        cmp.test( 'kitten', 'sitting' );
 
         const total = CmpStr.profiler.total();
 

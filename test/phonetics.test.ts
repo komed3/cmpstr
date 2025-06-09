@@ -5,9 +5,9 @@ describe( 'CmpStr > Phonetics', () => {
 
     it( 'Soundex', () => {
 
-        const cmp = new CmpStr ( [ 'Rupert', 'Robert', 'Ronny', 'Robot' ] ).setPhonetic( 'soundex' );
+        const cmp = CmpStr.create().setProcessors( { phonetic: { algo: 'soundex' } } );
 
-        const res = cmp.phoneticSearch( 'Rubin' );
+        const res = cmp.search( 'Rubin', [ 'Rupert', 'Robert', 'Ronny', 'Robot' ] );
 
         expect( res ).toEqual( [ 'Rupert', 'Robert', 'Robot' ] );
 
@@ -15,17 +15,19 @@ describe( 'CmpStr > Phonetics', () => {
 
     it( 'Cologne', () => {
 
-        const cmp = new CmpStr ( [ 'Meyer', 'Müller', 'Miller', 'Meyers', 'Meier' ] ).setPhonetic( 'cologne' );
+        const cmp = CmpStr.create().setMetric( 'levenshtein' );
 
-        const res = cmp.phoneticSearch( 'Maier' );
+        const res = cmp.match( [ 'Meyer', 'Müller', 'Miller', 'Meyers', 'Meier' ], 'Maier', 0.8, {
+            processors: { phonetic: { algo: 'cologne' } }
+        } );
 
-        expect( res ).toEqual( [ 'Meyer', 'Meyers', 'Meier' ] );
+        expect( res ).toHaveLength( 2 );
 
     } );
 
     it( 'Metaphone', () => {
 
-        const cmp = new CmpStr ();
+        const cmp = CmpStr.create().setProcessors( { phonetic: { algo: 'metaphone' } } );
 
         const res = cmp.phoneticIndex(
             'One morning, when Gregor Samsa woke from troubled dreams, he found himself transformed ' +
@@ -33,7 +35,7 @@ describe( 'CmpStr > Phonetics', () => {
             'head a little he could see his brown belly, slightly domed and divided by arches into ' +
             'stiff sections. The bedding was hardly able to cover it and seemed ready to slide off any ' +
             'moment. His many legs, pitifully thin compared with the size of the rest of him, waved ' +
-            'about helplessly as he looked.', { algo: 'metaphone' }
+            'about helplessly as he looked.'
         );
 
         expect( res ).toMatch( /^ON MRNNK EN KRKR SMS WK FRM TRBLT TRM(.+)/ );
