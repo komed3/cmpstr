@@ -222,9 +222,6 @@ export interface MetricResultSingle<R = MetricRaw> {
     res: number;
     // Optional raw metric-specific data
     raw?: R;
-    // Optional original input strings
-    origA?: string;
-    origB?: string;
 };
 
 /**
@@ -432,6 +429,8 @@ export interface CmpStrOptions {
     opt?: MetricOptions;
     // Pre-processors for input preparation
     processors?: CmpStrProcessors;
+    // Select the string output mode
+    output?: 'orig' | 'prep';
 };
 
 /**
@@ -441,9 +440,6 @@ export interface CmpStrResult {
     // The source and target strings
     source: string;
     target: string;
-    // The prepared source and target strings (e.g., normalized, filtered)
-    preparedSource: string;
-    preparedTarget: string;
     // The similarity score (0..1)
     match: number;
 };
