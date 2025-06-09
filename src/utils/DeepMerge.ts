@@ -100,20 +100,30 @@ export function set<T extends Record<string, any>> (
  * 
  * @param {T} t - The target object to merge into
  * @param {T} o - The source object to merge from
+ * @param {boolean} [mergeUndefined=false] - Whether to merge undefined values
  * @returns {T} - The merged object
  */
 export function merge<T extends Record<string, any>> (
     t: T | undefined = Object.create( null ),
-    o: T | undefined = Object.create( null )
+    o: T | undefined = Object.create( null ),
+    mergeUndefined: boolean = false
 ) : T {
 
     // Iterate over the keys of the source object and merge them into the target object
-    return Object.keys( o ).forEach( k => (
-        ( t as any )[ k ] = o[ k ] && typeof o[ k ] === 'object' && ! Array.isArray( o[ k ] )
-            ? merge( typeof t[ k ] === 'object' && ! Array.isArray( t[ k ] )
-                ? t[ k ] : Object.create( null ), o[ k ] )
-            : o[ k ]
-    ) ), t;
+    return Object.keys( o ).forEach( k => {
+
+        const val = o[ k ];
+
+        // If the value is undefined and mergeUndefined is false, skip it
+        if ( ! mergeUndefined && val === undefined ) return ;
+
+        // If the value is an object and not an array, recursively merge it
+        ( t as any )[ k ] = typeof val === 'object' && ! Array.isArray( val )
+            ? merge(typeof t[ k ] === 'object' && ! Array.isArray( t[ k ] )
+                ? t[ k ] : Object.create( null ), val )
+            : val;
+
+    } ), t;
 
 }
 
