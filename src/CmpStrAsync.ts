@@ -183,8 +183,11 @@ export class CmpStrAsync<R = MetricRaw> extends CmpStr<R> {
         // Compute the metric result
         await metric.runAsync( mode );
 
+        // Post-process the results and concat the original inputs
+        const result = this.postProcess( metric.getResults(), resolved );
+
         // Resolve and return the result based on the raw flag
-        return this.output<T>( metric.getResults(), raw ?? resolved.raw );
+        return this.output<T>( result, raw ?? resolved.raw );
 
     }
 

@@ -284,6 +284,23 @@ export class CmpStr<R = MetricRaw> {
     }
 
     /**
+     * Post-process the results of the metric computation.
+     * 
+     * @param {MetricResult<R>} result - The metric result
+     * @returns {MetricResult<R>} - The post-processed results
+     */
+    protected postProcess (
+        result: MetricResult<R>, opt?: CmpStrOptions
+    ) : MetricResult<R> {
+
+        if ( opt?.removeZero && Array.isArray( result ) )
+            result = result.filter( r => r.res > 0 )
+
+        return result;
+
+    }
+
+    /**
      * Computes the phonetic index for the given input using the specified phonetic algorithm.
      * 
      * @param {MetricInput} input - The input string or array
@@ -336,8 +353,11 @@ export class CmpStr<R = MetricRaw> {
         // Compute the metric result
         metric.run( mode );
 
+        // Post-process the results
+        const result = this.postProcess( metric.getResults(), resolved );
+
         // Resolve and return the result based on the raw flag
-        return this.output<T>( metric.getResults(), raw ?? resolved.raw );
+        return this.output<T>( result, raw ?? resolved.raw );
 
     }
 

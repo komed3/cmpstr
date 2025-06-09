@@ -176,8 +176,6 @@ export type MetricMode = 'default' | 'batch' | 'single' | 'pairwise';
 export interface MetricOptions {
     // The computation mode
     mode?: MetricMode;
-    // Remove zero results from batch output
-    removeZero?: boolean;
     // Delimiter for tokenization (if applicable)
     delimiter?: string;
     // Padding character for alignment algorithms
@@ -217,14 +215,16 @@ export interface MetricCompute<R = MetricRaw> {
 export interface MetricResultSingle<R = MetricRaw> {
     // The metric algorithm name
     metric: string;
-    // The source string
+    // The source and target strings
     a: string;
-    // The target string
     b: string;
     // The normalized similarity score (0..1)
     res: number;
     // Optional raw metric-specific data
     raw?: R;
+    // Optional original input strings
+    origA?: string;
+    origB?: string;
 };
 
 /**
@@ -422,6 +422,8 @@ export interface CmpStrProcessors {
 export interface CmpStrOptions {
     // Whether to return raw metric results
     raw?: boolean;
+    // Remove zero results from batch output
+    removeZero?: boolean;
     // Normalization flags
     flags?: NormalizeFlags;
     // Metric algorithm name
@@ -436,10 +438,12 @@ export interface CmpStrOptions {
  * CmpStrResult represents a simplified result for user-facing API methods.
  */
 export interface CmpStrResult {
-    // The source string
+    // The source and target strings
     source: string;
-    // The target string
     target: string;
+    // The prepared source and target strings (e.g., normalized, filtered)
+    preparedSource: string;
+    preparedTarget: string;
     // The similarity score (0..1)
     match: number;
 };

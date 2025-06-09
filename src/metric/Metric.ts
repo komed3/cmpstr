@@ -173,21 +173,6 @@ export abstract class Metric<R = MetricRaw> {
     }
 
     /**
-     * Post-process the results of the metric computation.
-     * This method can be overridden by subclasses to modify the results after computation.
-     * 
-     * @param {MetricResultBatch<R>} res - The batch of results to post-process
-     * @returns {MetricResultBatch<R>} - The post-processed results
-     */
-    protected postProcess ( res: MetricResultBatch<R> ) : MetricResultBatch<R> {
-
-        const { removeZero = false } = this.options;
-
-        return res.filter( r => ! removeZero || r.res > 0 );
-
-    }
-
-    /**
      * Run the metric computation for single inputs (two strings).
      * Applies preCompute for trivial cases before cache lookup and computation.
      * 
@@ -275,7 +260,7 @@ export abstract class Metric<R = MetricRaw> {
 
         // Populate the results
         // `this.results` will be an array of MetricResultSingle
-        this.results = this.postProcess( results );
+        this.results = results;
 
     }
 
@@ -296,7 +281,7 @@ export abstract class Metric<R = MetricRaw> {
 
         // Populate the results
         // `this.results` will be an array of MetricResultSingle
-        this.results = this.postProcess( results );
+        this.results = results;
 
     }
 
@@ -317,7 +302,7 @@ export abstract class Metric<R = MetricRaw> {
 
         // Populate the results
         // `this.results` will be an array of MetricResultSingle
-        this.results = this.postProcess( results );
+        this.results = results;
 
     }
 
@@ -338,7 +323,7 @@ export abstract class Metric<R = MetricRaw> {
 
         // Populate the results
         // `this.results` will be an array of MetricResultSingle
-        this.results = this.postProcess( results );
+        this.results = results;
 
     }
 
