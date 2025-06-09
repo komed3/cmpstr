@@ -45,11 +45,9 @@ Minimal usage example:
 ```ts
 import { CmpStr } from 'cmpstr';
 
-const cmp = new CmpStr( [ 'hello', 'hola' ], 'levenshtein', {
-  normalizeFlags: 'i'
-} );
+const cmp = CmpStr.create().setMetric( 'levenshtein' ).setFlags( 'i' );
 
-const result = cmp.test( 'Hallo' );
+const result = cmp.test( [ 'hello', 'hola' ], 'Hallo' );
 
 console.log( result );
 // { source: 'hello', target: 'hallo', match: 0.8 }
@@ -60,10 +58,11 @@ For asynchronous workloads:
 ```ts
 import { CmpStrAsync } from 'cmpstr';
 
-const cmp = new CmpStrAsync( [ 'Meyer', 'Müller', 'Miller', 'Meyers', 'Meier' ] );
-cmp.setPhonetic( 'soundex' );
+const cmp = CmpStrAsync.create().setPhonetic( 'soundex' );
 
-const result = await cmp.searchAsync( 'Maier' );
+const result = await cmp.searchAsync( 'Maier', [
+  'Meyer', 'Müller', 'Miller', 'Meyers', 'Meier'
+] );
 
 console.log( result );
 // [ 'Meyer', 'Meier' ]
