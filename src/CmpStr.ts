@@ -192,13 +192,13 @@ export class CmpStr<R = MetricRaw> {
 
             // Check if the metric exists
             case 'metric': if ( ! CmpStr.metric.has( test ) ) throw new Error (
-                `CmpStr <metric> must be set, call setMetric(), ` +
+                `CmpStr <metric> must be set, call .setMetric(), ` +
                 `use CmpStr.metric.list() for available metrics`
             ); break;
 
             // Check if the phonetic algorithm exists
             case 'phonetic': if ( ! CmpStr.phonetic.has( test ) ) throw new Error (
-                `CmpStr <phonetic> must be set, call setPhonetic(), ` +
+                `CmpStr <phonetic> must be set, call .setPhonetic(), ` +
                 `use CmpStr.phonetic.list() for available phonetic algorithms`
             ); break;
 
@@ -349,6 +349,9 @@ export class CmpStr<R = MetricRaw> {
 
         // Get the metric class
         const metric: Metric<R> = factory.metric( resolved.metric!, A, B, resolved.opt );
+
+        // Pass the original inputs to the metric
+        metric.setOriginal( a, b );
 
         // Compute the metric result
         metric.run( mode );

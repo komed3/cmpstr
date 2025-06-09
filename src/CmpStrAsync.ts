@@ -180,6 +180,9 @@ export class CmpStrAsync<R = MetricRaw> extends CmpStr<R> {
         // Get the metric class
         const metric: Metric<R> = factory.metric( resolved.metric!, A, B, resolved.opt );
 
+        // Pass the original inputs to the metric
+        metric.setOriginal( a, b );
+
         // Compute the metric result
         await metric.runAsync( mode );
 

@@ -57,6 +57,10 @@ export abstract class Metric<R = MetricRaw> {
     private readonly a: string[];
     private readonly b: string[];
 
+    // Store original inputs for result mapping
+    private origA: string[] = [];
+    private origB: string[] = [];
+
     // Options for the metric computation, such as performance tracking
     protected readonly options: MetricOptions;
 
@@ -178,14 +182,15 @@ export abstract class Metric<R = MetricRaw> {
      * 
      * If the profiler is active, it will measure time and memory usage.
      * 
-     * @param {string} a - First string
-     * @param {string} b - Second string
+     * @param {number} i - Pointer to the first string
+     * @param {number} j - Pointer to the second string
      * @returns {MetricResultSingle<R>} - The result of the metric computation
      */
-    private runSingle ( a: string, b: string ) : MetricResultSingle<R> {
+    private runSingle ( i: number, j: number ) : MetricResultSingle<R> {
 
         // Type safety: convert inputs to strings
-        let A = a = String ( a ), B = b = String ( b );
+        let a = String ( this.a[ i ] ), A = a;
+        let b = String ( this.b[ j ] ), B = b;
 
         // Get lengths
         let m: number = A.length, n: number = B.length;
@@ -223,7 +228,12 @@ export abstract class Metric<R = MetricRaw> {
         }
 
         // Build metric result object
-        return { metric: this.metric, a, b, ...result };
+        return {
+            metric: this.metric,
+            a: this.origA[ i ] ?? a,
+            b: this.origB[ j ] ?? b,
+            ...result
+        };
 
     }
 
@@ -233,13 +243,13 @@ export abstract class Metric<R = MetricRaw> {
      * This method is similar to `runSingle`, but it returns a Promise that resolves
      * with the result of the metric computation.
      * 
-     * @param {string} a - First string
-     * @param {string} b - Second string
+     * @param {number} i - Pointer to the first string
+     * @param {number} j - Pointer to the second string
      * @returns {Promise<MetricResultSingle<R>>} - Promise resolving the result of the metric computation
      */
-    private async runSingleAsync ( a: string, b: string ) : Promise<MetricResultSingle<R>> {
+    private async runSingleAsync ( i: number, j: number ) : Promise<MetricResultSingle<R>> {
 
-        return Promise.resolve( this.runSingle( a, b ) );
+        return Promise.resolve( this.runSingle( i, j ) );
 
     }
 
@@ -254,9 +264,9 @@ export abstract class Metric<R = MetricRaw> {
         const results: MetricResultBatch<R> = [];
 
         // Loop through each combination of strings in a[] and b[]
-        for ( const a of this.a ) for ( const b of this.b ) results.push(
-            this.runSingle( a, b )
-        );
+        for ( let i = 0; i < this.a.length; i++ )
+            for ( let j = 0; j < this.b.length; j++ )
+                results.push( this.runSingle( i, j ) );
 
         // Populate the results
         // `this.results` will be an array of MetricResultSingle
@@ -275,9 +285,9 @@ export abstract class Metric<R = MetricRaw> {
         const results: MetricResultBatch<R> = [];
 
         // Loop through each combination of strings in a[] and b[]
-        for ( const a of this.a ) for ( const b of this.b ) results.push(
-            await this.runSingleAsync( a, b )
-        );
+        for ( let i = 0; i < this.a.length; i++ )
+            for ( let j = 0; j < this.b.length; j++ )
+                results.push( await this.runSingleAsync( i, j ) );
 
         // Populate the results
         // `this.results` will be an array of MetricResultSingle
@@ -297,7 +307,7 @@ export abstract class Metric<R = MetricRaw> {
 
         // Compute metric for each corresponding pair
         for ( let i = 0; i < this.a.length; i++ ) results.push(
-            this.runSingle( this.a[ i ], this.b[ i ] )
+            this.runSingle( i, i )
         );
 
         // Populate the results
@@ -318,12 +328,27 @@ export abstract class Metric<R = MetricRaw> {
 
         // Compute metric for each corresponding pair
         for ( let i = 0; i < this.a.length; i++ ) results.push(
-            await this.runSingleAsync( this.a[ i ], this.b[ i ] )
+            await this.runSingleAsync( i, i )
         );
 
         // Populate the results
         // `this.results` will be an array of MetricResultSingle
         this.results = results;
+
+    }
+
+    /**
+     * Set the original inputs to which the results of the metric calculation will refer.
+     * 
+     * @param {MetricInput} [a] - original input(s) for a
+     * @param {MetricInput} [b] - original input(s) for b
+     */
+    public setOriginal ( a?: MetricInput, b?: MetricInput ) : this {
+
+        if ( a ) this.origA = Array.isArray( a ) ? a : [ a ];
+        if ( b ) this.origB = Array.isArray( b ) ? b : [ b ];
+
+        return this;
 
     }
 
@@ -411,7 +436,7 @@ export abstract class Metric<R = MetricRaw> {
 
             // Default mode runs the metric on single inputs or falls back to batch mode
             case 'default': if ( this.isSingle() ) {
-                this.results = this.runSingle( this.a[ 0 ], this.b[ 0 ] );
+                this.results = this.runSingle( 0, 0 );
                 break;
             }
 
@@ -419,7 +444,7 @@ export abstract class Metric<R = MetricRaw> {
             case 'batch': this.runBatch(); break;
 
             // Single mode runs the metric on the first elements of a[] and b[]
-            case 'single': this.results = this.runSingle( this.a[ 0 ], this.b[ 0 ] ); break;
+            case 'single': this.results = this.runSingle( 0, 0 ); break;
 
             // Pairwise mode runs the metric on corresponding pairs of a[] and b[]
             case 'pairwise': if ( this.isPairwise() ) this.runPairwise(); break;
@@ -448,7 +473,7 @@ export abstract class Metric<R = MetricRaw> {
 
             // Default mode runs the metric on single inputs or falls back to batch mode
             case 'default': if ( this.isSingle() ) {
-                this.results = await this.runSingleAsync( this.a[ 0 ], this.b[ 0 ] );
+                this.results = await this.runSingleAsync( 0, 0 );
                 break;
             }
 
@@ -456,7 +481,7 @@ export abstract class Metric<R = MetricRaw> {
             case 'batch': await this.runBatchAsync(); break;
 
             // Single mode runs the metric on the first elements of a[] and b[]
-            case 'single': this.results = await this.runSingleAsync( this.a[ 0 ], this.b[ 0 ] ); break;
+            case 'single': this.results = await this.runSingleAsync( 0, 0 ); break;
 
             // Pairwise mode runs the metric on corresponding pairs of a[] and b[]
             case 'pairwise': if ( this.isPairwise() ) await this.runPairwiseAsync(); break;
