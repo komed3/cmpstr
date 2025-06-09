@@ -28,11 +28,11 @@ import type {
 } from './utils/Types';
 
 import * as DeepMerge from './utils/DeepMerge';
-import { DiffChecker } from './utils/DiffChecker';
-import { Filter } from './utils/Filter';
-import { Normalizer } from './utils/Normalizer';
 import { Profiler } from './utils/Profiler';
 import { TextAnalyzer } from './utils/TextAnalyzer';
+import { DiffChecker } from './utils/DiffChecker';
+import { Normalizer } from './utils/Normalizer';
+import { Filter } from './utils/Filter';
 
 import { factory } from './utils/Registry';
 import { MetricRegistry, Metric } from './metric';
@@ -148,7 +148,7 @@ export class CmpStr<R = MetricRaw> {
     /**
      * Creates a new CmpStr instance with the given options.
      * 
-     * @param {string | CmpStrOptions} [opt] - Optional serialized or options object
+     * @param {string|CmpStrOptions} [opt] - Optional serialized or options object
      * @returns {CmpStr<R>} - A new CmpStr instance
      */
     public static create<R = MetricRaw> ( opt?: string | CmpStrOptions ) : CmpStr<R> { return new CmpStr ( opt ) }
@@ -288,7 +288,7 @@ export class CmpStr<R = MetricRaw> {
      * 
      * @param {MetricInput} input - The input string or array
      * @param {{ algo: string, opt?: PhoneticOptions }} options - The phonetic algorithm and options
-     * @returns {MetricInput} - The phonetic index as a string or array of strings
+     * @returns {MetricInput} - The phonetic index for the given input
      */
     protected index ( input: MetricInput, { algo, opt }: {
         algo: string, opt?: PhoneticOptions
@@ -337,7 +337,7 @@ export class CmpStr<R = MetricRaw> {
         metric.run( mode );
 
         // Resolve and return the result based on the raw flag
-        return this.output( metric.getResults(), raw ?? resolved.raw );
+        return this.output<T>( metric.getResults(), raw ?? resolved.raw );
 
     }
 
@@ -531,7 +531,7 @@ export class CmpStr<R = MetricRaw> {
     }
 
     /**
-     * Performs a batch metric comparison between the source and target strings
+     * Performs a batch metric comparison between source and target strings
      * or array of strings.
      * 
      * @param {MetricInput} a - The source string or array of strings
@@ -569,7 +569,7 @@ export class CmpStr<R = MetricRaw> {
     }
 
     /**
-     * Performs a pairwise metric comparison between the source and target strings
+     * Performs a pairwise metric comparison between source and target strings
      * or array of strings.
      * 
      * Input arrays needs of the same length to perform pairwise comparison,
