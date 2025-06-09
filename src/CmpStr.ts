@@ -293,8 +293,8 @@ export class CmpStr<R = MetricRaw> {
         result: MetricResult<R>, opt?: CmpStrOptions
     ) : MetricResult<R> {
 
-        if ( opt?.removeZero && Array.isArray( result ) )
-            result = result.filter( r => r.res > 0 )
+        // Remove "zero similarity" from batch results if configured
+        if ( opt?.removeZero && Array.isArray( result ) ) result = result.filter( r => r.res > 0 );
 
         return result;
 
