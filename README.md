@@ -58,7 +58,9 @@ For asynchronous workloads:
 ```ts
 import { CmpStrAsync } from 'cmpstr';
 
-const cmp = CmpStrAsync.create().setPhonetic( 'soundex' );
+const cmp = CmpStrAsync.create().setProcessors( {
+  phonetic: { algo: 'soundex' }
+} );
 
 const result = await cmp.searchAsync( 'Maier', [
   'Meyer', 'Müller', 'Miller', 'Meyers', 'Meier'
