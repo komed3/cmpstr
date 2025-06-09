@@ -231,11 +231,51 @@ export class CmpStr<R = MetricRaw> {
 
     }
 
+    public batchSorted<T extends CmpStrResult[] | MetricResultBatch<R>> (
+        a: MetricInput, b: MetricInput, dir: 'desc' | 'asc' = 'desc', opt?: CmpStrOptions
+    ) : T {
+
+        return this.output(
+            this.compute<MetricResultBatch<R>>( a, b, opt, 'batch', true )
+                .sort( ( a, b ) => dir === 'asc' ? a.res - b.res : b.res - a.res ),
+            opt?.raw ?? this.options.raw
+        ) as T;
+
+    }
+
     public pairs<T extends CmpStrResult[] | MetricResultBatch<R>> (
         a: MetricInput, b: MetricInput, opt?: CmpStrOptions
     ) : T {
 
         return this.compute<T>( a, b, opt, 'pairwise' );
+
+    }
+
+    public match<T extends CmpStrResult[] | MetricResultBatch<R>> (
+        a: MetricInput, b: MetricInput, threshold: number, opt?: CmpStrOptions
+    ) : T {
+
+        return this.output(
+            this.compute<MetricResultBatch<R>>( a, b, opt, 'batch', true )
+                .filter( r => r.res >= threshold ).sort( ( a, b ) => b.res - a.res ),
+            opt?.raw ?? this.options.raw
+        ) as T;
+
+    }
+
+    public closest<T extends CmpStrResult[] | MetricResultBatch<R>> (
+        a: MetricInput, b: MetricInput, n: number = 1, opt?: CmpStrOptions
+    ) : T {
+
+        return this.batchSorted( a, b, 'desc', opt ).slice( 0, n ) as T;
+
+    }
+
+    public furthest<T extends CmpStrResult[] | MetricResultBatch<R>> (
+        a: MetricInput, b: MetricInput, n: number = 1, opt?: CmpStrOptions
+    ) : T {
+
+        return this.batchSorted( a, b, 'asc', opt ).slice( 0, n ) as T;
 
     }
 
