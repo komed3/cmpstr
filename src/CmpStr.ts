@@ -148,15 +148,15 @@ export class CmpStr<R = MetricRaw> {
 
     protected compute<T extends MetricResult<R> | CmpStrResult | CmpStrResult[]> (
         a: MetricInput, b: MetricInput, opt?: CmpStrOptions,
-        mode?: MetricMode, raw?: boolean
+        mode?: MetricMode, raw?: boolean, skip?: boolean
     ) : T {
 
         const resolved: CmpStrOptions = this.resolveOptions( opt );
 
         this.assert( 'metric', resolved.metric );
 
-        const A: MetricInput = this.prepare( a, resolved );
-        const B: MetricInput = this.prepare( b, resolved );
+        const A: MetricInput = skip ? a : this.prepare( a, resolved );
+        const B: MetricInput = skip ? b : this.prepare( b, resolved );
 
         const metric: Metric<R> = factory.metric( resolved.metric!, A, B, resolved.opt );
 
@@ -250,6 +250,16 @@ export class CmpStr<R = MetricRaw> {
         const hstk: string[] = this.prepare( haystack, resolved ) as string[];
 
         return haystack.filter( ( _, i ) => hstk[ i ].includes( test ) );
+
+    }
+
+    public matrix ( input: string[], opt?: CmpStrOptions ) : number[][] {
+
+        input = this.prepare( input, this.resolveOptions( opt ) ) as string[];
+
+        return input.map( a => this.compute<MetricResultBatch<R>>(
+            a, input, undefined, 'batch', true, true
+        ).map( b => b.res ?? 0 ) );
 
     }
 
