@@ -46,18 +46,15 @@ export class JaroWinklerDistance extends Metric<JaroWinklerRaw> {
      * @param {MetricInput} a - First input string or array of strings
      * @param {MetricInput} b - Second input string or array of strings
      * @param {MetricOptions} options - Options for the metric computation
-     * @param {MetricInput} [A] - Original first input
-     * @param {MetricInput} [B] - Original second input
      */
     constructor (
         a: MetricInput, b: MetricInput,
-        options: MetricOptions = {},
-        A?: MetricInput, B?: MetricInput
+        options: MetricOptions = {}
     ) {
 
         // Call the parent Metric constructor with the metric name and inputs
         // Metric is symmetrical
-        super ( 'jaro-winkler', a, b, options, true, A, B );
+        super ( 'jaro-winkler', a, b, options, true );
 
     }
 

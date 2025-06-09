@@ -103,16 +103,13 @@ export abstract class Metric<R = MetricRaw> {
      * @param {MetricInput} a - First input string or array of strings
      * @param {MetricInput} b - Second input string or array of strings
      * @param {MetricOptions} options - Options for the metric computation
-     * @param {MetricInput} [A] - Original first input
-     * @param {MetricInput} [B] - Original second input
      * @throws {Error} - If inputs `a` or `b` are empty
      */
     constructor (
         metric: string,
         a: MetricInput, b: MetricInput,
         options: MetricOptions = {},
-        symmetric: boolean = false,
-        A?: MetricInput, B?: MetricInput
+        symmetric: boolean = false
     ) {
 
         // Set the metric name
