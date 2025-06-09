@@ -348,7 +348,7 @@ export class CmpStr<R = MetricRaw> {
         const B: MetricInput = skip ? b : this.prepare( b, resolved );
 
         // Get the metric class
-        const metric: Metric<R> = factory.metric( resolved.metric!, A, B, resolved.opt );
+        const metric: Metric<R> = factory.metric( resolved.metric!, A, B, resolved.opt, a, b );
 
         // Compute the metric result
         metric.run( mode );
