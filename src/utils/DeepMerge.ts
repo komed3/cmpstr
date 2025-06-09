@@ -84,7 +84,7 @@ export function set<T extends Record<string, any>> (
     const [ k, ...r ]: ( string | number )[] = parse( path );
 
     // Throw an error if the key is not a valid identifier
-    if ( t !== undefined && t instanceof Object ) throw Error (
+    if ( t !== undefined && ( typeof t !== 'object' || t === null ) ) throw Error (
         `cannot set property ${k} of ${ JSON.stringify( t ) }`
     );
 
