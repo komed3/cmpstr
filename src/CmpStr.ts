@@ -73,7 +73,7 @@ export class CmpStr<R = MetricRaw> {
 
     }
 
-    assert ( cond: string, test?: any ) : void {
+    protected assert ( cond: string, test?: any ) : void {
 
         switch ( cond ) {
 
@@ -93,21 +93,41 @@ export class CmpStr<R = MetricRaw> {
 
     }
 
-    assertMany ( ...cond: [ string, any? ][] ) : void {
+    protected assertMany ( ...cond: [ string, any? ][] ) : void {
 
         for ( const [ c, test ] of cond ) this.assert( c, test );
 
     }
 
-    protected normalize ( input: MetricInput, f?: NormalizeFlags ) : MetricInput {
+    protected normalize ( input: MetricInput, flags?: NormalizeFlags ) : MetricInput {
 
-        return Normalizer.normalize( input, f ?? this.options.flags ?? '' );
+        return Normalizer.normalize( input, flags ?? this.options.flags ?? '' );
 
     }
 
     protected filter ( input: MetricInput, hook: string = 'input' ) : MetricInput {
 
         return Filter.apply( hook, input as string );
+
+    }
+
+    protected resolveOptions ( opt?: CmpStrOptions ) : CmpStrOptions {
+
+        return DeepMerge.merge( { ...( this.options ?? Object.create( null ) ) }, opt );
+
+    }
+
+    protected prepare ( input: MetricInput, opt?: CmpStrOptions ) : MetricInput {
+
+        const { flags, processors } = opt ?? this.options;
+
+        if ( flags?.length ) input = this.normalize( input, flags );
+
+        input = this.filter( input, 'input' );
+
+        if ( processors?.phonetic ) input = this.index( input, processors.phonetic );
+
+        return input;
 
     }
 
@@ -126,37 +146,23 @@ export class CmpStr<R = MetricRaw> {
 
     }
 
-    protected prepare ( input: MetricInput, opt?: CmpStrOptions ) : MetricInput {
-
-        const { flags, processors } = opt ?? {};
-
-        if ( flags?.length ) input = this.normalize( input, flags );
-
-        input = this.filter( input, 'input' );
-
-        if ( processors?.phonetic ) input = this.index( input, processors.phonetic );
-
-        return input;
-
-    }
-
     protected compute<T extends MetricResult<R> | CmpStrResult | CmpStrResult[]> (
         a: MetricInput, b: MetricInput, opt?: CmpStrOptions,
         mode?: MetricMode, raw?: boolean
     ) : T {
 
-        opt = DeepMerge.merge( this.options, opt ) ?? {};
+        const resolved: CmpStrOptions = this.resolveOptions( opt );
 
-        this.assert( 'metric', opt.metric );
+        this.assert( 'metric', resolved.metric );
 
-        const A: MetricInput = this.prepare( a, opt );
-        const B: MetricInput = this.prepare( b, opt );
+        const A: MetricInput = this.prepare( a, resolved );
+        const B: MetricInput = this.prepare( b, resolved );
 
-        const metric: Metric<R> = factory.metric( opt.metric!, A, B, opt?.opt );
+        const metric: Metric<R> = factory.metric( resolved.metric!, A, B, resolved.opt );
 
         metric.run( mode );
 
-        return this.output( metric.getResults(), raw );
+        return this.output( metric.getResults(), raw ?? resolved.raw );
 
     }
 
@@ -221,7 +227,29 @@ export class CmpStr<R = MetricRaw> {
         a: MetricInput, b: MetricInput, opt?: CmpStrOptions
     ) : T {
 
-        return this.compute<T>( a, b, opt, 'batch' ) as T;
+        return this.compute<T>( a, b, opt, 'batch' );
+
+    }
+
+    public pairs<T extends CmpStrResult[] | MetricResultBatch<R>> (
+        a: MetricInput, b: MetricInput, opt?: CmpStrOptions
+    ) : T {
+
+        return this.compute<T>( a, b, opt, 'pairwise' );
+
+    }
+
+    public search (
+        needle: string, haystack: string[], flags?: NormalizeFlags,
+        processors?: CmpStrProcessors
+    ) : string[] {
+
+        const resolved: CmpStrOptions = this.resolveOptions( { flags, processors } );
+
+        const test: string = this.prepare( needle, resolved ) as string;
+        const hstk: string[] = this.prepare( haystack, resolved ) as string[];
+
+        return haystack.filter( ( _, i ) => hstk[ i ].includes( test ) );
 
     }
 
