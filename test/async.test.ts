@@ -15,7 +15,8 @@ describe( 'CmpStr > Async', () => {
     it( 'Batch Test', async () => {
 
         const cmp = CmpStrAsync.create( {
-            metric: 'lcs', raw: true, opt: { removeZero: true }
+            metric: 'lcs', raw: true,
+            removeZero: true
         } );
 
         const res = await cmp.batchSortedAsync( [
