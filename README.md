@@ -7,7 +7,6 @@
 [![npm bundle size](https://img.shields.io/bundlephobia/min/cmpstr?style=for-the-badge&logo=gitlfs&logoColor=fff)](https://bundlephobia.com/package/cmpstr)
 [![NPM Downloads](https://img.shields.io/npm/dy/cmpstr?style=for-the-badge&logo=transmission&logoColor=fff)](https://npmpackage.info/package/cmpstr?t=downloads)
 [![GitHub Actions Workflow Status](https://img.shields.io/github/actions/workflow/status/komed3/cmpstr/build.yml?style=for-the-badge&logo=educative&logoColor=fff)](https://github.com/komed3/cmpstr/actions/workflows/build.yml)
-[![GitHub Actions Workflow Status](https://img.shields.io/github/actions/workflow/status/komed3/cmpstr/codeql.yml?style=for-the-badge&logo=paperswithcode&logoColor=fff&label=CodeQL)](https://github.com/komed3/cmpstr/actions/workflows/codeql.yml)
 [![Static Badge](https://img.shields.io/badge/ESM_%26_CJS-TypeScript?style=for-the-badge&logo=nodedotjs&logoColor=fff&color=purple)]()
 [![Static Badge](https://img.shields.io/badge/UMD_%26_ESM-JavaScript?style=for-the-badge&logo=javascript&logoColor=fff&color=orange)]()
 
@@ -24,7 +23,7 @@ Started in 2023 as a small project only supporting two algorithms, it was rework
 - Phonetic algorithms (Cologne, Soundex, Metaphone) with mapping registry
 - Flexible normalization and filtering pipeline for all inputs
 - Batch, pairwise, and single comparison with detailed, type-safe results
-- Phonetic-aware search and indexing
+- Phonetic-aware search, comparison and indexing
 - Readability and text analysis utilities (syllables, word stats, etc.)
 - Unified diff and difference reporting (line/word, ASCII/CLI)
 - Full TypeScript type safety, extensibility, and profiling support
@@ -42,29 +41,29 @@ npm install cmpstr
 
 Minimal usage example:
 
-```js
+```ts
 import { CmpStr } from 'cmpstr';
 
-const cmp = new CmpStr( [ 'hello', 'hola' ], 'levenshtein', {
-  normalizeFlags: 'i'
-} );
+const cmp = CmpStr.create().setMetric( 'levenshtein' ).setFlags( 'i' );
 
-const result = cmp.test( 'Hallo' );
+const result = cmp.test( [ 'hello', 'hola' ], 'Hallo' );
 
 console.log( result );
-// { source: 'hello', target: 'hallo', match: 0.8 }
+// { source: 'hello', target: 'Hallo', match: 0.8 }
 ```
 
 For asynchronous workloads:
 
-```js
+```ts
 import { CmpStrAsync } from 'cmpstr';
 
-const cmp = new CmpStrAsync( [
-  'Meyer', 'Müller', 'Miller', 'Meyers', 'Meier'
-] ).setPhonetic( 'soundex' );
+const cmp = CmpStrAsync.create().setProcessors( {
+  phonetic: { algo: 'soundex' }
+} );
 
-const result = await cmp.phoneticSearchAsync( 'Maier' );
+const result = await cmp.searchAsync( 'Maier', [
+  'Meyer', 'Müller', 'Miller', 'Meyers', 'Meier'
+] );
 
 console.log( result );
 // [ 'Meyer', 'Meier' ]
@@ -74,4 +73,4 @@ console.log( result );
 
 Full documentation, API reference and advanced usage examples are available in the [GitHub Wiki](https://github.com/komed3/cmpstr/wiki).
 
-> **LICENSE MIT © 2023-2025 PAUL KÖHLER (KOMED3)**
+**LICENSE MIT © 2023-2025 PAUL KÖHLER (KOMED3)**

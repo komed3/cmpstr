@@ -5,8 +5,8 @@ describe( 'CmpStr > Async', () => {
 
     it( 'Compare', async () => {
 
-        const cmp = new CmpStrAsync ( 'diamonds', 'jaccard' );
-        const res = await cmp.compareAsync( 'Diamanten', { flags: 'i' } );
+        const cmp = CmpStrAsync.create().setMetric( 'jaccard' );
+        const res = await cmp.compareAsync( 'diamonds', 'Diamanten', { flags: 'i' } );
 
         expect( res ).within( 0.5, 0.6 );
 
@@ -14,8 +14,14 @@ describe( 'CmpStr > Async', () => {
 
     it( 'Batch Test', async () => {
 
-        const cmp = new CmpStrAsync ( [ 'hello', 'hola', 'hi', 'hey', 'alo', 'welcome', 'fruit' ], 'lcs' );
-        const res = await cmp.batchSortedAsync( 'hallo', 'desc', { raw: true, opt: { removeZero: true } } );
+        const cmp = CmpStrAsync.create( {
+            metric: 'lcs', raw: true,
+            removeZero: true
+        } );
+
+        const res = await cmp.batchSortedAsync( [
+            'hello', 'hola', 'hi', 'hey', 'alo', 'welcome', 'fruit'
+        ], 'hallo', 'desc' );
 
         expect( res ).toHaveLength( 6 );
 
@@ -23,7 +29,9 @@ describe( 'CmpStr > Async', () => {
 
     it( 'Text Search', async () => {
 
-        const cmp = new CmpStrAsync ( [
+        const cmp = CmpStrAsync.create();
+
+        const res = await cmp.searchAsync( 'his', [
             'One morning, when Gregor Samsa woke from troubled dreams, he found himself transformed ' +
             'in his bed into a horrible vermin.', 'He lay on his armour-like back, and if he lifted his ' +
             'head a little he could see his brown belly, slightly domed and divided by arches into ' +
@@ -32,16 +40,14 @@ describe( 'CmpStr > Async', () => {
             'about helplessly as he looked.'
         ] );
 
-        const res = await cmp.searchAsync( 'his' );
-
         expect( res ).toHaveLength( 2 );
 
     } );
 
     it( 'Phonetic Index', async () => {
 
-        const cmp = new CmpStrAsync ( 'Rupert' ).setPhonetic( 'soundex' );
-        const res = await cmp.phoneticIndexAsync();
+        const cmp = CmpStrAsync.create().setProcessors( { phonetic: { algo: 'soundex' } } );
+        const res = await cmp.phoneticIndexAsync( 'Rupert' );
 
         expect( res ).toBe( 'R100' );
 

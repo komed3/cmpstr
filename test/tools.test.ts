@@ -5,7 +5,7 @@ describe( 'CmpStr > Tools', () => {
 
     it( 'Similarity Matrix', () => {
 
-        const cmp = new CmpStr ().setMetric( 'dice' );
+        const cmp = CmpStr.create().setMetric( 'dice' );
         const res = cmp.matrix( [ 'hallo', 'hello', 'hi', 'hola', 'hey' ] );
 
         expect( res ).toEqual( [

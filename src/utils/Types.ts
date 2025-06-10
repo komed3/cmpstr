@@ -176,8 +176,6 @@ export type MetricMode = 'default' | 'batch' | 'single' | 'pairwise';
 export interface MetricOptions {
     // The computation mode
     mode?: MetricMode;
-    // Remove zero results from batch output
-    removeZero?: boolean;
     // Delimiter for tokenization (if applicable)
     delimiter?: string;
     // Padding character for alignment algorithms
@@ -217,9 +215,8 @@ export interface MetricCompute<R = MetricRaw> {
 export interface MetricResultSingle<R = MetricRaw> {
     // The metric algorithm name
     metric: string;
-    // The source string
+    // The source and target strings
     a: string;
-    // The target string
     b: string;
     // The normalized similarity score (0..1)
     res: number;
@@ -404,60 +401,44 @@ export interface DiffGroup {
 };
 
 /**
+ * CmpStrProcessors defines pre-processors for input strings before comparison.
+ */
+export interface CmpStrProcessors {
+    // Phonetic indexing
+    phonetic?: {
+        // Phonetic algorithm name
+        algo: string;
+        // Options for the phonetic algorithm
+        opt?: PhoneticOptions;
+    };
+};
+
+/**
  * CmpStrOptions configures the behavior of a CmpStr instance.
  */
 export interface CmpStrOptions {
+    // Whether to return raw metric results
+    raw?: boolean;
+    // Remove zero results from batch output
+    removeZero?: boolean;
+    // Normalization flags
+    flags?: NormalizeFlags;
     // Metric algorithm name
     metric?: string;
     // Options for the metric algorithm
-    metricOptions?: MetricOptions;
-    // Normalization flags
-    normalizeFlags?: NormalizeFlags;
-    // Whether to return raw metric results
-    raw?: boolean;
-    // Phonetic algorithm name
-    phonetic?: string;
-    // Options for the phonetic algorithm
-    phoneticOptions?: PhoneticOptions;
-    // Options for diffing
-    diffOptions?: DiffOptions;
-};
-
-/**
- * CmpStrParams provides additional parameters for comparison methods.
- */
-export interface CmpStrParams {
-    // Normalization flags
-    flags?: NormalizeFlags;
-    // Metric options
     opt?: MetricOptions;
-    // Whether to return raw results
-    raw?: boolean;
-    // Metric algorithm name
-    metric?: string;
-    // Source input override
-    source?: MetricInput;
-};
-
-/**
- * CmpStrPhoneticParams provides additional parameters for phonetic methods.
- */
-export interface CmpStrPhoneticParams {
-    // Normalization flags
-    flags?: NormalizeFlags;
-    // Phonetic options
-    opt?: PhoneticOptions;
-    // Phonetic algorithm name override
-    algo?: string;
+    // Pre-processors for input preparation
+    processors?: CmpStrProcessors;
+    // Select the string output mode
+    output?: 'orig' | 'prep';
 };
 
 /**
  * CmpStrResult represents a simplified result for user-facing API methods.
  */
 export interface CmpStrResult {
-    // The source string
+    // The source and target strings
     source: string;
-    // The target string
     target: string;
     // The similarity score (0..1)
     match: number;

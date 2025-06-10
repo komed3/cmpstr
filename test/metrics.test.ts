@@ -5,8 +5,8 @@ describe( 'CmpStr > Metric', () => {
 
     it( 'Levenshtein Distance', () => {
 
-        const cmp = new CmpStr ( 'kitten', 'levenshtein' );
-        const res = cmp.test<CmpStrResult>( 'sitting' );
+        const cmp = CmpStr.create().setMetric( 'levenshtein' );
+        const res = cmp.test<CmpStrResult>( 'kitten', 'sitting' );
 
         expect( res.match ).toBeGreaterThan( 0.4 );
 
@@ -14,17 +14,20 @@ describe( 'CmpStr > Metric', () => {
 
     it( 'Dice-Sørensen Coefficient', () => {
 
-        const cmp = new CmpStr ( 'hello', 'dice', { normalizeFlags: 'i' } );
-        const res = cmp.closest( [ 'Hallo', 'hola', 'hey' ], 1 );
+        const cmp = CmpStr.create();
+        const res = cmp.closest( 'hello', [ 'Hallo', 'hola', 'hey' ], 1, { flags: 'i', metric: 'dice' } );
 
-        expect( res ).toEqual( [ { source: 'hello', target: 'hallo', match: 0.5 } ] );
+        expect( res ).toEqual( [ {
+            source: 'hello', target: 'Hallo',
+            match: 0.5
+        } ] );
 
     } );
 
     it( 'Hamming Distance', () => {
 
-        const cmp = new CmpStr ( 'kitten', 'hamming' );
-        const res = cmp.compare( 'sittings', { opt: { pad: '0' } } );
+        const cmp = CmpStr.create( '{ "metric": "hamming", "opt": { "pad": "0" } }' );
+        const res = cmp.compare( 'kitten', 'sittings' );
 
         expect( res ).toBeCloseTo( 0.5 );
 
@@ -32,8 +35,8 @@ describe( 'CmpStr > Metric', () => {
 
     it( 'Needleman-Wunsch Distance', () => {
 
-        const cmp = new CmpStr ( [ 'Meyer', 'Müller', 'Miller', 'Meyers', 'Meier' ], 'needlemanWunsch' );
-        const res = cmp.match( 'Maier', 0.6 );
+        const cmp = CmpStr.create().setMetric( 'needlemanWunsch' );
+        const res = cmp.match( [ 'Meyer', 'Müller', 'Miller', 'Meyers', 'Meier' ], 'Maier', 0.6 );
 
         expect( res ).toHaveLength( 4 );
 
@@ -41,16 +44,16 @@ describe( 'CmpStr > Metric', () => {
 
     it( 'Jaro-Winkler Distance', () => {
 
-        const cmp = new CmpStr ( [ 'hello', 'hi', 'hola' ] ).setMetric( 'jaroWinkler' );
-        const res = cmp.pairs( [ 'hallo', 'allo', 'hey' ] );
+        const cmp = CmpStr.create().setMetric( 'jaroWinkler' ).setFlags( 'i' );
+        const res = cmp.pairs( [ 'heLLo', 'hi', 'Hola' ], [ 'hallo', 'Allo', 'hey' ] );
 
         expect( res ).toEqual( [
-            { source: 'hello', target: 'hallo', match: 0.88 },
-            { source: 'hi', target: 'allo', match: 0 },
-            { source: 'hola', target: 'hey', match: 0.575 }
+            { source: 'heLLo', target: 'hallo', match: 0.88 },
+            { source: 'hi', target: 'Allo', match: 0 },
+            { source: 'Hola', target: 'hey', match: 0.575 }
         ] );
 
-        expect( () => { cmp.pairs( [ 'hallo', 'allo' ] ) } ).toThrowError(
+        expect( () => { cmp.pairs( [ 'heLLo', 'hi', 'Hola' ], [ 'hallo', 'allo' ] ) } ).toThrowError(
             `mode <pairwise> requires arrays of equal length`
         );
 

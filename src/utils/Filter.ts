@@ -179,13 +179,13 @@ export class Filter {
     }
 
     /**
-     * Applies all active filters for a given hook to the input string.
+     * Applies all active filters for a given hook to the input string(s).
      * 
      * @param {string} hook - The name of the hook
-     * @param {string} input - The input string to be filtered
-     * @returns {string} - The filtered input string
+     * @param {string|string[]} input - The input string(s) to be filtered
+     * @returns {string|string[]} - The filtered string(s)
      */
-    public static apply ( hook: string, input: string ) : string {
+    public static apply ( hook: string, input: string | string[] ) : string | string[] {
 
         // Get the filter array for the specified hook
         const filter: FilterEntry[] | undefined = Filter.filters.get( hook );
@@ -193,24 +193,26 @@ export class Filter {
         // If no filters are found for the hook or if no filters are active, return the input unchanged
         if ( ! filter || filter.every( f => ! f.active ) ) return input;
 
-        let res: string = input;
+        // Apply each active filter function to the given string
+        const applyOne = ( s: string ) : string => {
+            for ( const f of filter ) if ( f.active ) s = f.fn( s );
+            return s;
+        };
 
-        // Apply each active filter function to the input string
-        for ( const f of filter ) if ( f.active ) res = f.fn( res );
-
-        return res;
+        // If the input is an array, apply the filter to each element, otherwise just once
+        return Array.isArray( input ) ? input.map( applyOne ) : applyOne( input );
 
     }
 
     /**
-     * Applies all active filters for a given hook to the input string asynchronously.
+     * Applies all active filters for a given hook to the input string(s) asynchronously.
      * Each filter function may return a Promise or a plain string; all are awaited in order.
      * 
      * @param {string} hook - The name of the hook
-     * @param {string} input - The input string to be filtered
-     * @returns {Promise<string>} - The filtered input string
+     * @param {string|string[]} input - The input string(s) to be filtered
+     * @returns {Promise<string|string[]>} - The filtered string(s)
      */
-    public static async applyAsync ( hook: string, input: string ) : Promise<string> {
+    public static async applyAsync ( hook: string, input: string | string[] ) : Promise<string | string[]> {
 
         // Get the filter array for the specified hook
         const filter: FilterEntry[] | undefined = Filter.filters.get( hook );
@@ -218,13 +220,17 @@ export class Filter {
         // If no filters are found for the hook or if no filters are active, return the input unchanged
         if ( ! filter || filter.every( f => ! f.active ) ) return input;
 
-        let res: string = input;
-
-        // Apply each active filter function to the input string, awaiting each result
+        // Apply each active filter function to the given string
         // Support both sync and async filter functions
-        for ( const f of filter ) if ( f.active ) res = await Promise.resolve( f.fn( res ) );
+        const applyOne = async ( s: string ) : Promise<string> => {
+            for ( const f of filter ) if ( f.active ) s = await Promise.resolve( f.fn( s ) );
+            return s;
+        };
 
-        return res;
+        // If the input is an array, apply the filter to each element, otherwise just once
+        // Use Promise.all to handle multiple promises if input is an array
+        return Array.isArray( input ) ? Promise.all( input.map( applyOne ) ) : applyOne( input );
+        
     }
 
     /**

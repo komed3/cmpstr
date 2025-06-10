@@ -12,6 +12,8 @@
  * License: MIT
  * 
  * Core Features:
+ * --------------
+ * 
  *  - Unified interface for string similarity, distance, and matching
  *  - Pluggable metric system (Levenshtein, Jaro-Winkler, Cosine, Dice, Hamming, LCS, etc.)
  *  - Phonetic algorithms (Cologne, Soundex, Metaphone) with mapping registry
@@ -24,13 +26,15 @@
  *  - Modular architecture for easy integration and extension
  * 
  * Overview:
- *  CmpStr provides a single entry point for all string comparison and analysis tasks.
- *  The main class, `CmpStr`, exposes a rich API for comparing strings, arrays, or
- *  batches, with full support for normalization, filtering, and phonetic processing.
- *  All metric and phonetic algorithms are managed via registries, allowing for
- *  dynamic extension and customization. The package also includes utilities for
- *  diffing, text analysis, and profiling, making it suitable for applications such as
- *  search engines, data deduplication, fuzzy matching, linguistics, and more.
+ * ---------
+ * 
+ * CmpStr provides a single entry point for all string comparison and analysis tasks.
+ * The main class, `CmpStr`, exposes a rich API for comparing strings, arrays, or
+ * batches, with full support for normalization, filtering, and phonetic processing.
+ * All metric and phonetic algorithms are managed via registries, allowing for
+ * dynamic extension and customization. The package also includes utilities for
+ * diffing, text analysis, and profiling, making it suitable for applications such as
+ * search engines, data deduplication, fuzzy matching, linguistics, and more.
  * 
  * For asynchronous workloads, use `CmpStrAsync`, which provides the same API with
  * Promise-based, non-blocking methods for large-scale or I/O-bound operations.

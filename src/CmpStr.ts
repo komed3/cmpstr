@@ -12,8 +12,7 @@
  *  - Flexible normalization and filtering pipeline for all inputs
  *  - Batch, pairwise, and single string comparison with detailed results
  *  - Phonetic indexing and phonetic-aware search and comparison
- *  - Readability and text analysis utilities
- *  - Unified diff and difference reporting
+ *  - Text analysis and unified diff utilities
  *  - Full TypeScript type safety and extensibility
  * 
  * @module CmpStr
@@ -24,21 +23,20 @@
 'use strict';
 
 import type {
-    CmpStrOptions, CmpStrParams, CmpStrPhoneticParams, CmpStrResult, NormalizeFlags, DiffOptions,
-    MetricInput, MetricMode, MetricRaw, MetricResult, MetricResultSingle, MetricResultBatch
+    CmpStrOptions, CmpStrProcessors, CmpStrResult, NormalizeFlags, DiffOptions, PhoneticOptions,
+    MetricRaw, MetricInput, MetricMode, MetricResult, MetricResultSingle, MetricResultBatch
 } from './utils/Types';
 
-import { Normalizer } from './utils/Normalizer';
-import { Filter } from './utils/Filter';
+import * as DeepMerge from './utils/DeepMerge';
 import { Profiler } from './utils/Profiler';
 import { TextAnalyzer } from './utils/TextAnalyzer';
 import { DiffChecker } from './utils/DiffChecker';
+import { Normalizer } from './utils/Normalizer';
+import { Filter } from './utils/Filter';
 
-import { Metric, MetricCls, MetricRegistry as metric } from './metric';
-import { Phonetic, PhoneticCls, PhoneticRegistry as phonetic, PhoneticMappingRegistry } from './phonetic';
-
-// Import the Metric and Phonetic classes and their registries
-const registry = { metric, phonetic };
+import { factory } from './utils/Registry';
+import { MetricRegistry, Metric } from './metric';
+import { PhoneticRegistry, PhoneticMappingRegistry, Phonetic } from './phonetic';
 
 // Import the Profiler instance for global profiling
 const profiler = Profiler.getInstance();
@@ -80,10 +78,10 @@ export class CmpStr<R = MetricRaw> {
      * @see MetricRegistry
      */
     public static readonly metric = {
-        add: metric.add,
-        remove: metric.remove,
-        has: metric.has,
-        list: metric.list
+        add: MetricRegistry.add,
+        remove: MetricRegistry.remove,
+        has: MetricRegistry.has,
+        list: MetricRegistry.list
     };
 
     /**
@@ -92,10 +90,10 @@ export class CmpStr<R = MetricRaw> {
      * @see PhoneticRegistry
      */
     public static readonly phonetic = {
-        add: phonetic.add,
-        remove: phonetic.remove,
-        has: phonetic.has,
-        list: phonetic.list,
+        add: PhoneticRegistry.add,
+        remove: PhoneticRegistry.remove,
+        has: PhoneticRegistry.has,
+        list: PhoneticRegistry.list,
         map: {
             add: PhoneticMappingRegistry.add,
             remove: PhoneticMappingRegistry.remove,
@@ -121,38 +119,54 @@ export class CmpStr<R = MetricRaw> {
     };
 
     /**
-     * --------------------------------------------------------------------------------
-     * Instance properties and methods for CmpStr operations
-     * --------------------------------------------------------------------------------
+     * Returns a TextAnalyzer instance for the given input string.
      * 
-     * These properties and methods provide the core functionality of the CmpStr class,
-     * allowing for string comparison, phonetic indexing, filtering, and text analysis.
+     * @param {string} [input] - The input string
+     * @returns {TextAnalyzer} - The text analyzer
      */
-
-    // The options for the CmpStr instance, the source input, and the normalized input
-    protected options: CmpStrOptions = Object.create( null );
-    protected source?: MetricInput;
-    protected normalized?: MetricInput;
-
-    // The metric and phonetic instances are resolved lazily
-    protected metric?: MetricCls<R>;
-    protected phonetic?: PhoneticCls;
+    public static analyze ( input: string ) : TextAnalyzer { return new TextAnalyzer ( input ) }
 
     /**
-     * Constructs a new CmpStr instance.
+     * Returns a DiffChecker instance for computing the unified diff between two texts.
      * 
-     * @param {MetricInput} [source] - The source string or array of strings
-     * @param {string} [metric] - The metric algorithm name
-     * @param {CmpStrOptions} [opt] - Additional options
-     * @param {string} [phonetic] - The phonetic algorithm name
+     * @param {string} a - The first (original) text
+     * @param {string} b - The second (modified) text
+     * @param {DiffOptions} [opt] - Optional diff configuration
+     * @returns {DiffChecker} - The diff checker instance
      */
-    constructor ( source?: MetricInput, metric?: string, opt?: CmpStrOptions, phonetic?: string ) {
+    public static diff ( a: string, b: string, opt?: DiffOptions ) : DiffChecker { return new DiffChecker ( a, b, opt ) }
 
-        if ( source ) this.set( 'source', source );
-        if ( opt ) this.set( 'options', opt );
+    /**
+     * --------------------------------------------------------------------------------
+     * Instanciate the CmpStr class
+     * --------------------------------------------------------------------------------
+     * 
+     * Methods to create a new CmpStr instance with the given options.
+     * Using the static `create` method is recommended to ensure proper instantiation.
+     */
 
-        if ( metric ) this.set( 'metric', metric );
-        if ( phonetic ) this.set( 'phonetic', phonetic );
+    /**
+     * Creates a new CmpStr instance with the given options.
+     * 
+     * @param {string|CmpStrOptions} [opt] - Optional serialized or options object
+     * @returns {CmpStr<R>} - A new CmpStr instance
+     */
+    public static create<R = MetricRaw> ( opt?: string | CmpStrOptions ) : CmpStr<R> { return new CmpStr ( opt ) }
+
+    // The options object that holds the configuration for this CmpStr instance
+    protected options: CmpStrOptions = Object.create( null );
+
+    /**
+     * Creates a new CmpStr instance with the given options.
+     * The constructor is protected to enforce the use of the static `create` method.
+     * 
+     * @param {string | CmpStrOptions} [opt] - Optional serialized or options object
+     */
+    protected constructor ( opt?: string | CmpStrOptions ) {
+
+        if ( opt ) typeof opt === 'string'
+            ? this.setSerializedOptions( opt )
+            : this.setOptions( opt );
 
     }
 
@@ -166,44 +180,56 @@ export class CmpStr<R = MetricRaw> {
      */
 
     /**
-     * Converts any input to an array of strings.
+     * Assert a condition and throws if the condition is not met.
      * 
-     * @param {any|any[]} input - The input value
-     * @returns {any[]} - The input as an array
+     * @param {string} cond - The condition to met
+     * @param {any} [test] - Value to test for
+     * @throws {Error} If the condition is not met
      */
-    protected asArr ( input: any | any[] ) : any[] {
+    protected assert ( cond: string, test?: any ) : void {
 
-        return Array.isArray( input ) ? input : [ input ];
+        switch ( cond ) {
+
+            // Check if the metric exists
+            case 'metric': if ( ! CmpStr.metric.has( test ) ) throw new Error (
+                `CmpStr <metric> must be set, call .setMetric(), ` +
+                `use CmpStr.metric.list() for available metrics`
+            ); break;
+
+            // Check if the phonetic algorithm exists
+            case 'phonetic': if ( ! CmpStr.phonetic.has( test ) ) throw new Error (
+                `CmpStr <phonetic> must be set, call .setPhonetic(), ` +
+                `use CmpStr.phonetic.list() for available phonetic algorithms`
+            ); break;
+
+            // Throw an error for unknown conditions
+            default: throw new Error ( `Cmpstr condition <${cond}> unknown` );
+
+        }
 
     }
 
     /**
-     * Converts any input to a single string.
+     * Assert multiple conditions.
      * 
-     * @param {any|any[]} input - The input value
-     * @returns {string} - The input as a string
+     * @param {[ string, any? ][]} cond - Array of [ condition, value ] pairs
      */
-    protected asStr ( input: any | any[] ) : string {
+    protected assertMany ( ...cond: [ string, any? ][] ) : void {
 
-        return String ( Array.isArray( input ) ? input.join( ' ' ) : input );
+        for ( const [ c, test ] of cond ) this.assert( c, test );
 
     }
 
     /**
-     * Deeply merges two objects, used for merging options.
+     * Resolves the options for the CmpStr instance, merging the provided options with
+     * the existing options.
      * 
-     * @param {T} s - Source object
-     * @param {T} t - Target object
-     * @returns {T} - The merged object
+     * @param {CmpStrOptions} [opt] - Optional options to merge
+     * @returns {CmpStrOptions} - The resolved options
      */
-    protected deepMerge<T extends Record<string, any>> ( s: T | undefined, t: T | undefined ) : T {
+    protected resolveOptions ( opt?: CmpStrOptions ) : CmpStrOptions {
 
-        ( s as any ) ||= Object.create( null ), ( t as any ) ||= Object.create( null );
-
-        return Object.keys( s! ).forEach(
-            ( k ) => ( t as any )[ k ] = s![ k ] && typeof s![ k ] === 'object'
-                ? this.deepMerge( ( t as any )[ k ], s![ k ] ) : s![ k ]
-        ), t ?? {} as T;
+        return DeepMerge.merge( { ...( this.options ?? Object.create( null ) ) }, opt );
 
     }
 
@@ -216,9 +242,7 @@ export class CmpStr<R = MetricRaw> {
      */
     protected normalize ( input: MetricInput, flags?: NormalizeFlags ) : MetricInput {
 
-        const { normalizeFlags } = this.options;
-
-        return Normalizer.normalize( input, flags ?? normalizeFlags ?? '' );
+        return Normalizer.normalize( input, flags ?? this.options.flags ?? '' );
 
     }
 
@@ -227,13 +251,11 @@ export class CmpStr<R = MetricRaw> {
      * 
      * @param {MetricInput} input - The input string or array
      * @param {string} [hook='input'] - The filter hook
-     * @returns {MetricInput} - The filtered input
+     * @returns {MetricInput} - The filtered string(s)
      */
-    protected filter ( input: MetricInput, hook: string = 'input' ) : MetricInput {
+    protected filter ( input: MetricInput, hook: string ) : MetricInput {
 
-        return Array.isArray( input )
-            ? input.map( s => Filter.apply( hook, s ) )
-            : Filter.apply( hook, input as string );
+        return Filter.apply( hook, input as string );
 
     }
 
@@ -241,126 +263,115 @@ export class CmpStr<R = MetricRaw> {
      * Prepares the input by normalizing and filtering.
      * 
      * @param {MetricInput} [input] - The input string or array
-     * @param {NormalizeFlags} [flags] - Normalization flags
-     * @param {string} [hook='input'] - The filter hook
-     * @returns {MetricInput|undefined} - The prepared input
+     * @param {CmpStrOptions} [opt] - Optional options to use
+     * @returns {MetricInput} - The prepared input
      */
-    protected prepare (
-        input?: MetricInput, flags?: NormalizeFlags, hook: string = 'input'
-    ) : MetricInput | undefined {
+    protected prepare ( input: MetricInput, opt?: CmpStrOptions ) : MetricInput {
 
-        return input === undefined ? undefined : (
-            this.filter( this.normalize( input, flags ), hook )
-        );
+        const { flags, processors } = opt ?? this.options;
+
+        // Normalize the input using flags (i.e., 'itw')
+        if ( flags?.length ) input = this.normalize( input, flags );
+
+        // Filter the input using hooked up filters
+        input = this.filter( input, 'input' );
+
+        // Apply phonetic processors if configured
+        if ( processors?.phonetic ) input = this.index( input, processors.phonetic );
+
+        return input;
 
     }
 
     /**
-     * Sets a property (source, options, metric, phonetic, normalized) on the instance.
+     * Post-process the results of the metric computation.
      * 
-     * @param {string} key - The property key
-     * @param {any} val - The value to set
-     * @returns {this}
-     * @throws {Error} If the key is not supported
+     * @param {MetricResult<R>} result - The metric result
+     * @returns {MetricResult<R>} - The post-processed results
      */
-    protected set ( key: string, val: any ) : this {
+    protected postProcess (
+        result: MetricResult<R>, opt?: CmpStrOptions
+    ) : MetricResult<R> {
 
-        switch ( key ) {
+        // Remove "zero similarity" from batch results if configured
+        if ( opt?.removeZero && Array.isArray( result ) ) result = result.filter( r => r.res > 0 );
 
-            // Set the CmpStr options
-            case 'options': case 'opt': this.options = val instanceof Object ? val : {}; break;
-
-            // Set the source input, which can be a string or an array of strings
-            // Fall through to set the normalized input
-            case 'source': case 'src': this.source = val;
-
-            // Set the normalized input, which is derived from the source
-            case 'normalized': this.normalized = this.normalize( val ); break;
-
-            // Set the metric and phonetic classes
-            case 'metric': case 'phonetic': this[ key ] = registry[ key ].get( val ) as any; break;
-
-            // Throw an error if the key is not supported
-            default: throw new Error ( `CmpStr key <${key}> is not supported` );
-
-        }
-
-        return this;
+        return result;
 
     }
 
     /**
-     * Checks a condition and throws if not met.
+     * Computes the phonetic index for the given input using the specified phonetic algorithm.
      * 
-     * @param {string} cond - The condition type
-     * @param {any} [test] - Optional value to test
-     * @throws {Error} If the condition is not met
+     * @param {MetricInput} input - The input string or array
+     * @param {{ algo: string, opt?: PhoneticOptions }} options - The phonetic algorithm and options
+     * @returns {MetricInput} - The phonetic index for the given input
      */
-    protected condition ( cond: string, test?: any ) : void {
+    protected index ( input: MetricInput, { algo, opt }: {
+        algo: string, opt?: PhoneticOptions
+    } ) : MetricInput {
 
-        switch ( cond ) {
+        this.assert( 'phonetic', algo );
 
-            // Check if the metric class is set
-            case 'metric': if ( ! ( test ?? this.metric ?? this.options.metric ) ) throw new Error (
-                `CmpStr <metric> must be set, call setMetric(), ` +
-                `use CmpStr.metric.list() for available metrics`
-            ); break;
+        const phonetic: Phonetic = factory.phonetic( algo, opt );
+        const delimiter = opt?.delimiter ?? ' ';
 
-            // Check if the phonetic class is set
-            case 'phonetic': if ( ! ( test ?? this.phonetic ?? this.options.phonetic ) ) throw new Error (
-                `CmpStr <phonetic> must be set, call setPhonetic(), ` +
-                `use CmpStr.phonetic.list() for available phonetic algorithms`
-            );
-
-            // Check if the source or normalized input is set
-            case 'source': case 'normalized': if ( ! ( test ?? this.source ) ) throw new Error (
-                `CmpStr <source> must be set, call setSource(), ` +
-                `allowed are strings or arrays of strings`
-            ); break;
-
-            // Trow an error for unknown conditions
-            default: throw new Error ( `Cmpstr condition <${cond}> unknown` );
-
-        }
+        return Array.isArray( input )
+            ? input.map( s => phonetic.getIndex( s ).join( delimiter ) )
+            : phonetic.getIndex( input ).join( delimiter );
 
     }
 
     /**
-     * Checks multiple conditions.
+     * Computes the metric result for the given inputs, applying normalization and
+     * filtering as configured.
      * 
-     * @param {[ string, any? ][]} cond - Array of [ condition, value ] pairs
+     * @param {MetricInput} a - The first input string or array
+     * @param {MetricInput} b - The second input string or array
+     * @param {CmpStrOptions} [opt] - Optional options to use
+     * @param {MetricMode} [mode='single'] - The metric mode to use
+     * @param {boolean} [raw=false] - Whether to return raw results
+     * @param {boolean} [skip=false] - Whether to skip normalization and filtering
+     * @returns {T} - The computed metric result
      */
-    protected check ( ...cond: [ string, any? ][] ) : void {
-
-        for ( const [ c, t ] of cond ) this.condition( c, t );
-
-    }
-
-    /**
-     * Resolves a metric or phonetic class from registry or instance.
-     * 
-     * @param {'metric'|'phonetic'} reg - Registry type
-     * @param {string|T} [cls] - Class name or instance
-     * @returns {T} - The resolved class
-     */
-    protected resolveCls<T extends MetricCls<R> | PhoneticCls> (
-        reg: 'metric' | 'phonetic', cls?: string | T
+    protected compute<T extends MetricResult<R> | CmpStrResult | CmpStrResult[]> (
+        a: MetricInput, b: MetricInput, opt?: CmpStrOptions,
+        mode?: MetricMode, raw?: boolean, skip?: boolean
     ) : T {
 
-        return ( typeof cls === 'string' ? registry[ reg ].get( cls )
-            : cls ?? this[ reg ] ?? registry[ reg ].get( this.options[ reg ]! )
-        ) as T;
+        const resolved: CmpStrOptions = this.resolveOptions( opt );
+
+        this.assert( 'metric', resolved.metric );
+
+        // Prepare the input
+        const A: MetricInput = skip ? a : this.prepare( a, resolved );
+        const B: MetricInput = skip ? b : this.prepare( b, resolved );
+
+        // Get the metric class
+        const metric: Metric<R> = factory.metric( resolved.metric!, A, B, resolved.opt );
+
+        // Pass the original inputs to the metric
+        if ( resolved.output !== 'prep' ) metric.setOriginal( a, b );
+
+        // Compute the metric result
+        metric.run( mode );
+
+        // Post-process the results
+        const result = this.postProcess( metric.getResults(), resolved );
+
+        // Resolve and return the result based on the raw flag
+        return this.output<T>( result, raw ?? resolved.raw );
 
     }
 
     /**
-     * Resolves the result format (raw or simplified).
+     * Resolves the result format (raw or formatted).
      * 
      * @param {MetricResult<R>} result - The metric result
      * @param {boolean} [raw] - Whether to return raw results
      * @returns {T} - The resolved result
      */
-    protected resolveResult<T extends MetricResult<R> | CmpStrResult | CmpStrResult[]> (
+    protected output<T extends MetricResult<R> | CmpStrResult | CmpStrResult[]> (
         result: MetricResult<R>, raw?: boolean
     ) : T {
 
@@ -372,86 +383,35 @@ export class CmpStr<R = MetricRaw> {
     }
 
     /**
-     * Computes a metric result for the given target and mode.
-     * 
-     * @param {MetricInput} target - The target string or array
-     * @param {CmpStrParams} [args] - Additional parameters
-     * @param {MetricMode} [mode] - The optional metric mode
-     * @returns {T} - The computed result
-     */
-    protected compute<T extends MetricResult<R> | CmpStrResult | CmpStrResult[]> (
-        target: MetricInput, args?: CmpStrParams, mode?: MetricMode
-    ) : T {
-
-        const { flags, opt, raw, metric, source } = args ?? {};
-
-        // Prepare the source and target inputs, resolving the metric class
-        const src: MetricInput | undefined = this.prepare( source ?? this.source, flags );
-        const tgt: MetricInput = this.prepare( target ?? '' )!;
-        const cls: MetricCls<R> = this.resolveCls<MetricCls<R>>( 'metric', metric );
-
-        this.check( [ 'source', src ], [ 'metric', cls ] );
-
-        // Get a new instance of the metric class with merged options
-        const cmp = new cls! ( src, tgt, this.deepMerge( this.options.metricOptions, opt ) );
-
-        // Compute the metric result
-        cmp.run( mode );
-
-        // Resolve and return the result based on the raw flag
-        return this.resolveResult<T>( cmp.getResults(), raw ) as T;
-
-    }
-
-    /**
-     * Computes the phonetic index for a string using the configured algorithm.
-     * 
-     * @param {string} [input] - The input string
-     * @param {CmpStrPhoneticParams} [args] - Phonetic options
-     * @returns {string[]} - The phonetic index as an array of codes
-     */
-    protected index ( input?: string, args?: CmpStrPhoneticParams ) : string[] {
-
-        const { flags, opt, algo } = args ?? {};
-
-        // Prepare the input string, resolving the phonetic class
-        const src: string = this.prepare( this.asStr( input ?? this.source ?? '' ), flags ) as string;
-        const cls: PhoneticCls = this.resolveCls<PhoneticCls>( 'phonetic', algo );
-
-        this.check( [ 'source', src ], [ 'phonetic', cls ] );
-
-        // Get a new instance of the phonetic class with merged options
-        const phonetic = new cls! ( this.deepMerge( this.options.phoneticOptions, opt ) );
-
-        // Compute the phonetic index and return it
-        return phonetic.getIndex( src );
-
-    }
-
-    /**
      * ---------------------------------------------------------------------------------
-     * Public Setters and Getters for CmpStr
+     * Managing methods for CmpStr
      * ---------------------------------------------------------------------------------
      * 
      * These methods provides an interface to set and get properties of the CmpStr
-     * instance, such as source input, options, metric, phonetic algorithm, and more.
+     * instance, such as options, metric, phonetic algorithm, and more.
      */
 
     /**
-     * Sets the source string or array.
+     * Creates a shallow clone of the current instance.
      * 
-     * @param {MetricInput} source - The source input
+     * @returns {CmpStr<R>} - The cloned instance
+     */
+    public clone () : CmpStr<R> { return Object.assign( Object.create( Object.getPrototypeOf( this ) ), this ) }
+
+    /**
+     * Resets the instance, clearing all data and options.
+     * 
      * @returns {this}
      */
-    public setSource ( source: MetricInput ) : this { return this.set( 'source', source ) }
+    public reset () : this { for ( const k in this.options ) delete ( this.options as any )[ k ]; return this }
 
     /**
-     * Sets the options object.
+     * Sets / replaces the full options object.
      * 
      * @param {CmpStrOptions} opt - The options
      * @returns {this}
      */
-    public setOptions ( opt: CmpStrOptions ) : this { return this.set( 'options', opt ) }
+    public setOptions ( opt: CmpStrOptions ) : this { this.options = opt; return this }
 
     /**
      * Deep merges and sets new options.
@@ -459,55 +419,78 @@ export class CmpStr<R = MetricRaw> {
      * @param {CmpStrOptions} opt - The options to merge
      * @returns {this}
      */
-    public mergeOptions ( opt: CmpStrOptions ) : this {
-
-        return this.set( 'options', this.deepMerge<CmpStrOptions>( this.options, opt ) );
-
-    }
+    public mergeOptions ( opt: CmpStrOptions ) : this { DeepMerge.merge( this.options, opt ); return this }
 
     /**
-     * Sets the metric class by name.
+     * Sets the serialized options from a JSON string.
+     * 
+     * @param {string} opt - The serialized options
+     * @returns {this}
+     */
+    public setSerializedOptions ( opt: string ) : this { this.options = JSON.parse( opt ); return this }
+
+    /**
+     * Sets a specific option at the given path.
+     * 
+     * @param {string} path - The path to the option
+     * @param {any} value - The value to set
+     * @returns {this}
+     */
+    public setOption ( path: string, value: any ) : this { DeepMerge.set( this.options, path, value ); return this }
+
+    /**
+     * Removes an option at the given path.
+     * 
+     * @param {string} path - The path to the option
+     * @returns {this}
+     */
+    public rmvOption ( path: string ) : this { DeepMerge.rmv( this.options, path ); return this }
+
+    /**
+     * Enable or disable raw output.
+     * 
+     * @param {boolean} enable - Whether to enable or disable raw output
+     * @returns {this}
+     */
+    public setRaw ( enable: boolean ) : this { return this.setOption( 'raw', enable ) }
+
+    /**
+     * Sets the similatity metric to use (e.g., 'levenshtein', 'dice').
      * 
      * @param {string} name - The metric name
      * @returns {this}
      */
-    public setMetric ( name: string ) : this { return this.set( 'metric', name ) }
+    public setMetric ( name: string ) : this { return this.setOption( 'metric', name ) }
 
     /**
-     * Sets the phonetic class by name.
+     * Sets the normalization flags (e.g., 'itw', 'nfc').
      * 
-     * @param {string} name - The phonetic algorithm name
+     * @param {NormalizeFlags} flags - The normalization flags
      * @returns {this}
      */
-    public setPhonetic ( name: string ) : this { return this.set( 'phonetic', name ) }
+    public setFlags ( flags: NormalizeFlags ) : this { return this.setOption( 'flags', flags ) }
 
     /**
-     * Returns the current source input.
+     * Removes the normalization flags entirely.
      * 
-     * @returns {MetricInput|undefined} - The source input
+     * @return {this}
      */
-    public getSource () : MetricInput | undefined { return this.source }
+    public rmvFlags () : this { return this.rmvOption( 'flags' ) }
 
     /**
-     * Returns the normalized source input.
+     * Sets the pre-processors to use for preparing the input.
      * 
-     * @returns {MetricInput|undefined} - The normalized source
+     * @param {CmpStrProcessors} opt - The processors to set
+     * @returns {this}
      */
-    public getNormalizedSource () : MetricInput | undefined { return this.normalized }
+    public setProcessors ( opt: CmpStrProcessors ) : this { return this.setOption( 'processors', opt ) }
 
     /**
-     * Returns the source as a single string.
+     * Removes the processors entirely.
      * 
-     * @returns {string} - The source as a string
+     * @returns {this}
      */
-    public getSourceAsString () : string { return this.asStr( this.source ) }
-
-    /**
-     * Returns the source as an array of strings.
-     * 
-     * @returns {string[]} - The source as an array
-     */
-    public getSourceAsArray () : string[] { return this.asArr( this.source ) }
+    public rmvProcessors () : this { return this.rmvOption( 'processors' ) }
 
     /**
      * Returns the current options object.
@@ -517,14 +500,6 @@ export class CmpStr<R = MetricRaw> {
     public getOptions () : CmpStrOptions { return this.options }
 
     /**
-     * Returns a specific option value.
-     * 
-     * @param {keyof CmpStrOptions} key - The option key
-     * @returns {any} - The option value
-     */
-    public getOption ( key: keyof CmpStrOptions ) : any { return this.options[ key ] }
-
-    /**
      * Returns the options as a JSON string.
      * 
      * @returns {string} - The serialized options
@@ -532,160 +507,127 @@ export class CmpStr<R = MetricRaw> {
     public getSerializedOptions () : string { return JSON.stringify( this.options ) }
 
     /**
-     * ---------------------------------------------------------------------------------
-     * Managing methods for CmpStr
-     * ---------------------------------------------------------------------------------
+     * Returns a specific option value by path.
      * 
-     * These methods provide generic functionality for cloning, resetting and checking
-     * readiness for operation within the CmpStr instance.
+     * @param {string} path - The path to the option
+     * @returns {any} - The option value
      */
-
-    /**
-     * Creates a shallow clone of the current instance.
-     * 
-     * @returns {CmpStr<R>} - The cloned instance
-     */
-    public clone () : CmpStr<R> {
-
-        return Object.assign( Object.create( Object.getPrototypeOf( this ) ), this );
-
-    }
-
-    /**
-     * Resets the instance, clearing all data and options.
-     * 
-     * @returns {this}
-     */
-    public reset () : this {
-
-        this.source = undefined;
-        this.normalized = undefined;
-        this.options = {};
-
-        this.metric = undefined;
-        this.phonetic = undefined;
-
-        return this;
-
-    }
-
-    /**
-     * Checks if the instance is ready for comparison (source and metric set).
-     * 
-     * @returns {boolean} - True if ready, false otherwise
-     */
-    public isReady () : boolean {
-
-        try { this.check( [ 'source' ], [ 'metric' ] ); return true }
-        catch { return false }
-
-    }
+    public getOption ( path: string ) : any { return DeepMerge.get( this.options, path ) }
 
     /**
      * ---------------------------------------------------------------------------------
-     * Public methods for string comparison, phonetic indexing, and text analysis
+     * Public core methods for string comparison
      * ---------------------------------------------------------------------------------
      * 
      * These methods provide the core functionality of the CmpStr class, allowing for
-     * string comparison, phonetic indexing, filtering, and text analysis.
+     * string comparison, phonetic indexing, filtering, and text search.
      */
 
     /**
      * Performs a single metric comparison between the source and target.
      * 
-     * @param {string} target - The target string
-     * @param {CmpStrParams} [args] - Additional parameters
+     * @param {string} a - The source string
+     * @param {string} b - The target string
+     * @param {CmpStrOptions} [opt] - Optional options
      * @returns {T} - The metric result
      */
     public test<T extends CmpStrResult | MetricResultSingle<R>> (
-        target: string, args?: CmpStrParams
+        a: string, b: string, opt?: CmpStrOptions
     ) : T {
 
-        return this.compute<T>( target, args, 'single' ) as T;
+        return this.compute<T>( a, b, opt, 'single' );
 
     }
 
     /**
      * Performs a single metric comparison and returns only the numeric score.
      * 
-     * @param {string} target - The target string
-     * @param {CmpStrParams} [args] - Additional parameters
+     * @param {string} a - The source string
+     * @param {string} b - The target string
+     * @param {CmpStrOptions} [opt] - Optional options
      * @returns {number} - The similarity score (0..1)
      */
-    public compare ( target: string, args?: CmpStrParams ) : number {
+    public compare ( a: string, b: string, opt?: CmpStrOptions ) : number {
 
-        return this.compute<MetricResultSingle<R>>( target, {
-            ...args, ...{ raw: true }
-        }, 'single' ).res;
+        return this.compute<MetricResultSingle<R>>( a, b, opt, 'single', true ).res;
 
     }
 
     /**
-     * Performs a batch metric comparison between the source and target string or array.
+     * Performs a batch metric comparison between source and target strings
+     * or array of strings.
      * 
-     * @param {MetricInput} target - The target string or array
-     * @param {CmpStrParams} [args] - Additional parameters
+     * @param {MetricInput} a - The source string or array of strings
+     * @param {MetricInput} b - The target string or array of strings
+     * @param {CmpStrOptions} [opt] - Optional options
      * @returns {T} - The batch metric results
      */
     public batchTest<T extends CmpStrResult[] | MetricResultBatch<R>> (
-        target: MetricInput, args?: CmpStrParams
+        a: MetricInput, b: MetricInput, opt?: CmpStrOptions
     ) : T {
 
-        return this.compute<T>( target, args, 'batch' ) as T;
+        return this.compute<T>( a, b, opt, 'batch' );
 
     }
 
     /**
      * Performs a batch metric comparison and returns results sorted by score.
      * 
-     * @param {MetricInput} target - The target string or array
-     * @param {'desc'|'asc'} [dir='desc'] - Sort direction
-     * @param {CmpStrParams} [args] - Additional parameters
+     * @param {MetricInput} a - The source string or array of strings
+     * @param {MetricInput} b - The target string or array of strings
+     * @param {'desc'|'asc'} [dir='desc'] - Sort direction (desc, asc)
+     * @param {CmpStrOptions} [opt] - Optional options
      * @returns {T} - The sorted batch results
      */
     public batchSorted<T extends CmpStrResult[] | MetricResultBatch<R>> (
-        target: MetricInput, dir: 'desc' | 'asc' = 'desc', args?: CmpStrParams
+        a: MetricInput, b: MetricInput, dir: 'desc' | 'asc' = 'desc', opt?: CmpStrOptions
     ) : T {
 
-        return this.resolveResult(
-            this.batchTest<MetricResultBatch<R>>( target, { ...args, ...{ raw: true } } )
+        return this.output(
+            this.compute<MetricResultBatch<R>>( a, b, opt, 'batch', true )
                 .sort( ( a, b ) => dir === 'asc' ? a.res - b.res : b.res - a.res ),
-            args?.raw ?? this.options.raw
+            opt?.raw ?? this.options.raw
         ) as T;
 
     }
 
     /**
-     * Performs a pairwise metric comparison between the source and target arrays.
+     * Performs a pairwise metric comparison between source and target strings
+     * or array of strings.
      * 
-     * @param {MetricInput} target - The target array
-     * @param {CmpStrParams} [args] - Additional parameters
+     * Input arrays needs of the same length to perform pairwise comparison,
+     * otherwise the method will throw an error.
+     * 
+     * @param {MetricInput} a - The source string or array of strings
+     * @param {MetricInput} b - The target string or array of strings
+     * @param {CmpStrOptions} [opt] - Optional options
      * @returns {T} - The pairwise metric results
      */
     public pairs<T extends CmpStrResult[] | MetricResultBatch<R>> (
-        target: MetricInput, args?: CmpStrParams
+        a: MetricInput, b: MetricInput, opt?: CmpStrOptions
     ) : T {
 
-        return this.compute<T>( target, args, 'pairwise' ) as T;
+        return this.compute<T>( a, b, opt, 'pairwise' );
 
     }
 
     /**
      * Performs a batch comparison and returns only results above the threshold.
      * 
-     * @param {MetricInput} target - The target string or array
+     * @param {MetricInput} a - The source string or array of strings
+     * @param {MetricInput} b - The target string or array of strings
      * @param {number} threshold - The similarity threshold (0..1)
-     * @param {CmpStrParams} [args] - Additional parameters
+     * @param {CmpStrOptions} [opt] - Optional options
      * @returns {T} - The filtered batch results
      */
     public match<T extends CmpStrResult[] | MetricResultBatch<R>> (
-        target: MetricInput, threshold: number, args?: CmpStrParams
+        a: MetricInput, b: MetricInput, threshold: number, opt?: CmpStrOptions
     ) : T {
 
-        return this.resolveResult(
-            this.batchTest<MetricResultBatch<R>>( target, { ...args, ...{ raw: true } } )
+        return this.output(
+            this.compute<MetricResultBatch<R>>( a, b, opt, 'batch', true )
                 .filter( r => r.res >= threshold ).sort( ( a, b ) => b.res - a.res ),
-            args?.raw ?? this.options.raw
+            opt?.raw ?? this.options.raw
         ) as T;
 
     }
@@ -693,32 +635,34 @@ export class CmpStr<R = MetricRaw> {
     /**
      * Returns the n closest matches from a batch comparison.
      * 
-     * @param {MetricInput} target - The target string or array
+     * @param {MetricInput} a - The source string or array of strings
+     * @param {MetricInput} b - The target string or array of strings
      * @param {number} [n=1] - Number of closest matches
-     * @param {CmpStrParams} [args] - Additional parameters
+     * @param {CmpStrOptions} [opt] - Optional options
      * @returns {T} - The closest matches
      */
     public closest<T extends CmpStrResult[] | MetricResultBatch<R>> (
-        target: MetricInput, n: number = 1, args?: CmpStrParams
+        a: MetricInput, b: MetricInput, n: number = 1, opt?: CmpStrOptions
     ) : T {
 
-        return this.batchSorted( target, 'desc', args ).slice( 0, n ) as T;
+        return this.batchSorted( a, b, 'desc', opt ).slice( 0, n ) as T;
 
     }
 
     /**
      * Returns the n furthest matches from a batch comparison.
      * 
-     * @param {MetricInput} target - The target string or array
+     * @param {MetricInput} a - The source string or array of strings
+     * @param {MetricInput} b - The target string or array of strings
      * @param {number} [n=1] - Number of furthest matches
-     * @param {CmpStrParams} [args] - Additional parameters
+     * @param {CmpStrOptions} [opt] - Optional options
      * @returns {T} - The furthest matches
      */
     public furthest<T extends CmpStrResult[] | MetricResultBatch<R>> (
-        target: MetricInput, n: number = 1, args?: CmpStrParams
+        a: MetricInput, b: MetricInput, n: number = 1, opt?: CmpStrOptions
     ) : T {
 
-        return this.batchSorted( target, 'asc', args ).slice( 0, n ) as T;
+        return this.batchSorted( a, b, 'asc', opt ).slice( 0, n ) as T;
 
     }
 
@@ -726,21 +670,24 @@ export class CmpStr<R = MetricRaw> {
      * Performs a normalized and filtered substring search.
      * 
      * @param {string} needle - The search string
-     * @param {string[]} [haystack] - The array to search in (defaults to source)
+     * @param {string[]} haystack - The array to search in
      * @param {NormalizeFlags} [flags] - Normalization flags
+     * @param {CmpStrProcessors} [processors] - Pre-processors to apply
      * @returns {string[]} - Array of matching entries
      */
-    public search ( needle: string, haystack?: string[], flags?: NormalizeFlags ) : string[] {
+    public search (
+        needle: string, haystack: string[], flags?: NormalizeFlags,
+        processors?: CmpStrProcessors
+    ) : string[] {
 
-        this.check( [ 'source', haystack ] );
+        const resolved: CmpStrOptions = this.resolveOptions( { flags, processors } );
 
         // Prepare the needle and haystack, normalizing and filtering them
-        const test: string = this.prepare( needle, flags ) as string;
-        const src: string[] = this.asArr( haystack ?? this.source );
-        const hstk: string[] = this.prepare( src, flags ) as string[];
+        const test: string = this.prepare( needle, resolved ) as string;
+        const hstk: string[] = this.prepare( haystack, resolved ) as string[];
 
         // Filter the haystack based on the normalized test string
-        return src.filter( ( _, i ) => hstk[ i ].includes( test ) );
+        return haystack.filter( ( _, i ) => hstk[ i ].includes( test ) );
 
     }
 
@@ -748,86 +695,33 @@ export class CmpStr<R = MetricRaw> {
      * Computes a similarity matrix for the given input array.
      * 
      * @param {string[]} input - The input array
-     * @param {CmpStrParams} [args] - Additional parameters
+     * @param {CmpStrOptions} [opt] - Optional options
      * @returns {number[][]} - The similarity matrix
      */
-    public matrix ( input: string[], args?: CmpStrParams ) : number[][] {
+    public matrix ( input: string[], opt?: CmpStrOptions ) : number[][] {
 
-        input = this.prepare( input, args?.flags ) as string[];
+        input = this.prepare( input, this.resolveOptions( opt ) ) as string[];
 
-        return input.map( a => input.map( b => (
-            this.compute<MetricResultSingle<R>>(
-                b, { flags: '', raw: true, source: a }, 'single'
-            ).res ?? 0
-        ) ) );
+        return input.map( a => this.compute<MetricResultBatch<R>>(
+            a, input, undefined, 'batch', true, true
+        ).map( b => b.res ?? 0 ) );
 
     }
 
     /**
-     * Computes the phonetic index for a string using the configured algorithm.
+     * Computes the phonetic index for a string using the configured
+     * or given algorithm.
      * 
      * @param {string} [input] - The input string
-     * @param {CmpStrPhoneticParams} [args] - Phonetic options
+     * @param {string} [algo] - The phonetic algorithm to use
+     * @param {PhoneticOptions} [opt] - Optional phonetic options
      * @returns {string} - The phonetic index as a string
      */
-    public phoneticIndex ( input?: string, args?: CmpStrPhoneticParams ) : string {
+    public phoneticIndex ( input: string, algo?: string, opt?: PhoneticOptions ) : string {
 
-        return this.index( input, args ).join( ' ' );
+        const { algo: a, opt: o } = this.options.processors?.phonetic ?? {};
 
-    }
-
-    /**
-     * Performs a phonetic-aware search in the haystack.
-     * 
-     * @param {string} needle - The search string
-     * @param {string[]} [haystack] - The array to search in (defaults to source)
-     * @param {CmpStrPhoneticParams} [args] - Phonetic options
-     * @returns {string[]} - Array of matching entries
-     */
-    public phoneticSearch ( needle: string, haystack?: string[], args?: CmpStrPhoneticParams ) : string[] {
-
-        this.check( [ 'source', haystack ], [ 'phonetic', args?.algo ] );
-
-        // Compute the phonetic index for the needle and haystack
-        const test: string = this.index( needle, args ).join( ' ' );
-        const src: string[] = this.asArr( haystack ?? this.source );
-        const hstk: string[] = src.map( s => this.index( s, args ).join( ' ' ) );
-
-        // Filter the haystack based on the phonetic index of the test string
-        return src.filter( ( _, i ) => hstk[ i ].includes( test ) );
-
-    }
-
-    /**
-     * Returns a text analyzer for the source input or a given string.
-     * 
-     * @param {string} [input] - The input string
-     * @returns {TextAnalyzer} - The text analyzer
-     */
-    public analyze ( input?: string ) : TextAnalyzer {
-
-        this.check( [ 'source', input ] );
-
-        return new TextAnalyzer ( this.asStr( input ?? this.source ) );
-
-    }
-
-    /**
-     * Computes a unified diff between the source and target.
-     * 
-     * @param {string} target - The target string
-     * @param {DiffOptions} [opt] - Diff options
-     * @param {string} [source] - Optional source override
-     * @returns {DiffChecker} - The diff checker instance
-     */
-    public diff ( target: string, opt?: DiffOptions, source?: string ) : DiffChecker {
-
-        this.check( [ 'source', source ] );
-
-        return new DiffChecker (
-            this.asStr( source ?? this.source ), target,
-            this.deepMerge<DiffOptions>( this.options.diffOptions, opt )
-        );
+        return this.index( input, { algo: ( algo ?? a )!, opt: opt ?? o } ) as string;
 
     }
 

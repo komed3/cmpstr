@@ -413,7 +413,15 @@ export abstract class Phonetic {
  * This registry allows for dynamic registration and retrieval of phonetic classes,
  * enabling the use of various phonetic algorithms in a consistent manner.
  */
-export const PhoneticRegistry: RegistryService<any> = Registry( Phonetic );
+export const PhoneticRegistry: RegistryService<Phonetic> = Registry( 'phonetic', Phonetic );
+
+/**
+ * Type definition for the Phonetic class constructor.
+ * 
+ * This type is used to create instances of the Phonetic class, allowing for
+ * dynamic instantiation of phonetic algorithms. 
+ */
+export type PhoneticCls = new ( ...args: any[] ) => Phonetic;
 
 /**
  * Phonetic Mapping Service
@@ -493,11 +501,3 @@ export const PhoneticMappingRegistry: PhoneticMappingService = ( () => {
     };
 
 } )();
-
-/**
- * Type definition for the Phonetic class constructor.
- * 
- * This type is used to create instances of the Phonetic class, allowing for
- * dynamic instantiation of phonetic algorithms. 
- */
-export type PhoneticCls = new ( ...args: any[] ) => Phonetic;
