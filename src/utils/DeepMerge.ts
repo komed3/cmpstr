@@ -117,6 +117,9 @@ export function merge<T extends Record<string, any>> (
         // If the value is undefined and mergeUndefined is false, skip it
         if ( ! mergeUndefined && val === undefined ) return ;
 
+        // Skip dangerous property names to prevent prototype pollution
+        if ( k === '__proto__' || k === 'constructor' ) return ;
+
         // If the value is an object and not an array, recursively merge it
         ( t as any )[ k ] = typeof val === 'object' && ! Array.isArray( val )
             ? merge(typeof t[ k ] === 'object' && ! Array.isArray( t[ k ] )
