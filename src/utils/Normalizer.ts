@@ -108,13 +108,11 @@ export class Normalizer {
      * Normalizes the input string or array of strings based on the provided flags.
      * The flags are a string of characters that define the normalization steps.
      * 
-     * @param {string | string[]} input - The string or array of strings to normalize
+     * @param {string|string[]} input - The string or array of strings to normalize
      * @param {NormalizeFlags} flags - A string of characters representing the normalization steps
-     * @returns {string | string[]} - The normalized string(s)
+     * @returns {string|string[]} - The normalized string(s)
      */
-    static normalize (
-        input: string | string[], flags: NormalizeFlags
-    ) : string | string[] {
+    static normalize ( input: string | string[], flags: NormalizeFlags ) : string | string[] {
 
         // If input is an array, normalize each string in the array
         if ( Array.isArray( input ) ) return input.map( s => Normalizer.normalize( s, flags ) ) as string[];
@@ -144,13 +142,11 @@ export class Normalizer {
      * provided flags. This method is useful for handling large inputs or when
      * normalization needs to be done in a non-blocking way.
      * 
-     * @param {string | string[]} input - The string or array of strings to normalize
+     * @param {string|string[]} input - The string or array of strings to normalize
      * @param {NormalizeFlags} flags - A string of characters representing the normalization steps
-     * @returns {Promise<string | string[]>} - A promise that resolves to the normalized string(s)
+     * @returns {Promise<string|string[]>} - A promise that resolves to the normalized string(s)
      */
-    static async normalizeAsync (
-        input: string | string[], flags: NormalizeFlags
-    ) : Promise<string | string[]> {
+    static async normalizeAsync ( input: string | string[], flags: NormalizeFlags ) : Promise<string | string[]> {
 
         return await ( Array.isArray( input )
             // If input is an array, normalize each string in the array asynchronously

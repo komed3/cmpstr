@@ -8,11 +8,11 @@
  * It supports dot and bracket notation (e.g. `a.b[0].c`) as well as escaped keys.
  * 
  * Included functions:
- *   - `get`:   Retrieve a deeply nested value by path
- *   - `set`:   Assign a value to a nested path
- *   - `merge`: Deeply merge two objects
- *   - `has`:   Check whether a path exists
- *   - `rmv`:   Delete a value at a path
+ *  - `get`:   Retrieve a deeply nested value by path
+ *  - `set`:   Assign a value to a nested path
+ *  - `merge`: Deeply merge two objects
+ *  - `has`:   Check whether a path exists
+ *  - `rmv`:   Delete a value at a path
  * 
  * @module Utils/DeepMerge
  * @author Paul Köhler
@@ -25,15 +25,16 @@
  * Parse a path string into an array of keys.
  * 
  * @param {string} p - The path string, e.g. `a.b.c` or `a[0].b`
- * @returns {(string | number)[]} - An array of keys, e.g. `['a', 'b', 'c']` or `['a', 0, 'b']`
+ * @returns {(string|number)[]} - An array of keys, e.g. `['a', 'b', 'c']` or `['a', 0, 'b']`
  */
 const parse = ( p: string ) : ( string | number )[] => (
-    p.replace( /\[(\d+)]/g, '.$1' ).split( '.' ).map( ( s ) => /^\d+$/.test( s ) ? +s : s )
+    p.replace( /\[(\d+)]/g, '.$1' ).split( '.' ).map( s => /^\d+$/.test( s ) ? +s : s )
 );
 
 /**
  * Deeply get a value from an object by a path string.
  * 
+ * @template T - The type of the object to get the value from
  * @param {T} t - The object to get the value from
  * @param {string} path - The path string, e.g. `a.b.c`
  * @param {any} fallback - The default value to return if the path does not exist
@@ -50,13 +51,12 @@ export function get<T extends Record<string, any>, R = any> (
 /**
  * Check if a path exists in an object.
  * 
+ * @template T - The type of the object to get the value from
  * @param {T} t - The object to check
  * @param {string} path - The path string, e.g. `a.b.c`
  * @returns {boolean} - True if the path exists, otherwise false
  */
-export function has<T extends Record<string, any>> (
-    t: T, path: string
-) : boolean {
+export function has<T extends Record<string, any>> ( t: T, path: string ) : boolean {
 
     return parse( path ).reduce(
         ( o, k ) => o && k in o ? o[ k ] : undefined, t
@@ -67,6 +67,7 @@ export function has<T extends Record<string, any>> (
 /**
  * Deeply set a value in an object by a path string.
  * 
+ * @template T - The type of the object to get the value from
  * @param {T} t - The object to set the value in
  * @param {string} path - The path string, e.g. `a.b.c`
  * @param {any} value - The value to set at the specified path
@@ -85,7 +86,7 @@ export function set<T extends Record<string, any>> (
 
     // Throw an error if the key is not a valid identifier
     if ( t !== undefined && ( typeof t !== 'object' || t === null ) ) throw Error (
-        `cannot set property ${k} of ${ JSON.stringify( t ) }`
+        `cannot set property <${k}> of <${ JSON.stringify( t ) }>`
     );
 
     // Assign the value to the specified key in the object
@@ -98,6 +99,7 @@ export function set<T extends Record<string, any>> (
 /**
  * Deeply merge two objects, where the second object overrides the first.
  * 
+ * @template T - The type of the object to get the value from
  * @param {T} t - The target object to merge into
  * @param {T} o - The source object to merge from
  * @param {boolean} [mergeUndefined=false] - Whether to merge undefined values
@@ -133,6 +135,7 @@ export function merge<T extends Record<string, any>> (
 /**
  * Delete a value at a specified path in an object.
  * 
+ * @template T - The type of the object to get the value from
  * @param {T} t - The object to delete the value from
  * @param {string} path - The path string, e.g. `a.b.c`
  * @param {boolean} [preserveEmpty=false] - Whether to preserve empty objects/arrays

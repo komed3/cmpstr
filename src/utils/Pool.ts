@@ -42,16 +42,14 @@ class RingPool<T> {
      * 
      * @param {number} maxSize - The maximum number of buffers that can be stored in the pool
      */
-    constructor (
-        private readonly maxSize: number
-    ) {}
+    constructor ( private readonly maxSize: number ) {}
 
     /**
      * Acquires a buffer of at least the specified minimum size from the pool.
      * 
      * @param {number} minSize - The minimum size of the buffer to acquire
      * @param {boolean} allowOversize - Whether to allow buffers larger than minSize
-     * @return {PoolBuffer<T> | null} - The acquired buffer or null if no suitable buffer is found
+     * @return {PoolBuffer<T>|null} - The acquired buffer or null if no suitable buffer is found
      */
     public acquire ( minSize: number, allowOversize: boolean ) : PoolBuffer<T> | null {
 
@@ -135,10 +133,10 @@ export class Pool {
 
     // Pool Rings for each type
     private static readonly POOLS: Record<PoolType, RingPool<any>> = {
-        'uint16':   new RingPool<Uint16Array>( 32 ),
-        'number[]': new RingPool<number[]>( 16 ),
-        'set':      new RingPool<Set<any>>( 8 ),
-        'map':      new RingPool<Map<any, any>>( 8 )
+        'uint16':   new RingPool<Uint16Array> ( 32 ),
+        'number[]': new RingPool<number[]> ( 16 ),
+        'set':      new RingPool<Set<any>> ( 8 ),
+        'map':      new RingPool<Map<any, any>> ( 8 )
     };
 
     /**

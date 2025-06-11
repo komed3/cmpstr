@@ -7,8 +7,10 @@
  * This class provides methods to run synchronous and asynchronous functions, capturing
  * their execution time and memory usage, and storing the results in a set of profiler
  * entries. It supports both Node.js and browser environments, detecting the environment
- * automatically. The class is optimized for minimal overhead and can be used for fine-
- * grained performance profiling.
+ * automatically.
+ * 
+ * The class is optimized for minimal overhead and can be used for fine-grained
+ * performance profiling.
  * 
  * @module Utils/Profiler
  * @author Paul Köhler (komed3)

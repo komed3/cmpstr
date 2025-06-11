@@ -46,15 +46,12 @@ export class Filter {
      * @param {string} hook - The name of the hook
      * @param {string} id - The id of the filter
      * @param {FilterFn} fn - The filter function
-     * @param {FilterOptions} options - Additional options for the filter
+     * @param {FilterOptions} [opt] - Additional options for the filter
      * @returns {boolean} - Returns true if the filter was added, false if it was not added due to override restrictions
      */
-    public static add (
-        hook: string, id: string, fn: FilterFn,
-        options: FilterOptions = {}
-    ) : boolean {
+    public static add ( hook: string, id: string, fn: FilterFn, opt: FilterOptions = {} ) : boolean {
 
-        const { priority = 10, active = true, overrideable = true } = options;
+        const { priority = 10, active = true, overrideable = true } = opt;
 
         // Check if the filter already exists
         const filter: FilterEntry[] = Filter.filters.get( hook ) ?? [];

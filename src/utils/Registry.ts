@@ -62,10 +62,7 @@ export function Registry<T> ( reg: string, ctor: RegistryConstructor<T> ) : Regi
          * @throws {TypeError} If the class does not extend the base constructor
          * @throws {Error} If the class name already exists and update is false
          */
-        add (
-            name: string, cls: RegistryConstructor<T>,
-            update: boolean = false
-        ) : void {
+        add ( name: string, cls: RegistryConstructor<T>, update: boolean = false ) : void {
 
             if ( ! ( cls.prototype instanceof ctor ) ) throw new TypeError (
                 `class must extend <${reg}>`
