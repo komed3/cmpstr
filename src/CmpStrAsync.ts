@@ -66,7 +66,7 @@ export class CmpStrAsync<R = MetricRaw> extends CmpStr<R> {
     /**
      * Creates a new CmpStrAsync instance calliing the super constructor.
      * 
-     * @param {string | CmpStrOptions} [opt] - Optional serialized or options object
+     * @param {string|CmpStrOptions} [opt] - Optional serialized or options object
      */
     protected constructor ( opt?: string | CmpStrOptions ) { super ( opt ) }
 
@@ -156,6 +156,7 @@ export class CmpStrAsync<R = MetricRaw> extends CmpStr<R> {
      * Asynchronously computes the metric result for the given inputs, applying
      * normalization and filtering as configured.
      * 
+     * @template T - The type of the metric result
      * @param {MetricInput} a - The first input string or array
      * @param {MetricInput} b - The second input string or array
      * @param {CmpStrOptions} [opt] - Optional options to use
@@ -206,6 +207,7 @@ export class CmpStrAsync<R = MetricRaw> extends CmpStr<R> {
     /**
      * Asynchronously performs a single metric comparison.
      * 
+     * @template T - The type of the metric result
      * @param {string} a - The source string
      * @param {string} b - The target string
      * @param {CmpStrOptions} [opt] - Optional options
@@ -237,6 +239,7 @@ export class CmpStrAsync<R = MetricRaw> extends CmpStr<R> {
      * Asynchronously performs a batch metric comparison between source and target
      * strings or array of strings.
      * 
+     * @template T - The type of the metric result
      * @param {MetricInput} a - The source string or array of strings
      * @param {MetricInput} b - The target string or array of strings
      * @param {CmpStrOptions} [opt] - Optional options
@@ -253,6 +256,7 @@ export class CmpStrAsync<R = MetricRaw> extends CmpStr<R> {
     /**
      * Asynchronously performs a batch metric comparison and returns results sorted by score.
      * 
+     * @template T - The type of the metric result
      * @param {MetricInput} a - The source string or array of strings
      * @param {MetricInput} b - The target string or array of strings
      * @param {'desc'|'asc'} [dir='desc'] - Sort direction (desc, asc)
@@ -276,6 +280,7 @@ export class CmpStrAsync<R = MetricRaw> extends CmpStr<R> {
      * Asynchronously performs a pairwise metric comparison between source and target
      * strings or array of strings.
      * 
+     * @template T - The type of the metric result
      * Input arrays needs of the same length to perform pairwise comparison,
      * otherwise the method will throw an error.
      * 
@@ -295,6 +300,7 @@ export class CmpStrAsync<R = MetricRaw> extends CmpStr<R> {
     /**
      * Asynchronously performs a batch comparison and returns only results above the threshold.
      * 
+     * @template T - The type of the metric result
      * @param {MetricInput} a - The source string or array of strings
      * @param {MetricInput} b - The target string or array of strings
      * @param {number} threshold - The similarity threshold (0..1)
@@ -317,6 +323,7 @@ export class CmpStrAsync<R = MetricRaw> extends CmpStr<R> {
     /**
      * Asynchronously returns the n closest matches from a batch comparison.
      * 
+     * @template T - The type of the metric result
      * @param {MetricInput} a - The source string or array of strings
      * @param {MetricInput} b - The target string or array of strings
      * @param {number} [n=1] - Number of closest matches
@@ -334,6 +341,7 @@ export class CmpStrAsync<R = MetricRaw> extends CmpStr<R> {
     /**
      * Asynchronously returns the n furthest matches from a batch comparison.
      * 
+     * @template T - The type of the metric result
      * @param {MetricInput} a - The source string or array of strings
      * @param {MetricInput} b - The target string or array of strings
      * @param {number} [n=1] - Number of furthest matches
