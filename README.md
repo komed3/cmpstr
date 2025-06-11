@@ -10,26 +10,25 @@
 [![Static Badge](https://img.shields.io/badge/ESM_%26_CJS-TypeScript?style=for-the-badge&logo=nodedotjs&logoColor=fff&color=purple)]()
 [![Static Badge](https://img.shields.io/badge/UMD_%26_ESM-JavaScript?style=for-the-badge&logo=javascript&logoColor=fff&color=orange)]()
 
-**CmpStr** is a modern, extensible and highly abstracted TypeScript library for advanced string comparison, similarity measurement, phonetic indexing and text analysis. It is lightweight, does not need any dependencies, supports a variety of built-in algorithms (e.g., Levenshtein, Dice-Sørensen, Damerau-Levenshtein, Soundex) and allows users to add custom metrics, phonetic mappings and normalization filters.
+**CmpStr** is a TypeScript library for advanced string comparison, similarity measurement, phonetic indexing, and text analysis. It includes implementations of several established algorithms such as Levenshtein, Dice–Sørensen, Damerau–Levenshtein and Soundex. The library has no external dependencies and allows for the integration of custom metrics, phonetic mappings, and normalization filters.
 
-It is designed for both high-level application development and research, offering a unified API for single, batch, and pairwise operations. The packagle bundles ESM and CommonJS support, TypeScript declarations and a JavaScript version for browser environments.
+CmpStr provides a unified API for single, batch and pairwise operations. It is suitable for a range of use cases in application development and research. The package includes support for both ESM and CommonJS environments, TypeScript type declarations and a browser-compatible JavaScript bundle.
 
-Started in 2023 as a small project only supporting two algorithms, it was reworked in 2025. Today, CmpStr is written in TypeScript, supports more than 10 different algorithms, asynchronous handling, string normalization, filters, phonetic search, comes with a simple diff tool and much more.
+Originally launched in 2023 with a minimal feature set, the library was redesigned in 2025 to support a broader set of algorithms and processing features. The current version offers asynchronous operation, configurable normalization and filtering pipelines, phonetic search functionality, and basic tools for string differencing.
 
 **Key Features**
 
-- Unified interface for string similarity, distance, and matching
-- Pluggable metric system (e.g., Levenshtein, Jaro-Winkler, Cosine, Dice, Hamming)
-- Phonetic algorithms (Cologne, Soundex, Metaphone) with mapping registry
-- Flexible normalization and filtering pipeline for all inputs
-- Batch, pairwise, and single comparison with detailed, type-safe results
-- Phonetic-aware search, comparison and indexing
-- Readability and text analysis utilities (syllables, word stats, etc.)
-- Unified diff and difference reporting (line/word, ASCII/CLI)
-- Full TypeScript type safety, extensibility, and profiling support
-- Modular architecture for easy integration and extension
-- Asynchronous API for non-blocking, scalable workloads
-- Extensible with custom algorithms and filters
+- Unified API for string similarity, distance measurement and matching
+- Modular metric system with support for algorithms such as Levenshtein, Jaro-Winkler, Cosine etc.
+- Integrated phonetic algorithms (e.g., Soundex, Metaphone) with configurable registry
+- Normalization and filtering pipeline for consistent input processing
+- Single, batch and pairwise comparisons with structured, type-safe results
+- Phonetic-aware search and comparison
+- Utilities for text structure and readability analysis (e.g., syllables, word statistics)
+- Diffing tools with CLI-friendly formatting
+- TypeScript-native with full type declarations and extensibility
+- Supports asynchronous workflows for scalable, non-blocking processing
+- Extensible architecture for integrating custom algorithms and filters
 
 ## Getting Started
 
@@ -71,6 +70,6 @@ console.log( result );
 
 ## Documentation
 
-Full documentation, API reference and advanced usage examples are available in the [GitHub Wiki](https://github.com/komed3/cmpstr/wiki).
+The full documentation, API reference and advanced usage examples are available in the [GitHub Wiki](https://github.com/komed3/cmpstr/wiki).
 
 **LICENSE MIT © 2023-2025 PAUL KÖHLER (KOMED3)**
