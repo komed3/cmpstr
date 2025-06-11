@@ -391,7 +391,7 @@ export class TextAnalyzer {
      *  - Flesch Reading Ease
      *  - Flesch-Kincaid Grade Level
      * 
-     * @param {('flesch' | 'fleschde' | 'kincaid')} [metric='flesch'] - The readability metric to calculate
+     * @param {'flesch'|'fleschde'|'kincaid'} [metric='flesch'] - The readability metric to calculate
      * @returns {number} - The calculated readability score
      */
     public getReadabilityScore ( metric: 'flesch' | 'fleschde' | 'kincaid' = 'flesch' ) : number {
