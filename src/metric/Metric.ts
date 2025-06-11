@@ -106,14 +106,13 @@ export abstract class Metric<R = MetricRaw> {
      * @param {string} metric - The name of the metric (e.g. 'levenshtein')
      * @param {MetricInput} a - First input string or array of strings
      * @param {MetricInput} b - Second input string or array of strings
-     * @param {MetricOptions} options - Options for the metric computation
+     * @param {MetricOptions} [opt] - Options for the metric computation
+     * @param {boolean} [symmetric=false] - Whether the metric is symmetric (same result for inputs in any order)
      * @throws {Error} - If inputs `a` or `b` are empty
      */
     constructor (
-        metric: string,
-        a: MetricInput, b: MetricInput,
-        options: MetricOptions = {},
-        symmetric: boolean = false
+        metric: string, a: MetricInput, b: MetricInput,
+        opt: MetricOptions = {}, symmetric: boolean = false
     ) {
 
         // Set the metric name
@@ -129,7 +128,7 @@ export abstract class Metric<R = MetricRaw> {
         );
 
         // Set options
-        this.options = options;
+        this.options = opt;
         this.symmetric = symmetric;
 
     }
