@@ -3,13 +3,13 @@
  * src/utils/DiffChecker.ts
  * 
  * The DiffChecker class provides a robust and efficient utility for comparing two
- * texts and extracting their differences (line / words). It supports context-aware
- * grouping of changes, unified diff output (with CLI color or ASCII markup), and
- * detailed change magnitude metrics. The class is highly configurable, allowing
- * users to choose the diff granularity, case sensitivity, context lines, grouping,
- * and output style. It is suitable for text comparison, code review tools, document
- * versioning, and any application requiring precise and human-readable difference
- * reporting.
+ * texts and extracting their differences (full lines or word mode). It supports
+ * context-aware grouping of changes, unified diff output (with CLI color or ASCII
+ * markup), and detailed change magnitude metrics. The class is highly configurable,
+ * allowing users to choose the diff granularity, case sensitivity, context lines,
+ * grouping, and output style. It is suitable for text comparison, code review
+ * tools, document versioning, and any application requiring precise and human-
+ * readable difference reporting.
  * 
  * Features:
  *  - Line and word-based diffing
@@ -52,9 +52,9 @@ export class DiffChecker {
      * 
      * @param {string} a - The first (original) text
      * @param {string} b - The second (modified) text
-     * @param {DiffOptions} [options] - Optional diff configuration
+     * @param {DiffOptions} [opt] - Optional diff configuration
      */
-    constructor ( a: string, b: string, options: DiffOptions = {} ) {
+    constructor ( a: string, b: string, opt: DiffOptions = {} ) {
 
         // Set the two texts to compare
         this.a = a, this.b = b;
@@ -69,7 +69,7 @@ export class DiffChecker {
             showChangeMagnitude: true,
             maxMagnitudeSymbols: 5,
             lineBreak: '\n'
-        }, ...options };
+        }, ...opt };
 
         // Run the diff computation immediately
         this.computeDiff();
