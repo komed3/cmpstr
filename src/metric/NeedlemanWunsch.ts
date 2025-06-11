@@ -8,11 +8,6 @@
  * entirely, including gaps. It is commonly used in bioinformatics for sequence
  * alignment.
  * 
- * This implementation is highly optimized for both time and memory efficiency.
- * It uses only two rows of the dynamic programming matrix at any time, and always
- * iterates over the shorter string for memory efficiency (a is always the shorter
- * string in (a, b)). Batch processing is supported via the Metric base class.
- * 
  * @module Metric/NeedlemanWunsch
  * @author Paul Köhler (komed3)
  * @license MIT
@@ -42,16 +37,13 @@ export class NeedlemanWunschDistance extends Metric<NeedlemanRaw> {
      * 
      * @param {MetricInput} a - First input string or array of strings
      * @param {MetricInput} b - Second input string or array of strings
-     * @param {MetricOptions} options - Options for the metric computation
+     * @param {MetricOptions} [opt] - Options for the metric computation
      */
-    constructor (
-        a: MetricInput, b: MetricInput,
-        options: MetricOptions = {}
-    ) {
+    constructor ( a: MetricInput, b: MetricInput, opt: MetricOptions = {} ) {
 
         // Call the parent Metric constructor with the metric name and inputs
         // Metric is symmetrical
-        super ( 'needlemanWunsch', a, b, options, true );
+        super ( 'needlemanWunsch', a, b, opt, true );
 
     }
 

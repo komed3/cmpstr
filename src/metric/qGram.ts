@@ -7,10 +7,10 @@
  * Q-gram similarity is a string-matching algorithm that compares two strings by
  * breaking them into substrings (q-grams) of length Q. The similarity is computed
  * as the size of the intersection of q-gram sets divided by the size of the larger
- * set. This metric is widely used in approximate string matching, information
- * retrieval, and computational linguistics.
+ * set.
  * 
- * This implementation is highly optimized for both time and memory efficiency.
+ * This metric is widely used in approximate string matching, information retrieval,
+ * and computational linguistics.
  * 
  * @module Metric/QGramSimilarity
  * @author Paul Köhler (komed3)
@@ -41,22 +41,18 @@ export class QGramSimilarity extends Metric<QGramRaw> {
      * 
      * @param {MetricInput} a - First input string or array of strings
      * @param {MetricInput} b - Second input string or array of strings
-     * @param {MetricOptions} options - Options for the metric computation
+     * @param {MetricOptions} [opt] - Options for the metric computation
      */
-    constructor (
-        a: MetricInput, b: MetricInput,
-        options: MetricOptions = {}
-    ) {
+    constructor ( a: MetricInput, b: MetricInput, opt: MetricOptions = {} ) {
 
         // Call the parent Metric constructor with the metric name and inputs
         // Metric is symmetrical
-        super ( 'qgram', a, b, options, true );
+        super ( 'qgram', a, b, opt, true );
 
     }
 
     /**
      * Converts a string into a set of q-grams (substrings of length q).
-     * Uses the Pool for efficient set allocation.
      * 
      * @param {string} str - The input string
      * @param {number} q - The length of each q-gram

@@ -7,13 +7,9 @@
  * The Longest Common Subsequence (LCS) metric measures the length of the longest
  * subsequence common to both strings. Unlike substrings, the characters of a
  * subsequence do not need to be contiguous, but must appear in the same order.
+ * 
  * The LCS is widely used in diff tools, bioinformatics, and approximate string
  * matching.
- * 
- * This implementation is highly optimized for both time and memory efficiency.
- * It uses only two rows of the dynamic programming matrix at any time, and always
- * iterates over the shorter string for memory efficiency (a is always the shorter
- * string in (a, b)).
  * 
  * @module Metric/LCS
  * @author Paul Köhler (komed3)
@@ -44,16 +40,13 @@ export class LCSMetric extends Metric<LCSRaw> {
      * 
      * @param {MetricInput} a - First input string or array of strings
      * @param {MetricInput} b - Second input string or array of strings
-     * @param {MetricOptions} options - Options for the metric computation
+     * @param {MetricOptions} [opt] - Options for the metric computation
      */
-    constructor (
-        a: MetricInput, b: MetricInput,
-        options: MetricOptions = {}
-    ) {
+    constructor ( a: MetricInput, b: MetricInput, opt: MetricOptions = {} ) {
 
         // Call the parent Metric constructor with the metric name and inputs
         // Metric is symmetrical
-        super ( 'lcs', a, b, options, true );
+        super ( 'lcs', a, b, opt, true );
 
     }
 

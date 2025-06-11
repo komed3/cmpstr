@@ -43,16 +43,13 @@ export class DiceSorensenCoefficient extends Metric<DiceRaw> {
      * 
      * @param {MetricInput} a - First input string or array of strings
      * @param {MetricInput} b - Second input string or array of strings
-     * @param {MetricOptions} options - Options for the metric computation
+     * @param {MetricOptions} [opt] - Options for the metric computation
      */
-    constructor (
-        a: MetricInput, b: MetricInput,
-        options: MetricOptions = {}
-    ) {
+    constructor ( a: MetricInput, b: MetricInput, opt: MetricOptions = {} ) {
 
         // Call the parent Metric constructor with the metric name and inputs
         // Metric is symmetrical
-        super ( 'dice', a, b, options, true );
+        super ( 'dice', a, b, opt, true );
 
     }
 
@@ -90,11 +87,7 @@ export class DiceSorensenCoefficient extends Metric<DiceRaw> {
         // Calculate the intersection of bigrams
         let intersection: number = 0;
 
-        for ( const bigram of setA ) {
-
-            if ( setB.has( bigram ) ) intersection++;
-
-        }
+        for ( const bigram of setA ) if ( setB.has( bigram ) ) intersection++;
 
         // Calculate the size of the union of both sets
         const sizeA: number = setA.size, sizeB: number = setB.size;

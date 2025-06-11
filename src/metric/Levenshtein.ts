@@ -6,12 +6,10 @@
  * 
  * The Levenshtein distance is a classic metric for measuring the minimum number
  * of single-character edits (insertions, deletions, or substitutions) required
- * to change one string into another. It is widely used in approximate string
- * matching, spell checking, and natural language processing.
+ * to change one string into another.
  * 
- * This implementation is highly optimized for both time and memory efficiency.
- * It uses only two rows of the dynamic programming matrix at any time, and
- * supports batch processing for comparing multiple string pairs efficiently.
+ * It is widely used in approximate string matching, spell checking, and natural
+ * language processing.
  * 
  * @module Metric/LevenshteinDistance
  * @author Paul Köhler (komed3)
@@ -42,16 +40,13 @@ export class LevenshteinDistance extends Metric<LevenshteinRaw> {
      * 
      * @param {MetricInput} a - First input string or array of strings
      * @param {MetricInput} b - Second input string or array of strings
-     * @param {MetricOptions} options - Options for the metric computation
+     * @param {MetricOptions} [opt] - Options for the metric computation
      */
-    constructor (
-        a: MetricInput, b: MetricInput,
-        options: MetricOptions = {}
-    ) {
+    constructor ( a: MetricInput, b: MetricInput, opt: MetricOptions = {} ) {
 
         // Call the parent Metric constructor with the metric name and inputs
         // Metric is symmetrical
-        super ( 'levenshtein', a, b, options, true );
+        super ( 'levenshtein', a, b, opt, true );
 
     }
 

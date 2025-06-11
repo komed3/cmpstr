@@ -39,26 +39,18 @@ export class SmithWatermanDistance extends Metric<SmithWatermanRaw> {
      * 
      * @param {MetricInput} a - First input string or array of strings
      * @param {MetricInput} b - Second input string or array of strings
-     * @param {MetricOptions} options - Options for the metric computation
+     * @param {MetricOptions} [opt] - Options for the metric computation
      */
-    constructor (
-        a: MetricInput, b: MetricInput,
-        options: MetricOptions = {}
-    ) {
+    constructor ( a: MetricInput, b: MetricInput, opt: MetricOptions = {} ) {
 
         // Call the parent Metric constructor with the metric name and inputs
         // Metric is symmetrical
-        super ( 'smithWaterman', a, b, options, true );
+        super ( 'smithWaterman', a, b, opt, true );
 
     }
 
     /**
      * Calculates the Smith-Waterman local alignment score between two strings.
-     * 
-     * This method uses a dynamic programming approach, but only keeps two rows
-     * of the matrix in memory at any time, reducing space complexity to O(min(m, n)).
-     * The function also swaps the strings if necessary to ensure the shorter string
-     * is used for the columns, further optimizing memory usage.
      * 
      * @param {string} a - First string
      * @param {string} b - Second string

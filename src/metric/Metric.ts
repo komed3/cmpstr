@@ -142,7 +142,7 @@ export abstract class Metric<R = MetricRaw> {
      * @param {string} b - Second string
      * @param {number} m - Length of the first string
      * @param {number} n - Length of the second string
-     * @returns {MetricCompute<R> | undefined} - Pre-computed result or undefined if not applicable
+     * @returns {MetricCompute<R>|undefined} - Pre-computed result or undefined if not applicable
      */
     protected preCompute ( a: string, b: string, m: number, n: number ) : MetricCompute<R> | undefined {
 
@@ -240,9 +240,6 @@ export abstract class Metric<R = MetricRaw> {
     /**
      * Run the metric computation for single inputs (two strings) asynchronously.
      * 
-     * This method is similar to `runSingle`, but it returns a Promise that resolves
-     * with the result of the metric computation.
-     * 
      * @param {number} i - Pointer to the first string
      * @param {number} j - Pointer to the second string
      * @returns {Promise<MetricResultSingle<R>>} - Promise resolving the result of the metric computation
@@ -276,9 +273,6 @@ export abstract class Metric<R = MetricRaw> {
 
     /**
      * Run the metric computation for batch inputs (arrays of strings) asynchronously.
-     * 
-     * This method is similar to `runBatch`, but it returns a Promise that resolves
-     * when all computations are complete, allowing for asynchronous execution.
      */
     private async runBatchAsync () : Promise<void> {
 
@@ -306,9 +300,7 @@ export abstract class Metric<R = MetricRaw> {
         const results: MetricResultBatch<R> = [];
 
         // Compute metric for each corresponding pair
-        for ( let i = 0; i < this.a.length; i++ ) results.push(
-            this.runSingle( i, i )
-        );
+        for ( let i = 0; i < this.a.length; i++ ) results.push( this.runSingle( i, i ) );
 
         // Populate the results
         // `this.results` will be an array of MetricResultSingle
@@ -318,9 +310,6 @@ export abstract class Metric<R = MetricRaw> {
 
     /**
      * Run the metric computation for pairwise inputs (A[i] vs B[i]) asynchronously.
-     * 
-     * This method is similar to `runPairwise`, but it returns a Promise that resolves
-     * when all computations are complete, allowing for asynchronous execution.
      */
     private async runPairwiseAsync () : Promise<void> {
 
@@ -379,7 +368,7 @@ export abstract class Metric<R = MetricRaw> {
      * indicating that the metric is being run on corresponding pairs of strings.
      * 
      * @returns {boolean} - True if both inputs are arrays of equal length
-     * @param {boolean} safe - If true, does not throw an error if lengths are not equal
+     * @param {boolean} [safe=false] - If true, does not throw an error if lengths are not equal
      * @throws {Error} - If `safe` is false and the lengths of `a` and `b` are not equal
      */
     public isPairwise ( safe: boolean = false ) : boolean {
@@ -435,10 +424,7 @@ export abstract class Metric<R = MetricRaw> {
         switch ( this.whichMode( mode ) ) {
 
             // Default mode runs the metric on single inputs or falls back to batch mode
-            case 'default': if ( this.isSingle() ) {
-                this.results = this.runSingle( 0, 0 );
-                break;
-            }
+            case 'default': if ( this.isSingle() ) { this.results = this.runSingle( 0, 0 ); break; }
 
             // Batch mode runs the metric on all combinations of a[] and b[]
             case 'batch': this.runBatch(); break;

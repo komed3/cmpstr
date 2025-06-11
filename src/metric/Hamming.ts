@@ -6,6 +6,7 @@
  * 
  * The Hamming distance is a metric for comparing two strings of equal length. It
  * measures the number of positions at which the corresponding symbols are different.
+ * 
  * This implementation allows for optional padding of the shorter string to equalize
  * lengths, otherwise it throws an error if the strings are of unequal length.
  * 
@@ -36,16 +37,13 @@ export class HammingDistance extends Metric<HammingRaw> {
      * 
      * @param {MetricInput} a - First input string or array of strings
      * @param {MetricInput} b - Second input string or array of strings
-     * @param {MetricOptions} options - Options for the metric computation
+     * @param {MetricOptions} opt - Options for the metric computation
      */
-    constructor (
-        a: MetricInput, b: MetricInput,
-        options: MetricOptions = {}
-    ) {
+    constructor ( a: MetricInput, b: MetricInput, opt: MetricOptions = {} ) {
 
         // Call the parent Metric constructor with the metric name and inputs
         // Metric is symmetrical
-        super ( 'hamming', a, b, options, true );
+        super ( 'hamming', a, b, opt, true );
 
     }
 
@@ -80,7 +78,8 @@ export class HammingDistance extends Metric<HammingRaw> {
 
             // Standard: Error for unequal length
             else throw new Error (
-                `strings must be of equal length for Hamming Distance, a=${m} and b=${n} given`
+                `strings must be of equal length for Hamming Distance, a=${m} and b=${n} given, ` +
+                `use option.pad for automatic adjustment`
             );
 
         }
@@ -88,11 +87,7 @@ export class HammingDistance extends Metric<HammingRaw> {
         // Calculate the Hamming distance
         let dist: number = 0;
 
-        for ( let i = 0; i < a.length; i++ ) {
-
-            if ( a[ i ] !== b[ i ] ) dist++;
-
-        }
+        for ( let i = 0; i < a.length; i++ ) if ( a[ i ] !== b[ i ] ) dist++;
 
         // Return the result as a MetricCompute object
         return {

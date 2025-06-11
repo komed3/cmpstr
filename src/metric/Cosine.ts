@@ -7,12 +7,10 @@
  * Cosine similarity is a metric used to measure how similar two vectors are, regardless
  * of their magnitude. In text analysis, it is commonly used to compare documents or
  * strings by representing them as term frequency vectors and computing the cosine of
- * the angle between these vectors. The result is a value between 0 and 1, where 1 means
- * the vectors are identical and 0 means they are orthogonal (no similarity).
+ * the angle between these vectors.
  * 
- * This implementation is highly optimized for both time and memory efficiency.
- * It avoids unnecessary allocations by iterating only over the keys present in the
- * term frequency objects, and does not build a union set of all terms.
+ * The result is a value between 0 and 1, where 1 means the vectors are identical and
+ * 0 means they are orthogonal (no similarity).
  * 
  * @module Metric/CosineSimilarity
  * @author Paul Köhler (komed3)
@@ -44,16 +42,13 @@ export class CosineSimilarity extends Metric<CosineRaw> {
      * 
      * @param {MetricInput} a - First input string or array of strings
      * @param {MetricInput} b - Second input string or array of strings
-     * @param {MetricOptions} options - Options for the metric computation
+     * @param {MetricOptions} [opt] - Options for the metric computation
      */
-    constructor (
-        a: MetricInput, b: MetricInput,
-        options: MetricOptions = {}
-    ) {
+    constructor ( a: MetricInput, b: MetricInput, opt: MetricOptions = {} ) {
 
         // Call the parent Metric constructor with the metric name and inputs
         // Metric is symmetrical
-        super ( 'cosine', a, b, options, true );
+        super ( 'cosine', a, b, opt, true );
 
     }
 
@@ -69,11 +64,7 @@ export class CosineSimilarity extends Metric<CosineRaw> {
         const terms: string[] = str.split( delimiter );
         const freq: Map<string, number> = Pool.acquire( 'map', terms.length );
 
-        for ( const term of terms ) {
-
-            freq.set( term, ( freq.get( term ) || 0 ) + 1 );
-
-        }
+        for ( const term of terms ) freq.set( term, ( freq.get( term ) || 0 ) + 1 );
 
         return freq;
 
@@ -81,9 +72,6 @@ export class CosineSimilarity extends Metric<CosineRaw> {
 
     /**
      * Calculates the Cosine similarity between two strings.
-     * 
-     * This implementation avoids building a union set of all terms and
-     * iterates only over the keys present in the term frequency objects.
      * 
      * @param {string} a - First string
      * @param {string} b - Second string
@@ -112,11 +100,7 @@ export class CosineSimilarity extends Metric<CosineRaw> {
         }
 
         // Iterate over terms in B for magnitudeB
-        for ( const freqB of termsB.values() ) {
-
-            magnitudeB += freqB * freqB;
-
-        }
+        for ( const freqB of termsB.values() ) magnitudeB += freqB * freqB;
 
         magnitudeA = Math.sqrt( magnitudeA );
         magnitudeB = Math.sqrt( magnitudeB );

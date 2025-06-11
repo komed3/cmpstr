@@ -11,8 +11,6 @@
  * This metric is particularly useful for detecting and correcting common
  * typographical errors.
  * 
- * This implementation is highly optimized for both time and memory efficiency.
- * 
  * @module Metric/DamerauLevenshtein
  * @author Paul Köhler (komed3)
  * @license MIT
@@ -42,26 +40,18 @@ export class DamerauLevenshteinDistance extends Metric<DamerauRaw> {
      * 
      * @param {MetricInput} a - First input string or array of strings
      * @param {MetricInput} b - Second input string or array of strings
-     * @param {MetricOptions} options - Options for the metric computation
+     * @param {MetricOptions} [opt] - Options for the metric computation
      */
-    constructor (
-        a: MetricInput, b: MetricInput,
-        options: MetricOptions = {}
-    ) {
+    constructor ( a: MetricInput, b: MetricInput, opt: MetricOptions = {} ) {
 
         // Call the parent Metric constructor with the metric name and inputs
         // Metric is symmetrical
-        super ( 'damerau', a, b, options, true );
+        super ( 'damerau', a, b, opt, true );
 
     }
 
     /**
      * Calculates the normalized Damerau-Levenshtein distance between two strings.
-     * 
-     * This method uses a dynamic programming approach, but only keeps three rows
-     * of the matrix in memory at any time, reducing space complexity to O(min(m, n)).
-     * The function also swaps the strings if necessary to ensure the shorter string
-     * is used for the columns, further optimizing memory usage.
      * 
      * @param {string} a - First string (always the shorter string for memory efficiency)
      * @param {string} b - Second string

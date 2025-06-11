@@ -10,8 +10,6 @@
  * tokens, or n-grams. The result is a value between 0 and 1, where 1 means the
  * sets are identical and 0 means they have no elements in common.
  * 
- * This implementation is optimized for both time and memory efficiency.
- * 
  * @module Metric/JaccardIndex
  * @author Paul Köhler (komed3)
  * @license MIT
@@ -41,16 +39,13 @@ export class JaccardIndex extends Metric<JaccardRaw> {
      * 
      * @param {MetricInput} a - First input string or array of strings
      * @param {MetricInput} b - Second input string or array of strings
-     * @param {MetricOptions} options - Options for the metric computation
+     * @param {MetricOptions} [opt] - Options for the metric computation
      */
-    constructor (
-        a: MetricInput, b: MetricInput,
-        options: MetricOptions = {}
-    ) {
+    constructor ( a: MetricInput, b: MetricInput, opt: MetricOptions = {} ) {
 
         // Call the parent Metric constructor with the metric name and inputs
         // Metric is symmetrical
-        super ( 'jaccard', a, b, options, true );
+        super ( 'jaccard', a, b, opt, true );
 
     }
 

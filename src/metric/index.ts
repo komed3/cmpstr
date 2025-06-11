@@ -18,6 +18,11 @@
  *  - Extensible: custom metrics can be registered at runtime via the MetricRegistry API
  *  - Consistent interface for accessing, listing, and managing metrics
  *  - Ensures that all metrics are available for use in the CmpStr API and utilities
+ * 
+ * Native implemented metrics are highly optimized for performance and efficiency,
+ * providing fast and reliable string similarity calculations. They will use CmpStr's
+ * pooling system to manage resources effectively, ensuring minimal overhead
+ * and maximum performance.
  *
  * @author Paul Köhler (komed3)
  * @license MIT

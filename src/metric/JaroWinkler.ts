@@ -9,10 +9,6 @@
  * for short strings and typographical errors, and is widely used in record linkage
  * and duplicate detection.
  * 
- * This implementation is highly optimized for both time and memory efficiency.
- * It uses the Pool for temporary boolean arrays and avoids unnecessary allocations.
- * All calculations are performed in a single pass where possible.
- * 
  * @module Metric/JaroWinkler
  * @author Paul Köhler (komed3)
  * @license MIT
@@ -45,16 +41,13 @@ export class JaroWinklerDistance extends Metric<JaroWinklerRaw> {
      * 
      * @param {MetricInput} a - First input string or array of strings
      * @param {MetricInput} b - Second input string or array of strings
-     * @param {MetricOptions} options - Options for the metric computation
+     * @param {MetricOptions} [opt] - Options for the metric computation
      */
-    constructor (
-        a: MetricInput, b: MetricInput,
-        options: MetricOptions = {}
-    ) {
+    constructor ( a: MetricInput, b: MetricInput, opt: MetricOptions = {} ) {
 
         // Call the parent Metric constructor with the metric name and inputs
         // Metric is symmetrical
-        super ( 'jaro-winkler', a, b, options, true );
+        super ( 'jaro-winkler', a, b, opt, true );
 
     }
 
