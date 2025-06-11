@@ -5,6 +5,7 @@
  * This file defines all core types, interfaces, and utility type aliases used throughout
  * the CmpStr package. It provides type safety and documentation for all major components,
  * including metrics, phonetic algorithms, filters, normalization, diffing, and profiling.
+ * 
  * All interfaces are designed for extensibility and clarity, supporting both internal
  * implementation and external usage in user code.
  * 
@@ -216,8 +217,7 @@ export interface MetricResultSingle<R = MetricRaw> {
     // The metric algorithm name
     metric: string;
     // The source and target strings
-    a: string;
-    b: string;
+    a: string; b: string;
     // The normalized similarity score (0..1)
     res: number;
     // Optional raw metric-specific data
@@ -346,14 +346,10 @@ export interface DiffOptions {
  * DiffEntry represents a single change (insertion or deletion) in a diff.
  */
 export interface DiffEntry {
-    // Position in the original text
-    posA: number;
-    // Position in the modified text
-    posB: number;
-    // Deleted string
-    del: string;
-    // Inserted string
-    ins: string;
+    // Position in the original and modified text
+    posA: number; posB: number;
+    // Deleted and inserted strings
+    del: string; ins: string;
     // Size difference (ins.length - del.length)
     size: number;
 };
@@ -366,10 +362,8 @@ export interface DiffLine {
     line: number;
     // Array of diff entries for this line
     diffs: DiffEntry[];
-    // Total deleted characters
-    delSize: number;
-    // Total inserted characters
-    insSize: number;
+    // Total deleted / inserted characters
+    delSize: number; insSize: number;
     // Total size difference
     totalSize: number;
     // Base length for normalization
@@ -384,16 +378,12 @@ export interface DiffLine {
 export interface DiffGroup {
     // Line number of the first changed line
     line: number;
-    // Start line of the group
-    start: number;
-    // End line of the group
-    end: number;
+    // Start / end lines of the group
+    start: number; end: number;
     // Array of DiffLine entries in this group
     entries: DiffLine[];
-    // Total deleted characters in the group
-    delSize: number;
-    // Total inserted characters in the group
-    insSize: number;
+    // Total deleted / inserted characters in the group
+    delSize: number; insSize: number;
     // Total size difference in the group
     totalSize: number;
     // Magnitude string for the group
@@ -438,8 +428,7 @@ export interface CmpStrOptions {
  */
 export interface CmpStrResult {
     // The source and target strings
-    source: string;
-    target: string;
+    source: string; target: string;
     // The similarity score (0..1)
     match: number;
 };
