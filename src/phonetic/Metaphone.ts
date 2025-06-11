@@ -39,9 +39,9 @@ export class Metaphone extends Phonetic {
      * 
      * Initializes the Metaphone phonetic algorithm with the mapping and options.
      * 
-     * @param {PhoneticOptions} [options] - Options for the Metaphone phonetic algorithm
+     * @param {PhoneticOptions} [opt] - Options for the Metaphone phonetic algorithm
      */
-    constructor ( options: PhoneticOptions = {} ) { super ( 'metaphone', options ) }
+    constructor ( opt: PhoneticOptions = {} ) { super ( 'metaphone', opt ) }
 
     /**
      * Generates the Metaphone code for a given word.

@@ -30,6 +30,7 @@ import type {
     PhoneticMappingService
 } from '../utils/Types';
 
+import { merge } from '../utils/DeepMerge';
 import { Registry } from '../utils/Registry';
 import { HashTable } from '../utils/HashTable';
 import { Profiler } from '../utils/Profiler';
@@ -77,13 +78,13 @@ export abstract class Phonetic {
      * Initializes the phonetic algorithm with the specified options and mapping.
      * 
      * @param {string} algo - The name of the algorithm (e.g. 'soundex')
-     * @param {PhoneticOptions} options - Options for the phonetic algorithm
+     * @param {PhoneticOptions} [opt] - Options for the phonetic algorithm
      * @throws {Error} - If the requested mapping is not declared
      */
-    constructor ( algo: string, options: PhoneticOptions ) {
+    constructor ( algo: string, opt: PhoneticOptions = {} ) {
 
         // Set the options by merging the default options with the provided ones
-        this.options = { ...( ( this.constructor as any ).default ?? {} ), ...options };
+        this.options = merge( ( this.constructor as any ).default ?? {}, opt );
 
         // Get the mapping based on the provided options
         const map = PhoneticMappingRegistry.get( algo, this.options.map! );
@@ -157,7 +158,7 @@ export abstract class Phonetic {
 
             // Check multiple characters (e.g. bigram/trigram)
             if ( rule.match && ! rule.match.every(
-                ( c: string, j: number ) => chars[ i + j ] === c
+                ( c, j ) => chars[ i + j ] === c
             ) ) continue;
 
             // If all conditions met, return the rule code
@@ -436,7 +437,9 @@ export const PhoneticMappingRegistry: PhoneticMappingService = ( () => {
     const mappings: Record<string, PhoneticMapping> = Object.create( null );
 
     // Helper function to retrieve mappings for a specific algorithm
-    const maps = ( algo: string ) : PhoneticMapping => ( mappings[ algo ] ||= Object.create( null ) );
+    const maps = ( algo: string ) : PhoneticMapping => (
+        mappings[ algo ] ||= Object.create( null )
+    );
 
     return {
 
@@ -449,10 +452,7 @@ export const PhoneticMappingRegistry: PhoneticMappingService = ( () => {
          * @param {boolean} [update=false] - Whether to allow overwriting an existing entry
          * @throws {Error} If the mapping name already exists and update is false
          */
-        add (
-            algo: string, id: string, map: PhoneticMap,
-            update: boolean = false
-        ) : void {
+        add ( algo: string, id: string, map: PhoneticMap, update: boolean = false ) : void {
 
             const mappings: PhoneticMapping = maps( algo );
 

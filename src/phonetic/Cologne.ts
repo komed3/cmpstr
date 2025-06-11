@@ -42,9 +42,9 @@ export class Cologne extends Phonetic {
      * 
      * Initializes the Cologne phonetic algorithm with the mapping and options.
      * 
-     * @param {PhoneticOptions} [options] - Options for the Cologne phonetic algorithm
+     * @param {PhoneticOptions} [opt] - Options for the Cologne phonetic algorithm
      */
-    constructor ( options: PhoneticOptions = {} ) { super ( 'cologne', options ) }
+    constructor ( opt: PhoneticOptions = {} ) { super ( 'cologne', opt ) }
 
     /**
      * Adjusts the phonetic code by removing all '0's except the first character.
