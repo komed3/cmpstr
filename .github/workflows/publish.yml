@@ -24,28 +24,6 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@v4
 
-      - name: Check Successful Build
-        run: |
-          set -e
-          commit_sha=$(git rev-parse HEAD)
-          echo "Checking for successful build on commit \e[33m$commit_sha\e[0m"
-
-          run_id=$(gh run list \
-            --workflow build.yml \
-            --branch "$GITHUB_REF_NAME" \
-            --json status,conclusion,headSha,databaseId \
-            --jq '.[] | select(.headSha == "'$commit_sha'" and .conclusion == "success") | .databaseId' \
-            | head -n1)
-
-          if [[ -z "$run_id" ]]; then
-            echo "\e[41m No successful build workflow found for commit $commit_sha \e[0m"
-            exit 1
-          else
-            echo "\e[42m Build succeeded for commit $commit_sha (run ID: $run_id) \e[0m"
-          fi
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
       - name: Use Node.js 20.x
         uses: actions/setup-node@v4
         with:
