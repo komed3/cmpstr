@@ -128,7 +128,7 @@ export default [
         output: {
             dir: 'dist/cjs',
             format: 'cjs',
-            entryFileNames: '[name].js',
+            entryFileNames: '[name].cjs',
             exports: 'auto',
             preserveModules: true,
             preserveModulesRoot: 'src',
