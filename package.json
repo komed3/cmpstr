@@ -35,7 +35,6 @@
     "node": ">=18.0.0"
   },
   "type": "module",
-  "main": "./dist/cjs/index.cjs",
   "browser": "./dist/CmpStr.umd.min.js",
   "exports": {
     ".": {
