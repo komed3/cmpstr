@@ -31,13 +31,11 @@
     "README.md",
     "LICENSE"
   ],
-  "main": "dist/cjs/index.js",
-  "types": "dist/types/index.d.ts",
-  "module": "dist/esm/index.js",
   "browser": "dist/CmpStr.umd.min.js",
   "exports": {
     "require": "./dist/cjs/index.js",
-    "import": "./dist/esm/index.js"
+    "import": "./dist/esm/index.js",
+    "types": "./dist/types/index.d.ts"
   },
   "type": "module",
   "scripts": {
