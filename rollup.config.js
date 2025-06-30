@@ -66,7 +66,7 @@ import fs from 'fs';
 const version = JSON.parse( fs.readFileSync( './package.json' ) ).version;
 const commit = execSync( 'git rev-parse --short HEAD' ).toString().trim();
 const date = new Date().toISOString().replace( /([^0-9])/g, '' ).substring( 2, 8 );
-const build = `CmpStr v${version} dev-${commit}-${ date }`;
+const build = `CmpStr v${version} build-${commit}-${ date }`;
 
 const banner = `// ${build} by Paul Köhler @komed3 / MIT License`;
 
