@@ -4,7 +4,7 @@
 [![Static Badge](https://img.shields.io/badge/docs-docs?style=for-the-badge&logo=readthedocs&logoColor=fff&color=blue)](https://github.com/komed3/cmpstr/wiki)
 [![Static Badge](https://img.shields.io/badge/Typescript-support?style=for-the-badge&logo=typescript&logoColor=fff&color=blue)](https://www.typescriptlang.org)
 [![GitHub package.json version](https://img.shields.io/github/package-json/v/komed3/cmpstr?style=for-the-badge&logo=npm&logoColor=fff)](https://npmjs.com/package/cmpstr)
-[![npm bundle size](https://img.shields.io/bundlephobia/min/cmpstr?style=for-the-badge&logo=gitlfs&logoColor=fff)](https://bundlephobia.com/package/cmpstr)
+[![Static Badge](https://img.shields.io/badge/57kB-Bundle?style=for-the-badge&logo=gitlfs&logoColor=fff&label=Bundle&color=yellow)](https://pkg-size.dev/cmpstr)
 [![NPM Downloads](https://img.shields.io/npm/dy/cmpstr?style=for-the-badge&logo=transmission&logoColor=fff)](https://npmpackage.info/package/cmpstr?t=downloads)
 [![GitHub Actions Workflow Status](https://img.shields.io/github/actions/workflow/status/komed3/cmpstr/build.yml?style=for-the-badge&logo=educative&logoColor=fff)](https://github.com/komed3/cmpstr/actions/workflows/build.yml)
 [![Static Badge](https://img.shields.io/badge/ESM_%26_CJS-TypeScript?style=for-the-badge&logo=nodedotjs&logoColor=fff&color=purple)](https://github.com/komed3/cmpstr/wiki/Installation-&-Setup#import-in-your-project)
