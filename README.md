@@ -68,6 +68,12 @@ console.log( result );
 // [ 'Meyer', 'Meier' ]
 ```
 
+_Try with [OneCompiler](https://onecompiler.com/nodejs/43qr6trny)._
+
+## CLI Tool
+
+Try out or use CmpStr on the terminal. Install the **[cmpstr-cli](https://www.npmjs.com/package/cmpstr-cli)** package and use many features of CmpStr directly on the console via the cmpstr command. Many options and parameters also make the command suitable for scripts and automatic processing.
+
 ## Documentation
 
 The full documentation, API reference and advanced usage examples are available in the [GitHub Wiki](https://github.com/komed3/cmpstr/wiki).
