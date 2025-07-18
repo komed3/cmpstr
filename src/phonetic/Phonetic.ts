@@ -76,6 +76,7 @@ export abstract class Phonetic {
      * Constructor for the Phonetic class.
      * 
      * Initializes the phonetic algorithm with the specified options and mapping.
+     * Options hierarchy: User input > mapping options > default
      * 
      * @param {string} algo - The name of the algorithm (e.g. 'soundex')
      * @param {PhoneticOptions} [opt] - Options for the phonetic algorithm
@@ -83,17 +84,29 @@ export abstract class Phonetic {
      */
     constructor ( algo: string, opt: PhoneticOptions = {} ) {
 
-        // Set the options by merging the default options with the provided ones
-        this.options = merge( ( this.constructor as any ).default ?? {}, opt );
+        // Get the phonetic default options
+        const defaults = ( this.constructor as any ).default ?? {};
 
-        // Get the mapping based on the provided options
-        const map = PhoneticMappingRegistry.get( algo, this.options.map! );
+        // Determine phonetic map ID from options or use defaults
+        const mapId = opt.map ?? defaults.map;
+
+        // If no algorithm is specified, throw an error
+        if ( ! mapId ) throw new Error (
+            `No mapping specified for phonetic algorithm`
+        );
+
+        // Get the mapping based on the determined map ID
+        const map = PhoneticMappingRegistry.get( algo, mapId );
 
         // If the mapping is not defined, throw an error
         if ( map === undefined ) throw new Error (
-            `requested mapping <${this.options.map}> is not declared`
+            `Requested mapping <${mapId}> is not declared`
         );
 
+        // Set the options by merging the default options with the provided ones
+        this.options = merge( merge( defaults, map.options ?? {} ), opt );
+
+        // Set the algorithm name and mapping
         this.algo = algo;
         this.map = map;
 
@@ -492,7 +505,7 @@ export const PhoneticMappingRegistry: PhoneticMappingService = ( () => {
             const mappings: PhoneticMapping = maps( algo );
 
             if ( ! update && id in mappings ) throw new Error (
-                `entry <${id}> already exists / use <update=true> to overwrite`
+                `Entry <${id}> already exists / use <update=true> to overwrite`
             );
 
             mappings[ id ] = map;
