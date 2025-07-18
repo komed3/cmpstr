@@ -4,7 +4,13 @@
  * 
  * @see https://en.wikipedia.org/wiki/Caverphone
  * 
- * ...
+ * This module implements the Caverphone phonetic algorithm, which is designed
+ * to encode words into a phonetic representation. The Caverphone algorithm is
+ * used primarily in New Zealand and was developed to assist in the indexing of
+ * names in genealogical databases.
+ * 
+ * It converts words into a standardized phonetic code, allowing for variations
+ * in spelling and pronunciation to be matched.
  * 
  * @module Phonetic/Caverphone
  * @author Paul Köhler (komed3)
@@ -46,17 +52,6 @@ export class Caverphone extends Phonetic {
         // Remove anything not A-Z and convert to lowercase
         word = word.replace( /[^A-Z]/gi, '' ).toLowerCase();
 
-        // Apply specific Caverphone rules
-        for ( const [ s, r ] of [
-            [ /^cough/, 'cou2f' ], [ /^rough/, 'rou2f' ],
-            [ /^tough/, 'tou2f' ], [ /^enough/, 'enou2f' ],
-            [ /^gn/, '2n' ], [ /mb$/, 'm2' ]
-        ] as [ RegExp, string ][] ) {
-
-            word = word.replace( s, r );
-
-        }
-
         // Use the base implementation for rule/mapping application
         return super.encode( word );
 
@@ -69,9 +64,25 @@ PhoneticRegistry.add( 'caverphone', Caverphone );
 
 // Register the Caverphone 1.0 phonetic mapping for English
 PhoneticMappingRegistry.add( 'caverphone', 'en1', {
-    map: {},
+    map: {
+        b: 'p', c: 'k', d: 't', q: 'k', v: 'f', x: 'k', z: 's'
+    },
+    patterns: [
+        { pattern: /^cough/, replace: 'cou2f' },
+        { pattern: /^rough/, replace: 'rou2f' },
+        { pattern: /^tough/, replace: 'tou2f' },
+        { pattern: /^enough/, replace: 'enou2f' },
+        { pattern: /^gn/, replace: '2n' },
+        { pattern: /mb$/, replace: 'm2' }
+    ],
     ruleset: [
-        { char: 'c', next: [ 'q' ], code: '2q' }
+        { char: 'c', next: [ 'q' ], code: '2' },
+        { char: 'c', next: [ 'i', 'e', 'y' ], code: 's' },
+        { char: 't', next: [ 'c' ], next2: [ 'h' ], code: '2' },
+        { char: 'd', next: [ 'g' ], code: '2' },
+        { char: 't', next: [ 'i' ], next2: [ 'a', 'o' ], code: 's' },
+        { char: 'p', next: [ 'h' ], code: 'f' },
+        { char: 'h', prev: [ 's' ], code: '2' },
     ]
 } );
 

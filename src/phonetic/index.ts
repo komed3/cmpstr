@@ -27,6 +27,7 @@
 
 'use strict';
 
+import './Caverphone';
 import './Cologne';
 import './Metaphone';
 import './Soundex';
