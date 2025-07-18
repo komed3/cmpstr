@@ -69,6 +69,18 @@ export class Caverphone extends Phonetic {
 
     }
 
+    /**
+     * Adjusts the phonetic code to uppercase.
+     * 
+     * @param {string} code - The phonetic code to adjust
+     * @returns {string} - The adjusted phonetic code
+     */
+    protected override adjustCode ( code: string ) : string {
+
+        return code.toUpperCase();
+
+    }
+
 }
 
 // Register the Caverphone algorithm in the phonetic registry
