@@ -84,10 +84,7 @@ PhoneticMappingRegistry.add( 'caverphone', 'en1', {
     map: {},
     patterns: [
         // Special word-initial replacements
-        { pattern: /^cough/, replace: 'cou2f' },
-        { pattern: /^rough/, replace: 'rou2f' },
-        { pattern: /^tough/, replace: 'tou2f' },
-        { pattern: /^enough/, replace: 'enou2f' },
+        { pattern: /^(c|r|t|en)ough/, replace: '$1ou2f' },
         { pattern: /^gn/, replace: '2n' },
         // Special word-final replacement
         { pattern: /mb$/, replace: 'm2' },
@@ -149,11 +146,7 @@ PhoneticMappingRegistry.add( 'caverphone', 'en2', {
         // Remove trailing 'e'
         { pattern: /e$/, replace: '' },
         // Special word-initial replacements
-        { pattern: /^cough/, replace: 'cou2f' },
-        { pattern: /^rough/, replace: 'rou2f' },
-        { pattern: /^tough/, replace: 'tou2f' },
-        { pattern: /^enough/, replace: 'enou2f' },
-        { pattern: /^trough/, replace: 'trou2f' },
+        { pattern: /^(c|r|t|en|tr)ough/, replace: '$1ou2f' },
         { pattern: /^gn/, replace: '2n' },
         // Special word-final replacement
         { pattern: /mb$/, replace: 'm2' },
