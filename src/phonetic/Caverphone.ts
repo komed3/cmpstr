@@ -29,7 +29,7 @@ export class Caverphone extends Phonetic {
 
     // Default options for the Caverphone phonetic algorithm
     protected static override default: PhoneticOptions = {
-        map: 'en1', delimiter: ' ', length: 10, pad: '1', dedupe: false
+        map: 'en2', delimiter: ' ', length: -1, pad: '', dedupe: false
     };
 
     /**
@@ -64,30 +64,103 @@ PhoneticRegistry.add( 'caverphone', Caverphone );
 
 // Register the Caverphone 1.0 phonetic mapping for English
 PhoneticMappingRegistry.add( 'caverphone', 'en1', {
-    map: {
-        b: 'p', c: 'k', d: 't', q: 'k', v: 'f', x: 'k', z: 's'
-    },
+    map: {},
     patterns: [
         { pattern: /^cough/, replace: 'cou2f' },
         { pattern: /^rough/, replace: 'rou2f' },
         { pattern: /^tough/, replace: 'tou2f' },
         { pattern: /^enough/, replace: 'enou2f' },
         { pattern: /^gn/, replace: '2n' },
-        { pattern: /mb$/, replace: 'm2' }
-    ],
-    ruleset: [
-        { char: 'c', next: [ 'q' ], code: '2' },
-        { char: 'c', next: [ 'i', 'e', 'y' ], code: 's' },
-        { char: 't', next: [ 'c' ], next2: [ 'h' ], code: '2' },
-        { char: 'd', next: [ 'g' ], code: '2' },
-        { char: 't', next: [ 'i' ], next2: [ 'a', 'o' ], code: 's' },
-        { char: 'p', next: [ 'h' ], code: 'f' },
-        { char: 'h', prev: [ 's' ], code: '2' },
+        { pattern: /mb$/, replace: 'm2' },
+        { pattern: /cq/g, replace: '2q' },
+        { pattern: /c(e|i|y)/g, replace: 's$1' },
+        { pattern: /tch/g, replace: '2ch' },
+        { pattern: /[cqx]/g, replace: 'k' },
+        { pattern: /v/g, replace: 'f' },
+        { pattern: /dg/g, replace: '2g' },
+        { pattern: /ti(a|o)/g, replace: 'si$1' },
+        { pattern: /d/g, replace: 't' },
+        { pattern: /ph/g, replace: 'fh' },
+        { pattern: /b/g, replace: 'p' },
+        { pattern: /sh/g, replace: 's2' },
+        { pattern: /z/g, replace: 's' },
+        { pattern: /^[aeiou]/, replace: 'A' },
+        { pattern: /[aeiou]/g, replace: '3' },
+        { pattern: /3gh3/g, replace: '3kh3' },
+        { pattern: /gh/g, replace: '22' },
+        { pattern: /g/g, replace: 'k' },
+        { pattern: /s+/g, replace: 'S' },
+        { pattern: /t+/g, replace: 'T' },
+        { pattern: /p+/g, replace: 'P' },
+        { pattern: /k+/g, replace: 'K' },
+        { pattern: /f+/g, replace: 'F' },
+        { pattern: /m+/g, replace: 'M' },
+        { pattern: /n+/g, replace: 'N' },
+        { pattern: /j/g, replace: 'y' },
+        { pattern: /l3/g, replace: 'L3' },
+        { pattern: /r3/g, replace: 'R3' },
+        { pattern: /w3/g, replace: 'W3' },
+        { pattern: /y3/g, replace: 'Y3' },
+        { pattern: /ly/g, replace: 'Ly' },
+        { pattern: /ry/g, replace: 'Ry' },
+        { pattern: /wy/g, replace: 'Wy' },
+        { pattern: /wh3/g, replace: 'Wh3' },
+        { pattern: /why/g, replace: 'Why' },
+        { pattern: /^h/, replace: 'A' },
+        { pattern: /[hlrwy]/g, replace: '2' },
+        { pattern: /[23]/g, replace: '' }
     ]
 } );
 
 // Register the Caverphone 2.0 phonetic mapping for English
 PhoneticMappingRegistry.add( 'caverphone', 'en2', {
     map: {},
-    ruleset: []
+    patterns: [
+        { pattern: /e$/, replace: '' },
+        { pattern: /^cough/, replace: 'cou2f' },
+        { pattern: /^rough/, replace: 'rou2f' },
+        { pattern: /^tough/, replace: 'tou2f' },
+        { pattern: /^enough/, replace: 'enou2f' },
+        { pattern: /^trough/, replace: 'trou2f' },
+        { pattern: /^gn/, replace: '2n' },
+        { pattern: /mb$/, replace: 'm2' },
+        { pattern: /cq/g, replace: '2q' },
+        { pattern: /c(e|i|y)/g, replace: 's$1' },
+        { pattern: /tch/g, replace: '2ch' },
+        { pattern: /[cqx]/g, replace: 'k' },
+        { pattern: /v/g, replace: 'f' },
+        { pattern: /dg/g, replace: '2g' },
+        { pattern: /ti(a|o)/g, replace: 'si$1' },
+        { pattern: /d/g, replace: 't' },
+        { pattern: /ph/g, replace: 'fh' },
+        { pattern: /b/g, replace: 'p' },
+        { pattern: /sh/g, replace: 's2' },
+        { pattern: /z/g, replace: 's' },
+        { pattern: /^[aeiou]/, replace: 'A' },
+        { pattern: /[aeiou]/g, replace: '3' },
+        { pattern: /j/g, replace: 'y' },
+        { pattern: /^y3/, replace: 'Y3' },
+        { pattern: /^y/, replace: 'A' },
+        { pattern: /y/g, replace: '3' },
+        { pattern: /3gh3/g, replace: '3kh3' },
+        { pattern: /gh/g, replace: '22' },
+        { pattern: /g/g, replace: 'k' },
+        { pattern: /s+/g, replace: 'S' },
+        { pattern: /t+/g, replace: 'T' },
+        { pattern: /p+/g, replace: 'P' },
+        { pattern: /k+/g, replace: 'K' },
+        { pattern: /f+/g, replace: 'F' },
+        { pattern: /m+/g, replace: 'M' },
+        { pattern: /n+/g, replace: 'N' },
+        { pattern: /l3/g, replace: 'L3' },
+        { pattern: /r3/g, replace: 'R3' },
+        { pattern: /w3/g, replace: 'W3' },
+        { pattern: /wh3/g, replace: 'Wh3' },
+        { pattern: /[lrw]$/, replace: '3' },
+        { pattern: /[lrw]/g, replace: '2' },
+        { pattern: /^h/, replace: 'A' },
+        { pattern: /h/g, replace: '2' },
+        { pattern: /3$/, replace: 'A' },
+        { pattern: /[23]/g, replace: '' }
+    ]
 } );
