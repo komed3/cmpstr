@@ -57,6 +57,18 @@ export class Caverphone extends Phonetic {
 
     }
 
+    /**
+     * Overrides the mapChar method to skip character mapping.
+     * 
+     * @param {string} char - The character to be mapped
+     * @returns {string} - The mapped character
+     */
+    protected override mapChar ( char: string ) : string {
+
+        return char;
+
+    }
+
 }
 
 // Register the Caverphone algorithm in the phonetic registry
