@@ -57,23 +57,6 @@ export class Caverphone extends Phonetic {
 
     }
 
-    /**
-     * Adjusts the Caverphone code by padding or truncating it to the specified length.
-     * 
-     * @param {string} code - The Caverphone code to be adjusted
-     * @returns {string} - The adjusted Caverphone code
-     */
-    protected override adjustCode ( code: string ) : string {
-
-        // Fetch the options for length and padding from the mapping
-        const { options = { len: code.length, pad: '' } } = this.map;
-
-        // If the code is shorter than the specified length, pad it
-        // If the code is longer, truncate it
-        return code.padEnd( options.len, options.pad ).substring( 0, options.len );
-
-    }
-
 }
 
 // Register the Caverphone algorithm in the phonetic registry
@@ -81,7 +64,7 @@ PhoneticRegistry.add( 'caverphone', Caverphone );
 
 // Register the Caverphone 1.0 phonetic mapping for English
 PhoneticMappingRegistry.add( 'caverphone', 'en1', {
-    options: { len: 6, pad: '1' },
+    options: { length: 6, pad: '1' },
     map: {},
     patterns: [
         { pattern: /^cough/, replace: 'cou2f' },
@@ -132,7 +115,7 @@ PhoneticMappingRegistry.add( 'caverphone', 'en1', {
 
 // Register the Caverphone 2.0 phonetic mapping for English
 PhoneticMappingRegistry.add( 'caverphone', 'en2', {
-    options: { len: 10, pad: '1' },
+    options: { length: 10, pad: '1' },
     map: {},
     patterns: [
         { pattern: /e$/, replace: '' },

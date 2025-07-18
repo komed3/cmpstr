@@ -305,7 +305,7 @@ export interface PhoneticMap {
     // Characters to ignore
     ignore?: string[];
     // Optional options for the mapping
-    options?: { [ k: string ]: any; }
+    options?: PhoneticOptions
 };
 
 /**
