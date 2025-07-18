@@ -67,12 +67,15 @@ PhoneticMappingRegistry.add( 'caverphone', 'en1', {
     options: { length: 6, pad: '1' },
     map: {},
     patterns: [
+        // Special word-initial replacements
         { pattern: /^cough/, replace: 'cou2f' },
         { pattern: /^rough/, replace: 'rou2f' },
         { pattern: /^tough/, replace: 'tou2f' },
         { pattern: /^enough/, replace: 'enou2f' },
         { pattern: /^gn/, replace: '2n' },
+        // Special word-final replacement
         { pattern: /mb$/, replace: 'm2' },
+        // Character group replacements
         { pattern: /cq/g, replace: '2q' },
         { pattern: /c(e|i|y)/g, replace: 's$1' },
         { pattern: /tch/g, replace: '2ch' },
@@ -85,11 +88,15 @@ PhoneticMappingRegistry.add( 'caverphone', 'en1', {
         { pattern: /b/g, replace: 'p' },
         { pattern: /sh/g, replace: 's2' },
         { pattern: /z/g, replace: 's' },
+        // Vowel handling
         { pattern: /^[aeiou]/, replace: 'A' },
         { pattern: /[aeiou]/g, replace: '3' },
+        // Special gh handling
         { pattern: /3gh3/g, replace: '3kh3' },
         { pattern: /gh/g, replace: '22' },
+        // // Single character replacements
         { pattern: /g/g, replace: 'k' },
+        // Collapse repeated consonants
         { pattern: /s+/g, replace: 'S' },
         { pattern: /t+/g, replace: 'T' },
         { pattern: /p+/g, replace: 'P' },
@@ -97,19 +104,24 @@ PhoneticMappingRegistry.add( 'caverphone', 'en1', {
         { pattern: /f+/g, replace: 'F' },
         { pattern: /m+/g, replace: 'M' },
         { pattern: /n+/g, replace: 'N' },
+        // Y and other single-letter handling
         { pattern: /j/g, replace: 'y' },
+        // L/R/W/Y3 handling
         { pattern: /l3/g, replace: 'L3' },
         { pattern: /r3/g, replace: 'R3' },
         { pattern: /w3/g, replace: 'W3' },
         { pattern: /y3/g, replace: 'Y3' },
+        // L/R/W followed by y
         { pattern: /ly/g, replace: 'Ly' },
         { pattern: /ry/g, replace: 'Ry' },
         { pattern: /wy/g, replace: 'Wy' },
+        // WH handling
         { pattern: /wh3/g, replace: 'Wh3' },
         { pattern: /why/g, replace: 'Why' },
+        // H at start
         { pattern: /^h/, replace: 'A' },
-        { pattern: /[hlrwy]/g, replace: '2' },
-        { pattern: /[23]/g, replace: '' }
+        // Remove certain letters
+        { pattern: /[hlrwy23]/g, replace: '' }
     ]
 } );
 
@@ -118,14 +130,18 @@ PhoneticMappingRegistry.add( 'caverphone', 'en2', {
     options: { length: 10, pad: '1' },
     map: {},
     patterns: [
+        // Remove trailing 'e'
         { pattern: /e$/, replace: '' },
+        // Special word-initial replacements
         { pattern: /^cough/, replace: 'cou2f' },
         { pattern: /^rough/, replace: 'rou2f' },
         { pattern: /^tough/, replace: 'tou2f' },
         { pattern: /^enough/, replace: 'enou2f' },
         { pattern: /^trough/, replace: 'trou2f' },
         { pattern: /^gn/, replace: '2n' },
+        // Special word-final replacement
         { pattern: /mb$/, replace: 'm2' },
+        // Character group replacements
         { pattern: /cq/g, replace: '2q' },
         { pattern: /c(e|i|y)/g, replace: 's$1' },
         { pattern: /tch/g, replace: '2ch' },
@@ -138,15 +154,20 @@ PhoneticMappingRegistry.add( 'caverphone', 'en2', {
         { pattern: /b/g, replace: 'p' },
         { pattern: /sh/g, replace: 's2' },
         { pattern: /z/g, replace: 's' },
+        // Vowel handling
         { pattern: /^[aeiou]/, replace: 'A' },
         { pattern: /[aeiou]/g, replace: '3' },
+        // Y handling
         { pattern: /j/g, replace: 'y' },
         { pattern: /^y3/, replace: 'Y3' },
         { pattern: /^y/, replace: 'A' },
         { pattern: /y/g, replace: '3' },
+        // Special gh handling
         { pattern: /3gh3/g, replace: '3kh3' },
         { pattern: /gh/g, replace: '22' },
+        // Single character replacements
         { pattern: /g/g, replace: 'k' },
+        // Collapse repeated consonants
         { pattern: /s+/g, replace: 'S' },
         { pattern: /t+/g, replace: 'T' },
         { pattern: /p+/g, replace: 'P' },
@@ -154,15 +175,16 @@ PhoneticMappingRegistry.add( 'caverphone', 'en2', {
         { pattern: /f+/g, replace: 'F' },
         { pattern: /m+/g, replace: 'M' },
         { pattern: /n+/g, replace: 'N' },
+        // L/R/W3 handling
         { pattern: /l3/g, replace: 'L3' },
         { pattern: /r3/g, replace: 'R3' },
         { pattern: /w3/g, replace: 'W3' },
         { pattern: /wh3/g, replace: 'Wh3' },
         { pattern: /[lrw]$/, replace: '3' },
-        { pattern: /[lrw]/g, replace: '2' },
+        // // H at start and final 3 handling
         { pattern: /^h/, replace: 'A' },
-        { pattern: /h/g, replace: '2' },
         { pattern: /3$/, replace: 'A' },
-        { pattern: /[23]/g, replace: '' }
+        // Remove certain letters
+        { pattern: /[hlrw23]/g, replace: '' }
     ]
 } );
