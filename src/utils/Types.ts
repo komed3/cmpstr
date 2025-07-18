@@ -281,11 +281,25 @@ export interface PhoneticRule {
 };
 
 /**
+ * PhoneticPattern defines a single pattern for phonetic mapping.
+ */
+export interface PhoneticPattern {
+    // The pattern to match
+    pattern: string;
+    // The replacement string
+    replace: string;
+    // If true, replaceAll will be used
+    all?: boolean;
+};
+
+/**
  * PhoneticMap defines a mapping for a specific phonetic algorithm and language.
  */
 export interface PhoneticMap {
     // Character-to-code mapping
     map: Record<string, string>;
+    // Optional set of phonetic patterns
+    patterns?: PhoneticPattern[];
     // Optional set of phonetic rules
     ruleset?: PhoneticRule[];
     // Characters to ignore
