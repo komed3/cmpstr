@@ -63,11 +63,7 @@ export class Caverphone extends Phonetic {
      * @param {string} char - The character to be mapped
      * @returns {string} - The mapped character
      */
-    protected override mapChar ( char: string ) : string {
-
-        return char;
-
-    }
+    protected override mapChar ( char: string ) : string { return char }
 
     /**
      * Adjusts the phonetic code to uppercase.
@@ -75,11 +71,7 @@ export class Caverphone extends Phonetic {
      * @param {string} code - The phonetic code to adjust
      * @returns {string} - The adjusted phonetic code
      */
-    protected override adjustCode ( code: string ) : string {
-
-        return code.toUpperCase();
-
-    }
+    protected override adjustCode ( code: string ) : string { return code.toUpperCase() }
 
 }
 

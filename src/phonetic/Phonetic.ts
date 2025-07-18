@@ -283,12 +283,12 @@ export abstract class Phonetic {
         lastCode: string | null, map: Record<string, string>
     ) : string | undefined {
 
-        const { dedupe = true } = this.options;
+        const { dedupe = true, fallback = undefined } = this.options;
 
         // Apply phonetic rules to the character
         // If no rules apply, use the mapping
-        // If the character is not in the mapping, return undefined
-        const c = this.applyRules( char, i, chars, charLen ) ?? map[ char ] ?? undefined;
+        // If the character is not in the mapping, return the fallback
+        const c = this.applyRules( char, i, chars, charLen ) ?? map[ char ] ?? fallback;
 
         // De-duplicate the code if necessary
         return dedupe && c === lastCode ? undefined : c;

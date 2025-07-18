@@ -252,6 +252,8 @@ export interface PhoneticOptions {
     pad?: string;
     // Whether to deduplicate codes
     dedupe?: boolean;
+    // Fallback character for missing mappings
+    fallback?: string | undefined;
 };
 
 /**
@@ -305,7 +307,7 @@ export interface PhoneticMap {
     // Characters to ignore
     ignore?: string[];
     // Optional options for the mapping
-    options?: PhoneticOptions
+    options?: PhoneticOptions;
 };
 
 /**
