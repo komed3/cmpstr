@@ -285,7 +285,7 @@ export interface PhoneticRule {
  */
 export interface PhoneticPattern {
     // The pattern to match
-    pattern: string;
+    pattern: RegExp;
     // The replacement string
     replace: string;
     // If true, replaceAll will be used

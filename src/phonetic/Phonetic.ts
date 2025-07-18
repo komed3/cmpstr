@@ -15,8 +15,8 @@
  * pose a risk of infringing upon existing trademarks due to their pronunciation.
  * 
  * This module provides an abstract class for generating phonetic indices based
- * on mappings and rules. It allows for the implementation of various phonetic
- * algorithms by extending the abstract class.
+ * on mappings, patterns and rules. It allows for the implementation of various
+ * phonetic algorithms by extending the abstract class.
  * 
  * @module Phonetic
  * @author Paul Köhler (komed3)
@@ -96,6 +96,37 @@ export abstract class Phonetic {
 
         this.algo = algo;
         this.map = map;
+
+    }
+
+    /**
+     * Applies patterns to a word based on the phonetic map.
+     * 
+     * This method processes the word by applying all defined patterns in the
+     * phonetic map. It replaces occurrences of specified patterns with their
+     * corresponding replacements.
+     * 
+     * @param {string} word - The input word to be processed
+     * @returns {string} - The modified word after applying all patterns
+     */
+    protected applyPattern ( word: string ) : string {
+
+        const { patterns = [] } = this.map;
+
+        // If no patterns are provided, return the input
+        if ( ! patterns || ! patterns.length ) return word;
+
+        // Iterate over the patterns and replace all matches
+        for ( const { pattern, replace, all = false } of patterns ) {
+
+            // Search for the pattern in the word and replace it
+            // Use replaceAll if 'all' is true, otherwise use replace
+            word = word[ all ? 'replaceAll' : 'replace' ]( pattern, replace );
+
+        }
+
+        // Return the modified word after applying all patterns
+        return word;
 
     }
 
@@ -183,6 +214,10 @@ export abstract class Phonetic {
     protected encode ( word: string ) : string {
 
         const { map = {}, ignore = [] } = this.map;
+
+        // Apply patterns to the word before processing
+        // This allows for pre-processing of the word based on defined patterns
+        word = this.applyPattern( word );
 
         // Get the characters of the word and its length
         const chars: string[] = this.word2Chars( word );
