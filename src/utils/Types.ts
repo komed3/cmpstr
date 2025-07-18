@@ -304,6 +304,8 @@ export interface PhoneticMap {
     ruleset?: PhoneticRule[];
     // Characters to ignore
     ignore?: string[];
+    // Optional options for the mapping
+    options?: { [ k: string ]: any; }
 };
 
 /**
