@@ -78,7 +78,7 @@ export class HammingDistance extends Metric<HammingRaw> {
 
             // Standard: Error for unequal length
             else throw new Error (
-                `strings must be of equal length for Hamming Distance, a=${m} and b=${n} given, ` +
+                `Strings must be of equal length for Hamming Distance, a=${m} and b=${n} given, ` +
                 `use option.pad for automatic adjustment`
             );
 

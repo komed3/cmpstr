@@ -171,7 +171,7 @@ export abstract class Metric<R = MetricRaw> {
 
         void [ a, b, m, n, maxLen ];
 
-        throw new Error ( `method compute() must be overridden in a subclass` );
+        throw new Error ( `Method compute() must be overridden in a subclass` );
 
     }
 
@@ -373,7 +373,7 @@ export abstract class Metric<R = MetricRaw> {
     public isPairwise ( safe: boolean = false ) : boolean {
 
         return this.isBatch() && this.a.length === this.b.length ? true : ! safe && ( () => {
-            throw new Error ( `mode <pairwise> requires arrays of equal length` );
+            throw new Error ( `Mode <pairwise> requires arrays of equal length` );
         } )();
 
     }
@@ -435,7 +435,7 @@ export abstract class Metric<R = MetricRaw> {
             case 'pairwise': if ( this.isPairwise() ) this.runPairwise(); break;
 
             // Unsupported mode
-            default: throw new Error ( `unsupported mode <${mode}>` );
+            default: throw new Error ( `Unsupported mode <${mode}>` );
 
         }
 
@@ -472,7 +472,7 @@ export abstract class Metric<R = MetricRaw> {
             case 'pairwise': if ( this.isPairwise() ) await this.runPairwiseAsync(); break;
 
             // Unsupported mode
-            default: throw new Error ( `unsupported async mode <${mode}>` );
+            default: throw new Error ( `Unsupported async mode <${mode}>` );
 
         }
 

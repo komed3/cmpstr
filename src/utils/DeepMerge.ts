@@ -86,7 +86,7 @@ export function set<T extends Record<string, any>> (
 
     // Throw an error if the key is not a valid identifier
     if ( t !== undefined && ( typeof t !== 'object' || t === null ) ) throw Error (
-        `cannot set property <${k}> of <${ JSON.stringify( t ) }>`
+        `Cannot set property <${k}> of <${ JSON.stringify( t ) }>`
     );
 
     // Assign the value to the specified key in the object

@@ -45,7 +45,7 @@ export function Registry<T> ( reg: string, ctor: RegistryConstructor<T> ) : Regi
 
     // Throws an error if the registry already exists
     if ( reg in registry || reg in factory ) throw new Error (
-        `registry <${reg}> already exists / overwriting is forbidden`
+        `Registry <${reg}> already exists / overwriting is forbidden`
     );
 
     // Create a registry object to hold class constructors
@@ -65,11 +65,11 @@ export function Registry<T> ( reg: string, ctor: RegistryConstructor<T> ) : Regi
         add ( name: string, cls: RegistryConstructor<T>, update: boolean = false ) : void {
 
             if ( ! ( cls.prototype instanceof ctor ) ) throw new TypeError (
-                `class must extend <${reg}>`
+                `Class must extend <${reg}>`
             );
 
             if ( ! update && name in classes ) throw new Error (
-                `entry <${name}> already exists / use <update=true> to overwrite`
+                `Entry <${name}> already exists / use <update=true> to overwrite`
             );
 
             classes[ name ] = cls;
@@ -108,7 +108,7 @@ export function Registry<T> ( reg: string, ctor: RegistryConstructor<T> ) : Regi
         get ( name: string ) : RegistryConstructor<T> {
 
             if ( ! ( name in classes ) ) throw new Error (
-                `class <${name}> not registered for <${reg}>`
+                `Class <${name}> not registered for <${reg}>`
             );
 
             return classes[ name ];
@@ -143,7 +143,7 @@ export function resolveCls<T extends RegistryConstructor<any>> (
 ) : T {
 
     if ( ! ( reg in registry ) ) throw new ReferenceError (
-        `registry <${reg}> does not exist`
+        `Registry <${reg}> does not exist`
     );
 
     return ( typeof cls === 'string' ? registry[ reg ]?.get( cls ) : cls ) as T;
@@ -166,6 +166,6 @@ export function createFromRegistry<T extends RegistryConstructor<any>>(
     cls = resolveCls<T>( reg, cls );
 
     try { return new ( cls as InstanceType<T> ) ( ...args ); }
-    catch ( err ) { throw new Error ( `cannot instantiate class <${cls}>` ); }
+    catch ( err ) { throw new Error ( `Cannot instantiate class <${cls}>` ); }
 
 }
