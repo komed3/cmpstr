@@ -23,7 +23,7 @@ describe( 'CmpStr > API', () => {
 
     it( 'Phonetic', () => {
 
-        expect( CmpStr.phonetic.list() ).toHaveLength( 3 );
+        expect( CmpStr.phonetic.list() ).toHaveLength( 4 );
 
         expect( CmpStr.phonetic.has( 'cologne' ) ).toBe( true );
 
