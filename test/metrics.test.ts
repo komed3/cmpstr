@@ -54,7 +54,7 @@ describe( 'CmpStr > Metric', () => {
         ] );
 
         expect( () => { cmp.pairs( [ 'heLLo', 'hi', 'Hola' ], [ 'hallo', 'allo' ] ) } ).toThrowError(
-            `mode <pairwise> requires arrays of equal length`
+            `Mode <pairwise> requires arrays of equal length`
         );
 
     } );
