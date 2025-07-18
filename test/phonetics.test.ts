@@ -42,4 +42,14 @@ describe( 'CmpStr > Phonetics', () => {
 
     } );
 
+    it( 'Caverphone', () => {
+
+        const cmp = CmpStr.create().setProcessors( { phonetic: { algo: 'caverphone' } } );
+
+        const res = cmp.phoneticIndex( 'Thompson' );
+
+        expect( res ).toBe( 'TMPSN11111' );
+
+    } );
+
 } );
