@@ -107,7 +107,7 @@ PhoneticMappingRegistry.add( 'caverphone', 'en1', {
         // Special gh handling
         { pattern: /3gh3/g, replace: '3kh3' },
         { pattern: /gh/g, replace: '22' },
-        // // Single character replacements
+        // Single character replacements
         { pattern: /g/g, replace: 'k' },
         // Collapse repeated consonants
         { pattern: /s+/g, replace: 'S' },
