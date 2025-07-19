@@ -2,7 +2,7 @@
   "name": "cmpstr",
   "description": "CmpStr is a lightweight, fast and well performing package for calculating string similarity",
   "license": "MIT",
-  "version": "3.0.1",
+  "version": "3.0.2",
   "author": {
     "name": "komed3 (Paul Köhler)",
     "email": "webmaster@komed3.de",
@@ -17,7 +17,7 @@
     "algorithms", "levenshtein", "damerau-levenshtein", "jaro-winkler", "cosine",
     "dice-coefficient", "hamming-distance", "jaccard-index", "needleman-wunsch",
     "lcs", "smith-waterman", "q-gram", "soundex", "metaphone", "cologne-phonetic",
-    "profiling", "extensible"
+    "caverphone", "profiling", "extensible"
   ],
   "repository": {
     "type": "git",
