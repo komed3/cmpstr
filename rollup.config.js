@@ -113,7 +113,7 @@ export default [
         output: {
             dir: 'dist/esm',
             format: 'esm',
-            entryFileNames: '[name].js',
+            entryFileNames: '[name].mjs',
             preserveModules: true,
             preserveModulesRoot: 'src',
             sourcemap: true,

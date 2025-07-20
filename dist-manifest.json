@@ -21,8 +21,8 @@
     ],
     "targets": {
       "full": [
-        "dist/esm/{dir}/{name}.js",
-        "dist/esm/{dir}/{name}.js.map",
+        "dist/esm/{dir}/{name}.mjs",
+        "dist/esm/{dir}/{name}.mjs.map",
         "dist/cjs/{dir}/{name}.cjs",
         "dist/cjs/{dir}/{name}.cjs.map",
         "dist/types/{dir}/{name}.d.ts"
