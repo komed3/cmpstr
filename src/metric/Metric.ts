@@ -123,8 +123,8 @@ export abstract class Metric<R = MetricRaw> {
         this.b = Array.isArray( b ) ? b : [ b ];
 
         // Validate inputs: ensure they are not empty
-        if ( this.a.length === 0 || this.b.length === 0 ) throw new Error(
-            `inputs <a> and <b> must not be empty`
+        if ( this.a.length === 0 || this.b.length === 0 ) throw new Error (
+            `Inputs <a> and <b> must not be empty`
         );
 
         // Set options

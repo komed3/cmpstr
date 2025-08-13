@@ -166,6 +166,8 @@ export function createFromRegistry<T extends RegistryConstructor<any>>(
     cls = resolveCls<T>( reg, cls );
 
     try { return new ( cls as InstanceType<T> ) ( ...args ); }
-    catch ( err ) { throw new Error ( `Cannot instantiate class <${cls}>` ); }
+    catch ( err ) { throw new Error ( `Cannot instantiate class <${cls}>`, {
+        cause: err
+    } ); }
 
 }
