@@ -439,6 +439,8 @@ export interface CmpStrOptions {
     processors?: CmpStrProcessors;
     // Select the string output mode
     output?: 'orig' | 'prep';
+    // Safe mode: return empty array for empty inputs
+    safeEmpty?: boolean;
 };
 
 /**

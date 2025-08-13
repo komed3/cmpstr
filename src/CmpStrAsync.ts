@@ -178,6 +178,13 @@ export class CmpStrAsync<R = MetricRaw> extends CmpStr<R> {
         const A: MetricInput = skip ? a : await this.prepareAsync( a, resolved );
         const B: MetricInput = skip ? b : await this.prepareAsync( b, resolved );
 
+        // If the inputs are empty and safeEmpty is enabled, return an empty array
+        if ( resolved.safeEmpty && (
+            ( Array.isArray( A ) && A.length === 0 ) ||
+            ( Array.isArray( B ) && B.length === 0 ) ||
+            A === '' || B === ''
+        ) ) { return ( [] as unknown ) as T }
+
         // Get the metric class
         const metric: Metric<R> = factory.metric( resolved.metric!, A, B, resolved.opt );
 

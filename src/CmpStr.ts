@@ -348,6 +348,13 @@ export class CmpStr<R = MetricRaw> {
         const A: MetricInput = skip ? a : this.prepare( a, resolved );
         const B: MetricInput = skip ? b : this.prepare( b, resolved );
 
+        // If the inputs are empty and safeEmpty is enabled, return an empty array
+        if ( resolved.safeEmpty && (
+            ( Array.isArray( A ) && A.length === 0 ) ||
+            ( Array.isArray( B ) && B.length === 0 ) ||
+            A === '' || B === ''
+        ) ) { return ( [] as unknown ) as T }
+
         // Get the metric class
         const metric: Metric<R> = factory.metric( resolved.metric!, A, B, resolved.opt );
 
