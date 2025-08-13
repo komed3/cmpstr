@@ -7,7 +7,7 @@
  * filtering, and text analysis. It is designed for both high-level application development
  * and research, offering a unified API for single, batch, and pairwise operations.
  * 
- * Version: 3.0.2
+ * Version: 3.0.3
  * Author: Paul Köhler (komed3)
  * License: MIT
  * 
@@ -19,6 +19,7 @@
  *  - Phonetic algorithms (Cologne, Soundex, Metaphone) with mapping registry
  *  - Flexible normalization and filtering pipeline for all inputs
  *  - Batch, pairwise, and single comparison with detailed, type-safe results
+ *  - Safe-mode for handling empty inputs gracefully
  *  - Phonetic-aware search, indexing, and comparison
  *  - Readability and text analysis utilities (syllables, word stats, etc.)
  *  - Unified diff and difference reporting (line/word, ASCII/CLI)
@@ -39,7 +40,7 @@
  * For asynchronous workloads, use `CmpStrAsync`, which provides the same API with
  * Promise-based, non-blocking methods for large-scale or I/O-bound operations.
  * 
- * @version 3.0.2
+ * @version 3.0.3
  * @author Paul Köhler (komed3)
  * @license MIT
  */
