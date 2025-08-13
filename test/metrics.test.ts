@@ -59,4 +59,19 @@ describe( 'CmpStr > Metric', () => {
 
     } );
 
+    it( 'Safe-Mode: Return [] for empty input(s)', () => {
+
+        const cmp = CmpStr.create( { metric: 'levenshtein', safeEmpty: true } );
+
+        expect( cmp.test( '', '' ) ).toEqual( [] );
+        expect( cmp.test( 'test', '' ) ).toEqual( [] );
+        expect( cmp.test( '', 'test' ) ).toEqual( [] );
+
+        expect( cmp.batchTest( [], [] ) ).toEqual( [] );
+        expect( cmp.batchTest( [], 'test' ) ).toEqual( [] );
+
+        expect( cmp.match( 'test', [], 0.5 ) ).toEqual( [] );
+
+    } );
+
 } );
