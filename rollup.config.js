@@ -58,12 +58,13 @@ import typescript from '@rollup/plugin-typescript';
 import { nodeResolve } from '@rollup/plugin-node-resolve';
 import commonjs from '@rollup/plugin-commonjs';
 import terser from '@rollup/plugin-terser';
+import cleanup from 'rollup-plugin-cleanup';
 import prettier from 'rollup-plugin-prettier';
 
 import { execSync } from 'child_process';
-import fs from 'fs';
+import { readFileSync } from 'node:fs';
 
-const version = JSON.parse( fs.readFileSync( './package.json' ) ).version;
+const version = JSON.parse( readFileSync( './package.json' ) ).version;
 const commit = execSync( 'git rev-parse --short HEAD' ).toString().trim();
 const date = new Date().toISOString().replace( /([^0-9])/g, '' ).substring( 2, 8 );
 const build = `CmpStr v${version} build-${commit}-${ date }`;
@@ -78,8 +79,8 @@ const preamble = `/**
  */`;
 
 const plugins = [
-    commonjs(),
-    nodeResolve( { extensions: [ '.ts', '.js' ] } ),
+    commonjs(), cleanup( { comments: 'istanbul', extensions: [ 'js', 'ts' ] } ),
+    nodeResolve( { extensions: [ '.js', '.ts' ] } ),
     typescript( { tsconfig: './tsconfig.rollup.json' } )
 ];
 
@@ -146,7 +147,7 @@ export default [
             sourcemap: true,
             banner: preamble
         },
-        plugins
+        plugins: [ ...plugins, beautify ]
     },
 
     // Minified Browser Build (UMD)
@@ -159,7 +160,7 @@ export default [
             plugins: [ minify ],
             sourcemap: true
         },
-        plugins
+        plugins: [ ...plugins ]
     },
 
     // Browser Build (EMS)
@@ -171,7 +172,7 @@ export default [
             sourcemap: true,
             banner: preamble
         },
-        plugins
+        plugins: [ ...plugins, beautify ]
     },
 
     // Minified Browser Build (EMS)
@@ -183,7 +184,7 @@ export default [
             plugins: [ minify ],
             sourcemap: true
         },
-        plugins
+        plugins: [ ...plugins ]
     }
 
 ];

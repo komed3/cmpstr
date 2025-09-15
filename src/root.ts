@@ -2,9 +2,9 @@
  * CmpStr Development Entry Point
  * src/root.ts
  * 
- * This entry point is intended for development and extension of the CmpStr library.
- * It exposes core components and utilities that allow developers to create new
- * metrics, phonetic algorithms, and other extensions to the library.
+ * This entry point is intended for development and extension of the CmpStr library. It exposes
+ * core components and utilities that allow developers to create new metrics, phonetic algorithms,
+ * and other extensions to the library.
  * 
  * Please visit CmpStr's documentation for more information:
  * https://github.com/komed3/cmpstr/wiki/Extending-CmpStr
