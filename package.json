@@ -2,7 +2,7 @@
   "name": "cmpstr",
   "description": "CmpStr is a lightweight, fast and well performing package for calculating string similarity",
   "license": "MIT",
-  "version": "3.0.3",
+  "version": "3.0.4",
   "author": {
     "name": "komed3 (Paul Köhler)",
     "email": "webmaster@komed3.de",
