@@ -21,10 +21,10 @@
     ],
     "targets": {
       "full": [
-        "dist/esm/{dir}/{name}.mjs",
-        "dist/esm/{dir}/{name}.mjs.map",
         "dist/cjs/{dir}/{name}.cjs",
         "dist/cjs/{dir}/{name}.cjs.map",
+        "dist/esm/{dir}/{name}.mjs",
+        "dist/esm/{dir}/{name}.mjs.map",
         "dist/types/{dir}/{name}.d.ts"
       ],
       "dts": [
