@@ -26,7 +26,7 @@ export * from './utils/Types';
  *  - Metric: Abstract class representing a generic string metric.
  *  - MetricCls: Type definition for a class constructor that extends the Metric class.
  */
-export * from './metric';
+export { MetricRegistry, Metric, MetricCls } from './metric';
 
 /**
  * Export utils to implement new phonetic algorithms
@@ -36,10 +36,10 @@ export * from './metric';
  *  - Phonetic: Abstract class representing a generic phonetic algorithm.
  *  - PhoneticCls: Type definition for a class constructor that extends the Phonetic class.
  */
-export * from './phonetic';
+export { PhoneticRegistry, PhoneticMappingRegistry, Phonetic, PhoneticCls } from './phonetic';
 
 // Export additional utilities and components
-export * from './utils/DeepMerge';
+export * as DeepMerge from './utils/DeepMerge';
 export { Filter } from './utils/Filter';
 export { HashTable } from './utils/HashTable';
 export { Pool } from './utils/Pool';

@@ -78,11 +78,9 @@ const preamble = `/**
  */`;
 
 const plugins = [
-    nodeResolve(), commonjs(),
-    typescript( {
-        tsconfig: './tsconfig.json',
-        declaration: false
-    } )
+    commonjs(),
+    nodeResolve( { extensions: [ '.ts', '.js' ] } ),
+    typescript( { tsconfig: './tsconfig.rollup.json' } )
 ];
 
 const beautify = prettier( {
@@ -109,10 +107,7 @@ export default [
 
     // ESM Build
     {
-        input: {
-            index: 'src/index.ts',
-            root: 'src/root.ts'
-        },
+        input: [ 'src/index.ts', 'src/root.ts' ],
         output: {
             dir: 'dist/esm',
             format: 'esm',
@@ -127,10 +122,7 @@ export default [
 
     // CJS Build
     {
-        input: {
-            index: 'src/index.ts',
-            root: 'src/root.ts'
-        },
+        input: [ 'src/index.ts', 'src/root.ts' ],
         output: {
             dir: 'dist/cjs',
             format: 'cjs',

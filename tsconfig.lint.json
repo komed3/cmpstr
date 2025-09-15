@@ -11,6 +11,5 @@
     "noImplicitOverride": true,
     "noImplicitReturns": true,
     "noImplicitThis": true
-  },
-  "include": [ "src" ]
+  }
 }
