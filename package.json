@@ -43,6 +43,11 @@
       "types": "./dist/types/index.d.ts",
       "require": "./dist/cjs/index.cjs",
       "import": "./dist/esm/index.mjs"
+    },
+    "./root": {
+      "types": "./dist/types/root.d.ts",
+      "require": "./dist/cjs/root.cjs",
+      "import": "./dist/esm/root.mjs"
     }
   },
   "scripts": {
