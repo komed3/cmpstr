@@ -109,7 +109,10 @@ export default [
 
     // ESM Build
     {
-        input: 'src/index.ts',
+        input: {
+            index: 'src/index.ts',
+            root: 'src/root.ts'
+        },
         output: {
             dir: 'dist/esm',
             format: 'esm',
@@ -124,7 +127,10 @@ export default [
 
     // CJS Build
     {
-        input: 'src/index.ts',
+        input: {
+            index: 'src/index.ts',
+            root: 'src/root.ts'
+        },
         output: {
             dir: 'dist/cjs',
             format: 'cjs',
