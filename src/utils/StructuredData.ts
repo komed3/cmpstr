@@ -10,4 +10,14 @@ export class StructuredData<T = any, R = MetricRaw> {
 
     }
 
+    protected data: T[];
+    protected key: string | number | symbol;
+
+    protected constructor ( data: T[], key: string | number | symbol ) {
+
+        this.data = data;
+        this.key = key;
+
+    }
+
 }
