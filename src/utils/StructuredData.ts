@@ -20,9 +20,15 @@ export class StructuredData<T = any, R = MetricRaw> {
 
     }
 
+    protected extractFrom ( arr: T[], key: string | number | symbol ) : string[] {
+
+        return arr.map( item => String ( ( item as any )[ key ] ?? '' ) );
+
+    }
+
     protected extract () : string[] {
 
-        return this.data.map( item => String ( ( item as any )[ this.key ] ?? '' ) );
+        return this.extractFrom( this.data, this.key );
 
     }
 
