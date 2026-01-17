@@ -143,12 +143,16 @@ export class StructuredData<T = any, R = MetricRaw> {
         sourceData: T[],
         removeZero?: boolean,
         objectsOnly?: boolean
-    ) : any {
+    ) : StructuredDataResult<T, R>[] | T[] {
 
-        return results.reduce( ( acc, result, i ) => {
+        const output: StructuredDataResult<T, R>[] | T[] = [];
+
+        for ( let i = 0; i < results.length; i++ ) {
+
+            const result = results[ i ];
 
             // Skip zero results if configured
-            if ( removeZero && result.res === 0 ) return acc;
+            if ( removeZero && result.res === 0 ) continue;
 
             // Build the result object
             const item: StructuredDataResult<T, R> = {
@@ -160,12 +164,11 @@ export class StructuredData<T = any, R = MetricRaw> {
             // Attach raw data if present
             if ( result.raw ) item.raw = result.raw;
 
-            // Push either full result or just the object
-            acc.push( objectsOnly ? item.obj : item );
+            ( output as any ).push( objectsOnly ? item.obj : item );
 
-            return acc;
+        }
 
-        }, [] as any );
+        return output;
 
     }
 
