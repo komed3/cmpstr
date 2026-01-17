@@ -766,4 +766,27 @@ export class CmpStr<R = MetricRaw> {
      * by extracting and comparing specific properties.
      */
 
+    /**
+     * Performs a batch comparison against structured data by extracting
+     * a specific property and returning results with original objects attached.
+     * 
+     * @template T - The type of objects in the data array
+     * @param {string} query - The query string to compare against
+     * @param {T[]} data - The array of structured objects
+     * @param {string|number|symbol} key - The property key to extract for comparison
+     * @param {StructuredDataOptions} [opt] - Optional lookup options
+     * @returns {StructuredDataBatchResult<T, R>} - Batch results with original objects
+     */
+    public structuredLookup<T = any> (
+        query: string, data: T[], key: string | number | symbol, opt?: StructuredDataOptions
+    ) : StructuredDataBatchResult<T, R> | T[] {
+
+        return this.structured<T>( data, key ).lookup(
+            query,
+            ( q, items, options ) => this.batchTest<MetricResultBatch<R>>( q, items, options ),
+            opt
+        );
+
+    }
+
 }
