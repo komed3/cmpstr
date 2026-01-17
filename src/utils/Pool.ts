@@ -154,7 +154,7 @@ export class Pool {
 
             case 'uint16':   return new Uint16Array ( size );
             case 'number[]': return new Array ( size ).fill( 0 );
-            case 'string[]': return new Array ( size ).fill( '' );
+            case 'string[]': return new Array ( size );
             case 'set':      return new Set ();
             case 'map':      return new Map ();
 
