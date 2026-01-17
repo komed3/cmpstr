@@ -154,15 +154,18 @@ export class StructuredData<T = any, R = MetricRaw> {
 
     /**
      * Rebuilds results with original objects attached.
+     * IMPORTANT: Results are assumed to be in the same order as sourceData,
+     * or they must include index information via the source/target mapping.
      * 
      * @param {MetricResultSingle<R>[]} results - The normalized metric results
      * @param {T[]} sourceData - The source data array for object attachment
+     * @param {string[]} extractedStrings - The extracted strings array for index mapping
      * @param {boolean} [removeZero] - Whether to remove zero similarity results
      * @param {boolean} [objectsOnly] - Return only objects without metadata
      * @returns {StructuredDataResult<T, R>[] | T[]} - Results with objects (or just objects if objectsOnly=true)
      */
     private rebuild (
-        results: MetricResultSingle<R>[], sourceData: T[],
+        results: MetricResultSingle<R>[], sourceData: T[], extractedStrings: string[],
         removeZero?: boolean, objectsOnly?: boolean
     ) : StructuredDataResult<T, R>[] | T[] {
 
@@ -176,13 +179,23 @@ export class StructuredData<T = any, R = MetricRaw> {
             // Skip zero results if configured
             if ( removeZero && result.res === 0 ) continue;
 
-            // If objectsOnly, push just the original object
-            if ( objectsOnly ) output[ out++ ] = sourceData[ i ];
+            // Find the index of this result by matching the target string with extracted strings
+            // This is needed because results might be filtered/sorted and no longer in original order
+            let dataIndex = result.b && extractedStrings.length ? extractedStrings.indexOf( result.b ) : i;
 
-            // Build the result object
+            // Ensure dataIndex is valid
+            if ( dataIndex < 0 || dataIndex >= sourceData.length ) dataIndex = i;
+
+            // Get the original object
+            const sourceObj = sourceData[ dataIndex ];
+
+            // If objectsOnly, push just the original object
+            if ( objectsOnly ) output[ out++ ] = sourceObj;
+
+            // Build the result object - use extracted string as target to match the original
             else output[ out++ ] = {
-                obj: sourceData[ i ], key: this.key, result: {
-                    source: result.a, target: result.b, match: result.res
+                obj: sourceObj, key: this.key, result: {
+                    source: result.a, target: extractedStrings[ dataIndex ] || result.b, match: result.res
                 }, ...( result.raw ? { raw: result.raw } : null )
             };
 
@@ -196,13 +209,11 @@ export class StructuredData<T = any, R = MetricRaw> {
     /**
      * Sorts results in-place by match score.
      * 
-     * @param {StructuredDataResult<T, R>[]|T[]} results - The results to sort
+     * @param {MetricResultSingle<R>[]} results - The results to sort
      * @param {string|boolean} [sort] - Sort direction (asc, desc, or boolean true=desc)
-     * @returns {StructuredDataResult<T, R>[]|T[]} - Sorted results
+     * @returns {MetricResultSingle<R>[]} - Sorted results
      */
-    private sort (
-        results: StructuredDataResult<T, R>[] | T[], sort?: string | boolean
-    ) : StructuredDataResult<T, R>[] | T[] {
+    private sort ( results: MetricResultSingle<R>[], sort?: string | boolean ) : MetricResultSingle<R>[] {
 
         // No sorting needed
         if ( ! sort || results.length <= 1 ) return results;
@@ -210,15 +221,8 @@ export class StructuredData<T = any, R = MetricRaw> {
         // Determine sort direction
         const asc = sort === 'asc';
 
-        // Helper to get match score from result
-        const getMatch = ( v: StructuredDataResult<T, R> | T ) : number =>
-            ( v as StructuredDataResult<T, R> ).result?.match ?? 0;
-
         // Sort based on match score
-        return results.sort( ( a, b ) =>
-            asc ? getMatch( a ) - getMatch( b )
-                : getMatch( b ) - getMatch( a )
-        );
+        return results.sort( ( a, b ) => asc ? a.res - b.res : b.res - a.res );
 
     }
 
@@ -226,18 +230,20 @@ export class StructuredData<T = any, R = MetricRaw> {
      * Performs a lookup with a synchronous comparison function.
      * 
      * @param {() => CmpFnResult<R>} fn - The comparison function
+     * @param {string[]} extractedStrings - The extracted strings for index mapping
      * @param {StructuredDataOptions} [opt] - Additional options
      * @returns {StructuredDataBatchResult<T, R>|T[]} - The lookup results
      */
     private performLookup (
         fn: () => CmpFnResult<R>,
+        extractedStrings: string[],
         opt?: StructuredDataOptions
     ) : StructuredDataBatchResult<T, R> | T[] {
 
-        return this.sort( this.rebuild(
-            this.normalizeResults( fn() ),
-            this.data, opt?.removeZero, opt?.objectsOnly
-        ), opt?.sort );
+        return this.rebuild(
+            this.sort( this.normalizeResults( fn() ), opt?.sort ), this.data,
+            extractedStrings, opt?.removeZero, opt?.objectsOnly
+        );
 
     }
 
@@ -245,18 +251,20 @@ export class StructuredData<T = any, R = MetricRaw> {
      * Performs a lookup with an asynchronous comparison function.
      * 
      * @param {() => Promise<CmpFnResult<R>>} fn - The async comparison function
+     * @param {string[]} extractedStrings - The extracted strings for index mapping
      * @param {StructuredDataOptions} [opt] - Additional options
      * @returns {Promise<StructuredDataBatchResult<T, R>|T[]>} - The async lookup results
      */
     private async performLookupAsync (
         fn: () => Promise<CmpFnResult<R>>,
+        extractedStrings: string[],
         opt?: StructuredDataOptions
     ) : Promise<StructuredDataBatchResult<T, R> | T[]> {
 
-        return this.sort( this.rebuild(
-            this.normalizeResults( await fn() ),
-            this.data, opt?.removeZero, opt?.objectsOnly
-        ), opt?.sort );
+        return this.rebuild(
+            this.sort( this.normalizeResults( await fn() ), opt?.sort ), this.data,
+            extractedStrings, opt?.removeZero, opt?.objectsOnly
+        );
 
     }
 
@@ -273,10 +281,10 @@ export class StructuredData<T = any, R = MetricRaw> {
         query: string, opt?: StructuredDataOptions
     ) : StructuredDataBatchResult<T, R> | T[] {
 
-        const extract = this.extract();
+        const b = this.extract();
 
-        try { return this.performLookup( () => fn( query, extract, opt ), opt ) }
-        finally { Pool.release( 'string[]', extract, extract.length ) }
+        try { return this.performLookup( () => fn( query, b, opt ), b, opt ) }
+        finally { Pool.release( 'string[]', b, b.length ) }
 
     }
 
@@ -295,14 +303,14 @@ export class StructuredData<T = any, R = MetricRaw> {
         other: O[], otherKey: keyof O, opt?: StructuredDataOptions
     ) : StructuredDataBatchResult<T, R> | T[] {
 
-        const extract = this.extract();
-        const extractOther = this.extractFrom<O>( other, otherKey );
+        const a = this.extract();
+        const b = this.extractFrom<O>( other, otherKey );
 
-        try { return this.performLookup( () => fn( extract, extractOther, opt ), opt ) }
+        try { return this.performLookup( () => fn( a, b, opt ), a, opt ) }
         finally {
 
-            Pool.release( 'string[]', extract, extract.length );
-            Pool.release( 'string[]', extractOther, extractOther.length );
+            Pool.release( 'string[]', a, a.length );
+            Pool.release( 'string[]', b, b.length );
 
         }
 
@@ -321,10 +329,10 @@ export class StructuredData<T = any, R = MetricRaw> {
         query: string, opt?: StructuredDataOptions
     ) : Promise<StructuredDataBatchResult<T, R> | T[]> {
 
-        const extract = this.extract();
+        const b = this.extract();
 
-        try { return await this.performLookupAsync( () => fn( query, extract, opt ), opt ) }
-        finally { Pool.release( 'string[]', extract, extract.length ) }
+        try { return await this.performLookupAsync( () => fn( query, b, opt ), b, opt ) }
+        finally { Pool.release( 'string[]', b, b.length ) }
 
     }
 
@@ -343,14 +351,14 @@ export class StructuredData<T = any, R = MetricRaw> {
         other: O[], otherKey: keyof O, opt?: StructuredDataOptions
     ) : Promise<StructuredDataBatchResult<T, R> | T[]> {
 
-        const extract = this.extract();
-        const extractOther = this.extractFrom<O>( other, otherKey );
+        const a = this.extract();
+        const b = this.extractFrom<O>( other, otherKey );
 
-        try { return await this.performLookupAsync( () => fn( extract, extractOther, opt ), opt ) }
+        try { return await this.performLookupAsync( () => fn( a, b, opt ), a, opt ) }
         finally {
 
-            Pool.release( 'string[]', extract, extract.length );
-            Pool.release( 'string[]', extractOther, extractOther.length );
+            Pool.release( 'string[]', a, a.length );
+            Pool.release( 'string[]', b, b.length );
 
         }
 
