@@ -139,7 +139,7 @@ export default [
 
     // Browser Build (UMD)
     {
-        input: 'src/index.ts',
+        input: 'src/root.ts',
         output: {
             file: 'dist/CmpStr.umd.js',
             format: 'umd',
@@ -152,7 +152,7 @@ export default [
 
     // Minified Browser Build (UMD)
     {
-        input: 'src/index.ts',
+        input: 'src/root.ts',
         output: {
             file: 'dist/CmpStr.umd.min.js',
             format: 'umd',
@@ -165,7 +165,7 @@ export default [
 
     // Browser Build (EMS)
     {
-        input: 'src/index.ts',
+        input: 'src/root.ts',
         output: {
             file: 'dist/CmpStr.esm.js',
             format: 'es',
@@ -177,7 +177,7 @@ export default [
 
     // Minified Browser Build (EMS)
     {
-        input: 'src/index.ts',
+        input: 'src/root.ts',
         output: {
             file: 'dist/CmpStr.esm.min.js',
             format: 'esm',

@@ -16,8 +16,8 @@
 
 'use strict';
 
-// Export the types and interfaces for the library
-export * from './utils/Types';
+// Include the main CmpStr exports
+export * from './index';
 
 /**
  * Export utils to implement new metrics
