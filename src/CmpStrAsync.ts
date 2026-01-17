@@ -11,6 +11,7 @@
  *  - Asynchronous normalization, filtering, and metric computation
  *  - Async batch, pairwise, and single string comparison with detailed results
  *  - Async phonetic indexing and phonetic-aware search and comparison
+ * - Async structured data comparison by extracting object properties
  *  - Full compatibility with the synchronous CmpStr API
  *  - Designed for large-scale, high-performance, and server-side applications
  *
@@ -536,6 +537,32 @@ export class CmpStrAsync<R = MetricRaw> extends CmpStr<R> {
                 q, items, n, options
             ),
             query, { ...opt, sort: 'asc' }
+        );
+
+    }
+
+    /**
+     * Asynchronously performs a pairwise comparison between two arrays of structured objects
+     * by extracting specific properties and returning results with original objects attached.
+     * 
+     * @template T - The type of objects in the arrays
+     * @param {T[]} data - The array of structured objects
+     * @param {string|number|symbol} key - The property key to extract for comparison
+     * @param {T[]} other - The other array of structured objects
+     * @param {string|number|symbol} otherKey - The property key to extract from other array
+     * @param {StructuredDataOptions} [opt] - Optional lookup options
+     * @returns {Promise<StructuredDataBatchResult<T, R>|T[]>} - Async pairwise results with original objects
+     */
+    public async structuredPairsAsync<T = any> (
+        data: T[], key: string | number | symbol, other: T[], otherKey: string | number | symbol,
+        opt?: StructuredDataOptions
+    ) : Promise<StructuredDataBatchResult<T, R> | T[]> {
+
+        return await this.structured<T>( data, key ).lookupPairsAsync(
+            async ( items, otherItems, options ) => await this.pairsAsync<MetricResultBatch<R>>(
+                items, otherItems, options
+            ),
+            other, otherKey, opt
         );
 
     }
