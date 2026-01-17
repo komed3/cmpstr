@@ -20,7 +20,10 @@
 
 'use strict';
 
-import type { MetricRaw, MetricResultSingle, StructuredDataResult } from './Types';
+import type {
+    CmpStrOptions, MetricRaw, MetricResultSingle, StructuredDataOptions,
+    StructuredDataResult
+} from './Types';
 
 /**
  * The StructuredData class provides factory methods for processing arrays of
@@ -58,7 +61,7 @@ export class StructuredData<T = any, R = MetricRaw> {
      * @param {T[]} data - The array of objects to process
      * @param {string|number|symbol} key - The property key to extract for comparison
      */
-    protected constructor ( data: T[], key: string | number | symbol ) {
+    private constructor ( data: T[], key: string | number | symbol ) {
 
         this.data = data;
         this.key = key;
@@ -72,7 +75,7 @@ export class StructuredData<T = any, R = MetricRaw> {
      * @param {string|number|symbol} key - The property key
      * @returns {string[]} - Array of extracted strings
      */
-    protected extractFrom ( arr: T[], key: string | number | symbol ) : string[] {
+    private extractFrom ( arr: T[], key: string | number | symbol ) : string[] {
 
         return arr.map( item => String ( ( item as any )[ key ] ?? '' ) );
 
@@ -96,7 +99,7 @@ export class StructuredData<T = any, R = MetricRaw> {
      * @param {any} results - The raw metric results
      * @returns {MetricResultSingle<R>[]} - Normalized single results array
      */
-    protected normalizeResults ( results: any ) : MetricResultSingle<R>[] {
+    private normalizeResults ( results: any ) : MetricResultSingle<R>[] {
 
         // If already an array of MetricResultSingle, return as-is
         if ( Array.isArray( results ) && results.length ) {
@@ -126,7 +129,7 @@ export class StructuredData<T = any, R = MetricRaw> {
      * @param {boolean} [objectsOnly] - Return only objects without metadata
      * @returns {any} - Results with objects (or just objects if objectsOnly=true)
      */
-    protected rebuild (
+    private rebuild (
         results: MetricResultSingle<R>[],
         sourceData: T[],
         removeZero?: boolean,
@@ -164,7 +167,7 @@ export class StructuredData<T = any, R = MetricRaw> {
      * @param {string|boolean} [sort] - Sort direction (asc, desc, or boolean true=desc)
      * @returns {any[]} - Sorted results
      */
-    protected sort ( results: any[], sort?: string | boolean ) : any[] {
+    private sort ( results: any[], sort?: string | boolean ) : any[] {
 
         if ( !sort || results.length <= 1 ) return results;
 
