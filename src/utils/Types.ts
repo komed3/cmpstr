@@ -486,4 +486,6 @@ export interface StructuredDataOptions extends Omit<CmpStrOptions, 'raw'> {
     removeZero?: boolean;
     // Sort results by match score (desc by default)
     sort?: boolean | 'asc' | 'desc';
+    // Return only the original objects without metadata (minimal structure)
+    objectsOnly?: boolean;
 };
