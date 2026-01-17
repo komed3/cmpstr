@@ -57,7 +57,7 @@ export interface ProfilerService<T> {
 /**
  * PoolType enumerates the supported buffer types for the Pool utility.
  */
-export type PoolType = 'uint16' | 'number[]' | 'set' | 'map';
+export type PoolType = 'uint16' | 'number[]' | 'string[]' | 'set' | 'map';
 
 /**
  * PoolConfig defines the configuration for a buffer pool.
