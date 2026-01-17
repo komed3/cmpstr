@@ -14,4 +14,37 @@ updates:
     directory: /
     schedule:
       interval: weekly
-    open-pull-requests-limit: 10
+
+    groups:
+      build:
+        applies-to: version-updates
+        dependency-type: development
+        update-types:
+          - "minor"
+          - "patch"
+        patterns:
+          - "@types/node"
+          - "@rollup/*"
+          - "rollup"
+          - "tslib"
+          - "typescript"
+
+      formatting:
+        applies-to: version-updates
+        dependency-type: development
+        update-types:
+          - "minor"
+          - "patch"
+        patterns:
+          - "prettier"
+          - "rollup-plugin-cleanup"
+          - "rollup-plugin-prettier"
+
+      testing:
+        applies-to: version-updates
+        dependency-type: development
+        update-types:
+          - "minor"
+          - "patch"
+        patterns:
+          - "vitest"
