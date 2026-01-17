@@ -44,3 +44,4 @@ export { Filter } from './utils/Filter';
 export { HashTable } from './utils/HashTable';
 export { Pool } from './utils/Pool';
 export { Profiler } from './utils/Profiler';
+export { StructuredData } from './utils/StructuredData';
