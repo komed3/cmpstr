@@ -21,7 +21,7 @@
 'use strict';
 
 import type {
-    CmpStrOptions, MetricRaw, MetricResultSingle, StructuredDataBatchResult,
+    CmpStrOptions, CmpStrResult, MetricRaw, MetricResultSingle, StructuredDataBatchResult,
     StructuredDataOptions, StructuredDataResult
 } from './Types';
 
@@ -95,9 +95,33 @@ export class StructuredData<T = any, R = MetricRaw> {
      * 
      * @returns {string[]} - Array of extracted strings
      */
-    protected extract () : string[] {
+    private extract () : string[] {
 
         return this.extractFrom( this.data, this.key );
+
+    }
+
+    /**
+     * Type guard to check if a value is MetricResultSingle<R>.
+     * 
+     * @param {unknown} v - The value to check
+     * @returns {v is MetricResultSingle<R>} - True if v is MetricResultSingle<R>
+     */
+    private isMetricResult<R> ( v: unknown ) : v is MetricResultSingle<R> {
+
+        return typeof v === 'object' && v !== null && 'a' in v && 'b' in v && 'res' in v;
+
+    }
+
+    /**
+     * Type guard to check if a value is CmpStrResult & { raw?: R }.
+     * 
+     * @param {unknown} v - The value to check
+     * @returns {v is CmpStrResult & { raw?: R }
+     */
+    private isCmpStrResult ( v: unknown ) : v is CmpStrResult & { raw?: R } {
+
+        return typeof v === 'object' && v !== null && 'source' in v && 'target' in v && 'match' in v;
 
     }
 
@@ -111,21 +135,19 @@ export class StructuredData<T = any, R = MetricRaw> {
     private normalizeResults ( results: any ) : MetricResultSingle<R>[] {
 
         // If already an array of MetricResultSingle, return as-is
-        if ( Array.isArray( results ) && results.length ) {
+        if ( ! Array.isArray( results ) || results.length === 0 ) return [];
 
-            const first = results[ 0 ];
+        const first = results[ 0 ];
 
-            // Check if it's MetricResultSingle format (has 'a', 'b', 'res')
-            if ( 'a' in first && 'b' in first && 'res' in first ) return results as MetricResultSingle<R>[];
+        // Check if it's MetricResultSingle format
+        if ( this.isMetricResult<R>( first ) ) return results as MetricResultSingle<R>[];
 
-            // Check if it's CmpStrResult format (has 'source', 'target', 'match')
-            if ( 'source' in first && 'target' in first && 'match' in first ) return results.map(
-                r => ( { metric: 'unknown', a: r.source, b: r.target, res: r.match, raw: r.raw } )
-            ) as MetricResultSingle<R>[];
+        // Check if it's CmpStrResult format -> convert to MetricResultSingle
+        if ( this.isCmpStrResult( first ) ) return ( results as ( CmpStrResult & { raw?: R } )[] ).map(
+            r => ( { metric: 'unknown', a: r.source, b: r.target, res: r.match, raw: r.raw } )
+        );
 
-        }
-
-        return results || [];
+        return [];
 
     }
 
@@ -136,16 +158,14 @@ export class StructuredData<T = any, R = MetricRaw> {
      * @param {T[]} sourceData - The source data array for object attachment
      * @param {boolean} [removeZero] - Whether to remove zero similarity results
      * @param {boolean} [objectsOnly] - Return only objects without metadata
-     * @returns {any} - Results with objects (or just objects if objectsOnly=true)
+     * @returns {StructuredDataResult<T, R>[] | T[]} - Results with objects (or just objects if objectsOnly=true)
      */
     private rebuild (
-        results: MetricResultSingle<R>[],
-        sourceData: T[],
-        removeZero?: boolean,
-        objectsOnly?: boolean
+        results: MetricResultSingle<R>[], sourceData: T[],
+        removeZero?: boolean, objectsOnly?: boolean
     ) : StructuredDataResult<T, R>[] | T[] {
 
-        const output: StructuredDataResult<T, R>[] | T[] = [];
+        const output: ( StructuredDataResult<T, R> | T )[] = [];
 
         for ( let i = 0; i < results.length; i++ ) {
 
@@ -154,46 +174,50 @@ export class StructuredData<T = any, R = MetricRaw> {
             // Skip zero results if configured
             if ( removeZero && result.res === 0 ) continue;
 
+            // If objectsOnly, push just the original object
+            if ( objectsOnly ) output.push( sourceData[ i ] );
+
             // Build the result object
-            const item: StructuredDataResult<T, R> = {
+            else output.push( {
                 obj: sourceData[ i ], key: this.key, result: {
                     source: result.a, target: result.b, match: result.res
-                }
-            };
-
-            // Attach raw data if present
-            if ( result.raw ) item.raw = result.raw;
-
-            ( output as any ).push( objectsOnly ? item.obj : item );
+                }, ...( result.raw ? { raw: result.raw } : null )
+            } );
 
         }
 
-        return output;
+        return output as StructuredDataResult<T, R>[] | T[];
 
     }
 
     /**
      * Sorts results in-place by match score.
      * 
-     * @param {any[]} results - The results to sort
+     * @param {StructuredDataResult<T, R>[]|T[]} results - The results to sort
      * @param {string|boolean} [sort] - Sort direction (asc, desc, or boolean true=desc)
-     * @returns {any[]} - Sorted results
+     * @returns {StructuredDataResult<T, R>[]|T[]} - Sorted results
      */
-    private sort ( results: any[], sort?: string | boolean ) : any[] {
+    private sort (
+        results: StructuredDataResult<T, R>[] | T[], sort?: string | boolean
+    ) : StructuredDataResult<T, R>[] | T[] {
 
-        if ( !sort || results.length <= 1 ) return results;
+        // No sorting needed
+        if ( ! sort || results.length <= 1 ) return results;
 
-        const isAsc = sort === 'asc';
-        const getMatch = ( item: any ) => item.match !== undefined ? item.match : item.result?.match ?? 0;
+        // Determine sort direction
+        const asc = sort === 'asc';
 
-        return results.sort( ( a, b ) => {
+        // Helper to get match score from result
+        const getMatch = ( v: T | StructuredDataResult<T, R> ) : number =>
+            typeof v === 'object' && v !== null && 'result' in v
+                ? ( v as StructuredDataResult<T, R> ).result.match
+                : 0;
 
-            const aMatch = getMatch( a );
-            const bMatch = getMatch( b );
-
-            return isAsc ? aMatch - bMatch : bMatch - aMatch;
-
-        } );
+        // Sort based on match score
+        return results.sort( ( a, b ) =>
+            asc ? getMatch( a ) - getMatch( b )
+                : getMatch( b ) - getMatch( a )
+        );
 
     }
 
@@ -313,7 +337,7 @@ export class StructuredData<T = any, R = MetricRaw> {
         Pool.release( 'string[]', extract, extract.length );
         Pool.release( 'string[]', extractOther, extractOther.length );
 
-        return result as any;
+        return result;
 
     }
 
