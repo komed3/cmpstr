@@ -189,7 +189,7 @@ export class StructuredData<T = any, R = MetricRaw> {
      * Performs a lookup with a synchronous comparison function.
      * 
      * @param {string} query - The query string to compare against
-     * @param {( a: string, b: string[], opt?: CmpStrOptions ) => any} compareFn - The comparison function
+     * @param {( a: string, b: string[], opt?: CmpStrOptions ) => any} fn - The comparison function
      * @param {StructuredDataOptions} [opt] - Additional options
      * @returns {any} - The lookup results
      */
@@ -209,6 +209,24 @@ export class StructuredData<T = any, R = MetricRaw> {
 
         // Sort if requested
         return this.sort( rebuilt, opt?.sort );
+
+    }
+
+    /**
+     * Performs a batch comparison against a query string.
+     * 
+     * @param {string} query - The query string to compare against
+     * @param {(a: string, b: string[], opt?: CmpStrOptions) => any} fn - The comparison function
+     * @param {StructuredDataOptions} [opt] - Optional lookup options
+     * @returns {StructuredDataBatchResult<T, R> | T[]} - Results with objects or just objects
+     */
+    public batchLookup (
+        query: string,
+        fn: ( a: string, b: string[], opt?: CmpStrOptions ) => any,
+        opt?: StructuredDataOptions
+    ) : any {
+
+        return this.lookup( () => fn( query, this.extract(), opt ), opt );
 
     }
 
