@@ -23,11 +23,13 @@
 
 import type {
     CmpStrOptions, CmpStrProcessors, CmpStrResult, NormalizeFlags, PhoneticOptions,
-    MetricRaw, MetricInput, MetricMode, MetricResult, MetricResultSingle, MetricResultBatch
+    MetricRaw, MetricInput, MetricMode, MetricResult, MetricResultSingle, MetricResultBatch,
+    StructuredDataBatchResult, StructuredDataOptions
 } from './utils/Types';
 
 import { CmpStr } from './CmpStr';
 import { Normalizer } from './utils/Normalizer';
+import { StructuredData } from './utils/StructuredData';
 import { Filter } from './utils/Filter';
 
 import { factory } from './utils/Registry';
@@ -425,6 +427,37 @@ export class CmpStrAsync<R = MetricRaw> extends CmpStr<R> {
         return this.indexAsync( input, {
             algo: ( algo ?? a )!, opt: opt ?? o
         } ) as Promise<string>;
+
+    }
+
+    /**
+     * ---------------------------------------------------------------------------------
+     * Public asynchronous methods for structured data comparison
+     * ---------------------------------------------------------------------------------
+     * 
+     * These methods provide asynchronous interfaces for comparing arrays of
+     * structured objects by extracting and comparing specific properties.
+     */
+
+    /**
+     * Asynchronously performs a batch comparison against structured data by extracting
+     * a specific property and returning results with original objects attached.
+     * 
+     * @template T - The type of objects in the data array
+     * @param {string} query - The query string to compare against
+     * @param {T[]} data - The array of structured objects
+     * @param {string|number|symbol} key - The property key to extract for comparison
+     * @param {StructuredDataOptions} [opt] - Optional lookup options
+     * @returns {Promise<StructuredDataBatchResult<T, R>>} - Async batch results with original objects
+     */
+    public async structuredLookupAsync<T = any> (
+        query: string, data: T[], key: string | number | symbol, opt?: StructuredDataOptions
+    ) : Promise<StructuredDataBatchResult<T, R> | T[]> {
+
+        return await this.structured<T>( data, key ).lookupAsync(
+            async ( q, items, options ) => await this.batchTestAsync<MetricResultBatch<R>>( q, items, options ),
+            query, opt
+        );
 
     }
 
