@@ -29,7 +29,6 @@ import type {
 
 import { CmpStr } from './CmpStr';
 import { Normalizer } from './utils/Normalizer';
-import { StructuredData } from './utils/StructuredData';
 import { Filter } from './utils/Filter';
 
 import { factory } from './utils/Registry';
