@@ -25,6 +25,8 @@ import type {
     StructuredDataOptions, StructuredDataResult
 } from './Types';
 
+import { Pool } from './Pool';
+
 /**
  * The StructuredData class provides factory methods for processing arrays of
  * structured objects with string comparison capabilities.
@@ -75,9 +77,9 @@ export class StructuredData<T = any, R = MetricRaw> {
      * @param {string|number|symbol} key - The property key
      * @returns {string[]} - Array of extracted strings
      */
-    private extractFrom ( arr: T[], key: string | number | symbol ) : string[] {
+    private extractFrom ( arr: readonly T[], key: string | number | symbol ) : string[] {
 
-        const result = new Array( arr.length );
+        const result = Pool.acquire( 'string[]', arr.length );
 
         for ( let i = 0; i < arr.length; i++ ) {
 
@@ -236,10 +238,12 @@ export class StructuredData<T = any, R = MetricRaw> {
         query: string, opt?: StructuredDataOptions
     ) : StructuredDataBatchResult<T, R> | T[] {
 
-        return this.performLookup(
-            () => fn( query, this.extract(), opt ),
-            opt
-        ) as any;
+        const extract = this.extract();
+        const result = this.performLookup( () => fn( query, extract, opt ), opt );
+
+        Pool.release( 'string[]', extract, extract.length );
+
+        return result as any;
 
     }
 
@@ -257,10 +261,14 @@ export class StructuredData<T = any, R = MetricRaw> {
         other: T[], otherKey: string | number | symbol, opt?: StructuredDataOptions
     ) : StructuredDataBatchResult<T, R> | T[] {
 
-        return this.performLookup(
-            () => fn( this.extract(), this.extractFrom( other, otherKey ), opt ),
-            opt
-        ) as any;
+        const extract = this.extract();
+        const extractOther = this.extractFrom( other, otherKey );
+        const result = this.performLookup( () => fn( extract, extractOther, opt ), opt );
+
+        Pool.release( 'string[]', extract, extract.length );
+        Pool.release( 'string[]', extractOther, extractOther.length );
+
+        return result as any;
 
     }
 
@@ -277,10 +285,12 @@ export class StructuredData<T = any, R = MetricRaw> {
         query: string, opt?: StructuredDataOptions
     ) : Promise<StructuredDataBatchResult<T, R> | T[]> {
 
-        return await this.performLookup(
-            async () => await fn( query, this.extract(), opt ),
-            opt
-        );
+        const extract = this.extract();
+        const result = await this.performLookup( async () => await fn( query, extract, opt ), opt );
+
+        Pool.release( 'string[]', extract, extract.length );
+
+        return result;
 
     }
 
@@ -298,10 +308,14 @@ export class StructuredData<T = any, R = MetricRaw> {
         other: T[], otherKey: string | number | symbol, opt?: StructuredDataOptions
     ) : Promise<StructuredDataBatchResult<T, R> | T[]> {
 
-        return await this.performLookup(
-            async () => await fn( this.extract(), this.extractFrom( other, otherKey ), opt ),
-            opt
-        );
+        const extract = this.extract();
+        const extractOther = this.extractFrom( other, otherKey );
+        const result = await this.performLookup( async () => await fn( extract, extractOther, opt ), opt );
+
+        Pool.release( 'string[]', extract, extract.length );
+        Pool.release( 'string[]', extractOther, extractOther.length );
+
+        return result as any;
 
     }
 
