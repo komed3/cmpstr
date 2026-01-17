@@ -12,6 +12,7 @@
  *  - Flexible normalization and filtering pipeline for all inputs
  *  - Batch, pairwise, and single string comparison with detailed results
  *  - Phonetic indexing and phonetic-aware search and comparison
+ *  - Structured data comparison by extracting properties from objects
  *  - Text analysis and unified diff utilities
  *  - Full TypeScript type safety and extensibility
  * 
