@@ -452,3 +452,28 @@ export interface CmpStrResult {
     // The similarity score (0..1)
     match: number;
 };
+
+/**
+ * StructuredDataLookupResult represents a lookup result with original object attached.
+ * 
+ * @template T - The type of the original object
+ * @template R - The type of the metric raw result
+ */
+export interface StructuredDataResult<T = any, R = MetricRaw> {
+    // The original object
+    obj: T;
+    // The property key that was compared
+    key: string | number | symbol;
+    // The comparison result (CmpStrResult format)
+    result: CmpStrResult;
+    // Optional raw metric data
+    raw?: R;
+};
+
+/**
+ * StructuredDataLookupBatchResult is an array of lookup results.
+ * 
+ * @template T - The type of the original object
+ * @template R - The type of the metric raw result
+ */
+export type StructuredDataBatchResult<T = any, R = MetricRaw> = StructuredDataResult<T, R>[];
