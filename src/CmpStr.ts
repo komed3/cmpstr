@@ -864,23 +864,24 @@ export class CmpStr<R = MetricRaw> {
      * by extracting specific properties and returning results with original objects attached.
      * 
      * @template T - The type of objects in the arrays
+     * @template O - The type of objects in the other array
      * @param {T[]} data - The array of structured objects
      * @param {keyof T} key - The property key to extract for comparison
-     * @param {T[]} other - The other array of structured objects
-     * @param {keyof T} otherKey - The property key to extract from other array
+     * @param {O[]} other - The other array of structured objects
+     * @param {keyof O} otherKey - The property key to extract from other array
      * @param {StructuredDataOptions} [opt] - Optional lookup options
      * @returns {StructuredDataBatchResult<T, R>|T[]} - Pairwise results with original objects
      */
-    public structuredPairs<T = any> (
-        data: T[], key: keyof T, other: T[], otherKey: keyof T,
+    public structuredPairs<T = any, O = any> (
+        data: T[], key: keyof T, other: O[], otherKey: keyof O,
         opt?: StructuredDataOptions
     ) : StructuredDataBatchResult<T, R> | T[] {
 
-        return this.structured<T>( data, key ).lookupPairs(
+        return this.structured<T>( data, key ).lookupPairs<O>(
             ( items, otherItems, options ) => this.pairs<MetricResultBatch<R>>(
                 items, otherItems, options
             ),
-            other, otherKey, opt
+            other as any, otherKey as any, opt
         );
 
     }

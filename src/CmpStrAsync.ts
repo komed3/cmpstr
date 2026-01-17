@@ -455,7 +455,7 @@ export class CmpStrAsync<R = MetricRaw> extends CmpStr<R> {
     ) : Promise<StructuredDataBatchResult<T, R> | T[]> {
 
         return await this.structured<T>( data, key ).lookupAsync(
-            async ( q, items, options ) => await this.batchTestAsync<MetricResultBatch<R>>(
+            ( q, items, options ) => this.batchTestAsync<MetricResultBatch<R>>(
                 q, items, options
             ),
             query, opt
@@ -481,7 +481,7 @@ export class CmpStrAsync<R = MetricRaw> extends CmpStr<R> {
     ) : Promise<StructuredDataBatchResult<T, R> | T[]> {
 
         return await this.structured<T>( data, key ).lookupAsync(
-            async ( q, items, options ) => await this.matchAsync<MetricResultBatch<R>>(
+            ( q, items, options ) => this.matchAsync<MetricResultBatch<R>>(
                 q, items, threshold, options
             ),
             query, { ...opt, sort: 'desc' }
@@ -507,7 +507,7 @@ export class CmpStrAsync<R = MetricRaw> extends CmpStr<R> {
     ) : Promise<StructuredDataBatchResult<T, R> | T[]> {
 
         return await this.structured<T>( data, key ).lookupAsync(
-            async ( q, items, options ) => await this.closestAsync<MetricResultBatch<R>>(
+            ( q, items, options ) => this.closestAsync<MetricResultBatch<R>>(
                 q, items, n, options
             ),
             query, { ...opt, sort: 'desc' }
@@ -533,7 +533,7 @@ export class CmpStrAsync<R = MetricRaw> extends CmpStr<R> {
     ) : Promise<StructuredDataBatchResult<T, R> | T[]> {
 
         return await this.structured<T>( data, key ).lookupAsync(
-            async ( q, items, options ) => await this.furthestAsync<MetricResultBatch<R>>(
+            ( q, items, options ) => this.furthestAsync<MetricResultBatch<R>>(
                 q, items, n, options
             ),
             query, { ...opt, sort: 'asc' }
@@ -546,6 +546,7 @@ export class CmpStrAsync<R = MetricRaw> extends CmpStr<R> {
      * by extracting specific properties and returning results with original objects attached.
      * 
      * @template T - The type of objects in the arrays
+     * @template O - The type of objects in the other array
      * @param {T[]} data - The array of structured objects
      * @param {keyof T} key - The property key to extract for comparison
      * @param {T[]} other - The other array of structured objects
@@ -553,13 +554,13 @@ export class CmpStrAsync<R = MetricRaw> extends CmpStr<R> {
      * @param {StructuredDataOptions} [opt] - Optional lookup options
      * @returns {Promise<StructuredDataBatchResult<T, R>|T[]>} - Async pairwise results with original objects
      */
-    public async structuredPairsAsync<T = any> (
-        data: T[], key: keyof T, other: T[], otherKey: keyof T,
+    public async structuredPairsAsync<T = any, O = any> (
+        data: T[], key: keyof T, other: O[], otherKey: keyof O,
         opt?: StructuredDataOptions
     ) : Promise<StructuredDataBatchResult<T, R> | T[]> {
 
-        return await this.structured<T>( data, key ).lookupPairsAsync(
-            async ( items, otherItems, options ) => await this.pairsAsync<MetricResultBatch<R>>(
+        return await this.structured<T>( data, key ).lookupPairsAsync<O>(
+            ( items, otherItems, options ) => this.pairsAsync<MetricResultBatch<R>>(
                 items, otherItems, options
             ),
             other, otherKey, opt

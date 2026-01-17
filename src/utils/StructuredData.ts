@@ -71,11 +71,12 @@ export class StructuredData<T = any, R = MetricRaw> {
     /**
      * Extracts properties from another array.
      * 
-     * @param {T[]} arr - The array to extract from
-     * @param {keyof T} key - The property key
+     * @template A - The type of objects in the array
+     * @param {A[]} arr - The array to extract from
+     * @param {keyof A} key - The property key
      * @returns {string[]} - Array of extracted strings
      */
-    private extractFrom ( arr: readonly T[], key: keyof T ) : string[] {
+    private extractFrom<A> ( arr: readonly A[], key: keyof A ) : string[] {
 
         const result = Pool.acquire( 'string[]', arr.length );
 
@@ -97,7 +98,7 @@ export class StructuredData<T = any, R = MetricRaw> {
      */
     private extract () : string[] {
 
-        return this.extractFrom( this.data, this.key );
+        return this.extractFrom<T>( this.data, this.key );
 
     }
 
@@ -282,19 +283,20 @@ export class StructuredData<T = any, R = MetricRaw> {
     /**
      * Performs a pairwise comparison against another array of objects.
      * 
+     * @template O - The type of objects in the other array
      * @param {() => CmpFnResult<R>} fn - The comparison function
-     * @param {T[]} other - The other array of objects
-     * @param {keyof T} otherKey - The property key in the other array
+     * @param {O[]} other - The other array of objects
+     * @param {keyof O} otherKey - The property key in the other array
      * @param {StructuredDataOptions} [opt] - Optional lookup options
      * @returns {StructuredDataBatchResult<T, R> | T[]} - Results with objects or just objects
      */
-    public lookupPairs (
+    public lookupPairs<O = any> (
         fn: ( a: string[], b: string[], opt?: CmpStrOptions ) => CmpFnResult<R>,
-        other: T[], otherKey: keyof T, opt?: StructuredDataOptions
+        other: O[], otherKey: keyof O, opt?: StructuredDataOptions
     ) : StructuredDataBatchResult<T, R> | T[] {
 
         const extract = this.extract();
-        const extractOther = this.extractFrom( other, otherKey );
+        const extractOther = this.extractFrom<O>( other, otherKey );
 
         try { return this.performLookup( () => fn( extract, extractOther, opt ), opt ) }
         finally {
@@ -329,19 +331,20 @@ export class StructuredData<T = any, R = MetricRaw> {
     /**
      * Asynchronously performs a pairwise comparison against another array of objects.
      * 
+     * @template O - The type of objects in the other array
      * @param {() => Promise<CmpFnResult<R>>} fn - The async comparison function
-     * @param {T[]} other - The other array of objects
-     * @param {keyof T} otherKey - The property key in the other array
+     * @param {O[]} other - The other array of objects
+     * @param {keyof O} otherKey - The property key in the other array
      * @param {StructuredDataOptions} [opt] - Optional lookup options
      * @returns {Promise<StructuredDataBatchResult<T, R> | T[]>} - Async results
      */
-    public async lookupPairsAsync (
+    public async lookupPairsAsync<O = any> (
         fn: ( a: string[], b: string[], opt?: CmpStrOptions ) => Promise<CmpFnResult<R>>,
-        other: T[], otherKey: keyof T, opt?: StructuredDataOptions
+        other: O[], otherKey: keyof O, opt?: StructuredDataOptions
     ) : Promise<StructuredDataBatchResult<T, R> | T[]> {
 
         const extract = this.extract();
-        const extractOther = this.extractFrom( other, otherKey );
+        const extractOther = this.extractFrom<O>( other, otherKey );
 
         try { return await this.performLookupAsync( () => fn( extract, extractOther, opt ), opt ) }
         finally {
