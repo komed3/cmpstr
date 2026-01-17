@@ -1,4 +1,4 @@
-import { MetricRaw } from './Types';
+import { MetricRaw, MetricResultSingle } from './Types';
 
 export class StructuredData<T = any, R = MetricRaw> {
 
@@ -29,6 +29,24 @@ export class StructuredData<T = any, R = MetricRaw> {
     protected extract () : string[] {
 
         return this.extractFrom( this.data, this.key );
+
+    }
+
+    protected normalizeResults ( results: any ) : MetricResultSingle<R>[] {
+
+        if ( Array.isArray( results ) && results.length ) {
+
+            const first = results[ 0 ];
+
+            if ( 'a' in first && 'b' in first && 'res' in first ) return results as MetricResultSingle<R>[];
+
+            if ( 'source' in first && 'target' in first && 'match' in first ) return results.map(
+                r => ( { metric: 'unknown', a: r.source, b: r.target, res: r.match, raw: r.raw } )
+            ) as MetricResultSingle<R>[];
+
+        }
+
+        return results || [];
 
     }
 
