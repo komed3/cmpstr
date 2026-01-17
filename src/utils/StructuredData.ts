@@ -77,7 +77,16 @@ export class StructuredData<T = any, R = MetricRaw> {
      */
     private extractFrom ( arr: T[], key: string | number | symbol ) : string[] {
 
-        return arr.map( item => String ( ( item as any )[ key ] ?? '' ) );
+        const result = new Array( arr.length );
+
+        for ( let i = 0; i < arr.length; i++ ) {
+
+            const val = ( arr[ i ] as any )[ key ];
+            result[ i ] = typeof val === 'string' ? val : String( val ?? '' );
+
+        }
+
+        return result;
 
     }
 
@@ -188,7 +197,6 @@ export class StructuredData<T = any, R = MetricRaw> {
     /**
      * Performs a lookup with a synchronous comparison function.
      * 
-     * @param {string} query - The query string to compare against
      * @param {( a: string, b: string[], opt?: CmpStrOptions ) => any} fn - The comparison function
      * @param {StructuredDataOptions} [opt] - Additional options
      * @returns {any} - The lookup results
