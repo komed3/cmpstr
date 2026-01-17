@@ -193,7 +193,7 @@ export class StructuredData<T = any, R = MetricRaw> {
      * @param {StructuredDataOptions} [opt] - Additional options
      * @returns {any} - The lookup results
      */
-    private async lookup (
+    private async performLookup (
         fn: () => any | Promise<any>,
         opt?: StructuredDataOptions
     ) : Promise<any> {
@@ -220,13 +220,39 @@ export class StructuredData<T = any, R = MetricRaw> {
      * @param {StructuredDataOptions} [opt] - Optional lookup options
      * @returns {StructuredDataBatchResult<T, R> | T[]} - Results with objects or just objects
      */
-    public batchLookup (
+    public lookup (
         query: string,
         fn: ( a: string, b: string[], opt?: CmpStrOptions ) => any,
         opt?: StructuredDataOptions
     ) : any {
 
-        return this.lookup( () => fn( query, this.extract(), opt ), opt );
+        return this.performLookup(
+            () => fn( query, this.extract(), opt ),
+            opt
+        );
+
+    }
+
+    /**
+     * Performs a pairwise comparison against another array of objects.
+     * 
+     * @param {T[]} other - The other array of objects
+     * @param {string|number|symbol} otherKey - The property key in the other array
+     * @param {(a: string[], b: string[], opt?: CmpStrOptions) => any} fn - The comparison function
+     * @param {StructuredDataOptions} [opt] - Optional lookup options
+     * @returns {StructuredDataBatchResult<T, R> | T[]} - Results with objects or just objects
+     */
+    public lookupPairs (
+        other: T[],
+        otherKey: string | number | symbol,
+        fn: ( a: string[], b: string[], opt?: CmpStrOptions ) => any,
+        opt?: StructuredDataOptions
+    ) : any {
+
+        return this.performLookup(
+            () => fn( this.extract(), this.extractFrom( other, otherKey ), opt ),
+            opt
+        );
 
     }
 
