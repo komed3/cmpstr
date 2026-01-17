@@ -446,12 +446,12 @@ export class CmpStrAsync<R = MetricRaw> extends CmpStr<R> {
      * @template T - The type of objects in the data array
      * @param {string} query - The query string to compare against
      * @param {T[]} data - The array of structured objects
-     * @param {string|number|symbol} key - The property key to extract for comparison
+     * @param {keyof T} key - The property key to extract for comparison
      * @param {StructuredDataOptions} [opt] - Optional lookup options
      * @returns {Promise<StructuredDataBatchResult<T, R>|T[]>} - Async batch results with original objects
      */
     public async structuredLookupAsync<T = any> (
-        query: string, data: T[], key: string | number | symbol, opt?: StructuredDataOptions
+        query: string, data: T[], key: keyof T, opt?: StructuredDataOptions
     ) : Promise<StructuredDataBatchResult<T, R> | T[]> {
 
         return await this.structured<T>( data, key ).lookupAsync(
@@ -470,13 +470,13 @@ export class CmpStrAsync<R = MetricRaw> extends CmpStr<R> {
      * @template T - The type of objects in the data array
      * @param {string} query - The query string to compare against
      * @param {T[]} data - The array of structured objects
-     * @param {string|number|symbol} key - The property key to extract for comparison
+     * @param {keyof T} key - The property key to extract for comparison
      * @param {number} threshold - The similarity threshold (0..1)
      * @param {StructuredDataLookupOptions} [opt] - Optional lookup options
      * @returns {Promise<StructuredDataBatchResult<T, R>|T[]>} - Async filtered batch results
      */
     public async structuredMatchAsync<T = any> (
-        query: string, data: T[], key: string | number | symbol, threshold: number,
+        query: string, data: T[], key: keyof T, threshold: number,
         opt?: StructuredDataOptions
     ) : Promise<StructuredDataBatchResult<T, R> | T[]> {
 
@@ -496,13 +496,13 @@ export class CmpStrAsync<R = MetricRaw> extends CmpStr<R> {
      * @template T - The type of objects in the data array
      * @param {string} query - The query string to compare against
      * @param {T[]} data - The array of structured objects
-     * @param {string|number|symbol} key - The property key to extract for comparison
+     * @param {keyof T} key - The property key to extract for comparison
      * @param {number} [n=1] - Number of closest matches
      * @param {StructuredDataOptions} [opt] - Optional lookup options
      * @returns {Promise<StructuredDataBatchResult<T, R>|T[]>} - Async closest matches
      */
     public async structuredClosestAsync<T = any> (
-        query: string, data: T[], key: string | number | symbol, n: number = 1,
+        query: string, data: T[], key: keyof T, n: number = 1,
         opt?: StructuredDataOptions
     ) : Promise<StructuredDataBatchResult<T, R> | T[]> {
 
@@ -522,13 +522,13 @@ export class CmpStrAsync<R = MetricRaw> extends CmpStr<R> {
      * @template T - The type of objects in the data array
      * @param {string} query - The query string to compare against
      * @param {T[]} data - The array of structured objects
-     * @param {string|number|symbol} key - The property key to extract for comparison
+     * @param {keyof T} key - The property key to extract for comparison
      * @param {number} [n=1] - Number of furthest matches
      * @param {StructuredDataOptions} [opt] - Optional lookup options
      * @returns {Promise<StructuredDataBatchResult<T, R>|T[]>} - Async furthest matches
      */
     public async structuredFurthestAsync<T = any> (
-        query: string, data: T[], key: string | number | symbol, n: number = 1,
+        query: string, data: T[], key: keyof T, n: number = 1,
         opt?: StructuredDataOptions
     ) : Promise<StructuredDataBatchResult<T, R> | T[]> {
 
@@ -547,14 +547,14 @@ export class CmpStrAsync<R = MetricRaw> extends CmpStr<R> {
      * 
      * @template T - The type of objects in the arrays
      * @param {T[]} data - The array of structured objects
-     * @param {string|number|symbol} key - The property key to extract for comparison
+     * @param {keyof T} key - The property key to extract for comparison
      * @param {T[]} other - The other array of structured objects
-     * @param {string|number|symbol} otherKey - The property key to extract from other array
+     * @param {keyof T} otherKey - The property key to extract from other array
      * @param {StructuredDataOptions} [opt] - Optional lookup options
      * @returns {Promise<StructuredDataBatchResult<T, R>|T[]>} - Async pairwise results with original objects
      */
     public async structuredPairsAsync<T = any> (
-        data: T[], key: string | number | symbol, other: T[], otherKey: string | number | symbol,
+        data: T[], key: keyof T, other: T[], otherKey: keyof T,
         opt?: StructuredDataOptions
     ) : Promise<StructuredDataBatchResult<T, R> | T[]> {
 
