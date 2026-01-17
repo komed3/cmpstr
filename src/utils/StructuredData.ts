@@ -1,4 +1,4 @@
-import { MetricRaw, MetricResultSingle } from './Types';
+import type { MetricRaw, MetricResultSingle } from './Types';
 
 export class StructuredData<T = any, R = MetricRaw> {
 
