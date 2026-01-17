@@ -24,6 +24,7 @@ Originally launched in 2023 with a minimal feature set, the library was redesign
 - Normalization and filtering pipeline for consistent input processing
 - Single, batch and pairwise comparisons with structured, type-safe results
 - Phonetic-aware search and comparison
+- Structured data comparison by extracting object properties
 - Utilities for text structure and readability analysis (e.g., syllables, word statistics)
 - Diffing tools with CLI-friendly formatting
 - TypeScript-native with full type declarations and extensibility
