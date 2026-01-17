@@ -17,7 +17,8 @@
     "algorithms", "levenshtein", "damerau-levenshtein", "jaro-winkler", "cosine",
     "dice-coefficient", "hamming-distance", "jaccard-index", "needleman-wunsch",
     "lcs", "smith-waterman", "q-gram", "soundex", "metaphone", "cologne-phonetic",
-    "caverphone", "profiling", "extensible"
+    "caverphone", "profiling", "extensible", "lightweight", "fast", "performance",
+    "npm", "nodejs", "browser", "structured-data"
   ],
   "repository": {
     "type": "git",
