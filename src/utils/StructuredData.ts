@@ -50,4 +50,31 @@ export class StructuredData<T = any, R = MetricRaw> {
 
     }
 
+    protected rebuild (
+        results: MetricResultSingle<R>[],
+        sourceData: T[],
+        removeZero?: boolean,
+        objectsOnly?: boolean
+    ) : any {
+
+        const output = results.reduce( ( acc, result, i ) => {
+
+            if ( removeZero && result.res === 0 ) return acc;
+
+            const item: any = { obj: sourceData[ i ], key: this.key, result: {
+                source: result.a, target: result.b, match: result.res
+            } };
+
+            if ( result.raw ) item.raw = result.raw;
+
+            acc.push( objectsOnly ? item.obj : item );
+
+            return acc;
+
+        }, [] as any );
+
+        return output;
+
+    }
+
 }
