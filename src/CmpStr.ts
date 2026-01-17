@@ -24,7 +24,8 @@
 
 import type {
     CmpStrOptions, CmpStrProcessors, CmpStrResult, NormalizeFlags, DiffOptions, PhoneticOptions,
-    MetricRaw, MetricInput, MetricMode, MetricResult, MetricResultSingle, MetricResultBatch
+    MetricRaw, MetricInput, MetricMode, MetricResult, MetricResultSingle, MetricResultBatch,
+    StructuredDataBatchResult, StructuredDataOptions
 } from './utils/Types';
 
 import * as DeepMerge from './utils/DeepMerge';
@@ -33,6 +34,7 @@ import { TextAnalyzer } from './utils/TextAnalyzer';
 import { DiffChecker } from './utils/DiffChecker';
 import { Normalizer } from './utils/Normalizer';
 import { Filter } from './utils/Filter';
+import { StructuredData } from './utils/StructuredData';
 
 import { factory } from './utils/Registry';
 import { MetricRegistry, Metric } from './metric';
@@ -319,6 +321,20 @@ export class CmpStr<R = MetricRaw> {
         return Array.isArray( input )
             ? input.map( s => phonetic.getIndex( s ).join( delimiter ) )
             : phonetic.getIndex( input ).join( delimiter );
+
+    }
+
+    /**
+     * Creates a instance for processing structured data.
+     * 
+     * @template T - The type of objects in the data array
+     * @param {T[]} data - The array of structured objects
+     * @param {string|number|symbol} key - The property key to compare
+     * @returns {StructuredData<T, R>} - The lookup instance
+     */
+    protected structured<T = any> ( data: T[], key: string | number | symbol ) : StructuredData<T, R> {
+
+        return StructuredData.create<T, R>( data, key );
 
     }
 
@@ -740,5 +756,14 @@ export class CmpStr<R = MetricRaw> {
         return this.index( input, { algo: ( algo ?? a )!, opt: opt ?? o } ) as string;
 
     }
+
+    /**
+     * ---------------------------------------------------------------------------------
+     * Public methods for structured data comparison
+     * ---------------------------------------------------------------------------------
+     * 
+     * These methods provide interfaces for comparing arrays of structured objects
+     * by extracting and comparing specific properties.
+     */
 
 }
