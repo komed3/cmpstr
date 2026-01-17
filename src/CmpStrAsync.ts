@@ -447,7 +447,7 @@ export class CmpStrAsync<R = MetricRaw> extends CmpStr<R> {
      * @param {T[]} data - The array of structured objects
      * @param {string|number|symbol} key - The property key to extract for comparison
      * @param {StructuredDataOptions} [opt] - Optional lookup options
-     * @returns {Promise<StructuredDataBatchResult<T, R>>} - Async batch results with original objects
+     * @returns {Promise<StructuredDataBatchResult<T, R>|T[]>} - Async batch results with original objects
      */
     public async structuredLookupAsync<T = any> (
         query: string, data: T[], key: string | number | symbol, opt?: StructuredDataOptions
@@ -472,7 +472,7 @@ export class CmpStrAsync<R = MetricRaw> extends CmpStr<R> {
      * @param {string|number|symbol} key - The property key to extract for comparison
      * @param {number} threshold - The similarity threshold (0..1)
      * @param {StructuredDataLookupOptions} [opt] - Optional lookup options
-     * @returns {Promise<StructuredDataBatchResult<T, R>>} - Async filtered batch results
+     * @returns {Promise<StructuredDataBatchResult<T, R>|T[]>} - Async filtered batch results
      */
     public async structuredMatchAsync<T = any> (
         query: string, data: T[], key: string | number | symbol, threshold: number,
@@ -498,7 +498,7 @@ export class CmpStrAsync<R = MetricRaw> extends CmpStr<R> {
      * @param {string|number|symbol} key - The property key to extract for comparison
      * @param {number} [n=1] - Number of closest matches
      * @param {StructuredDataOptions} [opt] - Optional lookup options
-     * @returns {Promise<StructuredDataBatchResult<T, R>>} - Async closest matches
+     * @returns {Promise<StructuredDataBatchResult<T, R>|T[]>} - Async closest matches
      */
     public async structuredClosestAsync<T = any> (
         query: string, data: T[], key: string | number | symbol, n: number = 1,
@@ -524,7 +524,7 @@ export class CmpStrAsync<R = MetricRaw> extends CmpStr<R> {
      * @param {string|number|symbol} key - The property key to extract for comparison
      * @param {number} [n=1] - Number of furthest matches
      * @param {StructuredDataOptions} [opt] - Optional lookup options
-     * @returns {Promise<StructuredDataBatchResult<T, R>>} - Async furthest matches
+     * @returns {Promise<StructuredDataBatchResult<T, R>|T[]>} - Async furthest matches
      */
     public async structuredFurthestAsync<T = any> (
         query: string, data: T[], key: string | number | symbol, n: number = 1,
