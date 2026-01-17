@@ -215,15 +215,14 @@ export class StructuredData<T = any, R = MetricRaw> {
     /**
      * Performs a batch comparison against a query string.
      * 
-     * @param {string} query - The query string to compare against
      * @param {(a: string, b: string[], opt?: CmpStrOptions) => any} fn - The comparison function
+     * @param {string} query - The query string to compare against
      * @param {StructuredDataOptions} [opt] - Optional lookup options
      * @returns {StructuredDataBatchResult<T, R> | T[]} - Results with objects or just objects
      */
     public lookup (
-        query: string,
         fn: ( a: string, b: string[], opt?: CmpStrOptions ) => any,
-        opt?: StructuredDataOptions
+        query: string, opt?: StructuredDataOptions
     ) : StructuredDataBatchResult<T, R> | T[] {
 
         return this.performLookup(
@@ -236,17 +235,15 @@ export class StructuredData<T = any, R = MetricRaw> {
     /**
      * Performs a pairwise comparison against another array of objects.
      * 
+     * @param {(a: string[], b: string[], opt?: CmpStrOptions) => any} fn - The comparison function
      * @param {T[]} other - The other array of objects
      * @param {string|number|symbol} otherKey - The property key in the other array
-     * @param {(a: string[], b: string[], opt?: CmpStrOptions) => any} fn - The comparison function
      * @param {StructuredDataOptions} [opt] - Optional lookup options
      * @returns {StructuredDataBatchResult<T, R> | T[]} - Results with objects or just objects
      */
     public lookupPairs (
-        other: T[],
-        otherKey: string | number | symbol,
         fn: ( a: string[], b: string[], opt?: CmpStrOptions ) => any,
-        opt?: StructuredDataOptions
+        other: T[], otherKey: string | number | symbol, opt?: StructuredDataOptions
     ) : StructuredDataBatchResult<T, R> | T[] {
 
         return this.performLookup(
@@ -259,15 +256,14 @@ export class StructuredData<T = any, R = MetricRaw> {
     /**
      * Asynchronously performs a batch comparison against a query string.
      * 
-     * @param {string} query - The query string to compare against
      * @param {(a: string, b: string[], opt?: CmpStrOptions) => Promise<any>} fn - The async comparison function
+     * @param {string} query - The query string to compare against
      * @param {StructuredDataOptions} [opt] - Optional lookup options
      * @returns {Promise<StructuredDataBatchResult<T, R> | T[]>} - Async results
      */
     public async lookupAsync (
-        query: string,
         fn: ( a: string, b: string[], opt?: CmpStrOptions ) => Promise<any>,
-        opt?: StructuredDataOptions
+        query: string, opt?: StructuredDataOptions
     ) : Promise<StructuredDataBatchResult<T, R> | T[]> {
 
         return await this.performLookup(
@@ -280,17 +276,15 @@ export class StructuredData<T = any, R = MetricRaw> {
     /**
      * Asynchronously performs a pairwise comparison against another array of objects.
      * 
+     * @param {(a: string[], b: string[], opt?: CmpStrOptions) => Promise<any>} fn - The async comparison function
      * @param {T[]} other - The other array of objects
      * @param {string|number|symbol} otherKey - The property key in the other array
-     * @param {(a: string[], b: string[], opt?: CmpStrOptions) => Promise<any>} fn - The async comparison function
      * @param {StructuredDataOptions} [opt] - Optional lookup options
      * @returns {Promise<StructuredDataBatchResult<T, R> | T[]>} - Async results
      */
     public async lookupPairsAsync (
-        other: T[],
-        otherKey: string | number | symbol,
         fn: ( a: string[], b: string[], opt?: CmpStrOptions ) => Promise<any>,
-        opt?: StructuredDataOptions
+        other: T[], otherKey: string | number | symbol, opt?: StructuredDataOptions
     ) : Promise<StructuredDataBatchResult<T, R> | T[]> {
 
         return await this.performLookup(
