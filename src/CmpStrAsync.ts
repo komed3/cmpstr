@@ -222,7 +222,7 @@ export class CmpStrAsync<R = MetricRaw> extends CmpStr<R> {
      * @param {CmpStrOptions} [opt] - Optional options
      * @returns {Promise<T>} - The metric result
      */
-    public async testAsync<T extends CmpStrResult | MetricResultSingle<R>> (
+    public async testAsync<T extends CmpStrResult | MetricResultSingle<R> = any> (
         a: string, b: string, opt?: CmpStrOptions
     ) : Promise<T> {
 
@@ -254,7 +254,7 @@ export class CmpStrAsync<R = MetricRaw> extends CmpStr<R> {
      * @param {CmpStrOptions} [opt] - Optional options
      * @returns {Promise<T>} - The batch metric results
      */
-    public async batchTestAsync<T extends CmpStrResult[] | MetricResultBatch<R>> (
+    public async batchTestAsync<T extends CmpStrResult[] | MetricResultBatch<R> = any> (
         a: MetricInput, b: MetricInput, opt?: CmpStrOptions
     ) : Promise<T> {
 
@@ -272,7 +272,7 @@ export class CmpStrAsync<R = MetricRaw> extends CmpStr<R> {
      * @param {CmpStrOptions} [opt] - Optional options
      * @returns {Promise<T>} - The sorted batch results
      */
-    public async batchSortedAsync<T extends CmpStrResult[] | MetricResultBatch<R>> (
+    public async batchSortedAsync<T extends CmpStrResult[] | MetricResultBatch<R> = any> (
         a: MetricInput, b: MetricInput, dir: 'desc' | 'asc' = 'desc', opt?: CmpStrOptions
     ) : Promise<T> {
 
@@ -298,7 +298,7 @@ export class CmpStrAsync<R = MetricRaw> extends CmpStr<R> {
      * @param {CmpStrOptions} [opt] - Optional options
      * @returns {Promise<T>} - The pairwise metric results
      */
-    public async pairsAsync<T extends CmpStrResult[] | MetricResultBatch<R>> (
+    public async pairsAsync<T extends CmpStrResult[] | MetricResultBatch<R> = any> (
         a: MetricInput, b: MetricInput, opt?: CmpStrOptions
     ) : Promise<T> {
 
@@ -316,7 +316,7 @@ export class CmpStrAsync<R = MetricRaw> extends CmpStr<R> {
      * @param {CmpStrOptions} [opt] - Optional options
      * @returns {Promise<T>} - The filtered batch results
      */
-    public async matchAsync<T extends CmpStrResult[] | MetricResultBatch<R>> (
+    public async matchAsync<T extends CmpStrResult[] | MetricResultBatch<R> = any> (
         a: MetricInput, b: MetricInput, threshold: number, opt?: CmpStrOptions
     ) : Promise<T> {
 
@@ -339,7 +339,7 @@ export class CmpStrAsync<R = MetricRaw> extends CmpStr<R> {
      * @param {CmpStrOptions} [opt] - Optional options
      * @returns {Promise<T>} - The closest matches
      */
-    public async closestAsync<T extends CmpStrResult[] | MetricResultBatch<R>> (
+    public async closestAsync<T extends CmpStrResult[] | MetricResultBatch<R> = any> (
         a: MetricInput, b: MetricInput, n: number = 1, opt?: CmpStrOptions
     ) : Promise<T> {
 
@@ -357,7 +357,7 @@ export class CmpStrAsync<R = MetricRaw> extends CmpStr<R> {
      * @param {CmpStrOptions} [opt] - Optional options
      * @returns {Promise<T>} - The furthest matches
      */
-    public async furthestAsync<T extends CmpStrResult[] | MetricResultBatch<R>> (
+    public async furthestAsync<T extends CmpStrResult[] | MetricResultBatch<R> = any> (
         a: MetricInput, b: MetricInput, n: number = 1, opt?: CmpStrOptions
     ) : Promise<T> {
 
