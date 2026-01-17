@@ -77,4 +77,22 @@ export class StructuredData<T = any, R = MetricRaw> {
 
     }
 
+    protected sort ( results: any[], sort?: string | boolean ) : any[] {
+
+        if ( !sort || results.length <= 1 ) return results;
+
+        const isAsc = sort === 'asc';
+        const getMatch = ( item: any ) => item.match !== undefined ? item.match : item.result?.match ?? 0;
+
+        return results.sort( ( a, b ) => {
+
+            const aMatch = getMatch( a );
+            const bMatch = getMatch( b );
+
+            return isAsc ? aMatch - bMatch : bMatch - aMatch;
+
+        } );
+
+    }
+
 }
