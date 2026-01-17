@@ -815,6 +815,54 @@ export class CmpStr<R = MetricRaw> {
     }
 
     /**
+     * Returns the n closest matches from a batch comparison of structured data.
+     * 
+     * @template T - The type of objects in the data array
+     * @param {string} query - The query string to compare against
+     * @param {T[]} data - The array of structured objects
+     * @param {string|number|symbol} key - The property key to extract for comparison
+     * @param {number} [n=1] - Number of closest matches
+     * @param {StructuredDataOptions} [opt] - Optional lookup options
+     * @returns {StructuredDataBatchResult<T, R>} - Closest matches with objects
+     */
+    public structuredClosest<T = any> (
+        query: string, data: T[], key: string | number | symbol, n: number = 1,
+        opt?: StructuredDataOptions
+    ) : StructuredDataBatchResult<T, R> | T[] {
+
+        return this.structured<T>( data, key ).lookup(
+            query,
+            ( q, items, options ) => this.closest<MetricResultBatch<R>>( q, items, n, options ),
+            { ...opt, sort: 'desc' }
+        );
+
+    }
+
+    /**
+     * Returns the n furthest matches from a batch comparison of structured data.
+     * 
+     * @template T - The type of objects in the data array
+     * @param {string} query - The query string to compare against
+     * @param {T[]} data - The array of structured objects
+     * @param {string|number|symbol} key - The property key to extract for comparison
+     * @param {number} [n=1] - Number of furthest matches
+     * @param {StructuredDataOptions} [opt] - Optional lookup options
+     * @returns {StructuredDataBatchResult<T, R>} - Furthest matches with objects
+     */
+    public structuredFurthest<T = any> (
+        query: string, data: T[], key: string | number | symbol, n: number = 1,
+        opt?: StructuredDataOptions
+    ) : StructuredDataBatchResult<T, R> | T[] {
+
+        return this.structured<T>( data, key ).lookup(
+            query,
+            ( q, items, options ) => this.furthest<MetricResultBatch<R>>( q, items, n, options ),
+            { ...opt, sort: 'asc' }
+        );
+
+    }
+
+    /**
      * Performs a pairwise comparison between two arrays of structured objects
      * by extracting specific properties and returning results with original objects attached.
      * 
