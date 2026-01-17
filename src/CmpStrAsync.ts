@@ -488,4 +488,56 @@ export class CmpStrAsync<R = MetricRaw> extends CmpStr<R> {
 
     }
 
+    /**
+     * Asynchronously returns the n closest matches from a batch comparison
+     * of structured data.
+     * 
+     * @template T - The type of objects in the data array
+     * @param {string} query - The query string to compare against
+     * @param {T[]} data - The array of structured objects
+     * @param {string|number|symbol} key - The property key to extract for comparison
+     * @param {number} [n=1] - Number of closest matches
+     * @param {StructuredDataOptions} [opt] - Optional lookup options
+     * @returns {Promise<StructuredDataBatchResult<T, R>>} - Async closest matches
+     */
+    public async structuredClosestAsync<T = any> (
+        query: string, data: T[], key: string | number | symbol, n: number = 1,
+        opt?: StructuredDataOptions
+    ) : Promise<StructuredDataBatchResult<T, R> | T[]> {
+
+        return await this.structured<T>( data, key ).lookupAsync(
+            async ( q, items, options ) => await this.closestAsync<MetricResultBatch<R>>(
+                q, items, n, options
+            ),
+            query, { ...opt, sort: 'desc' }
+        );
+
+    }
+
+    /**
+     * Asynchronously returns the n furthest matches from a batch comparison
+     * of structured data.
+     * 
+     * @template T - The type of objects in the data array
+     * @param {string} query - The query string to compare against
+     * @param {T[]} data - The array of structured objects
+     * @param {string|number|symbol} key - The property key to extract for comparison
+     * @param {number} [n=1] - Number of furthest matches
+     * @param {StructuredDataOptions} [opt] - Optional lookup options
+     * @returns {Promise<StructuredDataBatchResult<T, R>>} - Async furthest matches
+     */
+    public async structuredFurthestAsync<T = any> (
+        query: string, data: T[], key: string | number | symbol, n: number = 1,
+        opt?: StructuredDataOptions
+    ) : Promise<StructuredDataBatchResult<T, R> | T[]> {
+
+        return await this.structured<T>( data, key ).lookupAsync(
+            async ( q, items, options ) => await this.furthestAsync<MetricResultBatch<R>>(
+                q, items, n, options
+            ),
+            query, { ...opt, sort: 'asc' }
+        );
+
+    }
+
 }

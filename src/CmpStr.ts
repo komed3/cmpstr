@@ -877,7 +877,9 @@ export class CmpStr<R = MetricRaw> {
     ) : StructuredDataBatchResult<T, R> | T[] {
 
         return this.structured<T>( data, key ).lookupPairs(
-            ( items, otherItems, options ) => this.pairs<MetricResultBatch<R>>( items, otherItems, options ),
+            ( items, otherItems, options ) => this.pairs<MetricResultBatch<R>>(
+                items, otherItems, options
+            ),
             other, otherKey, opt
         );
 
