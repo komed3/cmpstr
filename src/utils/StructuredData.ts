@@ -43,9 +43,7 @@ export class StructuredData<T = any, R = MetricRaw> {
      * @param {string|number|symbol} key - The property key to extract for comparison
      * @returns {StructuredData<T, R>} - A new class instance
      */
-    public static create<T = any, R = MetricRaw> (
-        data: T[], key: string | number | symbol
-    ) : StructuredData<T, R> {
+    public static create<T = any, R = MetricRaw> ( data: T[], key: keyof T ) : StructuredData<T, R> {
 
         return new StructuredData ( data, key );
 
@@ -55,15 +53,15 @@ export class StructuredData<T = any, R = MetricRaw> {
     protected data: T[];
 
     // The property key to extract (cached for performance)
-    protected key: string | number | symbol;
+    protected key: keyof T;
 
     /**
      * Creates a new StructuredData instance.
      *
      * @param {T[]} data - The array of objects to process
-     * @param {string|number|symbol} key - The property key to extract for comparison
+     * @param {keyof T} key - The property key to extract for comparison
      */
-    private constructor ( data: T[], key: string | number | symbol ) {
+    private constructor ( data: T[], key: keyof T ) {
 
         this.data = data;
         this.key = key;
@@ -74,16 +72,16 @@ export class StructuredData<T = any, R = MetricRaw> {
      * Extracts properties from another array.
      * 
      * @param {T[]} arr - The array to extract from
-     * @param {string|number|symbol} key - The property key
+     * @param {keyof T} key - The property key
      * @returns {string[]} - Array of extracted strings
      */
-    private extractFrom ( arr: readonly T[], key: string | number | symbol ) : string[] {
+    private extractFrom ( arr: readonly T[], key: keyof T ) : string[] {
 
         const result = Pool.acquire( 'string[]', arr.length );
 
         for ( let i = 0; i < arr.length; i++ ) {
 
-            const val = ( arr[ i ] as any )[ key ];
+            const val = arr[ i ][ key ];
             result[ i ] = typeof val === 'string' ? val : String( val ?? '' );
 
         }
@@ -252,13 +250,13 @@ export class StructuredData<T = any, R = MetricRaw> {
      * 
      * @param {(a: string[], b: string[], opt?: CmpStrOptions) => any} fn - The comparison function
      * @param {T[]} other - The other array of objects
-     * @param {string|number|symbol} otherKey - The property key in the other array
+     * @param {keyof T} otherKey - The property key in the other array
      * @param {StructuredDataOptions} [opt] - Optional lookup options
      * @returns {StructuredDataBatchResult<T, R> | T[]} - Results with objects or just objects
      */
     public lookupPairs (
         fn: ( a: string[], b: string[], opt?: CmpStrOptions ) => any,
-        other: T[], otherKey: string | number | symbol, opt?: StructuredDataOptions
+        other: T[], otherKey: keyof T, opt?: StructuredDataOptions
     ) : StructuredDataBatchResult<T, R> | T[] {
 
         const extract = this.extract();
@@ -299,13 +297,13 @@ export class StructuredData<T = any, R = MetricRaw> {
      * 
      * @param {(a: string[], b: string[], opt?: CmpStrOptions) => Promise<any>} fn - The async comparison function
      * @param {T[]} other - The other array of objects
-     * @param {string|number|symbol} otherKey - The property key in the other array
+     * @param {keyof T} otherKey - The property key in the other array
      * @param {StructuredDataOptions} [opt] - Optional lookup options
      * @returns {Promise<StructuredDataBatchResult<T, R> | T[]>} - Async results
      */
     public async lookupPairsAsync (
         fn: ( a: string[], b: string[], opt?: CmpStrOptions ) => Promise<any>,
-        other: T[], otherKey: string | number | symbol, opt?: StructuredDataOptions
+        other: T[], otherKey: keyof T, opt?: StructuredDataOptions
     ) : Promise<StructuredDataBatchResult<T, R> | T[]> {
 
         const extract = this.extract();
