@@ -489,8 +489,6 @@ export type StructuredDataBatchResult<T = any, R = MetricRaw> = StructuredDataRe
  * StructuredDataOptions configures the lookup behavior.
  */
 export interface StructuredDataOptions extends Omit<CmpStrOptions, 'raw'> {
-    // Remove zero similarity results
-    removeZero?: boolean;
     // Sort results by match score (desc by default)
     sort?: boolean | 'asc' | 'desc';
     // Return only the original objects without metadata (minimal structure)
