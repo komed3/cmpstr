@@ -256,4 +256,31 @@ export class StructuredData<T = any, R = MetricRaw> {
 
     }
 
+    public async lookupAsync (
+        query: string,
+        fn: ( a: string, b: string[], opt?: CmpStrOptions ) => Promise<any>,
+        opt?: StructuredDataOptions
+    ) : Promise<any> {
+
+        return await this.performLookup(
+            async () => await fn( query, this.extract(), opt ),
+            opt
+        );
+
+    }
+
+    public async lookupPairsAsync (
+        other: T[],
+        otherKey: string | number | symbol,
+        fn: ( a: string[], b: string[], opt?: CmpStrOptions ) => Promise<any>,
+        opt?: StructuredDataOptions
+    ) : Promise<any> {
+
+        return await this.performLookup(
+            async () => await fn( this.extract(), this.extractFrom( other, otherKey ), opt ),
+            opt
+        );
+
+    }
+
 }
