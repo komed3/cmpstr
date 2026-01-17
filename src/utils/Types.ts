@@ -454,7 +454,7 @@ export interface CmpStrResult {
 };
 
 /**
- * StructuredDataLookupResult represents a lookup result with original object attached.
+ * StructuredDataResult represents a lookup result with original object attached.
  * 
  * @template T - The type of the original object
  * @template R - The type of the metric raw result
@@ -471,9 +471,19 @@ export interface StructuredDataResult<T = any, R = MetricRaw> {
 };
 
 /**
- * StructuredDataLookupBatchResult is an array of lookup results.
+ * StructuredDataBatchResult is an array of lookup results.
  * 
  * @template T - The type of the original object
  * @template R - The type of the metric raw result
  */
 export type StructuredDataBatchResult<T = any, R = MetricRaw> = StructuredDataResult<T, R>[];
+
+/**
+ * StructuredDataOptions configures the lookup behavior.
+ */
+export interface StructuredDataOptions extends Omit<CmpStrOptions, 'raw'> {
+    // Remove zero similarity results
+    removeZero?: boolean;
+    // Sort results by match score (desc by default)
+    sort?: boolean | 'asc' | 'desc';
+};
