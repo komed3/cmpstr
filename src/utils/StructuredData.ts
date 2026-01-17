@@ -1,6 +1,6 @@
 'use strict';
 
-import type { MetricRaw, MetricResultSingle } from './Types';
+import type { MetricRaw, MetricResultSingle, StructuredDataResult } from './Types';
 
 /**
  * The StructuredData class provides factory methods for processing arrays of
@@ -78,12 +78,15 @@ export class StructuredData<T = any, R = MetricRaw> {
      */
     protected normalizeResults ( results: any ) : MetricResultSingle<R>[] {
 
+        // If already an array of MetricResultSingle, return as-is
         if ( Array.isArray( results ) && results.length ) {
 
             const first = results[ 0 ];
 
+            // Check if it's MetricResultSingle format (has 'a', 'b', 'res')
             if ( 'a' in first && 'b' in first && 'res' in first ) return results as MetricResultSingle<R>[];
 
+            // Check if it's CmpStrResult format (has 'source', 'target', 'match')
             if ( 'source' in first && 'target' in first && 'match' in first ) return results.map(
                 r => ( { metric: 'unknown', a: r.source, b: r.target, res: r.match, raw: r.raw } )
             ) as MetricResultSingle<R>[];
@@ -110,23 +113,27 @@ export class StructuredData<T = any, R = MetricRaw> {
         objectsOnly?: boolean
     ) : any {
 
-        const output = results.reduce( ( acc, result, i ) => {
+        return results.reduce( ( acc, result, i ) => {
 
+            // Skip zero results if configured
             if ( removeZero && result.res === 0 ) return acc;
 
-            const item: any = { obj: sourceData[ i ], key: this.key, result: {
-                source: result.a, target: result.b, match: result.res
-            } };
+            // Build the result object
+            const item: StructuredDataResult<T, R> = {
+                obj: sourceData[ i ], key: this.key, result: {
+                    source: result.a, target: result.b, match: result.res
+                }
+            };
 
+            // Attach raw data if present
             if ( result.raw ) item.raw = result.raw;
 
+            // Push either full result or just the object
             acc.push( objectsOnly ? item.obj : item );
 
             return acc;
 
         }, [] as any );
-
-        return output;
 
     }
 
