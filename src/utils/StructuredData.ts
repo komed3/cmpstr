@@ -134,7 +134,7 @@ export class StructuredData<T = any, R = MetricRaw> {
      */
     private normalizeResults ( results: CmpFnResult<R> ) : MetricResultSingle<R>[] {
 
-        // If already an array of MetricResultSingle, return as-is
+        // Handle null/undefined results
         if ( ! Array.isArray( results ) || results.length === 0 ) return [];
 
         const first = results[ 0 ];
@@ -224,26 +224,38 @@ export class StructuredData<T = any, R = MetricRaw> {
     /**
      * Performs a lookup with a synchronous comparison function.
      * 
-     * @param {() => CmpFnResult<R> | Promise<CmpFnResult<R>>} fn - The comparison function
+     * @param {() => CmpFnResult<R>} fn - The comparison function
      * @param {StructuredDataOptions} [opt] - Additional options
      * @returns {StructuredDataBatchResult<T, R>|T[]} - The lookup results
      */
-    private async performLookup (
-        fn: () => CmpFnResult<R> | Promise<CmpFnResult<R>>,
+    private performLookup (
+        fn: () => CmpFnResult<R>,
+        opt?: StructuredDataOptions
+    ) : StructuredDataBatchResult<T, R> | T[] {
+
+        return this.sort( this.rebuild(
+            this.normalizeResults( fn() ),
+            this.data, opt?.removeZero, opt?.objectsOnly
+        ), opt?.sort );
+
+    }
+
+    /**
+     * Performs a lookup with an asynchronous comparison function.
+     * 
+     * @param {() => Promise<CmpFnResult<R>>} fn - The async comparison function
+     * @param {StructuredDataOptions} [opt] - Additional options
+     * @returns {Promise<StructuredDataBatchResult<T, R>|T[]>} - The async lookup results
+     */
+    private async performLookupAsync (
+        fn: () => Promise<CmpFnResult<R>>,
         opt?: StructuredDataOptions
     ) : Promise<StructuredDataBatchResult<T, R> | T[]> {
 
-        // Get raw results (sync or async)
-        const rawResults = await fn();
-
-        // Normalize results
-        const normalized = this.normalizeResults( rawResults );
-
-        // Rebuild with original objects
-        const rebuilt = this.rebuild( normalized, this.data, opt?.removeZero, opt?.objectsOnly );
-
-        // Sort if requested
-        return this.sort( rebuilt, opt?.sort );
+        return this.sort( this.rebuild(
+            this.normalizeResults( await fn() ),
+            this.data, opt?.removeZero, opt?.objectsOnly
+        ), opt?.sort );
 
     }
 
@@ -253,7 +265,7 @@ export class StructuredData<T = any, R = MetricRaw> {
      * @param {() => CmpFnResult<R>} fn - The comparison function
      * @param {string} query - The query string to compare against
      * @param {StructuredDataOptions} [opt] - Optional lookup options
-     * @returns {StructuredDataBatchResult<T, R> | T[]} - Results with objects or just objects
+     * @returns {StructuredDataBatchResult<T, R>|T[]} - Results with objects or just objects
      */
     public lookup (
         fn: ( a: string, b: string[], opt?: CmpStrOptions ) => CmpFnResult<R>,
@@ -261,11 +273,9 @@ export class StructuredData<T = any, R = MetricRaw> {
     ) : StructuredDataBatchResult<T, R> | T[] {
 
         const extract = this.extract();
-        const result = this.performLookup( () => fn( query, extract, opt ), opt );
 
-        Pool.release( 'string[]', extract, extract.length );
-
-        return result as unknown as StructuredDataBatchResult<T, R> | T[];
+        try { return this.performLookup( () => fn( query, extract, opt ), opt ) }
+        finally { Pool.release( 'string[]', extract, extract.length ) }
 
     }
 
@@ -285,12 +295,14 @@ export class StructuredData<T = any, R = MetricRaw> {
 
         const extract = this.extract();
         const extractOther = this.extractFrom( other, otherKey );
-        const result = this.performLookup( () => fn( extract, extractOther, opt ), opt );
 
-        Pool.release( 'string[]', extract, extract.length );
-        Pool.release( 'string[]', extractOther, extractOther.length );
+        try { return this.performLookup( () => fn( extract, extractOther, opt ), opt ) }
+        finally {
 
-        return result as unknown as StructuredDataBatchResult<T, R> | T[];
+            Pool.release( 'string[]', extract, extract.length );
+            Pool.release( 'string[]', extractOther, extractOther.length );
+
+        }
 
     }
 
@@ -308,13 +320,9 @@ export class StructuredData<T = any, R = MetricRaw> {
     ) : Promise<StructuredDataBatchResult<T, R> | T[]> {
 
         const extract = this.extract();
-        const result = await this.performLookup(
-            async () => await fn( query, extract, opt ), opt
-        );
 
-        Pool.release( 'string[]', extract, extract.length );
-
-        return result;
+        try { return await this.performLookupAsync( () => fn( query, extract, opt ), opt ) }
+        finally { Pool.release( 'string[]', extract, extract.length ) }
 
     }
 
@@ -334,14 +342,14 @@ export class StructuredData<T = any, R = MetricRaw> {
 
         const extract = this.extract();
         const extractOther = this.extractFrom( other, otherKey );
-        const result = await this.performLookup(
-            async () => await fn( extract, extractOther, opt ), opt
-        );
 
-        Pool.release( 'string[]', extract, extract.length );
-        Pool.release( 'string[]', extractOther, extractOther.length );
+        try { return await this.performLookupAsync( () => fn( extract, extractOther, opt ), opt ) }
+        finally {
 
-        return result;
+            Pool.release( 'string[]', extract, extract.length );
+            Pool.release( 'string[]', extractOther, extractOther.length );
+
+        }
 
     }
 
