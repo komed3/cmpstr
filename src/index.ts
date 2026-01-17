@@ -7,7 +7,7 @@
  * filtering, and text analysis. It is designed for both high-level application development
  * and research, offering a unified API for single, batch, and pairwise operations.
  * 
- * Version: 3.0.4
+ * Version: 3.1.0
  * Author: Paul Köhler (komed3)
  * License: MIT
  * 
@@ -21,6 +21,7 @@
  *  - Batch, pairwise, and single comparison with detailed, type-safe results
  *  - Safe-mode for handling empty inputs gracefully
  *  - Phonetic-aware search, indexing, and comparison
+ *  - Structured data comparison by extracting properties from objects
  *  - Readability and text analysis utilities (syllables, word stats, etc.)
  *  - Unified diff and difference reporting (line/word, ASCII/CLI)
  *  - Full TypeScript type safety, extensibility, and profiling support
@@ -40,7 +41,7 @@
  * For asynchronous workloads, use `CmpStrAsync`, which provides the same API with
  * Promise-based, non-blocking methods for large-scale or I/O-bound operations.
  * 
- * @version 3.0.4
+ * @version 3.1.0
  * @author Paul Köhler (komed3)
  * @license MIT
  */

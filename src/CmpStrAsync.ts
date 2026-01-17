@@ -11,6 +11,7 @@
  *  - Asynchronous normalization, filtering, and metric computation
  *  - Async batch, pairwise, and single string comparison with detailed results
  *  - Async phonetic indexing and phonetic-aware search and comparison
+ * - Async structured data comparison by extracting object properties
  *  - Full compatibility with the synchronous CmpStr API
  *  - Designed for large-scale, high-performance, and server-side applications
  *
@@ -23,7 +24,8 @@
 
 import type {
     CmpStrOptions, CmpStrProcessors, CmpStrResult, NormalizeFlags, PhoneticOptions,
-    MetricRaw, MetricInput, MetricMode, MetricResult, MetricResultSingle, MetricResultBatch
+    MetricRaw, MetricInput, MetricMode, MetricResult, MetricResultSingle, MetricResultBatch,
+    StructuredDataBatchResult, StructuredDataOptions
 } from './utils/Types';
 
 import { CmpStr } from './CmpStr';
@@ -220,7 +222,7 @@ export class CmpStrAsync<R = MetricRaw> extends CmpStr<R> {
      * @param {CmpStrOptions} [opt] - Optional options
      * @returns {Promise<T>} - The metric result
      */
-    public async testAsync<T extends CmpStrResult | MetricResultSingle<R>> (
+    public async testAsync<T extends CmpStrResult | MetricResultSingle<R> = any> (
         a: string, b: string, opt?: CmpStrOptions
     ) : Promise<T> {
 
@@ -252,7 +254,7 @@ export class CmpStrAsync<R = MetricRaw> extends CmpStr<R> {
      * @param {CmpStrOptions} [opt] - Optional options
      * @returns {Promise<T>} - The batch metric results
      */
-    public async batchTestAsync<T extends CmpStrResult[] | MetricResultBatch<R>> (
+    public async batchTestAsync<T extends CmpStrResult[] | MetricResultBatch<R> = any> (
         a: MetricInput, b: MetricInput, opt?: CmpStrOptions
     ) : Promise<T> {
 
@@ -270,7 +272,7 @@ export class CmpStrAsync<R = MetricRaw> extends CmpStr<R> {
      * @param {CmpStrOptions} [opt] - Optional options
      * @returns {Promise<T>} - The sorted batch results
      */
-    public async batchSortedAsync<T extends CmpStrResult[] | MetricResultBatch<R>> (
+    public async batchSortedAsync<T extends CmpStrResult[] | MetricResultBatch<R> = any> (
         a: MetricInput, b: MetricInput, dir: 'desc' | 'asc' = 'desc', opt?: CmpStrOptions
     ) : Promise<T> {
 
@@ -296,7 +298,7 @@ export class CmpStrAsync<R = MetricRaw> extends CmpStr<R> {
      * @param {CmpStrOptions} [opt] - Optional options
      * @returns {Promise<T>} - The pairwise metric results
      */
-    public async pairsAsync<T extends CmpStrResult[] | MetricResultBatch<R>> (
+    public async pairsAsync<T extends CmpStrResult[] | MetricResultBatch<R> = any> (
         a: MetricInput, b: MetricInput, opt?: CmpStrOptions
     ) : Promise<T> {
 
@@ -314,7 +316,7 @@ export class CmpStrAsync<R = MetricRaw> extends CmpStr<R> {
      * @param {CmpStrOptions} [opt] - Optional options
      * @returns {Promise<T>} - The filtered batch results
      */
-    public async matchAsync<T extends CmpStrResult[] | MetricResultBatch<R>> (
+    public async matchAsync<T extends CmpStrResult[] | MetricResultBatch<R> = any> (
         a: MetricInput, b: MetricInput, threshold: number, opt?: CmpStrOptions
     ) : Promise<T> {
 
@@ -337,7 +339,7 @@ export class CmpStrAsync<R = MetricRaw> extends CmpStr<R> {
      * @param {CmpStrOptions} [opt] - Optional options
      * @returns {Promise<T>} - The closest matches
      */
-    public async closestAsync<T extends CmpStrResult[] | MetricResultBatch<R>> (
+    public async closestAsync<T extends CmpStrResult[] | MetricResultBatch<R> = any> (
         a: MetricInput, b: MetricInput, n: number = 1, opt?: CmpStrOptions
     ) : Promise<T> {
 
@@ -355,7 +357,7 @@ export class CmpStrAsync<R = MetricRaw> extends CmpStr<R> {
      * @param {CmpStrOptions} [opt] - Optional options
      * @returns {Promise<T>} - The furthest matches
      */
-    public async furthestAsync<T extends CmpStrResult[] | MetricResultBatch<R>> (
+    public async furthestAsync<T extends CmpStrResult[] | MetricResultBatch<R> = any> (
         a: MetricInput, b: MetricInput, n: number = 1, opt?: CmpStrOptions
     ) : Promise<T> {
 
@@ -425,6 +427,144 @@ export class CmpStrAsync<R = MetricRaw> extends CmpStr<R> {
         return this.indexAsync( input, {
             algo: ( algo ?? a )!, opt: opt ?? o
         } ) as Promise<string>;
+
+    }
+
+    /**
+     * ---------------------------------------------------------------------------------
+     * Public asynchronous methods for structured data comparison
+     * ---------------------------------------------------------------------------------
+     * 
+     * These methods provide asynchronous interfaces for comparing arrays of
+     * structured objects by extracting and comparing specific properties.
+     */
+
+    /**
+     * Asynchronously performs a batch comparison against structured data by extracting
+     * a specific property and returning results with original objects attached.
+     * 
+     * @template T - The type of objects in the data array
+     * @param {string} query - The query string to compare against
+     * @param {T[]} data - The array of structured objects
+     * @param {keyof T} key - The property key to extract for comparison
+     * @param {StructuredDataOptions} [opt] - Optional lookup options
+     * @returns {Promise<StructuredDataBatchResult<T, R>|T[]>} - Async batch results with original objects
+     */
+    public async structuredLookupAsync<T = any> (
+        query: string, data: T[], key: keyof T, opt?: StructuredDataOptions
+    ) : Promise<StructuredDataBatchResult<T, R> | T[]> {
+
+        return await this.structured<T>( data, key ).lookupAsync(
+            ( q, items, options ) => this.batchTestAsync<MetricResultBatch<R>>(
+                q, items, options
+            ),
+            query, opt
+        );
+
+    }
+
+    /**
+     * Asynchronously performs a batch comparison and returns only results above
+     * the threshold for structured data.
+     * 
+     * @template T - The type of objects in the data array
+     * @param {string} query - The query string to compare against
+     * @param {T[]} data - The array of structured objects
+     * @param {keyof T} key - The property key to extract for comparison
+     * @param {number} threshold - The similarity threshold (0..1)
+     * @param {StructuredDataLookupOptions} [opt] - Optional lookup options
+     * @returns {Promise<StructuredDataBatchResult<T, R>|T[]>} - Async filtered batch results
+     */
+    public async structuredMatchAsync<T = any> (
+        query: string, data: T[], key: keyof T, threshold: number,
+        opt?: StructuredDataOptions
+    ) : Promise<StructuredDataBatchResult<T, R> | T[]> {
+
+        return await this.structured<T>( data, key ).lookupAsync(
+            ( q, items, options ) => this.matchAsync<MetricResultBatch<R>>(
+                q, items, threshold, options
+            ),
+            query, { ...opt, sort: 'desc' }
+        );
+
+    }
+
+    /**
+     * Asynchronously returns the n closest matches from a batch comparison
+     * of structured data.
+     * 
+     * @template T - The type of objects in the data array
+     * @param {string} query - The query string to compare against
+     * @param {T[]} data - The array of structured objects
+     * @param {keyof T} key - The property key to extract for comparison
+     * @param {number} [n=1] - Number of closest matches
+     * @param {StructuredDataOptions} [opt] - Optional lookup options
+     * @returns {Promise<StructuredDataBatchResult<T, R>|T[]>} - Async closest matches
+     */
+    public async structuredClosestAsync<T = any> (
+        query: string, data: T[], key: keyof T, n: number = 1,
+        opt?: StructuredDataOptions
+    ) : Promise<StructuredDataBatchResult<T, R> | T[]> {
+
+        return await this.structured<T>( data, key ).lookupAsync(
+            ( q, items, options ) => this.closestAsync<MetricResultBatch<R>>(
+                q, items, n, options
+            ),
+            query, { ...opt, sort: 'desc' }
+        );
+
+    }
+
+    /**
+     * Asynchronously returns the n furthest matches from a batch comparison
+     * of structured data.
+     * 
+     * @template T - The type of objects in the data array
+     * @param {string} query - The query string to compare against
+     * @param {T[]} data - The array of structured objects
+     * @param {keyof T} key - The property key to extract for comparison
+     * @param {number} [n=1] - Number of furthest matches
+     * @param {StructuredDataOptions} [opt] - Optional lookup options
+     * @returns {Promise<StructuredDataBatchResult<T, R>|T[]>} - Async furthest matches
+     */
+    public async structuredFurthestAsync<T = any> (
+        query: string, data: T[], key: keyof T, n: number = 1,
+        opt?: StructuredDataOptions
+    ) : Promise<StructuredDataBatchResult<T, R> | T[]> {
+
+        return await this.structured<T>( data, key ).lookupAsync(
+            ( q, items, options ) => this.furthestAsync<MetricResultBatch<R>>(
+                q, items, n, options
+            ),
+            query, { ...opt, sort: 'asc' }
+        );
+
+    }
+
+    /**
+     * Asynchronously performs a pairwise comparison between two arrays of structured objects
+     * by extracting specific properties and returning results with original objects attached.
+     * 
+     * @template T - The type of objects in the arrays
+     * @template O - The type of objects in the other array
+     * @param {T[]} data - The array of structured objects
+     * @param {keyof T} key - The property key to extract for comparison
+     * @param {T[]} other - The other array of structured objects
+     * @param {keyof T} otherKey - The property key to extract from other array
+     * @param {StructuredDataOptions} [opt] - Optional lookup options
+     * @returns {Promise<StructuredDataBatchResult<T, R>|T[]>} - Async pairwise results with original objects
+     */
+    public async structuredPairsAsync<T = any, O = any> (
+        data: T[], key: keyof T, other: O[], otherKey: keyof O,
+        opt?: StructuredDataOptions
+    ) : Promise<StructuredDataBatchResult<T, R> | T[]> {
+
+        return await this.structured<T>( data, key ).lookupPairsAsync<O>(
+            ( items, otherItems, options ) => this.pairsAsync<MetricResultBatch<R>>(
+                items, otherItems, options
+            ),
+            other, otherKey, opt
+        );
 
     }
 

@@ -12,6 +12,7 @@
  *  - Flexible normalization and filtering pipeline for all inputs
  *  - Batch, pairwise, and single string comparison with detailed results
  *  - Phonetic indexing and phonetic-aware search and comparison
+ *  - Structured data comparison by extracting properties from objects
  *  - Text analysis and unified diff utilities
  *  - Full TypeScript type safety and extensibility
  * 
@@ -24,7 +25,8 @@
 
 import type {
     CmpStrOptions, CmpStrProcessors, CmpStrResult, NormalizeFlags, DiffOptions, PhoneticOptions,
-    MetricRaw, MetricInput, MetricMode, MetricResult, MetricResultSingle, MetricResultBatch
+    MetricRaw, MetricInput, MetricMode, MetricResult, MetricResultSingle, MetricResultBatch,
+    StructuredDataBatchResult, StructuredDataOptions
 } from './utils/Types';
 
 import * as DeepMerge from './utils/DeepMerge';
@@ -33,6 +35,7 @@ import { TextAnalyzer } from './utils/TextAnalyzer';
 import { DiffChecker } from './utils/DiffChecker';
 import { Normalizer } from './utils/Normalizer';
 import { Filter } from './utils/Filter';
+import { StructuredData } from './utils/StructuredData';
 
 import { factory } from './utils/Registry';
 import { MetricRegistry, Metric } from './metric';
@@ -323,6 +326,20 @@ export class CmpStr<R = MetricRaw> {
     }
 
     /**
+     * Creates a instance for processing structured data.
+     * 
+     * @template T - The type of objects in the data array
+     * @param {T[]} data - The array of structured objects
+     * @param {keyof T} key - The property key to compare
+     * @returns {StructuredData<T, R>} - The lookup instance
+     */
+    protected structured<T = any> ( data: T[], key: keyof T ) : StructuredData<T, R> {
+
+        return StructuredData.create<T, R>( data, key );
+
+    }
+
+    /**
      * Computes the metric result for the given inputs, applying normalization and
      * filtering as configured.
      * 
@@ -541,7 +558,7 @@ export class CmpStr<R = MetricRaw> {
      * @param {CmpStrOptions} [opt] - Optional options
      * @returns {T} - The metric result
      */
-    public test<T extends CmpStrResult | MetricResultSingle<R>> (
+    public test<T extends CmpStrResult | MetricResultSingle<R> = any> (
         a: string, b: string, opt?: CmpStrOptions
     ) : T {
 
@@ -573,7 +590,7 @@ export class CmpStr<R = MetricRaw> {
      * @param {CmpStrOptions} [opt] - Optional options
      * @returns {T} - The batch metric results
      */
-    public batchTest<T extends CmpStrResult[] | MetricResultBatch<R>> (
+    public batchTest<T extends CmpStrResult[] | MetricResultBatch<R> = any> (
         a: MetricInput, b: MetricInput, opt?: CmpStrOptions
     ) : T {
 
@@ -591,7 +608,7 @@ export class CmpStr<R = MetricRaw> {
      * @param {CmpStrOptions} [opt] - Optional options
      * @returns {T} - The sorted batch results
      */
-    public batchSorted<T extends CmpStrResult[] | MetricResultBatch<R>> (
+    public batchSorted<T extends CmpStrResult[] | MetricResultBatch<R> = any> (
         a: MetricInput, b: MetricInput, dir: 'desc' | 'asc' = 'desc', opt?: CmpStrOptions
     ) : T {
 
@@ -616,7 +633,7 @@ export class CmpStr<R = MetricRaw> {
      * @param {CmpStrOptions} [opt] - Optional options
      * @returns {T} - The pairwise metric results
      */
-    public pairs<T extends CmpStrResult[] | MetricResultBatch<R>> (
+    public pairs<T extends CmpStrResult[] | MetricResultBatch<R> = any> (
         a: MetricInput, b: MetricInput, opt?: CmpStrOptions
     ) : T {
 
@@ -634,7 +651,7 @@ export class CmpStr<R = MetricRaw> {
      * @param {CmpStrOptions} [opt] - Optional options
      * @returns {T} - The filtered batch results
      */
-    public match<T extends CmpStrResult[] | MetricResultBatch<R>> (
+    public match<T extends CmpStrResult[] | MetricResultBatch<R> = any> (
         a: MetricInput, b: MetricInput, threshold: number, opt?: CmpStrOptions
     ) : T {
 
@@ -656,7 +673,7 @@ export class CmpStr<R = MetricRaw> {
      * @param {CmpStrOptions} [opt] - Optional options
      * @returns {T} - The closest matches
      */
-    public closest<T extends CmpStrResult[] | MetricResultBatch<R>> (
+    public closest<T extends CmpStrResult[] | MetricResultBatch<R> = any> (
         a: MetricInput, b: MetricInput, n: number = 1, opt?: CmpStrOptions
     ) : T {
 
@@ -674,7 +691,7 @@ export class CmpStr<R = MetricRaw> {
      * @param {CmpStrOptions} [opt] - Optional options
      * @returns {T} - The furthest matches
      */
-    public furthest<T extends CmpStrResult[] | MetricResultBatch<R>> (
+    public furthest<T extends CmpStrResult[] | MetricResultBatch<R> = any> (
         a: MetricInput, b: MetricInput, n: number = 1, opt?: CmpStrOptions
     ) : T {
 
@@ -738,6 +755,134 @@ export class CmpStr<R = MetricRaw> {
         const { algo: a, opt: o } = this.options.processors?.phonetic ?? {};
 
         return this.index( input, { algo: ( algo ?? a )!, opt: opt ?? o } ) as string;
+
+    }
+
+    /**
+     * ---------------------------------------------------------------------------------
+     * Public methods for structured data comparison
+     * ---------------------------------------------------------------------------------
+     * 
+     * These methods provide interfaces for comparing arrays of structured objects
+     * by extracting and comparing specific properties.
+     */
+
+    /**
+     * Performs a batch comparison against structured data by extracting
+     * a specific property and returning results with original objects attached.
+     * 
+     * @template T - The type of objects in the data array
+     * @param {string} query - The query string to compare against
+     * @param {T[]} data - The array of structured objects
+     * @param {keyof T} key - The property key to extract for comparison
+     * @param {StructuredDataOptions} [opt] - Optional lookup options
+     * @returns {StructuredDataBatchResult<T, R>|T[]} - Batch results with original objects
+     */
+    public structuredLookup<T = any> (
+        query: string, data: T[], key: keyof T, opt?: StructuredDataOptions
+    ) : StructuredDataBatchResult<T, R> | T[] {
+
+        return this.structured<T>( data, key ).lookup(
+            ( q, items, options ) => this.batchTest<MetricResultBatch<R>>( q, items, options ),
+            query, opt
+        );
+
+    }
+
+    /**
+     * Performs a batch comparison and returns only results above the threshold
+     * for structured data.
+     * 
+     * @template T - The type of objects in the data array
+     * @param {string} query - The query string to compare against
+     * @param {T[]} data - The array of structured objects
+     * @param {keyof T} key - The property key to extract for comparison
+     * @param {number} threshold - The similarity threshold (0..1)
+     * @param {StructuredDataOptions} [opt] - Optional lookup options
+     * @returns {StructuredDataBatchResult<T, R>|T[]} - Filtered batch results with objects
+     */
+    public structuredMatch<T = any> (
+        query: string, data: T[], key: keyof T, threshold: number,
+        opt?: StructuredDataOptions
+    ) : StructuredDataBatchResult<T, R> | T[] {
+
+        return this.structured<T>( data, key ).lookup(
+            ( q, items, options ) => this.match<MetricResultBatch<R>>( q, items, threshold, options ),
+            query, { ...opt, sort: 'desc' }
+        );
+
+    }
+
+    /**
+     * Returns the n closest matches from a batch comparison of structured data.
+     * 
+     * @template T - The type of objects in the data array
+     * @param {string} query - The query string to compare against
+     * @param {T[]} data - The array of structured objects
+     * @param {keyof T} key - The property key to extract for comparison
+     * @param {number} [n=1] - Number of closest matches
+     * @param {StructuredDataOptions} [opt] - Optional lookup options
+     * @returns {StructuredDataBatchResult<T, R>|T[]} - Closest matches with objects
+     */
+    public structuredClosest<T = any> (
+        query: string, data: T[], key: keyof T, n: number = 1,
+        opt?: StructuredDataOptions
+    ) : StructuredDataBatchResult<T, R> | T[] {
+
+        return this.structured<T>( data, key ).lookup(
+            ( q, items, options ) => this.closest<MetricResultBatch<R>>( q, items, n, options ),
+            query, { ...opt, sort: 'desc' }
+        );
+
+    }
+
+    /**
+     * Returns the n furthest matches from a batch comparison of structured data.
+     * 
+     * @template T - The type of objects in the data array
+     * @param {string} query - The query string to compare against
+     * @param {T[]} data - The array of structured objects
+     * @param {keyof T} key - The property key to extract for comparison
+     * @param {number} [n=1] - Number of furthest matches
+     * @param {StructuredDataOptions} [opt] - Optional lookup options
+     * @returns {StructuredDataBatchResult<T, R>|T[]} - Furthest matches with objects
+     */
+    public structuredFurthest<T = any> (
+        query: string, data: T[], key: keyof T, n: number = 1,
+        opt?: StructuredDataOptions
+    ) : StructuredDataBatchResult<T, R> | T[] {
+
+        return this.structured<T>( data, key ).lookup(
+            ( q, items, options ) => this.furthest<MetricResultBatch<R>>( q, items, n, options ),
+            query, { ...opt, sort: 'asc' }
+        );
+
+    }
+
+    /**
+     * Performs a pairwise comparison between two arrays of structured objects
+     * by extracting specific properties and returning results with original objects attached.
+     * 
+     * @template T - The type of objects in the arrays
+     * @template O - The type of objects in the other array
+     * @param {T[]} data - The array of structured objects
+     * @param {keyof T} key - The property key to extract for comparison
+     * @param {O[]} other - The other array of structured objects
+     * @param {keyof O} otherKey - The property key to extract from other array
+     * @param {StructuredDataOptions} [opt] - Optional lookup options
+     * @returns {StructuredDataBatchResult<T, R>|T[]} - Pairwise results with original objects
+     */
+    public structuredPairs<T = any, O = any> (
+        data: T[], key: keyof T, other: O[], otherKey: keyof O,
+        opt?: StructuredDataOptions
+    ) : StructuredDataBatchResult<T, R> | T[] {
+
+        return this.structured<T>( data, key ).lookupPairs<O>(
+            ( items, otherItems, options ) => this.pairs<MetricResultBatch<R>>(
+                items, otherItems, options
+            ),
+            other as any, otherKey as any, opt
+        );
 
     }
 

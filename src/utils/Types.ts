@@ -57,7 +57,7 @@ export interface ProfilerService<T> {
 /**
  * PoolType enumerates the supported buffer types for the Pool utility.
  */
-export type PoolType = 'uint16' | 'number[]' | 'set' | 'map';
+export type PoolType = 'uint16' | 'number[]' | 'string[]' | 'set' | 'map';
 
 /**
  * PoolConfig defines the configuration for a buffer pool.
@@ -451,4 +451,46 @@ export interface CmpStrResult {
     source: string; target: string;
     // The similarity score (0..1)
     match: number;
+};
+
+/**
+ * CompareFnResult represents the possible return types for comparison functions.
+ * 
+ * @template R - The type of the raw result
+ */
+export type CmpFnResult<R> = MetricResultSingle<R>[] | ( CmpStrResult & { raw?: R } )[] | null | undefined;
+
+/**
+ * StructuredDataResult represents a lookup result with original object attached.
+ * 
+ * @template T - The type of the original object
+ * @template R - The type of the metric raw result
+ */
+export interface StructuredDataResult<T = any, R = MetricRaw> {
+    // The original object
+    obj: T;
+    // The property key that was compared
+    key: string | number | symbol;
+    // The comparison result (CmpStrResult format)
+    result: CmpStrResult;
+    // Optional raw metric data
+    raw?: R;
+};
+
+/**
+ * StructuredDataBatchResult is an array of lookup results.
+ * 
+ * @template T - The type of the original object
+ * @template R - The type of the metric raw result
+ */
+export type StructuredDataBatchResult<T = any, R = MetricRaw> = StructuredDataResult<T, R>[];
+
+/**
+ * StructuredDataOptions configures the lookup behavior.
+ */
+export interface StructuredDataOptions extends Omit<CmpStrOptions, 'raw'> {
+    // Sort results by match score (desc by default)
+    sort?: boolean | 'asc' | 'desc';
+    // Return only the original objects without metadata (minimal structure)
+    objectsOnly?: boolean;
 };

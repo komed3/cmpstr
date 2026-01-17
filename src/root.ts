@@ -9,7 +9,7 @@
  * Please visit CmpStr's documentation for more information:
  * https://github.com/komed3/cmpstr/wiki/Extending-CmpStr
  * 
- * @version 3.0.4
+ * @version 3.1.0
  * @author Paul Köhler (komed3)
  * @license MIT
  */
@@ -44,3 +44,4 @@ export { Filter } from './utils/Filter';
 export { HashTable } from './utils/HashTable';
 export { Pool } from './utils/Pool';
 export { Profiler } from './utils/Profiler';
+export { StructuredData } from './utils/StructuredData';

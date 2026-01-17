@@ -9,8 +9,8 @@
  * By reusing pre-allocated typed arrays, it reduces memory allocations and garbage
  * collection overhead, especially for repeated or batch computations.
  * 
- * It supports different types of buffers (Uint16Array, number[], Set, Map) and allows
- * for acquiring buffers of specific sizes while managing a maximum pool size.
+ * It supports different types of buffers (Uint16Array, number[], string[], Set, Map)
+ * and allows for acquiring buffers of specific sizes while managing a max pool size.
  * 
  * @module Utils/Pool
  * @author Paul Köhler (komed3)
@@ -127,14 +127,16 @@ export class Pool {
     private static readonly CONFIG: Record<PoolType, PoolConfig> = {
         'uint16':   { type: 'uint16',   maxSize: 32, maxItemSize: 2048, allowOversize: true  },
         'number[]': { type: 'number[]', maxSize: 16, maxItemSize: 1024, allowOversize: false },
-        'set':      { type: 'set',      maxSize: 8,  maxItemSize: 0,    allowOversize: false },
-        'map':      { type: 'map',      maxSize: 8,  maxItemSize: 0,    allowOversize: false }
+        'string[]': { type: 'string[]', maxSize:  4, maxItemSize: 1024, allowOversize: false },
+        'set':      { type: 'set',      maxSize:  8, maxItemSize:    0, allowOversize: false },
+        'map':      { type: 'map',      maxSize:  8, maxItemSize:    0, allowOversize: false }
     };
 
     // Pool Rings for each type
     private static readonly POOLS: Record<PoolType, RingPool<any>> = {
         'uint16':   new RingPool<Uint16Array> ( 32 ),
         'number[]': new RingPool<number[]> ( 16 ),
+        'string[]': new RingPool<string[]> ( 4 ),
         'set':      new RingPool<Set<any>> ( 8 ),
         'map':      new RingPool<Map<any, any>> ( 8 )
     };
@@ -152,6 +154,7 @@ export class Pool {
 
             case 'uint16':   return new Uint16Array ( size );
             case 'number[]': return new Array ( size ).fill( 0 );
+            case 'string[]': return new Array ( size );
             case 'set':      return new Set ();
             case 'map':      return new Map ();
 
