@@ -790,6 +790,31 @@ export class CmpStr<R = MetricRaw> {
     }
 
     /**
+     * Performs a batch comparison and returns only results above the threshold
+     * for structured data.
+     * 
+     * @template T - The type of objects in the data array
+     * @param {string} query - The query string to compare against
+     * @param {T[]} data - The array of structured objects
+     * @param {string|number|symbol} key - The property key to extract for comparison
+     * @param {number} threshold - The similarity threshold (0..1)
+     * @param {StructuredDataOptions} [opt] - Optional lookup options
+     * @returns {StructuredDataBatchResult<T, R>} - Filtered batch results with objects
+     */
+    public structuredMatch<T = any> (
+        query: string, data: T[], key: string | number | symbol, threshold: number,
+        opt?: StructuredDataOptions
+    ) : StructuredDataBatchResult<T, R> | T[] {
+
+        return this.structured<T>( data, key ).lookup(
+            query,
+            ( q, items, options ) => this.match<MetricResultBatch<R>>( q, items, threshold, options ),
+            { ...opt, sort: 'desc' }
+        );
+
+    }
+
+    /**
      * Performs a pairwise comparison between two arrays of structured objects
      * by extracting specific properties and returning results with original objects attached.
      * 
