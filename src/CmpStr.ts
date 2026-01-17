@@ -557,7 +557,7 @@ export class CmpStr<R = MetricRaw> {
      * @param {CmpStrOptions} [opt] - Optional options
      * @returns {T} - The metric result
      */
-    public test<T extends CmpStrResult | MetricResultSingle<R>> (
+    public test<T extends CmpStrResult | MetricResultSingle<R> = any> (
         a: string, b: string, opt?: CmpStrOptions
     ) : T {
 
@@ -589,7 +589,7 @@ export class CmpStr<R = MetricRaw> {
      * @param {CmpStrOptions} [opt] - Optional options
      * @returns {T} - The batch metric results
      */
-    public batchTest<T extends CmpStrResult[] | MetricResultBatch<R>> (
+    public batchTest<T extends CmpStrResult[] | MetricResultBatch<R> = any> (
         a: MetricInput, b: MetricInput, opt?: CmpStrOptions
     ) : T {
 
@@ -607,7 +607,7 @@ export class CmpStr<R = MetricRaw> {
      * @param {CmpStrOptions} [opt] - Optional options
      * @returns {T} - The sorted batch results
      */
-    public batchSorted<T extends CmpStrResult[] | MetricResultBatch<R>> (
+    public batchSorted<T extends CmpStrResult[] | MetricResultBatch<R> = any> (
         a: MetricInput, b: MetricInput, dir: 'desc' | 'asc' = 'desc', opt?: CmpStrOptions
     ) : T {
 
@@ -632,7 +632,7 @@ export class CmpStr<R = MetricRaw> {
      * @param {CmpStrOptions} [opt] - Optional options
      * @returns {T} - The pairwise metric results
      */
-    public pairs<T extends CmpStrResult[] | MetricResultBatch<R>> (
+    public pairs<T extends CmpStrResult[] | MetricResultBatch<R> = any> (
         a: MetricInput, b: MetricInput, opt?: CmpStrOptions
     ) : T {
 
@@ -650,7 +650,7 @@ export class CmpStr<R = MetricRaw> {
      * @param {CmpStrOptions} [opt] - Optional options
      * @returns {T} - The filtered batch results
      */
-    public match<T extends CmpStrResult[] | MetricResultBatch<R>> (
+    public match<T extends CmpStrResult[] | MetricResultBatch<R> = any> (
         a: MetricInput, b: MetricInput, threshold: number, opt?: CmpStrOptions
     ) : T {
 
@@ -672,7 +672,7 @@ export class CmpStr<R = MetricRaw> {
      * @param {CmpStrOptions} [opt] - Optional options
      * @returns {T} - The closest matches
      */
-    public closest<T extends CmpStrResult[] | MetricResultBatch<R>> (
+    public closest<T extends CmpStrResult[] | MetricResultBatch<R> = any> (
         a: MetricInput, b: MetricInput, n: number = 1, opt?: CmpStrOptions
     ) : T {
 
@@ -690,7 +690,7 @@ export class CmpStr<R = MetricRaw> {
      * @param {CmpStrOptions} [opt] - Optional options
      * @returns {T} - The furthest matches
      */
-    public furthest<T extends CmpStrResult[] | MetricResultBatch<R>> (
+    public furthest<T extends CmpStrResult[] | MetricResultBatch<R> = any> (
         a: MetricInput, b: MetricInput, n: number = 1, opt?: CmpStrOptions
     ) : T {
 
