@@ -21,6 +21,7 @@
  *  - Batch, pairwise, and single comparison with detailed, type-safe results
  *  - Safe-mode for handling empty inputs gracefully
  *  - Phonetic-aware search, indexing, and comparison
+ *  - Structured data comparison by extracting properties from objects
  *  - Readability and text analysis utilities (syllables, word stats, etc.)
  *  - Unified diff and difference reporting (line/word, ASCII/CLI)
  *  - Full TypeScript type safety, extensibility, and profiling support
