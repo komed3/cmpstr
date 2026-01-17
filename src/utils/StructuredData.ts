@@ -21,8 +21,8 @@
 'use strict';
 
 import type {
-    CmpStrOptions, MetricRaw, MetricResultSingle, StructuredDataOptions,
-    StructuredDataResult
+    CmpStrOptions, MetricRaw, MetricResultSingle, StructuredDataBatchResult,
+    StructuredDataOptions, StructuredDataResult
 } from './Types';
 
 /**
@@ -224,12 +224,12 @@ export class StructuredData<T = any, R = MetricRaw> {
         query: string,
         fn: ( a: string, b: string[], opt?: CmpStrOptions ) => any,
         opt?: StructuredDataOptions
-    ) : any {
+    ) : StructuredDataBatchResult<T, R> | T[] {
 
         return this.performLookup(
             () => fn( query, this.extract(), opt ),
             opt
-        );
+        ) as any;
 
     }
 
@@ -247,20 +247,28 @@ export class StructuredData<T = any, R = MetricRaw> {
         otherKey: string | number | symbol,
         fn: ( a: string[], b: string[], opt?: CmpStrOptions ) => any,
         opt?: StructuredDataOptions
-    ) : any {
+    ) : StructuredDataBatchResult<T, R> | T[] {
 
         return this.performLookup(
             () => fn( this.extract(), this.extractFrom( other, otherKey ), opt ),
             opt
-        );
+        ) as any;
 
     }
 
+    /**
+     * Asynchronously performs a batch comparison against a query string.
+     * 
+     * @param {string} query - The query string to compare against
+     * @param {(a: string, b: string[], opt?: CmpStrOptions) => Promise<any>} fn - The async comparison function
+     * @param {StructuredDataOptions} [opt] - Optional lookup options
+     * @returns {Promise<StructuredDataBatchResult<T, R> | T[]>} - Async results
+     */
     public async lookupAsync (
         query: string,
         fn: ( a: string, b: string[], opt?: CmpStrOptions ) => Promise<any>,
         opt?: StructuredDataOptions
-    ) : Promise<any> {
+    ) : Promise<StructuredDataBatchResult<T, R> | T[]> {
 
         return await this.performLookup(
             async () => await fn( query, this.extract(), opt ),
@@ -269,12 +277,21 @@ export class StructuredData<T = any, R = MetricRaw> {
 
     }
 
+    /**
+     * Asynchronously performs a pairwise comparison against another array of objects.
+     * 
+     * @param {T[]} other - The other array of objects
+     * @param {string|number|symbol} otherKey - The property key in the other array
+     * @param {(a: string[], b: string[], opt?: CmpStrOptions) => Promise<any>} fn - The async comparison function
+     * @param {StructuredDataOptions} [opt] - Optional lookup options
+     * @returns {Promise<StructuredDataBatchResult<T, R> | T[]>} - Async results
+     */
     public async lookupPairsAsync (
         other: T[],
         otherKey: string | number | symbol,
         fn: ( a: string[], b: string[], opt?: CmpStrOptions ) => Promise<any>,
         opt?: StructuredDataOptions
-    ) : Promise<any> {
+    ) : Promise<StructuredDataBatchResult<T, R> | T[]> {
 
         return await this.performLookup(
             async () => await fn( this.extract(), this.extractFrom( other, otherKey ), opt ),
