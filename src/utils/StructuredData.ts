@@ -1,3 +1,23 @@
+/**
+ * StructuredData - Structured Data Processing Utility
+ * src/utils/StructuredData.ts
+ * 
+ * This utility provides a factory for processing arrays of structured objects,
+ * enabling efficient lookups and comparisons on specific object properties.
+ * 
+ * Features:
+ *  - Support for arbitrary object structures and property keys
+ *  - Flexible extraction and transformation of object properties
+ *  - Batch comparison with original object reconstruction
+ *  - Full TypeScript type safety with generics
+ *  - Integration with CmpStr comparison methods
+ *  - Optional "objects-only" output mode for minimal result structure
+ * 
+ * @module Utils/StructuredData
+ * @author Paul Köhler (komed3)
+ * @license MIT
+ */
+
 'use strict';
 
 import type { MetricRaw, MetricResultSingle, StructuredDataResult } from './Types';
