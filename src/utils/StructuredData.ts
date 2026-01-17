@@ -185,4 +185,31 @@ export class StructuredData<T = any, R = MetricRaw> {
 
     }
 
+    /**
+     * Performs a lookup with a synchronous comparison function.
+     * 
+     * @param {string} query - The query string to compare against
+     * @param {( a: string, b: string[], opt?: CmpStrOptions ) => any} compareFn - The comparison function
+     * @param {StructuredDataOptions} [opt] - Additional options
+     * @returns {any} - The lookup results
+     */
+    private async lookup (
+        fn: () => any | Promise<any>,
+        opt?: StructuredDataOptions
+    ) : Promise<any> {
+
+        // Get raw results (sync or async)
+        const rawResults = await fn();
+
+        // Normalize results to MetricResultSingle<R>[]
+        const normalized = this.normalizeResults( rawResults );
+
+        // Rebuild with original objects
+        const rebuilt = this.rebuild( normalized, this.data, opt?.removeZero, opt?.objectsOnly );
+
+        // Sort if requested
+        return this.sort( rebuilt, opt?.sort );
+
+    }
+
 }
