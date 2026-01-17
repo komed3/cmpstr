@@ -776,7 +776,7 @@ export class CmpStr<R = MetricRaw> {
      * @param {T[]} data - The array of structured objects
      * @param {string|number|symbol} key - The property key to extract for comparison
      * @param {StructuredDataOptions} [opt] - Optional lookup options
-     * @returns {StructuredDataBatchResult<T, R>} - Batch results with original objects
+     * @returns {StructuredDataBatchResult<T, R>|T[]} - Batch results with original objects
      */
     public structuredLookup<T = any> (
         query: string, data: T[], key: string | number | symbol, opt?: StructuredDataOptions
@@ -799,7 +799,7 @@ export class CmpStr<R = MetricRaw> {
      * @param {string|number|symbol} key - The property key to extract for comparison
      * @param {number} threshold - The similarity threshold (0..1)
      * @param {StructuredDataOptions} [opt] - Optional lookup options
-     * @returns {StructuredDataBatchResult<T, R>} - Filtered batch results with objects
+     * @returns {StructuredDataBatchResult<T, R>|T[]} - Filtered batch results with objects
      */
     public structuredMatch<T = any> (
         query: string, data: T[], key: string | number | symbol, threshold: number,
@@ -822,7 +822,7 @@ export class CmpStr<R = MetricRaw> {
      * @param {string|number|symbol} key - The property key to extract for comparison
      * @param {number} [n=1] - Number of closest matches
      * @param {StructuredDataOptions} [opt] - Optional lookup options
-     * @returns {StructuredDataBatchResult<T, R>} - Closest matches with objects
+     * @returns {StructuredDataBatchResult<T, R>|T[]} - Closest matches with objects
      */
     public structuredClosest<T = any> (
         query: string, data: T[], key: string | number | symbol, n: number = 1,
@@ -845,7 +845,7 @@ export class CmpStr<R = MetricRaw> {
      * @param {string|number|symbol} key - The property key to extract for comparison
      * @param {number} [n=1] - Number of furthest matches
      * @param {StructuredDataOptions} [opt] - Optional lookup options
-     * @returns {StructuredDataBatchResult<T, R>} - Furthest matches with objects
+     * @returns {StructuredDataBatchResult<T, R>|T[]} - Furthest matches with objects
      */
     public structuredFurthest<T = any> (
         query: string, data: T[], key: string | number | symbol, n: number = 1,
@@ -869,7 +869,7 @@ export class CmpStr<R = MetricRaw> {
      * @param {T[]} other - The other array of structured objects
      * @param {string|number|symbol} otherKey - The property key to extract from other array
      * @param {StructuredDataOptions} [opt] - Optional lookup options
-     * @returns {StructuredDataBatchResult<T, R>} - Pairwise results with original objects
+     * @returns {StructuredDataBatchResult<T, R>|T[]} - Pairwise results with original objects
      */
     public structuredPairs<T = any> (
         data: T[], key: string | number | symbol, other: T[], otherKey: string | number | symbol,
