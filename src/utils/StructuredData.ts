@@ -1,7 +1,23 @@
+'use strict';
+
 import type { MetricRaw, MetricResultSingle } from './Types';
 
+/**
+ * The StructuredData class provides factory methods for processing arrays of
+ * structured objects with string comparison capabilities.
+ * 
+ * @template T - The type of objects in the data array
+ * @template R - The type of the metric raw result
+ */
 export class StructuredData<T = any, R = MetricRaw> {
 
+    /**
+     * Creates a new StructuredData instance for processing structured data.
+     * 
+     * @param {T[]} data - The array of objects to process
+     * @param {string|number|symbol} key - The property key to extract for comparison
+     * @returns {StructuredData<T, R>} - A new class instance
+     */
     public static create<T = any, R = MetricRaw> (
         data: T[], key: string | number | symbol
     ) : StructuredData<T, R> {
@@ -10,9 +26,18 @@ export class StructuredData<T = any, R = MetricRaw> {
 
     }
 
+    // The data array to process (cached for performance)
     protected data: T[];
+
+    // The property key to extract (cached for performance)
     protected key: string | number | symbol;
 
+    /**
+     * Creates a new StructuredData instance.
+     *
+     * @param {T[]} data - The array of objects to process
+     * @param {string|number|symbol} key - The property key to extract for comparison
+     */
     protected constructor ( data: T[], key: string | number | symbol ) {
 
         this.data = data;
