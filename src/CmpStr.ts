@@ -783,9 +783,8 @@ export class CmpStr<R = MetricRaw> {
     ) : StructuredDataBatchResult<T, R> | T[] {
 
         return this.structured<T>( data, key ).lookup(
-            query,
             ( q, items, options ) => this.batchTest<MetricResultBatch<R>>( q, items, options ),
-            opt
+            query, opt
         );
 
     }
@@ -808,9 +807,8 @@ export class CmpStr<R = MetricRaw> {
     ) : StructuredDataBatchResult<T, R> | T[] {
 
         return this.structured<T>( data, key ).lookup(
-            query,
             ( q, items, options ) => this.match<MetricResultBatch<R>>( q, items, threshold, options ),
-            { ...opt, sort: 'desc' }
+            query, { ...opt, sort: 'desc' }
         );
 
     }
@@ -832,9 +830,8 @@ export class CmpStr<R = MetricRaw> {
     ) : StructuredDataBatchResult<T, R> | T[] {
 
         return this.structured<T>( data, key ).lookup(
-            query,
             ( q, items, options ) => this.closest<MetricResultBatch<R>>( q, items, n, options ),
-            { ...opt, sort: 'desc' }
+            query, { ...opt, sort: 'desc' }
         );
 
     }
@@ -856,9 +853,8 @@ export class CmpStr<R = MetricRaw> {
     ) : StructuredDataBatchResult<T, R> | T[] {
 
         return this.structured<T>( data, key ).lookup(
-            query,
             ( q, items, options ) => this.furthest<MetricResultBatch<R>>( q, items, n, options ),
-            { ...opt, sort: 'asc' }
+            query, { ...opt, sort: 'asc' }
         );
 
     }
@@ -881,9 +877,8 @@ export class CmpStr<R = MetricRaw> {
     ) : StructuredDataBatchResult<T, R> | T[] {
 
         return this.structured<T>( data, key ).lookupPairs(
-            other, otherKey,
             ( items, otherItems, options ) => this.pairs<MetricResultBatch<R>>( items, otherItems, options ),
-            opt
+            other, otherKey, opt
         );
 
     }
