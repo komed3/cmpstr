@@ -454,6 +454,13 @@ export interface CmpStrResult {
 };
 
 /**
+ * CompareFnResult represents the possible return types for comparison functions.
+ * 
+ * @template R - The type of the raw result
+ */
+export type CmpFnResult<R> = MetricResultSingle<R>[] | ( CmpStrResult & { raw?: R } )[] | null | undefined;
+
+/**
  * StructuredDataResult represents a lookup result with original object attached.
  * 
  * @template T - The type of the original object

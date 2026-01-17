@@ -21,8 +21,8 @@
 'use strict';
 
 import type {
-    CmpStrOptions, CmpStrResult, MetricRaw, MetricResultSingle, StructuredDataBatchResult,
-    StructuredDataOptions, StructuredDataResult
+    CmpFnResult, CmpStrOptions, CmpStrResult, MetricRaw, MetricResultSingle,
+    StructuredDataBatchResult, StructuredDataOptions, StructuredDataResult
 } from './Types';
 
 import { Pool } from './Pool';
@@ -107,7 +107,7 @@ export class StructuredData<T = any, R = MetricRaw> {
      * @param {unknown} v - The value to check
      * @returns {v is MetricResultSingle<R>} - True if v is MetricResultSingle<R>
      */
-    private isMetricResult<R> ( v: unknown ) : v is MetricResultSingle<R> {
+    private isMetricResult ( v: unknown ) : v is MetricResultSingle<R> {
 
         return typeof v === 'object' && v !== null && 'a' in v && 'b' in v && 'res' in v;
 
@@ -132,7 +132,7 @@ export class StructuredData<T = any, R = MetricRaw> {
      * @param {any} results - The raw metric results
      * @returns {MetricResultSingle<R>[]} - Normalized single results array
      */
-    private normalizeResults ( results: any ) : MetricResultSingle<R>[] {
+    private normalizeResults ( results: CmpFnResult<R> ) : MetricResultSingle<R>[] {
 
         // If already an array of MetricResultSingle, return as-is
         if ( ! Array.isArray( results ) || results.length === 0 ) return [];
@@ -140,7 +140,7 @@ export class StructuredData<T = any, R = MetricRaw> {
         const first = results[ 0 ];
 
         // Check if it's MetricResultSingle format
-        if ( this.isMetricResult<R>( first ) ) return results as MetricResultSingle<R>[];
+        if ( this.isMetricResult( first ) ) return results as MetricResultSingle<R>[];
 
         // Check if it's CmpStrResult format -> convert to MetricResultSingle
         if ( this.isCmpStrResult( first ) ) return ( results as ( CmpStrResult & { raw?: R } )[] ).map(
@@ -165,7 +165,8 @@ export class StructuredData<T = any, R = MetricRaw> {
         removeZero?: boolean, objectsOnly?: boolean
     ) : StructuredDataResult<T, R>[] | T[] {
 
-        const output: ( StructuredDataResult<T, R> | T )[] = [];
+        const output = new Array<StructuredDataResult<T, R> | T>( results.length );
+        let out = 0;
 
         for ( let i = 0; i < results.length; i++ ) {
 
@@ -175,17 +176,18 @@ export class StructuredData<T = any, R = MetricRaw> {
             if ( removeZero && result.res === 0 ) continue;
 
             // If objectsOnly, push just the original object
-            if ( objectsOnly ) output.push( sourceData[ i ] );
+            if ( objectsOnly ) output[ out++ ] = sourceData[ i ];
 
             // Build the result object
-            else output.push( {
+            else output[ out++ ] = {
                 obj: sourceData[ i ], key: this.key, result: {
                     source: result.a, target: result.b, match: result.res
                 }, ...( result.raw ? { raw: result.raw } : null )
-            } );
+            };
 
         }
 
+        output.length = out;
         return output as StructuredDataResult<T, R>[] | T[];
 
     }
@@ -208,10 +210,8 @@ export class StructuredData<T = any, R = MetricRaw> {
         const asc = sort === 'asc';
 
         // Helper to get match score from result
-        const getMatch = ( v: T | StructuredDataResult<T, R> ) : number =>
-            typeof v === 'object' && v !== null && 'result' in v
-                ? ( v as StructuredDataResult<T, R> ).result.match
-                : 0;
+        const getMatch = ( v: StructuredDataResult<T, R> | T ) : number =>
+            ( v as StructuredDataResult<T, R> ).result?.match ?? 0;
 
         // Sort based on match score
         return results.sort( ( a, b ) =>
@@ -224,19 +224,19 @@ export class StructuredData<T = any, R = MetricRaw> {
     /**
      * Performs a lookup with a synchronous comparison function.
      * 
-     * @param {( a: string, b: string[], opt?: CmpStrOptions ) => any} fn - The comparison function
+     * @param {() => CmpFnResult<R> | Promise<CmpFnResult<R>>} fn - The comparison function
      * @param {StructuredDataOptions} [opt] - Additional options
-     * @returns {any} - The lookup results
+     * @returns {StructuredDataBatchResult<T, R>|T[]} - The lookup results
      */
     private async performLookup (
-        fn: () => any | Promise<any>,
+        fn: () => CmpFnResult<R> | Promise<CmpFnResult<R>>,
         opt?: StructuredDataOptions
-    ) : Promise<any> {
+    ) : Promise<StructuredDataBatchResult<T, R> | T[]> {
 
         // Get raw results (sync or async)
         const rawResults = await fn();
 
-        // Normalize results to MetricResultSingle<R>[]
+        // Normalize results
         const normalized = this.normalizeResults( rawResults );
 
         // Rebuild with original objects
@@ -250,13 +250,13 @@ export class StructuredData<T = any, R = MetricRaw> {
     /**
      * Performs a batch comparison against a query string.
      * 
-     * @param {(a: string, b: string[], opt?: CmpStrOptions) => any} fn - The comparison function
+     * @param {() => CmpFnResult<R>} fn - The comparison function
      * @param {string} query - The query string to compare against
      * @param {StructuredDataOptions} [opt] - Optional lookup options
      * @returns {StructuredDataBatchResult<T, R> | T[]} - Results with objects or just objects
      */
     public lookup (
-        fn: ( a: string, b: string[], opt?: CmpStrOptions ) => any,
+        fn: ( a: string, b: string[], opt?: CmpStrOptions ) => CmpFnResult<R>,
         query: string, opt?: StructuredDataOptions
     ) : StructuredDataBatchResult<T, R> | T[] {
 
@@ -265,21 +265,21 @@ export class StructuredData<T = any, R = MetricRaw> {
 
         Pool.release( 'string[]', extract, extract.length );
 
-        return result as any;
+        return result as unknown as StructuredDataBatchResult<T, R> | T[];
 
     }
 
     /**
      * Performs a pairwise comparison against another array of objects.
      * 
-     * @param {(a: string[], b: string[], opt?: CmpStrOptions) => any} fn - The comparison function
+     * @param {() => CmpFnResult<R>} fn - The comparison function
      * @param {T[]} other - The other array of objects
      * @param {keyof T} otherKey - The property key in the other array
      * @param {StructuredDataOptions} [opt] - Optional lookup options
      * @returns {StructuredDataBatchResult<T, R> | T[]} - Results with objects or just objects
      */
     public lookupPairs (
-        fn: ( a: string[], b: string[], opt?: CmpStrOptions ) => any,
+        fn: ( a: string[], b: string[], opt?: CmpStrOptions ) => CmpFnResult<R>,
         other: T[], otherKey: keyof T, opt?: StructuredDataOptions
     ) : StructuredDataBatchResult<T, R> | T[] {
 
@@ -290,25 +290,27 @@ export class StructuredData<T = any, R = MetricRaw> {
         Pool.release( 'string[]', extract, extract.length );
         Pool.release( 'string[]', extractOther, extractOther.length );
 
-        return result as any;
+        return result as unknown as StructuredDataBatchResult<T, R> | T[];
 
     }
 
     /**
      * Asynchronously performs a batch comparison against a query string.
      * 
-     * @param {(a: string, b: string[], opt?: CmpStrOptions) => Promise<any>} fn - The async comparison function
+     * @param {() => Promise<CmpFnResult<R>>} fn - The async comparison function
      * @param {string} query - The query string to compare against
      * @param {StructuredDataOptions} [opt] - Optional lookup options
      * @returns {Promise<StructuredDataBatchResult<T, R> | T[]>} - Async results
      */
     public async lookupAsync (
-        fn: ( a: string, b: string[], opt?: CmpStrOptions ) => Promise<any>,
+        fn: ( a: string, b: string[], opt?: CmpStrOptions ) => Promise<CmpFnResult<R>>,
         query: string, opt?: StructuredDataOptions
     ) : Promise<StructuredDataBatchResult<T, R> | T[]> {
 
         const extract = this.extract();
-        const result = await this.performLookup( async () => await fn( query, extract, opt ), opt );
+        const result = await this.performLookup(
+            async () => await fn( query, extract, opt ), opt
+        );
 
         Pool.release( 'string[]', extract, extract.length );
 
@@ -319,20 +321,22 @@ export class StructuredData<T = any, R = MetricRaw> {
     /**
      * Asynchronously performs a pairwise comparison against another array of objects.
      * 
-     * @param {(a: string[], b: string[], opt?: CmpStrOptions) => Promise<any>} fn - The async comparison function
+     * @param {() => Promise<CmpFnResult<R>>} fn - The async comparison function
      * @param {T[]} other - The other array of objects
      * @param {keyof T} otherKey - The property key in the other array
      * @param {StructuredDataOptions} [opt] - Optional lookup options
      * @returns {Promise<StructuredDataBatchResult<T, R> | T[]>} - Async results
      */
     public async lookupPairsAsync (
-        fn: ( a: string[], b: string[], opt?: CmpStrOptions ) => Promise<any>,
+        fn: ( a: string[], b: string[], opt?: CmpStrOptions ) => Promise<CmpFnResult<R>>,
         other: T[], otherKey: keyof T, opt?: StructuredDataOptions
     ) : Promise<StructuredDataBatchResult<T, R> | T[]> {
 
         const extract = this.extract();
         const extractOther = this.extractFrom( other, otherKey );
-        const result = await this.performLookup( async () => await fn( extract, extractOther, opt ), opt );
+        const result = await this.performLookup(
+            async () => await fn( extract, extractOther, opt ), opt
+        );
 
         Pool.release( 'string[]', extract, extract.length );
         Pool.release( 'string[]', extractOther, extractOther.length );
