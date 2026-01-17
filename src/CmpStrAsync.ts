@@ -454,8 +454,36 @@ export class CmpStrAsync<R = MetricRaw> extends CmpStr<R> {
     ) : Promise<StructuredDataBatchResult<T, R> | T[]> {
 
         return await this.structured<T>( data, key ).lookupAsync(
-            async ( q, items, options ) => await this.batchTestAsync<MetricResultBatch<R>>( q, items, options ),
+            async ( q, items, options ) => await this.batchTestAsync<MetricResultBatch<R>>(
+                q, items, options
+            ),
             query, opt
+        );
+
+    }
+
+    /**
+     * Asynchronously performs a batch comparison and returns only results above
+     * the threshold for structured data.
+     * 
+     * @template T - The type of objects in the data array
+     * @param {string} query - The query string to compare against
+     * @param {T[]} data - The array of structured objects
+     * @param {string|number|symbol} key - The property key to extract for comparison
+     * @param {number} threshold - The similarity threshold (0..1)
+     * @param {StructuredDataLookupOptions} [opt] - Optional lookup options
+     * @returns {Promise<StructuredDataBatchResult<T, R>>} - Async filtered batch results
+     */
+    public async structuredMatchAsync<T = any> (
+        query: string, data: T[], key: string | number | symbol, threshold: number,
+        opt?: StructuredDataOptions
+    ) : Promise<StructuredDataBatchResult<T, R> | T[]> {
+
+        return await this.structured<T>( data, key ).lookupAsync(
+            async ( q, items, options ) => await this.matchAsync<MetricResultBatch<R>>(
+                q, items, threshold, options
+            ),
+            query, { ...opt, sort: 'desc' }
         );
 
     }
