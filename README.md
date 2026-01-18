@@ -79,4 +79,4 @@ Try out or use CmpStr on the terminal. Install the **[cmpstr-cli](https://npmjs.
 
 The full documentation, API reference and advanced usage examples are available in the [GitHub Wiki](https://github.com/komed3/cmpstr/wiki).
 
-**LICENSE MIT © 2023-2025 PAUL KÖHLER (KOMED3)**
+**LICENSE MIT © 2023-2026 PAUL KÖHLER (KOMED3)**
