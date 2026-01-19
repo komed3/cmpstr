@@ -28,7 +28,7 @@
 #    - Downloads the `dist/` artifact
 #    - Packs the project into an npm tarball using `npm pack`
 #    - Unpacks the tarball to validate the presence of expected files
-#    - Using `dist-manifest.json` for validating files
+#    - Using `package-verify` with `verify.manifest.json` for validating files
 #    - Uploads the tarball as an artifact for further use
 # 
 # --------------------------------------------------------------------------------
@@ -141,73 +141,7 @@ jobs:
           tar -xzf cmpstr-*.tgz -C extracted
 
       - name: Validate Dist Files
-        run: |
-          set -e
-          manifest="dist-manifest.json"
-          base_dir="extracted/package"
-          missing=0
-
-          echo "Validating static files from manifest …"
-
-          for path in $(jq -r '.static[]' "$manifest"); do
-            full_path="$base_dir/$path"
-            if [[ ! -f "$full_path" ]]; then
-              echo -e "\e[31mMissing: $full_path\e[0m"
-              missing=1
-            else
-              echo -e "\e[32mFound: $full_path\e[0m"
-            fi
-          done
-
-          echo "Validating dynamic files from manifest …"
-
-          src_root=$(jq -r '.dynamic.sourceRoot' "$manifest")
-          dts_only=($(jq -r '.dynamic.dtsOnly[]' "$manifest"))
-          full_targets=($(jq -r '.dynamic.targets.full[]' "$manifest"))
-          dts_targets=($(jq -r '.dynamic.targets.dts[]' "$manifest"))
-
-          while IFS= read -r -d '' src_file; do
-            relative_path="${src_file#"$src_root"/}"
-            base_path="${relative_path%.ts}"
-            dir_path=$(dirname "$relative_path")
-            file_name=$(basename "$base_path")
-
-            check_mode="full"
-
-            for dts in "${dts_only[@]}"; do
-              if [[ "$relative_path" == "$dts" ]]; then
-                check_mode="dts"
-                break
-              fi
-            done
-
-            if [[ "$check_mode" == "dts" ]]; then
-              expected=("${dts_targets[@]}")
-            else
-              expected=("${full_targets[@]}")
-            fi
-
-            for pattern in "${expected[@]}"; do
-              rel_path="${pattern//\{dir\}/$dir_path}"
-              rel_path="${rel_path//\{name\}/$file_name}"
-              full_path="$base_dir/$rel_path"
-
-              if [[ ! -f "$full_path" ]]; then
-                echo -e "\e[31mMissing: $full_path\e[0m"
-                missing=1
-              else
-                echo -e "\e[32mFound: $full_path\e[0m"
-              fi
-            done
-
-          done < <(find "$src_root" -name "*.ts" -print0)
-
-          if [[ "$missing" -eq 1 ]]; then
-            echo -e "\e[41m One or more expected files are missing in the tarball \e[0m"
-            exit 1
-          else
-            echo -e "\e[42m All expected files are present \e[0m"
-          fi
+        run: npm run verify
 
       - name: Upload Tarball as Artifact
         uses: actions/upload-artifact@v6
