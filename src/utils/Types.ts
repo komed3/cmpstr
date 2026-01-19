@@ -239,6 +239,13 @@ export type MetricResultBatch<R = MetricRaw> = MetricResultSingle<R>[];
 export type MetricResult<R = MetricRaw> = MetricResultSingle<R> | MetricResultBatch<R>;
 
 /**
+ * IndexedResults is an array of MetricResultSingle with optional index metadata.
+ * 
+ * @template R - The type of the raw result
+ */
+export type IndexedResults<R = MetricRaw> = ( MetricResultSingle<R> & { __idx?: number } )[];
+
+/**
  * PhoneticOptions configures the behavior of phonetic algorithms.
  */
 export interface PhoneticOptions {
