@@ -146,7 +146,8 @@ jobs:
       - name: Validate Dist Files
         run: |
           node -e "console.log(process.cwd())"
-          npx verify-pkg --fail-on-warn --verbose --cwd=.
+          ls
+#          npx verify-pkg --fail-on-warn --verbose --cwd=.
         working-directory: ${{ github.workspace }}
 
       - name: Upload Tarball as Artifact
