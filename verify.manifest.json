@@ -3,7 +3,7 @@
     "manifestVersion": 1
   },
   "context": {
-    "packageRoot": "extracted/package"
+    "packageRoot": "."
   },
   "policy": {
     "defaultSeverity": "error",
