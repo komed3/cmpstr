@@ -140,8 +140,11 @@ jobs:
           mkdir extracted
           tar -xzf cmpstr-*.tgz -C extracted
 
+      - name: Install package-verify
+        run: npm install --save-dev package-verify
+
       - name: Validate Dist Files
-        run: npm run verify
+        run: verify-pkg --fail-on-warn --verbose
 
       - name: Upload Tarball as Artifact
         uses: actions/upload-artifact@v6
