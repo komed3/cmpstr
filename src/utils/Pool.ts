@@ -125,18 +125,18 @@ export class Pool {
 
     // Pool Types
     private static readonly CONFIG: Record<PoolType, PoolConfig> = {
-        'uint16':   { type: 'uint16',   maxSize: 32, maxItemSize: 2048, allowOversize: true  },
+        'uint16':   { type: 'uint16',   maxSize: 64, maxItemSize: 2048, allowOversize: true  },
         'number[]': { type: 'number[]', maxSize: 16, maxItemSize: 1024, allowOversize: false },
-        'string[]': { type: 'string[]', maxSize:  4, maxItemSize: 1024, allowOversize: false },
+        'string[]': { type: 'string[]', maxSize:  2, maxItemSize: 1024, allowOversize: false },
         'set':      { type: 'set',      maxSize:  8, maxItemSize:    0, allowOversize: false },
         'map':      { type: 'map',      maxSize:  8, maxItemSize:    0, allowOversize: false }
     };
 
     // Pool Rings for each type
     private static readonly POOLS: Record<PoolType, RingPool<any>> = {
-        'uint16':   new RingPool<Uint16Array> ( 32 ),
+        'uint16':   new RingPool<Uint16Array> ( 64 ),
         'number[]': new RingPool<number[]> ( 16 ),
-        'string[]': new RingPool<string[]> ( 4 ),
+        'string[]': new RingPool<string[]> ( 2 ),
         'set':      new RingPool<Set<any>> ( 8 ),
         'map':      new RingPool<Map<any, any>> ( 8 )
     };
@@ -153,7 +153,7 @@ export class Pool {
         switch ( type ) {
 
             case 'uint16':   return new Uint16Array ( size );
-            case 'number[]': return new Array ( size ).fill( 0 );
+            case 'number[]': return new Float64Array ( size );
             case 'string[]': return new Array ( size );
             case 'set':      return new Set ();
             case 'map':      return new Map ();

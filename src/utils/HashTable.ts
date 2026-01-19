@@ -49,15 +49,13 @@ class Hasher {
 
             const pos = i * 4;
 
-            // Combine 4 chars into a single number for faster processing
-            const chunk: number = (
+            hash ^= (
                 ( str.charCodeAt( pos ) ) |
                 ( str.charCodeAt( pos + 1 ) <<  8 ) |
                 ( str.charCodeAt( pos + 2 ) << 16 ) |
                 ( str.charCodeAt( pos + 3 ) << 24 )
             );
-            
-            hash ^= chunk;
+
             hash *= this.FNV_PRIME;
 
         }
