@@ -97,7 +97,7 @@
     "@rollup/plugin-terser": "^0.4.4",
     "@rollup/plugin-typescript": "^12.3.0",
     "@types/node": "^25.0.9",
-    "package-verify": "^1.0.2",
+    "package-verify": "^1.0.3",
     "prettier": "^3.8.0",
     "rollup": "^4.55.2",
     "rollup-plugin-cleanup": "^3.2.1",
