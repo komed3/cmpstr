@@ -144,10 +144,7 @@ jobs:
         run: npm install --save-dev package-verify
 
       - name: Validate Dist Files
-        run: |
-          node -e "console.log(process.cwd())"
-          ls
-        working-directory: ${{ github.workspace }}
+        run: npx verify-pkg --dry-run --verbose
 
       - name: Upload Tarball as Artifact
         uses: actions/upload-artifact@v6
