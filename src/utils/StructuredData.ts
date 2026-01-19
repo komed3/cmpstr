@@ -21,7 +21,7 @@
 'use strict';
 
 import type {
-    CmpFnResult, CmpStrOptions, CmpStrResult, MetricRaw, MetricResultSingle,
+    CmpFnResult, CmpStrOptions, CmpStrResult, IndexedResult, MetricRaw, MetricResultSingle,
     StructuredDataBatchResult, StructuredDataOptions, StructuredDataResult
 } from './Types';
 
@@ -40,7 +40,7 @@ export class StructuredData<T = any, R = MetricRaw> {
      * Creates a new StructuredData instance for processing structured data.
      * 
      * @param {T[]} data - The array of objects to process
-     * @param {string|number|symbol} key - The property key to extract for comparison
+     * @param {keyof T} key - The property key to extract for comparison
      * @returns {StructuredData<T, R>} - A new class instance
      */
     public static create<T = any, R = MetricRaw> ( data: T[], key: keyof T ) : StructuredData<T, R> {
@@ -128,36 +128,41 @@ export class StructuredData<T = any, R = MetricRaw> {
 
     /**
      * Normalizes metric results to a consistent format.
+     * Attaches original indices for correct mapping after sorting.
      * Handles both CmpStrResult[] and MetricResultBatch<R> formats.
      * 
      * @param {any} results - The raw metric results
-     * @returns {MetricResultSingle<R>[]} - Normalized single results array
+     * @returns {IndexedResult<R>[]} - Normalized results with indices
      */
-    private normalizeResults ( results: CmpFnResult<R> ) : MetricResultSingle<R>[] {
+    private normalizeResults ( results: CmpFnResult<R> ) : IndexedResult<R>[] {
 
         // Handle null/undefined results
         if ( ! Array.isArray( results ) || results.length === 0 ) return [];
 
         const first = results[ 0 ];
+        let normalized: IndexedResult<R>[] = [];
 
         // Check if it's MetricResultSingle format
-        if ( this.isMetricResult( first ) ) return results as MetricResultSingle<R>[];
+        if ( this.isMetricResult( first ) ) normalized = results as MetricResultSingle<R>[];
 
         // Check if it's CmpStrResult format -> convert to MetricResultSingle
-        if ( this.isCmpStrResult( first ) ) return ( results as ( CmpStrResult & { raw?: R } )[] ).map(
-            r => ( { metric: 'unknown', a: r.source, b: r.target, res: r.match, raw: r.raw } )
-        );
+        else if ( this.isCmpStrResult( first ) ) {
+            normalized = ( results as ( CmpStrResult & { raw?: R } )[] ).map(
+                r => ( { metric: 'unknown', a: r.source, b: r.target, res: r.match, raw: r.raw } )
+            );
+        }
 
-        return [];
+        // Attach original indices (position in the results array)
+        return normalized.map( ( r, idx ) => ( { ...r, __idx: idx } ) );
 
     }
 
     /**
      * Rebuilds results with original objects attached.
-     * IMPORTANT: Results are assumed to be in the same order as sourceData,
-     * or they must include index information via the source/target mapping.
+     * Maps results to source objects using target string matching with duplicate handling.
+     * Works correctly even when results are filtered or subset (e.g., from closest/furthest).
      * 
-     * @param {MetricResultSingle<R>[]} results - The normalized metric results
+     * @param {IndexedResult<R>[]} results - The normalized metric results
      * @param {T[]} sourceData - The source data array for object attachment
      * @param {string[]} extractedStrings - The extracted strings array for index mapping
      * @param {boolean} [removeZero] - Whether to remove zero similarity results
@@ -165,11 +170,24 @@ export class StructuredData<T = any, R = MetricRaw> {
      * @returns {StructuredDataResult<T, R>[] | T[]} - Results with objects (or just objects if objectsOnly=true)
      */
     private rebuild (
-        results: MetricResultSingle<R>[], sourceData: T[], extractedStrings: string[],
+        results: IndexedResult<R>[], sourceData: T[], extractedStrings: string[],
         removeZero?: boolean, objectsOnly?: boolean
     ) : StructuredDataResult<T, R>[] | T[] {
 
+        // Create map: string value -> indices in extractedStrings
+        const stringToIndices: Map<string, number[]> = new Map();
+
+        for ( let i = 0; i < extractedStrings.length; i++ ) {
+
+            const str = extractedStrings[ i ];
+
+            if ( ! stringToIndices.has( str ) ) stringToIndices.set( str, [] );
+            stringToIndices.get( str )!.push( i );
+
+        }
+
         const output = new Array<StructuredDataResult<T, R> | T>( results.length );
+        const occurrenceCount: Map<string, number> = new Map();
         let out = 0;
 
         for ( let i = 0; i < results.length; i++ ) {
@@ -179,23 +197,41 @@ export class StructuredData<T = any, R = MetricRaw> {
             // Skip zero results if configured
             if ( removeZero && result.res === 0 ) continue;
 
-            // Find the index of this result by matching the target string with extracted strings
-            // This is needed because results might be filtered/sorted and no longer in original order
-            let dataIndex = result.b && extractedStrings.length ? extractedStrings.indexOf( result.b ) : i;
+            const targetStr = result.b || '';
+            const indices = stringToIndices.get( targetStr );
+
+            // Fall back to positional index if string not found
+            let dataIndex: number;
+
+            if ( indices && indices.length > 0 ) {
+
+                // Track occurrence of this value in results
+                const occurrence = occurrenceCount.get( targetStr ) ?? 0;
+                occurrenceCount.set( targetStr, occurrence + 1 );
+
+                // Cycle through duplicates
+                dataIndex = indices[ occurrence % indices.length ];
+
+            } else {
+
+                // If no match found, use the original position indicator
+                dataIndex = result.__idx ?? i;
+
+            }
 
             // Ensure dataIndex is valid
-            if ( dataIndex < 0 || dataIndex >= sourceData.length ) dataIndex = i;
+            if ( dataIndex < 0 || dataIndex >= sourceData.length ) continue;
 
-            // Get the original object
             const sourceObj = sourceData[ dataIndex ];
+            const mappedTarget = extractedStrings[ dataIndex ] || targetStr;
 
             // If objectsOnly, push just the original object
             if ( objectsOnly ) output[ out++ ] = sourceObj;
 
-            // Build the result object - use extracted string as target to match the original
+            // Build the result object
             else output[ out++ ] = {
                 obj: sourceObj, key: this.key, result: {
-                    source: result.a, target: extractedStrings[ dataIndex ] || result.b, match: result.res
+                    source: result.a, target: mappedTarget, match: result.res
                 }, ...( result.raw ? { raw: result.raw } : null )
             };
 
@@ -208,12 +244,13 @@ export class StructuredData<T = any, R = MetricRaw> {
 
     /**
      * Sorts results in-place by match score.
+     * Preserves __idx for tracking original positions.
      * 
-     * @param {MetricResultSingle<R>[]} results - The results to sort
-     * @param {string|boolean} [sort] - Sort direction (asc, desc, or boolean true=desc)
-     * @returns {MetricResultSingle<R>[]} - Sorted results
+     * @param {IndexedResult<R>[]} results - The results to sort
+     * @param {string | boolean} [sort] - Sort direction (asc, desc, or boolean true=desc)
+     * @returns {IndexedResult<R>[]} - Sorted results
      */
-    private sort ( results: MetricResultSingle<R>[], sort?: string | boolean ) : MetricResultSingle<R>[] {
+    private sort ( results: IndexedResult<R>[], sort?: string | boolean ) : IndexedResult<R>[] {
 
         // No sorting needed
         if ( ! sort || results.length <= 1 ) return results;
@@ -232,11 +269,10 @@ export class StructuredData<T = any, R = MetricRaw> {
      * @param {() => CmpFnResult<R>} fn - The comparison function
      * @param {string[]} extractedStrings - The extracted strings for index mapping
      * @param {StructuredDataOptions} [opt] - Additional options
-     * @returns {StructuredDataBatchResult<T, R>|T[]} - The lookup results
+     * @returns {StructuredDataBatchResult<T, R> | T[]} - The lookup results
      */
     private performLookup (
-        fn: () => CmpFnResult<R>,
-        extractedStrings: string[],
+        fn: () => CmpFnResult<R>, extractedStrings: string[],
         opt?: StructuredDataOptions
     ) : StructuredDataBatchResult<T, R> | T[] {
 
@@ -253,11 +289,10 @@ export class StructuredData<T = any, R = MetricRaw> {
      * @param {() => Promise<CmpFnResult<R>>} fn - The async comparison function
      * @param {string[]} extractedStrings - The extracted strings for index mapping
      * @param {StructuredDataOptions} [opt] - Additional options
-     * @returns {Promise<StructuredDataBatchResult<T, R>|T[]>} - The async lookup results
+     * @returns {Promise<StructuredDataBatchResult<T, R> | T[]>} - The async lookup results
      */
     private async performLookupAsync (
-        fn: () => Promise<CmpFnResult<R>>,
-        extractedStrings: string[],
+        fn: () => Promise<CmpFnResult<R>>, extractedStrings: string[],
         opt?: StructuredDataOptions
     ) : Promise<StructuredDataBatchResult<T, R> | T[]> {
 
@@ -274,7 +309,7 @@ export class StructuredData<T = any, R = MetricRaw> {
      * @param {() => CmpFnResult<R>} fn - The comparison function
      * @param {string} query - The query string to compare against
      * @param {StructuredDataOptions} [opt] - Optional lookup options
-     * @returns {StructuredDataBatchResult<T, R>|T[]} - Results with objects or just objects
+     * @returns {StructuredDataBatchResult<T, R> | T[]} - Results with objects or just objects
      */
     public lookup (
         fn: ( a: string, b: string[], opt?: CmpStrOptions ) => CmpFnResult<R>,
