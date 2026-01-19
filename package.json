@@ -89,7 +89,7 @@
     "test": "vitest run",
     "lint": "tsc --project tsconfig.lint.json",
     "build": "rollup -c && tsc --project tsconfig.declaration.json",
-    "verify": "npx verify-pkg --fail-on-warn --verbose",
+    "verify": "verify-pkg --fail-on-warn --verbose",
     "clean": "rm -rf dist"
   },
   "devDependencies": {
