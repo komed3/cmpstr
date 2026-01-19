@@ -144,7 +144,7 @@ jobs:
         run: npm install --save-dev package-verify
 
       - name: Validate Dist Files
-        run: npx verify-pkg --fail-on-warn --verbose --cwd .
+        run: npx verify-pkg --fail-on-warn --verbose
         working-directory: ${{ github.workspace }}
 
       - name: Upload Tarball as Artifact
