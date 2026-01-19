@@ -98,4 +98,42 @@ describe( 'CmpStr > Structured Data', () => {
 
     } );
 
+    it( 'Duplicate Values', () => {
+
+        const cmp = CmpStr.create( { metric: 'levenshtein' } );
+        const res = cmp.structuredLookup<any>( 'Hans', [
+            { id: 1476, name: 'Hans' },
+            { id: 2257, name: 'Franz' },
+            { id: 9842, name: 'Hans' }
+        ], 'name' );
+
+        expect( res ).toHaveLength( 3 );
+        expect( res[ 0 ].obj.id ).toBe( 1476 );
+        expect( res[ 0 ].result.match ).toBe( 1 );
+        expect( res[ 2 ].obj.id ).toBe( 9842 );
+        expect( res[ 2 ].result.match ).toBe( 1 );
+
+    } );
+
+    it( 'Multiple Duplicate Values', () => {
+
+        const cmp = CmpStr.create( { metric: 'levenshtein' } );
+        const data = [
+            { category: 'Books', value: 'Python' },
+            { category: 'Programming', value: 'JavaScript' },
+            { category: 'Books', value: 'Python' },
+            { category: 'Learning', value: 'TypeScript' },
+            { category: 'Programming', value: 'Python' }
+        ];
+
+        const res = cmp.structuredLookup<any>( 'Python', data, 'value' );
+
+        const pythonResults = res.filter( r => r.result.match === 1 );
+        expect( pythonResults ).toHaveLength( 3 );
+        expect( pythonResults[ 0 ].obj.category ).toBe( 'Books' );
+        expect( pythonResults[ 1 ].obj.category ).toBe( 'Books' );
+        expect( pythonResults[ 2 ].obj.category ).toBe( 'Programming' );
+
+    } );
+
 } );
