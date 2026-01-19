@@ -1,0 +1,64 @@
+{
+  "meta": {
+    "manifestVersion": 1
+  },
+  "context": {
+    "packageRoot": "extracted/package"
+  },
+  "policy": {
+    "defaultSeverity": "error",
+    "unexpectedFiles": "warn",
+    "on": {
+      "missingExpected": "error",
+      "emptyPattern": "error",
+      "deriveFailure": "error"
+    }
+  },
+  "expect": {
+    "files": [
+      "package.json",
+      "README.md",
+      "LICENSE",
+      "dist/CmpStr.esm.js",
+      "dist/CmpStr.esm.js.map",
+      "dist/CmpStr.esm.min.js",
+      "dist/CmpStr.esm.min.js.map",
+      "dist/CmpStr.umd.js",
+      "dist/CmpStr.umd.js.map",
+      "dist/CmpStr.umd.min.js",
+      "dist/CmpStr.umd.min.js.map"
+    ]
+  },
+  "derive": {
+    "sources": {
+      "root": "src",
+      "include": "*.ts"
+    },
+    "rules": [
+      {
+        "match": [
+          "metric/index.ts",
+          "phonetic/index.ts",
+          "utils/Types.ts"
+        ],
+        "mode": "dts"
+      },
+      {
+        "default": true,
+        "mode": "full"
+      }
+    ],
+    "targets": {
+      "full": [
+        "dist/cjs/{dir}/{name}.cjs",
+        "dist/cjs/{dir}/{name}.cjs.map",
+        "dist/esm/{dir}/{name}.mjs",
+        "dist/esm/{dir}/{name}.mjs.map",
+        "dist/types/{dir}/{name}.d.ts"
+      ],
+      "dts": [
+        "dist/types/{dir}/{name}.d.ts"
+      ]
+    }
+  }
+}
