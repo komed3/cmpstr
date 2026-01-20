@@ -49,6 +49,15 @@ export class Normalizer {
      */
     private static cache: HashTable<NormalizeFlags, string> = new HashTable ();
 
+    /** Regular expressions used in normalization steps */
+    private static readonly REGEX = {
+        whitespace: /\s+/g,
+        doubleChars: /(.)\1+/g,
+        specialChars: /[^\p{L}\p{N}\s]/gu,
+        nonLetters: /[^\p{L}]/gu,
+        nonNumbers: /\p{N}/gu
+    };
+
     /**
      * Returns a normalization function based on the provided flags.
      * The flags are a string of characters that define the normalization steps.
@@ -71,17 +80,17 @@ export class Normalizer {
         // Normalize to NFKC (Normalization Form Compatibility Composed)
         if ( flags.includes( 'x' ) ) steps.push( str => str.normalize( 'NFKC' ) );
         // Collapse whitespace
-        if ( flags.includes( 'w' ) ) steps.push( str => str.replace( /\s+/g, ' ' ) );
+        if ( flags.includes( 'w' ) ) steps.push( str => str.replace( Normalizer.REGEX.whitespace, ' ' ) );
         // Remove leading and trailing whitespace
         if ( flags.includes( 't' ) ) steps.push( str => str.trim() );
         // Remove double characters
-        if ( flags.includes( 'r' ) ) steps.push( str => str.replace( /(.)\1+/g, '$1' ) );
+        if ( flags.includes( 'r' ) ) steps.push( str => str.replace( Normalizer.REGEX.doubleChars, '$1' ) );
         // Remove punctuation / special characters
-        if ( flags.includes( 's' ) ) steps.push( str => str.replace( /[^\p{L}\p{N}\s]/gu, '' ) );
+        if ( flags.includes( 's' ) ) steps.push( str => str.replace( Normalizer.REGEX.specialChars, '' ) );
         // Remove non-letter characters
-        if ( flags.includes( 'k' ) ) steps.push( str => str.replace( /[^\p{L}]/gu, '' ) );
+        if ( flags.includes( 'k' ) ) steps.push( str => str.replace( Normalizer.REGEX.nonLetters, '' ) );
         // Remove non-number characters
-        if ( flags.includes( 'n' ) ) steps.push( str => str.replace( /\p{N}/gu, '' ) );
+        if ( flags.includes( 'n' ) ) steps.push( str => str.replace( Normalizer.REGEX.nonNumbers, '' ) );
         // Case insensitive
         if ( flags.includes( 'i' ) ) steps.push( str => str.toLowerCase() );
 
