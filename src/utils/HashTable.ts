@@ -43,11 +43,11 @@ class Hasher {
      * @return {number} - The computed hash value as an unsigned 32-bit integer
      */
     public static fastFNV1a ( str: string ) : number {
-        const len: number = str.length;
-        let hash: number = this.HASH_OFFSET;
+        const len = str.length;
+        let hash = this.HASH_OFFSET;
 
         // Process 4 characters at a time for better performance
-        const chunks: number = Math.floor( len / 4 );
+        const chunks = Math.floor( len / 4 );
 
         for ( let i = 0; i < chunks; i++ ) {
             const pos = i * 4;
@@ -61,10 +61,10 @@ class Hasher {
         }
 
         // Handle remaining characters
-        const remaining: number = len % 4;
+        const remaining = len % 4;
 
         if ( remaining > 0 ) {
-            const pos: number = chunks * 4;
+            const pos = chunks * 4;
 
             for ( let i = 0; i < remaining; i++ ) {
                 hash ^= str.charCodeAt( pos + i );
@@ -127,7 +127,7 @@ export class HashTable< K extends string, T > {
     public key ( label: K, strs: string[], sorted: boolean = false ) : string | false {
         for ( const str of strs ) if ( str.length > HashTable.MAX_LEN ) return false;
 
-        const hashes: number[] = strs.map( s => Hasher.fastFNV1a( s ) );
+        const hashes = strs.map( s => Hasher.fastFNV1a( s ) );
         return [ label, ...( sorted ? hashes.sort() : hashes ) ].join( '-' );
     }
 
