@@ -226,18 +226,42 @@ export class StructuredData< T = any, R = MetricRaw > {
         );
     }
 
+    /**
+     * Performs a lookup with a synchronous comparison function.
+     * 
+     * @param {() => CmpFnResult< R >} fn - The comparison function
+     * @param {string[]} extractedStrings - The extracted strings for index mapping
+     * @param {StructuredDataOptions} [opt] - Additional options
+     * @returns {StructuredDataBatchResult< T, R > | T[]} - The lookup results
+     */
     private performLookup(
         fn: () => CmpFnResult< R >, extractedStrings: string[], opt?: StructuredDataOptions
     ) : StructuredDataBatchResult< T, R > | T[] {
         return this.finalizeLookup( fn(), extractedStrings, opt );
     }
 
+    /**
+     * Performs a lookup with an asynchronous comparison function.
+     * 
+     * @param {() => Promise< CmpFnResult< R > >} fn - The async comparison function
+     * @param {string[]} extractedStrings - The extracted strings for index mapping
+     * @param {StructuredDataOptions} [opt] - Additional options
+     * @returns {Promise< StructuredDataBatchResult< T, R > | T[] >} - The async lookup results
+     */
     private async performLookupAsync (
         fn: () => Promise< CmpFnResult< R > >, extractedStrings: string[], opt?: StructuredDataOptions
     ) : Promise< StructuredDataBatchResult< T, R > | T[] > {
         return this.finalizeLookup( await fn(), extractedStrings, opt );
     }
 
+    /**
+     * Performs a batch comparison against a query string.
+     * 
+     * @param {() => CmpFnResult< R >} fn - The comparison function
+     * @param {string} query - The query string to compare against
+     * @param {StructuredDataOptions} [opt] - Optional lookup options
+     * @returns {StructuredDataBatchResult< T, R > | T[]} - Results with objects or just objects
+     */
     public lookup (
         fn: ( a: string, b: string[], opt?: CmpStrOptions ) => CmpFnResult< R >,
         query: string, opt?: StructuredDataOptions
@@ -248,6 +272,14 @@ export class StructuredData< T = any, R = MetricRaw > {
         finally { Pool.release( 'string[]', b, b.length ) }
     }
 
+    /**
+     * Asynchronously performs a batch comparison against a query string.
+     * 
+     * @param {() => Promise< CmpFnResult< R > >} fn - The async comparison function
+     * @param {string} query - The query string to compare against
+     * @param {StructuredDataOptions} [opt] - Optional lookup options
+     * @returns {Promise< StructuredDataBatchResult< T, R > | T[] >} - Async results
+     */
     public async lookupAsync (
         fn: ( a: string, b: string[], opt?: CmpStrOptions ) => Promise< CmpFnResult< R > >,
         query: string, opt?: StructuredDataOptions
