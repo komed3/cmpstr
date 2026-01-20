@@ -217,6 +217,14 @@ export class StructuredData< T = any, R = MetricRaw > {
         return results.sort( ( a, b ) => asc ? a.res - b.res : b.res - a.res );
     }
 
+    /**
+     * Finalizes the lookup process by normalizing, sorting, and rebuilding results.
+     * 
+     * @param {CmpFnResult< R >} results - The raw metric results
+     * @param {string[]} extractedStrings - The extracted strings for index mapping
+     * @param {StructuredDataOptions} [opt] - Additional options
+     * @returns {StructuredDataBatchResult< T, R > | T[]} - The finalized lookup results
+     */
     private finalizeLookup (
         results: CmpFnResult< R >, extractedStrings: string[], opt?: StructuredDataOptions
     ) : StructuredDataBatchResult< T, R > | T[] {
@@ -288,6 +296,54 @@ export class StructuredData< T = any, R = MetricRaw > {
 
         try { return await this.performLookupAsync( () => fn( query, b, opt ), b, opt ) }
         finally { Pool.release( 'string[]', b, b.length ) }
+    }
+
+    /**
+     * Performs a pairwise comparison against another array of objects.
+     * 
+     * @template O - The type of objects in the other array
+     * @param {() => CmpFnResult< R >} fn - The comparison function
+     * @param {O[]} other - The other array of objects
+     * @param {keyof O} otherKey - The property key in the other array
+     * @param {StructuredDataOptions} [opt] - Optional lookup options
+     * @returns {StructuredDataBatchResult< T, R > | T[]} - Results with objects or just objects
+     */
+    public lookupPairs< O = any > (
+        fn: ( a: string[], b: string[], opt?: CmpStrOptions ) => CmpFnResult< R >,
+        other: O[], otherKey: keyof O, opt?: StructuredDataOptions
+    ) : StructuredDataBatchResult< T, R > | T[] {
+        const a = this.extract();
+        const b = this.extractFrom< O >( other, otherKey );
+
+        try { return this.performLookup( () => fn( a, b, opt ), a, opt ) }
+        finally {
+            Pool.release( 'string[]', a, a.length );
+            Pool.release( 'string[]', b, b.length );
+        }
+    }
+
+    /**
+     * Asynchronously performs a pairwise comparison against another array of objects.
+     * 
+     * @template O - The type of objects in the other array
+     * @param {() => Promise< CmpFnResult< R > >} fn - The async comparison function
+     * @param {O[]} other - The other array of objects
+     * @param {keyof O} otherKey - The property key in the other array
+     * @param {StructuredDataOptions} [opt] - Optional lookup options
+     * @returns {Promise< StructuredDataBatchResult< T, R > | T[] >} - Async results
+     */
+    public async lookupPairsAsync< O = any > (
+        fn: ( a: string[], b: string[], opt?: CmpStrOptions ) => Promise< CmpFnResult< R > >,
+        other: O[], otherKey: keyof O, opt?: StructuredDataOptions
+    ) : Promise< StructuredDataBatchResult< T, R > | T[] > {
+        const a = this.extract();
+        const b = this.extractFrom< O >( other, otherKey );
+
+        try { return await this.performLookupAsync( () => fn( a, b, opt ), a, opt ) }
+        finally {
+            Pool.release( 'string[]', a, a.length );
+            Pool.release( 'string[]', b, b.length );
+        }
     }
 
 }
