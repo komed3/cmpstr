@@ -93,6 +93,7 @@ export class Filter {
         // Add or update the filter entry
         filter.set( id, { id, fn, priority, active, overrideable } );
         Filter.filters.set( hook, filter );
+        Filter.pipeline.delete( hook );
         return true;
     }
 
@@ -104,6 +105,7 @@ export class Filter {
      * @returns {boolean} - Returns true if the filter was removed, false if it was not found
      */
     public static remove ( hook: string, id: string ) : boolean {
+        Filter.pipeline.delete( hook );
         const filter = Filter.filters.get( hook );
         return filter ? filter.delete( id ) : false;
     }
@@ -116,6 +118,7 @@ export class Filter {
      * @returns {boolean} - Returns true if the filter was paused, false if it was not found
      */
     public static pause ( hook: string, id: string ) : boolean {
+        Filter.pipeline.delete( hook );
         const f = Filter.filters.get( hook )?.get( id );
         return !! ( f && ( f.active = false, true ) );
     }
@@ -128,6 +131,7 @@ export class Filter {
      * @returns {boolean} - Returns true if the filter was resumed, false if it was not found
      */
     public static resume ( hook: string, id: string ) : boolean {
+        Filter.pipeline.delete( hook );
         const f = Filter.filters.get( hook )?.get( id );
         return !! ( f && ( f.active = true, true ) );
     }
