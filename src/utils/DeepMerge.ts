@@ -51,10 +51,10 @@ function parse ( p: string ) : ( string | number )[] {
  * @template R - The return type of the value
  * @param {T} t - The object to get the value from
  * @param {string} path - The path string, e.g. `a.b.c`
- * @param {unknown} fb - The default value to return if the path does not exist
+ * @param {any} fb - The default value to return if the path does not exist
  * @returns {R | undefined} - The value at the specified path, otherwise the default value
  */
-export function get< T extends Record< string, unknown >, R = unknown > ( t: T, path: string, fb?: R ) : R | undefined {
+export function get< T extends Record< string, any >, R = any > ( t: T, path: string, fb?: R ) : R | undefined {
     let o: any = t;
 
     for ( const k of parse( path ) ) {
@@ -73,7 +73,7 @@ export function get< T extends Record< string, unknown >, R = unknown > ( t: T, 
  * @param {string} path - The path string, e.g. `a.b.c`
  * @returns {boolean} - True if the path exists, otherwise false
  */
-export function has< T extends Record< string, unknown > > ( t: T, path: string ) : boolean {
+export function has< T extends Record< string, any > > ( t: T, path: string ) : boolean {
     let o: any = t;
 
     for ( const k of parse( path ) ) {
@@ -90,11 +90,11 @@ export function has< T extends Record< string, unknown > > ( t: T, path: string 
  * @template T - The type of the object to get the value from
  * @param {T} t - The object to set the value in
  * @param {string} path - The path string, e.g. `a.b.c`
- * @param {unknown} value - The value to set at the specified path
+ * @param {any} value - The value to set at the specified path
  * @returns {T} - The modified object with the value set at the specified path
  * @throws {Error} - Throws an error if the key is not a valid identifier
  */
-export function set< T extends Record< string, unknown > > ( t: T, path: string, value: unknown ) : T {
+export function set< T extends Record< string, any > > ( t: T, path: string, value: any ) : T {
     if ( path === '' ) return value as T;
     const keys: ( string | number )[] = parse( path );
 
@@ -136,7 +136,7 @@ export function set< T extends Record< string, unknown > > ( t: T, path: string,
  * @param {boolean} [mergeUndefined=false] - Whether to merge undefined values
  * @returns {T} - The merged object
  */
-export function merge< T extends Record< string, unknown > > (
+export function merge< T extends Record< string, any > > (
     t: T | undefined = Object.create( null ),
     o: T | undefined = Object.create( null ),
     mergeUndefined: boolean = false
@@ -158,9 +158,9 @@ export function merge< T extends Record< string, unknown > > (
             const existing = target[ k ];
             ( target as any )[ k ] = merge(
                 existing !== null && typeof existing === 'object' && ! Array.isArray( existing )
-                    ? existing as Record< string, unknown >
+                    ? existing as Record< string, any >
                     : Object.create( null ),
-                val as Record< string, unknown >,
+                val as Record< string, any >,
                 mergeUndefined
             );
         }
@@ -181,7 +181,7 @@ export function merge< T extends Record< string, unknown > > (
  * @param {boolean} [preserveEmpty=false] - Whether to preserve empty objects/arrays
  * @returns {T} - The modified object with the value deleted at the specified path
  */
-export function rmv< T extends Record< string, unknown > > ( t: T, path: string, preserveEmpty: boolean = false ) : T {
+export function rmv< T extends Record< string, any > > ( t: T, path: string, preserveEmpty: boolean = false ) : T {
     const keys: ( string | number )[] = parse( path );
 
     // Recursive function to remove the key at the specified path
