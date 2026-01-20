@@ -31,9 +31,9 @@ import type { PoolType, PoolConfig, PoolBuffer } from './Types';
  */
 class RingPool< T > {
 
-    // The buffers in the pool
+    /** The buffers in the pool */
     private buffers: PoolBuffer< T >[] = [];
-    // The current pointer for acquiring buffers
+    /** The current pointer for acquiring buffers */
     private pointer: number = 0;
 
     /**
@@ -100,7 +100,7 @@ class RingPool< T > {
  */
 export class Pool {
 
-    // Pool Types
+    /** Pool Types */
     private static readonly CONFIG: Record< PoolType, PoolConfig > = {
         'uint16':   { type: 'uint16',   maxSize: 64, maxItemSize: 2048, allowOversize: true  },
         'number[]': { type: 'number[]', maxSize: 16, maxItemSize: 1024, allowOversize: false },
@@ -109,7 +109,7 @@ export class Pool {
         'map':      { type: 'map',      maxSize:  8, maxItemSize:    0, allowOversize: false }
     };
 
-    // Pool Rings for each type
+    /** Pool Rings for each type */
     private static readonly POOLS: Record< PoolType, RingPool< any > > = {
         'uint16':   new RingPool< Uint16Array > ( 64 ),
         'number[]': new RingPool< number[] > ( 16 ),

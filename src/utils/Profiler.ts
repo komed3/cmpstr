@@ -26,15 +26,15 @@ import type { ProfilerEntry, ProfilerService } from './Types';
  */
 export class Profiler {
 
-    // Environment detection
+    /** Environment detection */
     private static ENV: 'nodejs' | 'browser' | 'unknown';
-    // Singleton instance
+    /** Singleton instance */
     private static instance: Profiler;
 
-    // Store for profiler entries
+    /** Store for profiler entries */
     private store: Set< ProfilerEntry< any > > = new Set ();
 
-    // Total time and memory consumption
+    /** Total time and memory consumption */
     private totalTime: number = 0;
     private totalMem: number = 0;
 

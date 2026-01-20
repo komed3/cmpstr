@@ -28,7 +28,7 @@
  */
 class Hasher {
 
-    // Constants for the hash algorithm
+    /** Constants for the hash algorithm */
     private static readonly FNV_PRIME: number = 0x01000193;
     private static readonly HASH_OFFSET: number = 0x811c9dc5;
 
@@ -95,9 +95,9 @@ class Hasher {
  */
 export class HashTable< K extends string, T > {
 
-    // The max. length of a string to hash, which is set to 2048 characters.
+    /** The max. length of a string to hash, which is set to 2048 characters */
     private static readonly MAX_LEN: number = 2048;
-    // The max. size of the hash table, which is set to 10,000.
+    /** The max. size of the hash table, which is set to 10,000 */
     private static readonly TABLE_SIZE: number = 10_000;
 
     /**
