@@ -29,11 +29,10 @@ import type { PoolType, PoolConfig, PoolBuffer } from './Types';
  * 
  * @template T - The type of buffers managed by the pool
  */
-class RingPool<T> {
+class RingPool< T > {
 
     // The buffers in the pool
-    private buffers: PoolBuffer<T>[] = [];
-
+    private buffers: PoolBuffer< T >[] = [];
     // The current pointer for acquiring buffers
     private pointer: number = 0;
 
@@ -49,57 +48,37 @@ class RingPool<T> {
      * 
      * @param {number} minSize - The minimum size of the buffer to acquire
      * @param {boolean} allowOversize - Whether to allow buffers larger than minSize
-     * @return {PoolBuffer<T>|null} - The acquired buffer or null if no suitable buffer is found
+     * @return {PoolBuffer< T > | null} - The acquired buffer or null if no suitable buffer is found
      */
-    public acquire ( minSize: number, allowOversize: boolean ) : PoolBuffer<T> | null {
-
-        const len: number = this.buffers.length;
+    public acquire ( minSize: number, allowOversize: boolean ) : PoolBuffer< T > | null {
+        const len = this.buffers.length;
 
         // Iterate through the buffers in the pool
         for ( let i = 0; i < len; i++ ) {
+            const idx = ( this.pointer + i ) % len;
+            const item = this.buffers[ idx ];
 
-            const idx: number = ( this.pointer + i ) % len;
-            const item: PoolBuffer<T> = this.buffers[ idx ];
-
-            // Check if the item size is greater than or equal to the minimum size
-            if ( item.size >= minSize ) {
-
-                // Set the pointer to the next position
+            // Get buffer that exactly matches the requested size and move pointer
+            if ( item.size >= minSize && ( allowOversize || item.size === minSize ) ) {
                 this.pointer = ( idx + 1 ) % len;
-
-                // If the item size is equal to minSize or oversize is allowed, return the item
-                return allowOversize || item.size === minSize ? item : null;
-
+                return item;
             }
-
         }
 
-        // If no suitable buffer is found, return null
         return null;
-
     }
 
     /**
      * Releases a buffer back to the pool.
      * If the pool is full, it replaces the oldest buffer with the new one.
      * 
-     * @param {PoolBuffer<T>} item - The buffer to release back to the pool
+     * @param {PoolBuffer< T >} item - The buffer to release back to the pool
      */
-    public release ( item: PoolBuffer<T> ) : void {
+    public release ( item: PoolBuffer< T > ) : void {
+        if ( this.buffers.length < this.maxSize ) return void[ this.buffers.push( item ) ];
 
-        if ( this.buffers.length < this.maxSize ) {
-
-            // If the pool is not full, simply add the item
-            this.buffers.push( item );
-
-        } else {
-
-            // If the pool is full, replace the oldest buffer
-            this.buffers[ this.pointer ] = item;
-            this.pointer = ( this.pointer + 1 ) % this.maxSize;
-
-        }
-
+        this.buffers[ this.pointer ] = item;
+        this.pointer = ( this.pointer + 1 ) % this.maxSize;
     }
 
     /**
@@ -107,10 +86,8 @@ class RingPool<T> {
      * This resets the pointer and empties the buffer list.
      */
     public clear () : void {
-
         this.buffers = [];
         this.pointer = 0;
-
     }
 
 }
@@ -124,7 +101,7 @@ class RingPool<T> {
 export class Pool {
 
     // Pool Types
-    private static readonly CONFIG: Record<PoolType, PoolConfig> = {
+    private static readonly CONFIG: Record< PoolType, PoolConfig > = {
         'uint16':   { type: 'uint16',   maxSize: 64, maxItemSize: 2048, allowOversize: true  },
         'number[]': { type: 'number[]', maxSize: 16, maxItemSize: 1024, allowOversize: false },
         'string[]': { type: 'string[]', maxSize:  2, maxItemSize: 1024, allowOversize: false },
@@ -133,12 +110,12 @@ export class Pool {
     };
 
     // Pool Rings for each type
-    private static readonly POOLS: Record<PoolType, RingPool<any>> = {
-        'uint16':   new RingPool<Uint16Array> ( 64 ),
-        'number[]': new RingPool<number[]> ( 16 ),
-        'string[]': new RingPool<string[]> ( 2 ),
-        'set':      new RingPool<Set<any>> ( 8 ),
-        'map':      new RingPool<Map<any, any>> ( 8 )
+    private static readonly POOLS: Record< PoolType, RingPool< any > > = {
+        'uint16':   new RingPool< Uint16Array > ( 64 ),
+        'number[]': new RingPool< number[] > ( 16 ),
+        'string[]': new RingPool< string[] > ( 2 ),
+        'set':      new RingPool< Set< any > > ( 8 ),
+        'map':      new RingPool< Map< any, any > > ( 8 )
     };
 
     /**
@@ -149,51 +126,40 @@ export class Pool {
      * @return {any} - The newly allocated buffer
      */
     private static allocate ( type: PoolType, size: number ) : any {
-
         switch ( type ) {
-
             case 'uint16':   return new Uint16Array ( size );
             case 'number[]': return new Float64Array ( size );
             case 'string[]': return new Array ( size );
             case 'set':      return new Set ();
             case 'map':      return new Map ();
-
         }
-
     }
 
     /**
      * Acquires a buffer of the specified type and size from the pool.
      * If no suitable buffer is available, it allocates a new one.
      * 
-     * @param {PoolType} type - The type of buffer to acquire (e.g., 'uint16', 'number[]', 'set', 'map')
+     * @param {PoolType} type - The type of buffer to acquire (e.g., 'uint16', 'number[]', 'map')
      * @param {number} size - The size of the buffer to acquire
      * @return {T} - The acquired buffer of the specified type
      */
-    public static acquire<T = any> ( type: PoolType, size: number ) : T {
-
-        // Get the configuration for the specified type
-        const CONFIG: PoolConfig = this.CONFIG[ type ];
+    public static acquire< T = any > ( type: PoolType, size: number ) : T {
+        const CONFIG = this.CONFIG[ type ];
 
         // If the requested size exceeds the maximum item size, allocate a new buffer
         if ( size > CONFIG.maxItemSize ) return this.allocate( type, size );
 
         // Try to acquire a buffer from the pool ring
         // If a suitable buffer is found, return it (subarray for uint16)
-        const item: PoolBuffer<any> | null = this.POOLS[ type ].acquire( size, CONFIG.allowOversize );
+        const item = this.POOLS[ type ].acquire( size, CONFIG.allowOversize );
 
-        if ( item ) {
-
-            // If the type is 'uint16', return a subarray of the buffer
-            return type === 'uint16' ? (
-                ( item.buffer as Uint16Array ).subarray( 0, size ) as unknown as T
-            ) : item.buffer as T;
-
-        }
+        // If the type is 'uint16', return a subarray of the buffer
+        if ( item ) return type === 'uint16'
+            ? ( item.buffer as Uint16Array ).subarray( 0, size ) as T
+            : item.buffer;
 
         // If no suitable buffer is found, allocate a new one
         return this.allocate( type, size );
-
     }
 
     /**
@@ -203,10 +169,8 @@ export class Pool {
      * @param {number[]} sizes - An array of sizes for each buffer to acquire
      * @return {T[]} - An array of acquired buffers of the specified type
      */
-    public static acquireMany<T = any> ( type: PoolType, sizes: number[] ) : T[] {
-
-        return sizes.map( size => this.acquire<T>( type, size ) );
-
+    public static acquireMany< T = any > ( type: PoolType, sizes: number[] ) : T[] {
+        return sizes.map( size => this.acquire< T >( type, size ) );
     }
 
     /**
@@ -217,19 +181,8 @@ export class Pool {
      * @param {T} buffer - The buffer to release
      * @param {number} size - The size of the buffer
      */
-    public static release<T = any> ( type: PoolType, buffer: T, size: number ) : void {
-
-        // Get the configuration for the specified type
-        const CONFIG: PoolConfig = this.CONFIG[ type ];
-
-        // If the size of the buffer is less than or equal to the maximum item size, release it
-        if ( size <= CONFIG.maxItemSize ) {
-
-            // Release the buffer back to the pool ring
-            this.POOLS[ type ].release( { buffer, size } );
-
-        }
-
+    public static release< T = any > ( type: PoolType, buffer: T, size: number ) : void {
+        if ( size <= this.CONFIG[ type ].maxItemSize ) this.POOLS[ type ].release( { buffer, size } );
     }
 
 }
