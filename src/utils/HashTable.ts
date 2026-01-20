@@ -3,6 +3,7 @@
  * src/utils/HashTable.ts
  * 
  * @see https://en.wikipedia.org/wiki/Fowler–Noll–Vo_hash_function
+ * @see https://en.wikipedia.org/wiki/MurmurHash
  * @see https://en.wikipedia.org/wiki/Hash_table
  * 
  * This module implements an instantiable hash table/cache using a modified FNV-1a hash
