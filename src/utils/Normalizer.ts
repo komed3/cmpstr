@@ -114,11 +114,11 @@ export class Normalizer {
      */
     static normalize ( input: string | string[], flags: NormalizeFlags ) : string | string[] {
 
-        // If input is an array, normalize each string in the array
-        if ( Array.isArray( input ) ) return input.map( s => Normalizer.normalize( s, flags ) ) as string[];
-
         // If input or flags are not provided, return the input as is
         if ( ! flags || typeof flags !== 'string' || ! input ) return input;
+
+        // If input is an array, normalize each string in the array
+        if ( Array.isArray( input ) ) return input.map( s => Normalizer.normalize( s, flags ) ) as string[];
 
         // Generate a cache key based on the flags and input
         const key: string | false = Normalizer.cache.key( flags, [ input ] );
