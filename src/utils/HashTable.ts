@@ -48,16 +48,11 @@ class Hasher {
         for ( let i = 0; i < chunks; i++ ) {
 
             const pos = i * 4;
+            const chunk = str.charCodeAt( pos ) 
+                | ( str.charCodeAt( pos + 1 ) << 8 ) 
+                | ( str.charCodeAt( pos + 2 ) << 16 ) 
+                | ( str.charCodeAt( pos + 3 ) << 24 );
 
-            // Cache charCodeAt results to reduce function call overhead
-            const c0 = str.charCodeAt( pos );
-            const c1 = str.charCodeAt( pos + 1 );
-            const c2 = str.charCodeAt( pos + 2 );
-            const c3 = str.charCodeAt( pos + 3 );
-
-            // Combine 4 chars into a single number for faster processing
-            const chunk: number = ( c0 ) | ( c1 << 8 ) | ( c2 << 16 ) | ( c3 << 24 );
-            
             hash ^= chunk;
             hash *= this.FNV_PRIME;
 
