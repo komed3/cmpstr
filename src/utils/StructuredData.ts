@@ -238,4 +238,24 @@ export class StructuredData< T = any, R = MetricRaw > {
         return this.finalizeLookup( await fn(), extractedStrings, opt );
     }
 
+    public lookup (
+        fn: ( a: string, b: string[], opt?: CmpStrOptions ) => CmpFnResult< R >,
+        query: string, opt?: StructuredDataOptions
+    ) : StructuredDataBatchResult< T, R > | T[] {
+        const b = this.extract();
+
+        try { return this.performLookup( () => fn( query, b, opt ), b, opt ) }
+        finally { Pool.release( 'string[]', b, b.length ) }
+    }
+
+    public async lookupAsync (
+        fn: ( a: string, b: string[], opt?: CmpStrOptions ) => Promise< CmpFnResult< R > >,
+        query: string, opt?: StructuredDataOptions
+    ) : Promise< StructuredDataBatchResult< T, R > | T[] > {
+        const b = this.extract();
+
+        try { return await this.performLookupAsync( () => fn( query, b, opt ), b, opt ) }
+        finally { Pool.release( 'string[]', b, b.length ) }
+    }
+
 }
