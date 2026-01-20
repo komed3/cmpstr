@@ -108,7 +108,7 @@ export function Registry< T > ( reg: string, ctor: RegistryConstructor< T > ) : 
     };
 
     /** Register the service in the global registry */
-    registry[ reg ] = service;
+    registry[ reg ] = Object.freeze( service );
 
     /** Create a factory function for creating instances from the registry */
     factory[ reg ] = ( cls: string, ...args: any[] ) : InstanceType< RegistryConstructor< T > > => (

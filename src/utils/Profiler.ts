@@ -197,13 +197,13 @@ export class Profiler {
      * 
      * @returns {ProfilerService< any >} - An object containing methods to control the profiler
      */
-    public services: ProfilerService< any > = {
+    public services: ProfilerService< any > = Object.freeze( {
         enable: this.enable.bind( this ),
         disable: this.disable.bind( this ),
         clear: this.clear.bind( this ),
         report: this.getAll.bind( this ),
         last: this.getLast.bind( this ),
         total: this.getTotal.bind( this )
-    };
+    } );
 
 }
