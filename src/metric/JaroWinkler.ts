@@ -26,12 +26,12 @@ export interface JaroWinklerRaw {
     transpos: number;
     jaro: number;
     prefix: number;
-};
+}
 
 /**
  * JaroWinklerDistance class extends the Metric class to implement the Jaro-Winkler algorithm.
  */
-export class JaroWinklerDistance extends Metric<JaroWinklerRaw> {
+export class JaroWinklerDistance extends Metric< JaroWinklerRaw > {
 
     /**
      * Constructor for the JaroWinklerDistance class.
@@ -39,16 +39,14 @@ export class JaroWinklerDistance extends Metric<JaroWinklerRaw> {
      * Initializes the Jaro-Winkler metric with two input strings or
      * arrays of strings and optional options.
      * 
+     * Metric is symmetrical.
+     * 
      * @param {MetricInput} a - First input string or array of strings
      * @param {MetricInput} b - Second input string or array of strings
      * @param {MetricOptions} [opt] - Options for the metric computation
      */
     constructor ( a: MetricInput, b: MetricInput, opt: MetricOptions = {} ) {
-
-        // Call the parent Metric constructor with the metric name and inputs
-        // Metric is symmetrical
-        super ( 'jaro-winkler', a, b, opt, true );
-
+        super ( 'jaroWinkler', a, b, opt, true );
     }
 
     /**
@@ -58,99 +56,80 @@ export class JaroWinklerDistance extends Metric<JaroWinklerRaw> {
      * @param {string} b - Second string
      * @param {number} m - Length of the first string
      * @param {number} n - Length of the second string
-     * @return {MetricCompute<JaroWinklerRaw>} - Object containing the similarity result and raw values
+     * @return {MetricCompute< JaroWinklerRaw >} - Object containing the similarity result and raw values
      */
-    protected override compute ( a: string, b: string, m: number, n: number ) : MetricCompute<JaroWinklerRaw> {
-
-        // Find matches
-        const matchWindow: number = Math.max( 0, Math.floor( n / 2 ) - 1 );
-
+    protected override compute ( a: string, b: string, m: number, n: number ) : MetricCompute< JaroWinklerRaw > {
         // Use Pool for boolean arrays
-        const matchA: Uint16Array = Pool.acquire( 'uint16', m );
-        const matchB: Uint16Array = Pool.acquire( 'uint16', n );
+        const [ matchA, matchB ] = Pool.acquireMany< Uint16Array >( 'uint16', [ m, n ] );
 
-        // Initialize match arrays
-        for ( let i = 0; i < m; i++ ) matchA[ i ] = 0;
-        for ( let i = 0; i < n; i++ ) matchB[ i ] = 0;
+        try {
+            // Initialize match arrays
+            for ( let i = 0; i < m; i++ ) matchA[ i ] = 0;
+            for ( let i = 0; i < n; i++ ) matchB[ i ] = 0;
 
-        // Find matches within the match window
-        let matches: number = 0;
+            // Find matches
+            const matchWindow: number = Math.max( 0, Math.floor( n / 2 ) - 1 );
 
-        for ( let i = 0; i < m; i++ ) {
-
-            const start: number = Math.max( 0, i - matchWindow );
-            const end: number = Math.min( i + matchWindow + 1, n );
-
-            for ( let j = start; j < end; j++ ) {
-
-                if ( ! matchB[ j ] && a[ i ] === b[ j ] ) {
-
-                    matchA[ i ] = 1;
-                    matchB[ j ] = 1;
-                    matches++;
-
-                    break;
-
-                }
-
-            }
-
-        }
-
-        // Set initial values for transpositions, jaro distance, prefix and result
-        let transpos: number = 0, jaro: number = 0, prefix: number = 0, res: number = 0;
-
-        // If matches are found, proceed with further calculations
-        if ( matches > 0 ) {
-
-            // Count transpositions
-            let k: number = 0;
-
+            // Find matches within the match window
+            let matches = 0;
             for ( let i = 0; i < m; i++ ) {
+                const start = Math.max( 0, i - matchWindow );
+                const end = Math.min( i + matchWindow + 1, n );
 
-                if ( matchA[ i ] ) {
+                for ( let j = start; j < end; j++ ) {
+                    if ( ! matchB[ j ] && a[ i ] === b[ j ] ) {
+                        matchA[ i ] = 1;
+                        matchB[ j ] = 1;
+                        matches++;
 
-                    while ( ! matchB[ k ] ) k++;
+                        break;
+                    }
+                }
+            }
 
-                    if ( a[ i ] !== b[ k ] ) transpos++;
+            // Set initial values for transpositions, jaro distance, prefix and result
+            let transpos = 0, jaro = 0, prefix = 0, res = 0;
 
-                    k++;
-
+            // If matches are found, proceed with further calculations
+            if ( matches > 0 ) {
+                // Count transpositions
+                let k = 0;
+                for ( let i = 0; i < m; i++ ) {
+                    if ( matchA[ i ] ) {
+                        while ( ! matchB[ k ] ) k++;
+                        if ( a[ i ] !== b[ k ] ) transpos++;
+                        k++;
+                    }
                 }
 
+                transpos /= 2;
+
+                // Calculate Jaro similarity
+                jaro = (
+                    ( matches / m ) + ( matches / n ) +
+                    ( matches - transpos ) / matches
+                ) / 3;
+
+                // Calculate common prefix length (max 4)
+                for ( let i = 0; i < Math.min( 4, m, n ); i++ ) {
+                    if ( a[ i ] === b[ i ] ) prefix++;
+                    else break;
+                }
+
+                // Step 5: Calculate Jaro-Winkler similarity
+                res = jaro + prefix * 0.1 * ( 1 - jaro );
             }
 
-            transpos /= 2;
-
-            // Calculate Jaro similarity
-            jaro = (
-                ( matches / m ) + ( matches / n ) +
-                ( matches - transpos ) / matches
-            ) / 3;
-
-            // Calculate common prefix length (max 4)
-            for ( let i = 0; i < Math.min( 4, m, n ); i++ ) {
-
-                if ( a[ i ] === b[ i ] ) prefix++;
-                else break;
-
-            }
-
-            // Step 5: Calculate Jaro-Winkler similarity
-            res = jaro + prefix * 0.1 * ( 1 - jaro );
-
+            // Return the result as a MetricCompute object
+            return {
+                res: Metric.clamp( res ),
+                raw: { matchWindow, matches, transpos, jaro, prefix }
+            };
+        } finally {
+            // Release arrays back to the pool
+            Pool.release( 'uint16', matchA, m );
+            Pool.release( 'uint16', matchB, n );
         }
-
-        // Release arrays back to the pool
-        Pool.release( 'uint16', matchA, m );
-        Pool.release( 'uint16', matchB, n );
-
-        // Return the result as a MetricCompute object
-        return {
-            res: Metric.clamp( res ),
-            raw: { matchWindow, matches, transpos, jaro, prefix }
-        };
-
     }
 
 }
