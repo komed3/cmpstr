@@ -247,6 +247,28 @@ export type MetricResult< R = MetricRaw > = MetricResultSingle< R > | MetricResu
 export type IndexedResult< R = MetricRaw > = MetricResultSingle< R > & { __idx?: number };
 
 /**
+ * ResultLike represents the possible return types for comparison functions.
+ * 
+ * @template R - The type of the raw result
+ */
+export type ResultLike< R = MetricRaw > = CmpStrResult | MetricResultSingle< R >;
+
+/**
+ * BatchResultLike represents the possible return types for batch comparison functions.
+ * 
+ * @template R - The type of the raw result
+ */
+export type BatchResultLike< R = MetricRaw > = CmpStrResult[] | MetricResultBatch< R >;
+
+/**
+ * StructuredResultLike represents the possible return types for structured data lookups.
+ * 
+ * @template T - The type of the original object
+ * @template R - The type of the metric raw result
+ */
+export type StructuredResultLike< T = any, R = MetricRaw > = StructuredDataBatchResult< T, R > | T[];
+
+/**
  * PhoneticOptions configures the behavior of phonetic algorithms.
  */
 export interface PhoneticOptions {
