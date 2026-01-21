@@ -56,12 +56,12 @@ class RingPool< T > {
 
         // Iterate through the buffers in the pool
         for ( let i = 0; i < len; i++ ) {
-            const idx = ( this.pointer + i ) % len;
+            const idx = ( this.pointer + i ) & ( len - 1 );
             const item = this.buffers[ idx ];
 
             // Get buffer that exactly matches the requested size and move pointer
             if ( item.size >= minSize && ( allowOversize || item.size === minSize ) ) {
-                this.pointer = ( idx + 1 ) % len;
+                this.pointer = ( idx + 1 ) & ( len - 1 );
                 return item;
             }
         }
