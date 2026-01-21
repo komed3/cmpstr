@@ -194,6 +194,9 @@ export abstract class Metric< R = MetricRaw > {
         if ( ! result ) {
             // If the profiler is enabled, measure; else, just run
             result = profiler.run( () : MetricCompute< R > => {
+                // If the metric is symmetrical, swap `a` and `b` (shorter string first)
+                if ( this.symmetric ) [ A, B, m, n ] = Metric.swap( A, B, m, n );
+
                 // Generate a cache key based on the metric and pair of strings `a` and `b`
                 // Concatenate with options to ensure different options yield different cache entries
                 const key = Metric.cache.key( this.metric, [ A, B ], this.symmetric ) + this.optKey;
@@ -201,9 +204,6 @@ export abstract class Metric< R = MetricRaw > {
                 // If the key exists in the cache, return the cached result
                 // Otherwise, compute the metric using the algorithm
                 return Metric.cache.get( key || '' ) ?? ( () => {
-                    // If the metric is symmetrical, swap `a` and `b` (shorter string first)
-                    if ( this.symmetric ) [ A, B, m, n ] = Metric.swap( A, B, m, n );
-
                     // Compute the similarity using the algorithm
                     const res = this.compute( A, B, m, n, Math.max( m, n ) );
 
