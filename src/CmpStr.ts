@@ -292,7 +292,7 @@ export class CmpStr< R = MetricRaw > {
     protected index ( input: MetricInput, { algo, opt }: { algo: string, opt?: PhoneticOptions } ) : MetricInput {
         this.assert( 'phonetic', algo );
 
-        const phonetic: Phonetic = factory.phonetic( algo, opt );
+        const phonetic: Phonetic = factory[ 'phonetic' ]( algo, opt );
         const delimiter = opt?.delimiter ?? ' ';
 
         return Array.isArray( input )
@@ -344,7 +344,7 @@ export class CmpStr< R = MetricRaw > {
         ) ) { return ( [] as unknown ) as T }
 
         // Get the metric class
-        const metric: Metric< R > = factory.metric( resolved.metric!, A, B, resolved.opt );
+        const metric: Metric< R > = factory[ 'metric' ]( resolved.metric!, A, B, resolved.opt );
 
         // Pass the original inputs to the metric
         if ( resolved.output !== 'prep' ) metric.setOriginal( a, b );

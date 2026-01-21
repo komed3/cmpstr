@@ -1,15 +1,17 @@
 {
   "extends": "./tsconfig.json",
   "compilerOptions": {
-    "noEmit": true,
-    "strict": true,
+    "allowUnreachableCode": false,
     "alwaysStrict": true,
-    "noUncheckedSideEffectImports": true,
+    "noEmit": true,
     "noImplicitAny": true,
-    "noUnusedParameters": true,
-    "noUnusedLocals": true,
     "noImplicitOverride": true,
     "noImplicitReturns": true,
-    "noImplicitThis": true
+    "noImplicitThis": true,
+    "noPropertyAccessFromIndexSignature": true,
+    "noUncheckedSideEffectImports": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "strict": true
   }
 }
