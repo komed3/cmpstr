@@ -35,16 +35,16 @@ import type { DiffOptions, DiffLine, DiffEntry, DiffGroup } from './Types';
  */
 export class DiffChecker {
 
-    // Original input texts and options
+    /** Original input texts and options */
     private readonly a: string;
     private readonly b: string;
-    private readonly options: Required<DiffOptions>;
+    private readonly options: Required< DiffOptions >;
 
-    // Computed diff entries and groups
+    /** Computed diff entries and groups */
     private entries: DiffLine[] = [];
     private grouped: DiffGroup[] = [];
 
-    // Flag to indicate if the diff has already been computed
+    /** Flag to indicate if the diff has already been computed */
     private diffRun: boolean = false;
 
     /**
@@ -55,8 +55,6 @@ export class DiffChecker {
      * @param {DiffOptions} [opt] - Optional diff configuration
      */
     constructor ( a: string, b: string, opt: DiffOptions = {} ) {
-
-        // Set the two texts to compare
         this.a = a, this.b = b;
 
         // Merge default with user-provided options
@@ -73,23 +71,18 @@ export class DiffChecker {
 
         // Run the diff computation immediately
         this.computeDiff();
-
     }
 
     /**
-     * Splits both input texts into arrays of lines and returns them
-     * with the maximum line count.
+     * Splits both input texts into arrays of lines and returns them with the maximum line count.
      * 
      * @returns { linesA: string[], linesB: string[], maxLen: number }
      */
     private text2lines () : { linesA: string[], linesB: string[], maxLen: number; } {
-
-        // Trim and split the input texts into lines
-        const linesA: string[] = this.a.trim().split( /\r?\n/ );
-        const linesB: string[] = this.b.trim().split( /\r?\n/ );
+        const linesA = this.a.trim().split( /\r?\n/ );
+        const linesB = this.b.trim().split( /\r?\n/ );
 
         return { linesA, linesB, maxLen: Math.max( linesA.length, linesB.length ) };
-
     }
 
     /**
@@ -99,18 +92,10 @@ export class DiffChecker {
      * @returns {string[]} - Array of tokens
      */
     private tokenize ( input: string ) : string[] {
-
-        const { mode } = this.options;
-
-        switch ( mode ) {
-
-            // Tokenize by lines
+        switch ( this.options.mode ) {
             case 'line': return [ input ];
-            // Tokenize by words
             case 'word': return input.split( /\s+/ );
-
         }
-
     }
 
     /**
@@ -120,11 +105,7 @@ export class DiffChecker {
      * @returns {string} - Concatenated string
      */
     private concat ( input: string[] ) : string {
-
-        const { mode } = this.options;
-
-        return input.join( mode === 'word' ? ' ' : '' );
-
+        return input.join( this.options.mode === 'word' ? ' ' : '' );
     }
 
     /**
@@ -132,31 +113,17 @@ export class DiffChecker {
      * entries and grouped arrays.
      */
     private computeDiff () : void {
+        if ( this.diffRun ) return;
 
-        if ( ! this.diffRun ) {
+        // Get the lines from both texts
+        const { linesA, linesB, maxLen } = this.text2lines();
 
-            // Get the lines from both texts
-            const { linesA, linesB, maxLen } = this.text2lines();
+        // Loop through each line and compare them
+        for ( let i = 0; i < maxLen; i++ ) this.lineDiff( linesA[ i ] || '', linesB[ i ] || '', i );
 
-            // Loop through each line and compare them
-            for ( let i = 0; i < maxLen; i++ ) {
-
-                const a: string = linesA[ i ] || '';
-                const b: string = linesB[ i ] || '';
-
-                // Perform line diffing
-                this.lineDiff( a, b, i );
-
-            }
-
-            // Find groups of adjacent changes
-            this.findGroups();
-
-            // Set the diff run flag to true
-            this.diffRun = true;
-
-        }
-
+        // Find groups of adjacent changes and set diff run flag to true
+        this.findGroups();
+        this.diffRun = true;
     }
 
     /**
@@ -167,55 +134,42 @@ export class DiffChecker {
      * @param {number} line - Line number
      */
     private lineDiff ( a: string, b: string, line: number ) : void {
-
         const { mode, caseInsensitive } = this.options;
-
-        const baseLen: number = Math.max( a.length, b.length );
-        let A: string = a, B: string = b;
+        const baseLen = Math.max( a.length, b.length );
+        let A = a, B = b;
 
         // If case-insensitive mode is enabled, convert both lines to lowercase
         if ( caseInsensitive ) A = a.toLowerCase(), B = b.toLowerCase();
 
         let diffs: DiffEntry[] = [];
-        let delSize: number = 0, insSize: number = 0;
+        let delSize = 0, insSize = 0;
 
-        if ( mode === 'line' ) {
+        switch ( mode ) {
+            case 'line': // For line mode, compare the entire lines directly
+                if ( A !== B ) {
+                    diffs.push( {
+                        posA: 0, posB: 0,
+                        del: a, ins: b,
+                        size: b.length - a.length
+                    } );
 
-            // For line mode, compare the entire lines directly
-            if ( A !== B ) {
+                    delSize = a.length;
+                    insSize = b.length;
+                }
+                break;
 
-                diffs.push( {
-                    posA: 0, posB: 0,
-                    del: a, ins: b,
-                    size: b.length - a.length
-                } );
-
-                delSize = a.length;
-                insSize = b.length;
-
-            }
-
-        } else {
-
-            // For word mode, find precise diffs between tokenized lines
-            diffs = this.preciseDiff( a, A, b, B );
-
-            // Calculate total sizes of deletions and insertions
-            for ( const d of diffs ) delSize += d.del.length, insSize += d.ins.length;
-
+            case 'word': // For word mode, find precise diffs between tokenized lines
+                diffs = this.preciseDiff( a, A, b, B );
+                for ( const d of diffs ) delSize += d.del.length, insSize += d.ins.length;
+                break;
         }
 
-        if ( diffs.length ) {
-
-            // Add the diff entry for this line
-            this.entries.push( {
-                line, diffs, delSize, insSize, baseLen,
-                totalSize: insSize - delSize,
-                magnitude: this.magnitude( delSize, insSize, baseLen )
-            } );
-
-        }
-
+        // Add the diff entry for this line
+        if ( diffs.length ) this.entries.push( {
+            line, diffs, delSize, insSize, baseLen,
+            totalSize: insSize - delSize,
+            magnitude: this.magnitude( delSize, insSize, baseLen )
+        } );
     }
 
     /**
@@ -229,32 +183,29 @@ export class DiffChecker {
      * @returns {DiffEntry[]} - Array of diff entries for this line
      */
     private preciseDiff ( a: string, A: string, b: string, B: string ) : DiffEntry[] {
-
         // Helper function to calculate positions of tokens in the original text
-        const posIndex = ( t: string[] ) => t.reduce(
+        const posIndex = ( t: string[] ) : number[] => t.reduce(
             ( p, _, i ) => ( p.push( i ? p[ i - 1 ] + t[ i - 1 ].length + 1 : 0 ), p ),
             [] as number[]
         );
 
         // Original and tokenized arrays, their lengths and position arrays
-        const origA: string[] = this.tokenize( a );
-        const origB: string[] = this.tokenize( b );
-        const tokenA: string[] = this.tokenize( A );
-        const tokenB: string[] = this.tokenize( B );
-        const lenA: number = tokenA.length;
-        const lenB: number = tokenB.length;
-        const posArrA: number[] = posIndex( origA );
-        const posArrB: number[] = posIndex( origB );
+        const origA = this.tokenize( a );
+        const origB = this.tokenize( b );
+        const tokenA = this.tokenize( A );
+        const tokenB = this.tokenize( B );
+        const lenA = tokenA.length;
+        const lenB = tokenB.length;
+        const posArrA = posIndex( origA );
+        const posArrB = posIndex( origB );
 
         // Find all matching blocks (LCS)
-        const matches: Array<{ ai: number, bi: number, len: number }> = [];
-        let ai: number = 0, bi: number = 0;
+        const matches: Array< { ai: number, bi: number, len: number } > = [];
+        let ai = 0, bi = 0;
 
         while ( ai < lenA && bi < lenB ) {
-
             // If tokens match, find the length of the match
             if ( tokenA[ ai ] === tokenB[ bi ] ) {
-
                 let len: number = 1;
 
                 // Extend the match as long as tokens continue to match
@@ -265,51 +216,39 @@ export class DiffChecker {
 
                 matches.push( { ai, bi, len } );
                 ai += len, bi += len;
-
             } else {
-
                 let found: boolean = false;
 
                 // Look ahead for next sync point (greedy, but avoids long tails)
                 for ( let offset = 1; offset <= 3 && ! found; offset++ ) {
-
                     // Check if the next token in A matches the current token in B
                     if ( ai + offset < lenA && tokenA[ ai + offset ] === tokenB[ bi ] ) {
-
                         matches.push( { ai: ai + offset, bi, len: 1 } );
                         ai += offset + 1, bi += 1, found = true;
-
                     }
 
                     // Check if the next token in B matches the current token in A
                     else if ( bi + offset < lenB && tokenA[ ai ] === tokenB[ bi + offset ] ) {
-
                         matches.push( { ai, bi: bi + offset, len: 1 } );
                         ai += 1, bi += offset + 1, found = true;
-
                     }
-
                 }
 
                 // If no match was found, advance both pointers by one
                 if ( ! found ) ai++, bi++;
-
             }
-
         }
 
         // Walk through tokens and emit diffs between matches
         const diffs: DiffEntry[] = [];
-        let i: number = 0, j: number = 0;
+        let i = 0, j = 0;
 
         for ( const m of matches ) {
-
             // If there are unmatched tokens before the match, record them
             if ( i < m.ai || j < m.bi ) {
-
                 // Slice the original arrays to get the unmatched tokens
-                const delArr: string[] = origA.slice( i, m.ai );
-                const insArr: string[] = origB.slice( j, m.bi );
+                const delArr = origA.slice( i, m.ai );
+                const insArr = origB.slice( j, m.bi );
 
                 // Push the diff entry for unmatched tokens
                 diffs.push( {
@@ -319,20 +258,17 @@ export class DiffChecker {
                     ins: this.concat( insArr ),
                     size: insArr.join( '' ).length - delArr.join( '' ).length
                 } );
-
             }
 
             // Advance to after the match
             i = m.ai + m.len, j = m.bi + m.len;
-
         }
 
         // Tail diffs after the last match
         if ( i < lenA || j < lenB ) {
-
             // Slice the original arrays to get the unmatched tokens
-            const delArr: string[] = origA.slice( i );
-            const insArr: string[] = origB.slice( j );
+            const delArr = origA.slice( i );
+            const insArr = origB.slice( j );
 
             // Push the diff entry for unmatched tokens at the end
             diffs.push( {
@@ -342,12 +278,10 @@ export class DiffChecker {
                 ins: this.concat( insArr ),
                 size: insArr.join( '' ).length - delArr.join( '' ).length
             } );
-
         }
 
         // Remove empty diffs
         return diffs.filter( d => d.del.length > 0 || d.ins.length > 0 );
-
     }
 
     /**
