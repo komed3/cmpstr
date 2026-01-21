@@ -22,21 +22,21 @@ export * from './index';
 /**
  * Export utils to implement new metrics
  * 
- *  - MetricRegistry: Metric registry service for managing metric implementations.
  *  - Metric: Abstract class representing a generic string metric.
  *  - MetricCls: Type definition for a class constructor that extends the Metric class.
+ *  - MetricRegistry: Metric registry service for managing metric implementations.
  */
-export { MetricRegistry, Metric, MetricCls } from './metric';
+export { Metric, MetricCls, MetricRegistry } from './metric';
 
 /**
  * Export utils to implement new phonetic algorithms
  * 
- *  - PhoneticRegistry: Phonetic registry service for managing phonetic algorithm implementations.
- *  - PhoneticMappingRegistry: Registry for managing phonetic character mappings.
  *  - Phonetic: Abstract class representing a generic phonetic algorithm.
  *  - PhoneticCls: Type definition for a class constructor that extends the Phonetic class.
+ *  - PhoneticMappingRegistry: Registry for managing phonetic character mappings.
+ *  - PhoneticRegistry: Phonetic registry service for managing phonetic algorithm implementations.
  */
-export { PhoneticRegistry, PhoneticMappingRegistry, Phonetic, PhoneticCls } from './phonetic';
+export { Phonetic, PhoneticCls, PhoneticMappingRegistry, PhoneticRegistry } from './phonetic';
 
 // Export additional utilities and components
 export * as DeepMerge from './utils/DeepMerge';
