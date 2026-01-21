@@ -63,8 +63,8 @@ export class TextAnalyzer {
         let match: RegExpExecArray | null;
 
         // Tokenize words using Unicode property escapes for letters
-        while ( ( match = TextAnalyzer.REGEX.word.exec( this.text ) ) !== null )
-            this.words.push( match[ 0 ].toLowerCase() );
+        const lcText = this.text.toLowerCase();
+        while ( ( match = TextAnalyzer.REGEX.word.exec( lcText ) ) !== null ) this.words.push( match[ 0 ] );
 
         // Tokenize sentences using punctuation marks as delimiters
         this.sentences = this.text.split( TextAnalyzer.REGEX.sentence ).filter( Boolean );
