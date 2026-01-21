@@ -53,7 +53,7 @@ export function Registry< T > ( reg: string, ctor: RegistryConstructor< T > ) : 
     const classes: Record< string, RegistryConstructor< T > > = Object.create( null );
 
     /** Service object implementing the RegistryService interface */
-    const service: RegistryService< T > = {
+    const service: RegistryService< T > = Object.freeze( {
 
         /**
          * Register a new extension of the base class.
@@ -105,10 +105,10 @@ export function Registry< T > ( reg: string, ctor: RegistryConstructor< T > ) : 
             return classes[ name ];
         }
 
-    };
+    } );
 
     /** Register the service in the global registry */
-    registry[ reg ] = Object.freeze( service );
+    registry[ reg ] = service;
 
     /** Create a factory function for creating instances from the registry */
     factory[ reg ] = ( cls: string, ...args: any[] ) : InstanceType< RegistryConstructor< T > > => (
