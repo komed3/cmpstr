@@ -45,9 +45,9 @@ import { Phonetic } from './phonetic';
 export class CmpStrAsync< R = MetricRaw > extends CmpStr< R > {
 
     /**
-     * --------------------------------------------------------------------------------
+     * ================================================================================
      * Instanciate the CmpStrAsync class
-     * --------------------------------------------------------------------------------
+     * ================================================================================
      * 
      * Methods to create a new CmpStrAsync instance with the given options.
      * Using the static `create` method is recommended to ensure proper instantiation.
@@ -71,9 +71,9 @@ export class CmpStrAsync< R = MetricRaw > extends CmpStr< R > {
     protected constructor ( opt?: string | CmpStrOptions ) { super ( opt ) }
 
     /**
-     * ---------------------------------------------------------------------------------
+     * ================================================================================-
      * Protected asynchronously utility methods for internal use
-     * ---------------------------------------------------------------------------------
+     * ================================================================================-
      * 
      * These methods provide asynchronous normalization, filtering, and metric
      * computation capabilities, allowing for non-blocking operations.
@@ -191,9 +191,9 @@ export class CmpStrAsync< R = MetricRaw > extends CmpStr< R > {
     }
 
     /**
-     * ---------------------------------------------------------------------------------
+     * ================================================================================-
      * Public asynchronously core methods for string comparison
-     * ---------------------------------------------------------------------------------
+     * ================================================================================-
      * 
      * These methods provide the asynchronous core functionality for string comparison,
      * phonetic indexing and text search, allowing for non-blocking operations.
@@ -389,9 +389,9 @@ export class CmpStrAsync< R = MetricRaw > extends CmpStr< R > {
     }
 
     /**
-     * ---------------------------------------------------------------------------------
+     * ================================================================================-
      * Public asynchronous methods for structured data comparison
-     * ---------------------------------------------------------------------------------
+     * ================================================================================-
      * 
      * These methods provide asynchronous interfaces for comparing arrays of
      * structured objects by extracting and comparing specific properties.

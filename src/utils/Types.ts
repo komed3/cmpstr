@@ -17,6 +17,14 @@
 'use strict';
 
 /**
+ * ================================================================================
+ * PROFILER & POOL UTILITIES
+ * ================================================================================
+ * 
+ * Types for performance profiling and buffer pool management.
+ */
+
+/**
  * ProfilerEntry represents a single profiling result, including execution time,
  * memory usage, the result of the profiled function, and optional metadata.
  * 
@@ -86,6 +94,14 @@ export interface PoolBuffer< T > {
 }
 
 /**
+ * ================================================================================
+ * NORMALIZATION & FILTERING
+ * ================================================================================
+ * 
+ * Types for input normalization and custom filtering pipelines.
+ */
+
+/**
  * NormalizerFn defines the signature for a normalization function.
  * It takes a string and returns a normalized string.
  */
@@ -132,6 +148,14 @@ export interface FilterEntry {
 }
 
 /**
+ * ================================================================================
+ * REGISTRIES
+ * ================================================================================
+ * 
+ * Types for managing registries of metrics, phonetic algorithms, and more.
+ */
+
+/**
  * RegistryConstructor is a type alias for a class constructor used in registries.
  * 
  * @template T - The class type
@@ -155,6 +179,14 @@ export interface RegistryService< T > {
     // Lists all registered class names
     list: () => string[];
 }
+
+/**
+ * ================================================================================
+ * METRICS
+ * ================================================================================
+ * 
+ * Types for string similarity metrics and comparison operations.
+ */
 
 /**
  * MetricInput represents the input for metric computations.
@@ -240,11 +272,29 @@ export type MetricResultBatch< R = MetricRaw > = MetricResultSingle< R >[];
 export type MetricResult< R = MetricRaw > = MetricResultSingle< R > | MetricResultBatch< R >;
 
 /**
- * IndexedResult is an MetricResultSingle with optional index metadata.
+ * IndexedResult is a MetricResultSingle with optional index metadata.
  * 
  * @template R - The type of the raw result
  */
 export type IndexedResult< R = MetricRaw > = MetricResultSingle< R > & { __idx?: number };
+
+/**
+ * ================================================================================
+ * CMPSTR RESULT TYPES
+ * ================================================================================
+ * 
+ * Types for CmpStr results and their various forms.
+ */
+
+/**
+ * CmpStrResult represents a simplified result for user-facing API methods.
+ */
+export interface CmpStrResult {
+    // The source and target strings
+    source: string; target: string;
+    // The similarity score (0..1)
+    match: number;
+}
 
 /**
  * ResultLike represents the possible return types for comparison functions.
@@ -261,12 +311,19 @@ export type ResultLike< R = MetricRaw > = CmpStrResult | MetricResultSingle< R >
 export type BatchResultLike< R = MetricRaw > = CmpStrResult[] | MetricResultBatch< R >;
 
 /**
- * StructuredResultLike represents the possible return types for structured data lookups.
+ * CompareFnResult represents the possible return types for comparison functions.
  * 
- * @template T - The type of the original object
- * @template R - The type of the metric raw result
+ * @template R - The type of the raw result
  */
-export type StructuredResultLike< T = any, R = MetricRaw > = StructuredDataBatchResult< T, R > | T[];
+export type CmpFnResult< R > = MetricResultSingle< R >[] | ( CmpStrResult & { raw?: R } )[] | null | undefined;
+
+/**
+ * ================================================================================
+ * PHONETIC ALGORITHMS
+ * ================================================================================
+ * 
+ * Types for phonetic indexing, mapping, and phonetic-aware comparisons.
+ */
 
 /**
  * PhoneticOptions configures the behavior of phonetic algorithms.
@@ -366,6 +423,14 @@ export interface PhoneticMappingService {
 }
 
 /**
+ * ================================================================================
+ * DIFF & TEXT ANALYSIS
+ * ================================================================================
+ * 
+ * Types for unified diff computation and text comparison.
+ */
+
+/**
  * DiffMode specifies the granularity for diffing.
  *  - 'line': line-based diff
  *  - 'word': word-based diff
@@ -448,6 +513,14 @@ export interface DiffGroup {
 }
 
 /**
+ * ================================================================================
+ * CMPSTR CONFIGURATION
+ * ================================================================================
+ * 
+ * Types for configuring CmpStr behavior and options.
+ */
+
+/**
  * CmpStrProcessors defines pre-processors for input strings before comparison.
  */
 export interface CmpStrProcessors {
@@ -483,21 +556,12 @@ export interface CmpStrOptions {
 }
 
 /**
- * CmpStrResult represents a simplified result for user-facing API methods.
- */
-export interface CmpStrResult {
-    // The source and target strings
-    source: string; target: string;
-    // The similarity score (0..1)
-    match: number;
-}
-
-/**
- * CompareFnResult represents the possible return types for comparison functions.
+ * ================================================================================
+ * STRUCTURED DATA
+ * ================================================================================
  * 
- * @template R - The type of the raw result
+ * Types for comparing structured data objects by extracting properties.
  */
-export type CmpFnResult< R > = MetricResultSingle< R >[] | ( CmpStrResult & { raw?: R } )[] | null | undefined;
 
 /**
  * StructuredDataResult represents a lookup result with original object attached.
@@ -523,6 +587,14 @@ export interface StructuredDataResult< T = any, R = MetricRaw > {
  * @template R - The type of the metric raw result
  */
 export type StructuredDataBatchResult< T = any, R = MetricRaw > = StructuredDataResult< T, R >[];
+
+/**
+ * StructuredResultLike represents the possible return types for structured data lookups.
+ * 
+ * @template T - The type of the original object
+ * @template R - The type of the metric raw result
+ */
+export type StructuredResultLike< T = any, R = MetricRaw > = StructuredDataBatchResult< T, R > | T[];
 
 /**
  * StructuredDataOptions configures the lookup behavior.

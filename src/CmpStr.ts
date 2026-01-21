@@ -53,9 +53,9 @@ const profiler = Profiler.getInstance();
 export class CmpStr< R = MetricRaw > {
 
     /**
-     * --------------------------------------------------------------------------------
+     * ================================================================================
      * Static methods and properties for global access to CmpStr features
-     * --------------------------------------------------------------------------------
+     * ================================================================================
      * 
      * These static methods provide a convenient way to access the core features of
      * the CmpStr package without needing to instantiate a CmpStr object.
@@ -140,9 +140,9 @@ export class CmpStr< R = MetricRaw > {
     public static diff = ( a: string, b: string, opt?: DiffOptions ) : DiffChecker => new DiffChecker ( a, b, opt );
 
     /**
-     * --------------------------------------------------------------------------------
+     * ================================================================================
      * Instanciate the CmpStr class
-     * --------------------------------------------------------------------------------
+     * ================================================================================
      * 
      * Methods to create a new CmpStr instance with the given options.
      * Using the static `create` method is recommended to ensure proper instantiation.
@@ -172,9 +172,9 @@ export class CmpStr< R = MetricRaw > {
     }
 
     /**
-     * ---------------------------------------------------------------------------------
+     * ================================================================================-
      * Protected utility methods for internal use
-     * ---------------------------------------------------------------------------------
+     * ================================================================================-
      * 
      * These methods provide utility functions for converting inputs, merging options,
      * normalizing inputs, filtering, and preparing inputs for comparison.
@@ -376,9 +376,9 @@ export class CmpStr< R = MetricRaw > {
     }
 
     /**
-     * ---------------------------------------------------------------------------------
+     * ================================================================================-
      * Managing methods for CmpStr
-     * ---------------------------------------------------------------------------------
+     * ================================================================================-
      * 
      * These methods provides an interface to set and get properties of the CmpStr
      * instance, such as options, metric, phonetic algorithm, and more.
@@ -526,9 +526,9 @@ export class CmpStr< R = MetricRaw > {
     public getOption = ( path: string ) : any => DeepMerge.get( this.options, path );
 
     /**
-     * ---------------------------------------------------------------------------------
+     * ================================================================================-
      * Public core methods for string comparison
-     * ---------------------------------------------------------------------------------
+     * ================================================================================-
      * 
      * These methods provide the core functionality of the CmpStr class, allowing for
      * string comparison, phonetic indexing, filtering, and text search.
@@ -718,9 +718,9 @@ export class CmpStr< R = MetricRaw > {
     }
 
     /**
-     * ---------------------------------------------------------------------------------
+     * ================================================================================-
      * Public methods for structured data comparison
-     * ---------------------------------------------------------------------------------
+     * ================================================================================-
      * 
      * These methods provide interfaces for comparing arrays of structured objects
      * by extracting and comparing specific properties.
