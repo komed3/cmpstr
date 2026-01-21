@@ -22,7 +22,8 @@
 'use strict';
 
 import type { PhoneticOptions } from '../utils/Types';
-import { Phonetic, PhoneticRegistry, PhoneticMappingRegistry } from './Phonetic';
+
+import { Phonetic, PhoneticMappingRegistry, PhoneticRegistry } from './Phonetic';
 
 /**
  * Metaphone class extends the Phonetic class to implement the Metaphone phonetic algorithm.

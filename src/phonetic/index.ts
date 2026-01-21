@@ -32,7 +32,4 @@ import './Cologne';
 import './Metaphone';
 import './Soundex';
 
-export {
-    PhoneticRegistry, PhoneticMappingRegistry,
-    Phonetic, PhoneticCls
-} from './Phonetic';
+export { Phonetic, PhoneticCls, PhoneticMappingRegistry, PhoneticRegistry } from './Phonetic';

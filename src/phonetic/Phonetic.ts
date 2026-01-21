@@ -26,14 +26,14 @@
 'use strict';
 
 import type {
-    PhoneticMapping, PhoneticMap, PhoneticOptions, RegistryService,
-    PhoneticMappingService
+    PhoneticMap, PhoneticMapping, PhoneticMappingService,
+    PhoneticOptions, RegistryService
 } from '../utils/Types';
 
 import { merge } from '../utils/DeepMerge';
-import { Registry } from '../utils/Registry';
 import { Hasher, HashTable } from '../utils/HashTable';
 import { Profiler } from '../utils/Profiler';
+import { Registry } from '../utils/Registry';
 
 // Get the singleton profiler instance for performance monitoring
 const profiler = Profiler.getInstance();
