@@ -23,21 +23,52 @@ export class Filter {
 
     /**
      * A static map to hold all filters.
-     * The key is the hook name, and the value is an array of FilterEntry objects.
+     * The key is the hook name, and the value is an Map of FilterEntry objects.
      */
-    private static filters: Map<string, FilterEntry[]> = new Map ();
+    private static filters: Map< string, Map< string, FilterEntry > > = new Map ();
 
     /**
-     * Finds a filter by its hook and id.
+     * A map that holds the pipeline of filters to be applied.
+     * The key is the hook name, and the value is the compiled function.
+     */
+    private static pipeline: Map< string, FilterFn > = new Map ();
+
+    /**
+     * Retrieves the compiled filter function for a given hook.
+     * If the function is not cached, it compiles it from the active filters.
+     * 
+     * @param {string} hook - The name of the hook
+     * @returns {FilterFn} - The compiled filter function for the hook
+     */
+    private static getPipeline ( hook: string ) : FilterFn {
+        // Return the cached pipeline if it exists
+        const cached = Filter.pipeline.get( hook );
+        if ( cached ) return cached;
+
+        // Get the filters for the specified hook
+        const filter = Filter.filters.get( hook );
+        if ( ! filter ) return ( s: string ) => s;
+
+        // Compile the pipeline from active filters sorted by priority
+        const pipeline = Array.from( filter.values() ).filter( f => f.active )
+            .sort( ( a, b ) => a.priority - b.priority ).map( f => f.fn );
+
+        const fn: FilterFn = ( input: string ) => pipeline.reduce( ( v, f ) => f( v ), input );
+
+        // Cache the compiled pipeline
+        Filter.pipeline.set( hook, fn );
+        return fn;
+    }
+
+    /**
+     * Checks if a filter exists for a given hook and id.
      * 
      * @param {string} hook - The name of the hook
      * @param {string} id - The id of the filter
-     * @returns {FilterEntry|undefined} - The FilterEntry if found, otherwise undefined
+     * @returns {boolean} - Returns true if the filter exists, false otherwise
      */
-    private static find ( hook: string, id: string ) : FilterEntry | undefined {
-
-        return Filter.filters.get( hook )?.find( f => f.id === id );
-
+    public static has ( hook: string, id: string ) : boolean {
+        return !! ( Filter.filters.get( hook )?.has( id ) );
     }
 
     /**
@@ -50,35 +81,20 @@ export class Filter {
      * @returns {boolean} - Returns true if the filter was added, false if it was not added due to override restrictions
      */
     public static add ( hook: string, id: string, fn: FilterFn, opt: FilterOptions = {} ) : boolean {
-
         const { priority = 10, active = true, overrideable = true } = opt;
 
         // Check if the filter already exists
-        const filter: FilterEntry[] = Filter.filters.get( hook ) ?? [];
-        const index: number = filter.findIndex( f => f.id === id );
+        const filter = Filter.filters.get( hook ) ?? new Map< string, FilterEntry >();
+        const index = filter.get( id );
 
         // If the filter already exists and is not overrideable, return false
-        if ( index >= 0 ) {
+        if ( index && ! index.overrideable ) return false;
 
-            const f: FilterEntry = filter[ index ];
-
-            if ( ! f.overrideable ) return false;
-
-            filter.splice( index, 1 );
-
-        }
-
-        // Add the new filter entry
-        filter.push( { id, fn, priority, active, overrideable } );
-
-        // Sort the filters by priority
-        filter.sort( ( a, b ) => a.priority - b.priority );
-
-        // Update the filters map
+        // Add or update the filter entry
+        filter.set( id, { id, fn, priority, active, overrideable } );
         Filter.filters.set( hook, filter );
-
+        Filter.pipeline.delete( hook );
         return true;
-
     }
 
     /**
@@ -89,27 +105,9 @@ export class Filter {
      * @returns {boolean} - Returns true if the filter was removed, false if it was not found
      */
     public static remove ( hook: string, id: string ) : boolean {
-
-        // Get the filter array for the specified hook
-        const filter: FilterEntry[] | undefined = Filter.filters.get( hook );
-
-        // If the filter array does not exist, return false
-        if ( ! filter ) return false;
-
-        // Find the index of the filter with the specified id
-        const index: number = filter.findIndex( f => f.id === id );
-
-        // If the filter is found, remove it and return true
-        if ( index >= 0 ) {
-
-            filter.splice( index, 1 );
-
-            return true;
-
-        }
-
-        return false;
-
+        Filter.pipeline.delete( hook );
+        const filter = Filter.filters.get( hook );
+        return filter ? filter.delete( id ) : false;
     }
 
     /**
@@ -120,17 +118,9 @@ export class Filter {
      * @returns {boolean} - Returns true if the filter was paused, false if it was not found
      */
     public static pause ( hook: string, id: string ) : boolean {
-
-        // Find the filter entry by hook and id
-        const f: FilterEntry | undefined = Filter.find( hook, id );
-
-        if ( ! f ) return false;
-
-        // Set the active property to false to pause the filter
-        f.active = false;
-
-        return true;
-
+        Filter.pipeline.delete( hook );
+        const f = Filter.filters.get( hook )?.get( id );
+        return !! ( f && ( f.active = false, true ) );
     }
 
     /**
@@ -141,17 +131,9 @@ export class Filter {
      * @returns {boolean} - Returns true if the filter was resumed, false if it was not found
      */
     public static resume ( hook: string, id: string ) : boolean {
-
-        // Find the filter entry by hook and id
-        const f: FilterEntry | undefined = Filter.find( hook, id );
-
-        if ( ! f ) return false;
-
-        // Set the active property to true to resume the filter
-        f.active = true;
-
-        return true;
-
+        Filter.pipeline.delete( hook );
+        const f = Filter.filters.get( hook )?.get( id );
+        return !! ( f && ( f.active = true, true ) );
     }
 
     /**
@@ -162,43 +144,24 @@ export class Filter {
      * @returns {string[]} - An array of filter ids
      */
     public static list ( hook: string, active: boolean = false ) : string[] {
+        const filter = Filter.filters.get( hook );
+        if ( ! filter ) return [];
 
-        // Get the filter array for the specified hook
-        const filter: FilterEntry[] = Filter.filters.get( hook ) ?? [];
-
-        const list: string[] = [];
-
-        // If active is true, filter the entries based on their active status
-        for ( const f of filter ) if ( ! active || f.active ) list.push( f.id );
-
-        return list;
-
+        const out: string[] = [];
+        for ( const f of filter.values() ) if ( ! active || f.active ) out.push( f.id );
+        return out;
     }
 
     /**
      * Applies all active filters for a given hook to the input string(s).
      * 
      * @param {string} hook - The name of the hook
-     * @param {string|string[]} input - The input string(s) to be filtered
-     * @returns {string|string[]} - The filtered string(s)
+     * @param {string | string[]} input - The input string(s) to be filtered
+     * @returns {string | string[]} - The filtered string(s)
      */
     public static apply ( hook: string, input: string | string[] ) : string | string[] {
-
-        // Get the filter array for the specified hook
-        const filter: FilterEntry[] | undefined = Filter.filters.get( hook );
-
-        // If no filters are found for the hook or if no filters are active, return the input unchanged
-        if ( ! filter || filter.every( f => ! f.active ) ) return input;
-
-        // Apply each active filter function to the given string
-        const applyOne = ( s: string ) : string => {
-            for ( const f of filter ) if ( f.active ) s = f.fn( s );
-            return s;
-        };
-
-        // If the input is an array, apply the filter to each element, otherwise just once
-        return Array.isArray( input ) ? input.map( applyOne ) : applyOne( input );
-
+        const fn = Filter.getPipeline( hook );
+        return Array.isArray( input ) ? input.map( fn ) : fn( input );
     }
 
     /**
@@ -206,43 +169,23 @@ export class Filter {
      * Each filter function may return a Promise or a plain string; all are awaited in order.
      * 
      * @param {string} hook - The name of the hook
-     * @param {string|string[]} input - The input string(s) to be filtered
-     * @returns {Promise<string|string[]>} - The filtered string(s)
+     * @param {string | string[]} input - The input string(s) to be filtered
+     * @returns {Promise< string | string[] >} - The filtered string(s)
      */
-    public static async applyAsync ( hook: string, input: string | string[] ) : Promise<string | string[]> {
-
-        // Get the filter array for the specified hook
-        const filter: FilterEntry[] | undefined = Filter.filters.get( hook );
-
-        // If no filters are found for the hook or if no filters are active, return the input unchanged
-        if ( ! filter || filter.every( f => ! f.active ) ) return input;
-
-        // Apply each active filter function to the given string
-        // Support both sync and async filter functions
-        const applyOne = async ( s: string ) : Promise<string> => {
-            for ( const f of filter ) if ( f.active ) s = await Promise.resolve( f.fn( s ) );
-            return s;
-        };
-
-        // If the input is an array, apply the filter to each element, otherwise just once
-        // Use Promise.all to handle multiple promises if input is an array
-        return Array.isArray( input ) ? Promise.all( input.map( applyOne ) ) : applyOne( input );
-        
+    public static async applyAsync ( hook: string, input: string | string[] ) : Promise< string | string[] > {
+        const fn = Filter.getPipeline( hook );
+        return Array.isArray( input ) ? Promise.all( input.map( fn ) ) : Promise.resolve( fn( input ) );
     }
 
     /**
      * Clears all filters or filters for a specific hook.
+     * If no hook is provided, clear all filters
      * 
      * @param {string} [hook] - Optional name of the hook to clear filters for
      */
     public static clear ( hook?: string ) : void {
-
-        // If a specific hook is provided, delete its filters
         if ( hook ) Filter.filters.delete( hook );
-
-        // If no hook is provided, clear all filters
         else Filter.filters.clear();
-
     }
 
 }

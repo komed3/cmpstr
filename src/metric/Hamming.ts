@@ -22,12 +22,12 @@ import { Metric, MetricRegistry } from './Metric';
 
 export interface HammingRaw {
     dist: number;
-};
+}
 
 /**
  * HammingDistance class extends the Metric class to implement the Hamming distance.
  */
-export class HammingDistance extends Metric<HammingRaw> {
+export class HammingDistance extends Metric< HammingRaw > {
 
     /**
      * Constructor for the Hamming class.
@@ -35,16 +35,14 @@ export class HammingDistance extends Metric<HammingRaw> {
      * Initializes the Hamming distance metric with two input strings or
      * arrays of strings and optional options.
      * 
+     * Metric is symmetrical.
+     * 
      * @param {MetricInput} a - First input string or array of strings
      * @param {MetricInput} b - Second input string or array of strings
      * @param {MetricOptions} opt - Options for the metric computation
      */
     constructor ( a: MetricInput, b: MetricInput, opt: MetricOptions = {} ) {
-
-        // Call the parent Metric constructor with the metric name and inputs
-        // Metric is symmetrical
         super ( 'hamming', a, b, opt, true );
-
     }
 
     /**
@@ -55,25 +53,19 @@ export class HammingDistance extends Metric<HammingRaw> {
      * @param {number} m - Length of the first string
      * @param {number} n - Length of the second string
      * @param {number} maxLen - Maximum length of the strings
-     * @return {MetricCompute<HammingRaw>} - Object containing the similarity result and raw distance
+     * @return {MetricCompute< HammingRaw >} - Object containing the similarity result and raw distance
      * @throws {Error} - If strings are of unequal length and padding is not specified
      */
     protected override compute (
-        a: string, b: string, m: number, n: number,
-        maxLen: number
-    ) : MetricCompute<HammingRaw> {
-
+        a: string, b: string, m: number, n: number, maxLen: number
+    ) : MetricCompute< HammingRaw > {
         // Check for equal string length
         if ( m !== n ) {
-
             // Optional: use padding to equalize string length
             if ( this.options.pad !== undefined ) {
-
                 if ( m < maxLen ) a = a.padEnd( maxLen, this.options.pad );
                 if ( n < maxLen ) b = b.padEnd( maxLen, this.options.pad );
-
                 m = n = maxLen;
-
             }
 
             // Standard: Error for unequal length
@@ -81,20 +73,17 @@ export class HammingDistance extends Metric<HammingRaw> {
                 `Strings must be of equal length for Hamming Distance, a=${m} and b=${n} given, ` +
                 `use option.pad for automatic adjustment`
             );
-
         }
 
         // Calculate the Hamming distance
-        let dist: number = 0;
-
-        for ( let i = 0; i < a.length; i++ ) if ( a[ i ] !== b[ i ] ) dist++;
+        let dist = 0;
+        for ( let i = 0; i < m; i++ ) if ( a[ i ] !== b[ i ] ) dist++;
 
         // Return the result as a MetricCompute object
         return {
             res: m === 0 ? 1 : Metric.clamp( 1 - dist / m ),
             raw: { dist }
         };
-
     }
 
 }

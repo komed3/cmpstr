@@ -25,12 +25,12 @@ import { Pool } from '../utils/Pool';
 export interface LCSRaw {
     lcs: number;
     maxLen: number;
-};
+}
 
 /**
  * LCSMetric class extends the Metric class to implement the Longest Common Subsequence algorithm.
  */
-export class LCSMetric extends Metric<LCSRaw> {
+export class LCSMetric extends Metric< LCSRaw > {
 
     /**
      * Constructor for the LCSMetric class.
@@ -38,16 +38,14 @@ export class LCSMetric extends Metric<LCSRaw> {
      * Initializes the LCS metric with two input strings or
      * arrays of strings and optional options.
      * 
+     * Metric is symmetrical.
+     * 
      * @param {MetricInput} a - First input string or array of strings
      * @param {MetricInput} b - Second input string or array of strings
      * @param {MetricOptions} [opt] - Options for the metric computation
      */
     constructor ( a: MetricInput, b: MetricInput, opt: MetricOptions = {} ) {
-
-        // Call the parent Metric constructor with the metric name and inputs
-        // Metric is symmetrical
         super ( 'lcs', a, b, opt, true );
-
     }
 
     /**
@@ -61,53 +59,48 @@ export class LCSMetric extends Metric<LCSRaw> {
      * @return {MetricCompute<LCSRaw>} - Object containing the similarity result and raw LCS length
      */
     protected override compute (
-        a: string, b: string, m: number, n: number,
-        maxLen: number
-    ) : MetricCompute<LCSRaw> {
-
+        a: string, b: string, m: number, n: number, maxLen: number
+    ) : MetricCompute< LCSRaw > {
         // Get two reusable arrays from the Pool for the DP rows
-        const len: number = m + 1;
-        const [ prev, curr ] = Pool.acquireMany( 'uint16', [ len, len ] );
+        const len = m + 1;
+        const [ prev, curr ] = Pool.acquireMany< Int32Array >( 'int32', [ len, len ] );
 
-        // Initialize the first row to zeros
-        for ( let i = 0; i <= m; i++ ) prev[ i ] = 0;
+        try {
+            // Initialize the first row to zeros
+            for ( let i = 0; i <= m; i++ ) prev[ i ] = 0;
 
-        // Fill the DP matrix row by row (over the longer string)
-        for ( let j = 1; j <= n; j++ ) {
+            // Fill the DP matrix row by row (over the longer string)
+            for ( let j = 1; j <= n; j++ ) {
+                curr[ 0 ] = 0;
 
-            curr[ 0 ] = 0;
+                // Get the character code of the current character in b
+                const cb = b.charCodeAt( j - 1 );
 
-            // Get the character code of the current character in b
-            const cb: number = b.charCodeAt( j - 1 );
+                for ( let i = 1; i <= m; i++ ) {
+                    // If characters match, increment the LCS length
+                    if ( a.charCodeAt( i - 1 ) === cb ) curr[ i ] = prev[ i - 1 ] + 1;
 
-            for ( let i = 1; i <= m; i++ ) {
+                    // Otherwise, take the maximum of the left or above cell
+                    else curr[ i ] = Math.max( prev[ i ], curr[ i - 1 ] );
+                }
 
-                // If characters match, increment the LCS length
-                if ( a.charCodeAt( i - 1 ) === cb ) curr[ i ] = prev[ i - 1 ] + 1;
-
-                // Otherwise, take the maximum of the left or above cell
-                else curr[ i ] = Math.max( prev[ i ], curr[ i - 1 ] );
-
+                // Copy current row to previous for next iteration
+                prev.set( curr );
             }
 
-            // Copy current row to previous for next iteration
-            prev.set( curr );
+            // The last value in prev is the LCS length
+            const lcs = prev[ m ];
 
+            // Normalize by the length of the longer string
+            return {
+                res: maxLen === 0 ? 1 : Metric.clamp( lcs / maxLen ),
+                raw: { lcs, maxLen }
+            };
+        } finally {
+            // Release arrays back to the pool
+            Pool.release( 'int32', prev, len );
+            Pool.release( 'int32', curr, len );
         }
-
-        // The last value in prev is the LCS length
-        const lcs: number = prev[ m ];
-
-        // Release arrays back to the pool
-        Pool.release( 'uint16', prev, len );
-        Pool.release( 'uint16', curr, len );
-
-        // Normalize by the length of the longer string
-        return {
-            res: maxLen === 0 ? 1 : Metric.clamp( lcs / maxLen ),
-            raw: { lcs, maxLen }
-        };
-
     }
 
 }

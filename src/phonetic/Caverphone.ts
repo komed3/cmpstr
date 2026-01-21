@@ -27,7 +27,12 @@ import { Phonetic, PhoneticRegistry, PhoneticMappingRegistry } from './Phonetic'
  */
 export class Caverphone extends Phonetic {
 
-    // Default options for the Caverphone phonetic algorithm
+    /** Regular expressions used in the Caverphone algorithm */
+    private static readonly REGEX = {
+        uppercase: /[^A-Z]/gi
+    };
+
+    /** Default options for the Caverphone phonetic algorithm */
     protected static override default: PhoneticOptions = {
         map: 'en2', delimiter: ' ', length: -1, pad: '', dedupe: false
     };
@@ -48,13 +53,11 @@ export class Caverphone extends Phonetic {
      * @returns {string} - The generated Caverphone code
      */
     protected override encode ( word: string ) : string {
-
         // Remove anything not A-Z and convert to lowercase
-        word = word.replace( /[^A-Z]/gi, '' ).toLowerCase();
+        word = word.replace( Caverphone.REGEX.uppercase, '' ).toLowerCase();
 
         // Use the base implementation for rule/mapping application
         return super.encode( word );
-
     }
 
     /**
@@ -63,7 +66,7 @@ export class Caverphone extends Phonetic {
      * @param {string} char - The character to be mapped
      * @returns {string} - The mapped character
      */
-    protected override mapChar ( char: string ) : string { return char }
+    protected override mapChar = ( char: string ) : string => char;
 
     /**
      * Adjusts the phonetic code to uppercase.
@@ -71,7 +74,7 @@ export class Caverphone extends Phonetic {
      * @param {string} code - The phonetic code to adjust
      * @returns {string} - The adjusted phonetic code
      */
-    protected override adjustCode ( code: string ) : string { return code.toUpperCase() }
+    protected override adjustCode = ( code: string ) : string => code.toUpperCase();
 
 }
 

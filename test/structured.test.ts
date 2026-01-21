@@ -1,6 +1,13 @@
 import { describe, it, expect } from 'vitest';
 import { CmpStr, CmpStrAsync, type MetricRaw } from '../src';
 
+/**
+ * Structured Data Test Suite for CmpStr
+ * 
+ * These tests validate the structured data handling capabilities of the
+ * CmpStr library, ensuring accurate lookups, matches, and closest/furthest
+ * computations within structured datasets.
+ */
 describe( 'CmpStr > Structured Data', () => {
 
     it( 'Basic Lookup', () => {
@@ -23,7 +30,7 @@ describe( 'CmpStr > Structured Data', () => {
     it( 'Pairwise Lookup', () => {
 
         const cmp = CmpStr.create( { metric: 'dice' } );
-        const res = cmp.structuredPairs<MetricRaw>( [
+        const res = cmp.structuredPairs< MetricRaw >( [
             { artistId: 'a1', artistName: 'Wolfgang Amadeus Mozart' },
             { artistId: 'a2', artistName: 'Ludwig van Beethoven' },
             { artistId: 'a3', artistName: 'Johann Sebastian Bach' }
@@ -101,7 +108,7 @@ describe( 'CmpStr > Structured Data', () => {
     it( 'Duplicate Values', () => {
 
         const cmp = CmpStr.create( { metric: 'levenshtein' } );
-        const res = cmp.structuredLookup<any>( 'Hans', [
+        const res = cmp.structuredLookup< any >( 'Hans', [
             { id: 1476, name: 'Hans' },
             { id: 2257, name: 'Franz' },
             { id: 9842, name: 'Hans' }
@@ -126,13 +133,133 @@ describe( 'CmpStr > Structured Data', () => {
             { category: 'Programming', value: 'Python' }
         ];
 
-        const res = cmp.structuredLookup<any>( 'Python', data, 'value' );
+        const res = cmp.structuredLookup< any >( 'Python', data, 'value' );
 
         const pythonResults = res.filter( r => r.result.match === 1 );
         expect( pythonResults ).toHaveLength( 3 );
         expect( pythonResults[ 0 ].obj.category ).toBe( 'Books' );
         expect( pythonResults[ 1 ].obj.category ).toBe( 'Books' );
         expect( pythonResults[ 2 ].obj.category ).toBe( 'Programming' );
+
+    } );
+
+    it( 'Empty Data Array with Safe Mode', () => {
+
+        const cmp = CmpStr.create( { metric: 'levenshtein', safeEmpty: true } );
+        const res = cmp.structuredLookup( 'test', [], 'name' );
+
+        expect( res ).toEqual( [] );
+
+    } );
+
+    it( 'Safe Empty Mode', () => {
+
+        const cmp = CmpStr.create( { metric: 'levenshtein', safeEmpty: true } );
+        const res = cmp.structuredLookup< any >( '', [
+            { id: 1, name: 'Test' }
+        ], 'name' );
+
+        expect( res ).toEqual( [] );
+
+    } );
+
+    it( 'Zero Removal in Structured Lookup', () => {
+
+        const cmp = CmpStr.create( { metric: 'levenshtein', removeZero: true } );
+        const res = cmp.structuredLookup< any >( 'zzz', [
+            { id: 1, name: 'apple' },
+            { id: 2, name: 'banana' },
+            { id: 3, name: 'zzz' }
+        ], 'name' );
+
+        expect( res ).toHaveLength( 1 );
+        expect( res[ 0 ].result.match ).toBe( 1 );
+
+    } );
+
+    it( 'ObjectsOnly Mode', () => {
+
+        const cmp = CmpStr.create( { metric: 'levenshtein' } );
+        const res = cmp.structuredLookup( 'test', [
+            { id: 1, name: 'Test' },
+            { id: 2, name: 'Testing' }
+        ], 'name', { objectsOnly: true } );
+
+        expect( res ).toEqual( [
+            { id: 1, name: 'Test' },
+            { id: 2, name: 'Testing' }
+        ] );
+
+    } );
+
+    it( 'Special Characters in Data', () => {
+
+        const cmp = CmpStr.create( { metric: 'levenshtein' } );
+        const res = cmp.structuredLookup< any >( '@#$%', [
+            { id: 1, text: '@#$%' },
+            { id: 2, text: '@#$&' },
+            { id: 3, text: '****' }
+        ], 'text' );
+
+        expect( res[ 0 ].result.match ).toBe( 1 );
+
+    } );
+
+    it( 'Very Long Strings', () => {
+
+        const cmp = CmpStr.create( { metric: 'levenshtein' } );
+        const longString = 'a'.repeat( 1000 );
+        const res = cmp.structuredLookup< any >( longString, [
+            { id: 1, text: longString },
+            { id: 2, text: 'short' }
+        ], 'text' );
+
+        expect( res[ 0 ].result.match ).toBe( 1 );
+        expect( res[ 1 ].result.match ).toBeLessThan( 0.01 );
+
+    } );
+
+    it( 'Numeric and Symbol Keys', () => {
+
+        const numKey = 42;
+        const symKey = Symbol( 'custom' );
+
+        const cmp = CmpStr.create( { metric: 'levenshtein' } );
+        const dataNum = [ { [ numKey ]: 'value1' }, { [ numKey ]: 'value2' } ];
+        const dataSym = [ { [ symKey ]: 'value1' }, { [ symKey ]: 'value2' } ];
+
+        expect( cmp.structuredLookup( 'value', dataNum, numKey ) ).toHaveLength( 2 );
+        expect( cmp.structuredLookup( 'value', dataSym, symKey ) ).toHaveLength( 2 );
+
+    } );
+
+    it( 'Structured Closest with Limit', () => {
+
+        const cmp = CmpStr.create( { metric: 'levenshtein' } );
+        const res = cmp.structuredClosest< any >( 'test', [
+            { id: 1, name: 'Test' },
+            { id: 2, name: 'Testing' },
+            { id: 3, name: 'Tested' },
+            { id: 4, name: 'Testimony' },
+            { id: 5, name: 'Tester' }
+        ], 'name', 2 );
+
+        expect( res ).toHaveLength( 2 );
+        expect( res[ 0 ].result.match ).toBeGreaterThanOrEqual( res[ 1 ].result.match );
+
+    } );
+
+    it( 'Structured Furthest', () => {
+
+        const cmp = CmpStr.create( { metric: 'levenshtein' } );
+        const res = cmp.structuredFurthest< any >( 'abc', [
+            { id: 1, name: 'abc' },
+            { id: 2, name: 'xyz' },
+            { id: 3, name: 'abcd' }
+        ], 'name', 1 );
+
+        expect( res ).toHaveLength( 1 );
+        expect( res[ 0 ].result.match ).toBeLessThan( 0.5 );
 
     } );
 

@@ -9,8 +9,8 @@
  * strings by representing them as term frequency vectors and computing the cosine of
  * the angle between these vectors.
  * 
- * The result is a value between 0 and 1, where 1 means the vectors are identical and
- * 0 means they are orthogonal (no similarity).
+ * The result is a value between 0 and 1, where 1 means the vectors are identical and 0
+ * means they are orthogonal (no similarity).
  * 
  * @module Metric/CosineSimilarity
  * @author Paul Köhler (komed3)
@@ -27,12 +27,12 @@ export interface CosineRaw {
     dotProduct: number;
     magnitudeA: number;
     magnitudeB: number;
-};
+}
 
 /**
  * CosineSimilarity class extends the Metric class to implement the Cosine similarity algorithm.
  */
-export class CosineSimilarity extends Metric<CosineRaw> {
+export class CosineSimilarity extends Metric< CosineRaw > {
 
     /**
      * Constructor for the CosineSimilarity class.
@@ -40,16 +40,14 @@ export class CosineSimilarity extends Metric<CosineRaw> {
      * Initializes the Cosine similarity metric with two input strings or
      * arrays of strings and optional options.
      * 
+     * Metric is symmetrical.
+     * 
      * @param {MetricInput} a - First input string or array of strings
      * @param {MetricInput} b - Second input string or array of strings
      * @param {MetricOptions} [opt] - Options for the metric computation
      */
     constructor ( a: MetricInput, b: MetricInput, opt: MetricOptions = {} ) {
-
-        // Call the parent Metric constructor with the metric name and inputs
-        // Metric is symmetrical
         super ( 'cosine', a, b, opt, true );
-
     }
 
     /**
@@ -57,17 +55,14 @@ export class CosineSimilarity extends Metric<CosineRaw> {
      * 
      * @param {string} str - The input string
      * @param {string} delimiter - The delimiter to split terms
-     * @return {Map<string, number>} - Term frequency object
+     * @return {Map< string, number >} - Term frequency object
      */
-    private _termFreq ( str: string, delimiter: string ) : Map<string, number> {
-
-        const terms: string[] = str.split( delimiter );
-        const freq: Map<string, number> = Pool.acquire( 'map', terms.length );
+    private _termFreq ( str: string, delimiter: string ) : Map< string, number > {
+        const terms = str.split( delimiter );
+        const freq = Pool.acquire< Map< string, number > >( 'map', terms.length );
 
         for ( const term of terms ) freq.set( term, ( freq.get( term ) || 0 ) + 1 );
-
         return freq;
-
     }
 
     /**
@@ -75,48 +70,42 @@ export class CosineSimilarity extends Metric<CosineRaw> {
      * 
      * @param {string} a - First string
      * @param {string} b - Second string
-     * @return {MetricCompute<CosineRaw>} - Object containing the similarity result and raw values
+     * @return {MetricCompute< CosineRaw >} - Object containing the similarity result and raw values
      */
-    protected override compute ( a: string, b: string ) : MetricCompute<CosineRaw> {
-
-        // Get delimiter from options or use default (space)
+    protected override compute ( a: string, b: string ) : MetricCompute< CosineRaw > {
         const { delimiter = ' ' } = this.options;
 
         // Compute term frequency vectors
-        const termsA: Map<string, number> = this._termFreq( a, delimiter );
-        const termsB: Map<string, number> = this._termFreq( b, delimiter );
+        const termsA = this._termFreq( a, delimiter );
+        const termsB = this._termFreq( b, delimiter );
 
-        // Calculate dot product and magnitudes
-        let dotProduct: number = 0, magnitudeA: number = 0, magnitudeB: number = 0;
+        try {
+            // Calculate dot product and magnitudes
+            let dotP = 0, magA = 0, magB = 0;
 
-        // Iterate over terms in A for dotProduct and magnitudeA
-        for ( const [ term, freqA ] of termsA ) {
+            // Iterate over terms in A for dotProduct and magnitudeA
+            for ( const [ term, freqA ] of termsA ) {
+                const freqB = termsB.get( term ) || 0;
+                dotP += freqA * freqB;
+                magA += freqA * freqA;
+            }
 
-            const freqB: number = termsB.get( term ) || 0;
+            // Iterate over terms in B for magnitudeB
+            for ( const freqB of termsB.values() ) magB += freqB * freqB;
 
-            dotProduct += freqA * freqB;
-            magnitudeA += freqA * freqA;
+            magA = Math.sqrt( magA );
+            magB = Math.sqrt( magB );
 
+            // Return the result as a MetricCompute object
+            return {
+                res: ( magA && magB ) ? Metric.clamp( dotP / ( magA * magB ) ) : 0,
+                raw: { dotProduct: dotP, magnitudeA: magA, magnitudeB: magB }
+            };
+        } finally {
+            // Release maps back to the pool
+            Pool.release( 'map', termsA, termsA.size );
+            Pool.release( 'map', termsB, termsB.size );
         }
-
-        // Iterate over terms in B for magnitudeB
-        for ( const freqB of termsB.values() ) magnitudeB += freqB * freqB;
-
-        magnitudeA = Math.sqrt( magnitudeA );
-        magnitudeB = Math.sqrt( magnitudeB );
-
-        // Release maps back to the pool
-        Pool.release( 'map', termsA, termsA.size );
-        Pool.release( 'map', termsB, termsB.size );
-
-        // Return the result as a MetricCompute object
-        return {
-            res: ( magnitudeA && magnitudeB ) ? Metric.clamp(
-                dotProduct / ( magnitudeA * magnitudeB )
-            ) : 0,
-            raw: { dotProduct, magnitudeA, magnitudeB }
-        };
-
     }
 
 }

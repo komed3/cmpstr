@@ -1,6 +1,13 @@
 import { describe, it, expect } from 'vitest';
 import { CmpStr, DiffChecker, Normalizer, TextAnalyzer } from '../src';
 
+/**
+ * Tools Test Suite for CmpStr
+ * 
+ * These tests validate the functionality of various utility tools
+ * provided by the CmpStr library, including Normalizer, TextAnalyzer,
+ * and DiffChecker.
+ */
 describe( 'CmpStr > Tools', () => {
 
     it( 'Similarity Matrix', () => {
@@ -75,6 +82,86 @@ describe( 'CmpStr > Tools', () => {
         expect( res[0].diffs[0].ins ).toBe( 'up' );
 
         expect( diff.getASCIIDiff() ).toBeDefined();
+
+    } );
+
+    it( 'Empty Strings Diff', () => {
+
+        const diff = new DiffChecker( '', '' );
+        const res = diff.getStructuredDiff();
+
+        expect( res ).toEqual( [] );
+
+    } );
+
+    it( 'Identical Strings Diff', () => {
+
+        const diff = new DiffChecker( 'test', 'test' );
+        const res = diff.getStructuredDiff();
+
+        expect( res ).toEqual( [] );
+
+    } );
+
+    it( 'Completely Different Strings Diff', () => {
+
+        const diff = new DiffChecker( 'abc', 'xyz' );
+        const res = diff.getStructuredDiff();
+
+        expect( res.length ).toBeGreaterThan( 0 );
+
+    } );
+
+    it( 'Text Analyzer Edge Cases', () => {
+
+        const emptyAnalyze = new TextAnalyzer( '' );
+        expect( emptyAnalyze.getSentenceCount() ).toBe( 0 );
+
+        const numbersAnalyze = new TextAnalyzer( 'Test with 12345 numbers.' );
+        expect( numbersAnalyze.hasNumbers() ).toBeTruthy();
+
+        const singleWordAnalyze = new TextAnalyzer( 'Word' );
+        expect( singleWordAnalyze.getSentenceCount() ).toBeGreaterThan( 0 );
+
+    } );
+
+    it( 'Normalizer with Different Flags', () => {
+
+        const text = 'HELLO World 123!';
+
+        expect( Normalizer.normalize( text, 'i' ) ).toBe( 'hello world 123!' );
+        expect( Normalizer.normalize( text, 'n' ) ).toBe( 'HELLO World !' );
+        expect( Normalizer.normalize( text, 'w' ) ).toBe( 'HELLO World 123!' );
+
+    } );
+
+    it( 'Matrix with Single String', () => {
+
+        const cmp = CmpStr.create( { metric: 'levenshtein' } );
+        const res = cmp.matrix( [ 'test' ] );
+
+        expect( res ).toHaveLength( 1 );
+        expect( res[ 0 ] ).toHaveLength( 1 );
+        expect( res[ 0 ][ 0 ] ).toBe( 1 );
+
+    } );
+
+    it( 'Search with Empty Haystack', () => {
+
+        const cmp = CmpStr.create();
+        const res = cmp.search( 'needle', [] );
+
+        expect( res ).toEqual( [] );
+
+    } );
+
+    it( 'Search Finds Matches', () => {
+
+        const cmp = CmpStr.create( { metric: 'dice', flags: 'i' } );
+        const res = cmp.search( 'test', [ 'test', 'testing', 'best', 'nest', 'rest', 'xyz' ] );
+
+        expect( res.length ).toBeGreaterThan( 0 );
+        expect( res ).toContain( 'test' );
 
     } );
 

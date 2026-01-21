@@ -32,7 +32,7 @@ import { Phonetic, PhoneticRegistry, PhoneticMappingRegistry } from './Phonetic'
  */
 export class Cologne extends Phonetic {
 
-    // Default options for the Cologne phonetic algorithm
+    /** Default options for the Cologne phonetic algorithm */
     protected static override default: PhoneticOptions = {
         map: 'default', delimiter: ' ', length: -1, dedupe: true
     };
@@ -53,9 +53,7 @@ export class Cologne extends Phonetic {
      * @returns {string} - The adjusted phonetic code
      */
     protected override adjustCode ( code: string ) : string {
-
         return code.slice( 0, 1 ) + code.slice( 1 ).replaceAll( '0', '' );
-
     }
 
 }

@@ -39,7 +39,7 @@ import './JaroWinkler';
 import './LCS';
 import './Levenshtein';
 import './NeedlemanWunsch';
-import './qGram';
+import './QGram';
 import './SmithWaterman';
 
 export { MetricRegistry, Metric, MetricCls } from './Metric';

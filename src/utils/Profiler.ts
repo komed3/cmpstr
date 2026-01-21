@@ -26,66 +26,67 @@ import type { ProfilerEntry, ProfilerService } from './Types';
  */
 export class Profiler {
 
-    // Environment detection
+    /** Environment detection */
     private static ENV: 'nodejs' | 'browser' | 'unknown';
 
-    // Singleton instance
+    /** Singleton instance */
     private static instance: Profiler;
 
-    // Store for profiler entries
-    private store: Set<ProfilerEntry<any>> = new Set ();
+    /** Pre-computed functions for time and memory retrieval */
+    private nowFn: () => number;
+    private memFn: () => number;
 
-    // Total time and memory consumption
+    /** Store for profiler entries */
+    private store: Set< ProfilerEntry< any > > = new Set ();
+
+    /** Total time and memory consumption */
     private totalTime: number = 0;
     private totalMem: number = 0;
-
-    // The Profiler active state
-    private active: boolean;
 
     /**
      * Sets the environment based on the available global objects.
      * Detects if running in Node.js or browser and sets the ENV property accordingly.
      */
     protected static detectEnv () : void {
-
-        // Check for Node.js environment
         if ( typeof process !== 'undefined' ) Profiler.ENV = 'nodejs';
-
-        // Check for browser environment
         else if ( typeof performance !== 'undefined' ) Profiler.ENV = 'browser';
-
-        // If neither, set ENV to unknown
         else Profiler.ENV = 'unknown';
-
     }
 
     /**
-     * Returns the singleton instance of the Perf class.
+     * Returns the singleton instance of the Profiler class.
      * If the instance does not exist, it creates a new one.
      * 
      * @param {boolean} [enable=false] - Optional parameter to enable the profiler upon instantiation
      * @returns {Profiler} - Singleton Profiler instance
      */
     public static getInstance ( enable?: boolean ) : Profiler {
-
-        // Ensure the environment is detected
         if ( ! Profiler.ENV ) Profiler.detectEnv();
-
-        // If instance does not exist, create a new one
-        if ( ! Profiler.instance ) Profiler.instance = new Profiler ( enable );
-
-        // Return singleton instance
-        return Profiler.instance;
-
+        return Profiler.instance ||= new Profiler ( enable );
     }
 
     /**
      * Private constructor to enforce singleton pattern.
      * Initializes the store for profiler entries.
      * 
-     * @param {boolean} [enable=false] - Optional parameter to enable the profiler
+     * @param {boolean} [active=false] - Optional parameter to enable the profiler
      */
-    private constructor ( enable?: boolean ) { this.active = enable ?? false }
+    private constructor ( private active: boolean = false ) {
+        switch ( Profiler.ENV ) {
+            case 'nodejs':
+                this.nowFn = () => Number( process.hrtime.bigint() ) / 1e6;
+                this.memFn = () => process.memoryUsage().heapUsed;
+                break;
+            case 'browser':
+                this.nowFn = () => ( performance as any ).now();
+                this.memFn = () => ( performance as any ).memory?.usedJSHeapSize ?? 0;
+                break;
+            default:
+                this.nowFn = () => Date.now();
+                this.memFn = () => 0;
+                break;
+        }
+    }
 
     /**
      * Gets the current time based on the environment.
@@ -95,20 +96,7 @@ export class Profiler {
      * 
      * @returns {number} - Current time in milliseconds
      */
-    private now () : number {
-
-        switch ( Profiler.ENV ) {
-
-            // Node.js environment
-            case 'nodejs': return Number( process.hrtime.bigint() ) / 1e6;
-            // Browser environment
-            case 'browser': return ( performance as any ).now();
-            // Fallback
-            default: return Date.now();
-
-        }
-
-    }
+    private now = () : number => this.nowFn();
 
     /**
      * Gets the current memory usage based on the environment.
@@ -118,44 +106,52 @@ export class Profiler {
      * 
      * @returns {number} - Current memory usage in bytes
      */
-    private mem () : number {
+    private mem = () : number => this.memFn();
 
-        switch ( Profiler.ENV ) {
+    /**
+     * Profiles a synchronous function by measuring its execution time and memory usage.
+     * 
+     * @param {() => T} fn - Function to be executed and profiled
+     * @param {Record< string, any >} meta - Metadata to be associated with the profiling entry
+     * @returns {T} - The result of the executed function
+     */
+    private profile< T > ( fn: () => T, meta: Record< string, any > ) : T {
+        const startTime = this.now(), startMem  = this.mem();
 
-            // Node.js environment
-            case 'nodejs': return process.memoryUsage().heapUsed;
-            // Browser environment
-            case 'browser': return ( performance as any ).memory?.usedJSHeapSize ?? 0;
-            // Fallback
-            default: return 0;
+        // Execute the function and capture the result
+        const res = fn();
 
-        }
+        // Calculate the time and memory consumption
+        const deltaTime = this.now() - startTime, deltaMem  = this.mem() - startMem;
 
+        // Add the profiling entry to the store
+        this.store.add( { time: deltaTime, mem: deltaMem, res, meta } );
+        this.totalTime += deltaTime, this.totalMem  += deltaMem;
+
+        return res;
     }
+
 
     /**
      * Enables the profiler.
      * Sets the active state to true, allowing profiling to occur.
      */
-    public enable () : void { this.active = true }
+    public enable = () : void => { this.active = true }
 
     /**
      * Disables the profiler.
      * Sets the active state to false, preventing further profiling.
      */
-    public disable () : void { this.active = false }
+    public disable = () : void => { this.active = false }
 
     /**
      * Resets the profiler by clearing the store, total time and memory consumption.
      * This method is useful for starting a new profiling session.
      */
     public clear () : void {
-
         this.store.clear();
-
         this.totalTime = 0;
         this.totalMem = 0;
-
     }
 
     /**
@@ -163,101 +159,59 @@ export class Profiler {
      * If the profiler is not active, it simply executes the function without profiling.
      * 
      * @param {() => T} fn - Function to be executed and profiled
-     * @param {Record<string, any>} meta - Metadata to be associated with the profiling entry
+     * @param {Record< string, any >} meta - Metadata to be associated with the profiling entry
      * @returns {T} - The result of the executed function
      */
-    public run<T> ( fn: () => T, meta: Record<string, any> = {} ) : T {
-
-        // If the profiler is not active, simply execute the function without profiling
-        if ( ! this.active ) return fn();
-
-        // Capture the start time and memory usage
-        const startTime: number = this.now(), startMem: number = this.mem();
-
-        // Execute the function and capture the result
-        const res: T = fn();
-
-        // Calculate the time and memory consumption
-        const deltaTime: number = this.now() - startTime;
-        const deltaMem: number = this.mem() - startMem;
-
-        // Add the profiling entry to the store
-        this.store.add( { time: deltaTime, mem: deltaMem, res, meta } );
-        this.totalTime += deltaTime, this.totalMem += deltaMem;
-
-        // Return the result of the function
-        return res;
-
+    public run< T > ( fn: () => T, meta: Record< string, any > = {} ) : T {
+        return this.active ? this.profile( fn, meta ) : fn();
     }
 
     /**
      * Runs an asynchronous function and profiles its execution time and memory usage.
      * If the profiler is not active, it simply executes the function without profiling.
      * 
-     * @param {() => Promise<T>} fn - Asynchronous function to be executed and profiled
-     * @param {Record<string, any>} meta - Metadata to be associated with the profiling entry
-     * @returns {Promise<T>} - A promise that resolves to the result of the executed function
+     * @param {() => Promise< T >} fn - Asynchronous function to be executed and profiled
+     * @param {Record< string, any >} meta - Metadata to be associated with the profiling entry
+     * @returns {Promise< T >} - A promise that resolves to the result of the executed function
      */
-    public async runAsync<T> ( fn: () => Promise<T>, meta: Record<string, any> = {} ) : Promise<T> {
-
-        // If the profiler is not active, simply execute the function without profiling
-        if ( ! this.active ) return await fn();
-
-        // Capture the start time and memory usage
-        const startTime: number = this.now(), startMem: number = this.mem();
-
-        // Execute the asynchronous function and wait for its result
-        const res: Awaited<T> = await fn();
-
-        // Calculate the time and memory consumption
-        const deltaTime: number = this.now() - startTime;
-        const deltaMem: number = this.mem() - startMem;
-
-        // Add the profiling entry to the store
-        this.store.add( { time: deltaTime, mem: deltaMem, res, meta } );
-        this.totalTime += deltaTime, this.totalMem += deltaMem;
-
-        // Return the result of the function
-        return res;
-
+    public async runAsync< T > ( fn: () => Promise< T >, meta: Record< string, any > = {} ) : Promise< T > {
+        return this.active ? this.profile( async () => await fn(), meta ) : await fn();
     }
 
     /**
      * Retrieves all profiler entries stored in the profiler.
      * 
-     * @returns {ProfilerEntry<any>[]} - An array of profiler entries
+     * @returns {ProfilerEntry< any >[]} - An array of profiler entries
      */
-    public getAll () : ProfilerEntry<any>[] { return [ ...this.store ] }
+    public getAll = () : ProfilerEntry< any >[] => [ ...this.store ];
 
     /**
      * Retrieves the last profiler entry stored in the profiler.
      * 
-     * @returns {ProfilerEntry<any> | undefined} - The last profiler entry or undefined if no entries exist
+     * @returns {ProfilerEntry< any > | undefined} - The last profiler entry or undefined if no entries exist
      */
-    public getLast () : ProfilerEntry<any> | undefined { return this.getAll().pop() }
+    public getLast = () : ProfilerEntry< any > | undefined => this.getAll().pop();
 
     /**
      * Retrieves the total time and memory consumption recorded by the profiler.
      * 
      * @returns {{ time: number, mem: number }} - An object containing total time and memory usage
      */
-    public getTotal () : { time: number, mem: number } { return {
-        time: this.totalTime, mem: this.totalMem
-    } }
+    public getTotal = () : { time: number, mem: number } => ( { time: this.totalTime, mem: this.totalMem } );
 
     /**
      * Returns the services provided by the Profiler class.
      * This allows for easy access to the profiler's methods.
      * 
-     * @returns {ProfilerService<any>} - An object containing methods to control the profiler
+     * @returns {ProfilerService< any >} - An object containing methods to control the profiler
      */
-    public services: ProfilerService<any> = {
+    public services: ProfilerService< any > = Object.freeze( {
         enable: this.enable.bind( this ),
         disable: this.disable.bind( this ),
         clear: this.clear.bind( this ),
         report: this.getAll.bind( this ),
         last: this.getLast.bind( this ),
         total: this.getTotal.bind( this )
-    };
+    } );
 
 }

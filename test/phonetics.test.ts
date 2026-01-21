@@ -1,6 +1,13 @@
 import { describe, it, expect } from 'vitest';
 import { CmpStr } from '../src';
 
+/**
+ * Phonetics Test Suite for CmpStr
+ * 
+ * These tests validate the phonetic algorithms integrated within the
+ * CmpStr library, ensuring correct phonetic indexing and matching
+ * functionalities.
+ */
 describe( 'CmpStr > Phonetics', () => {
 
     it( 'Soundex', () => {
