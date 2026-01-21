@@ -324,7 +324,7 @@ export class CmpStr< R = MetricRaw > {
      * @param {boolean} [skip=false] - Whether to skip normalization and filtering
      * @returns {T} - The computed metric result
      */
-    protected compute<T extends MetricResult< R > | CmpStrResult | CmpStrResult[] > (
+    protected compute< T extends MetricResult< R > | CmpStrResult | CmpStrResult[] > (
         a: MetricInput, b: MetricInput, opt?: CmpStrOptions,
         mode?: MetricMode, raw?: boolean, skip?: boolean
     ) : T {
@@ -588,11 +588,11 @@ export class CmpStr< R = MetricRaw > {
     public batchSorted< T extends BatchResultLike< R > = any > (
         a: MetricInput, b: MetricInput, dir: 'desc' | 'asc' = 'desc', opt?: CmpStrOptions
     ) : T {
-        return this.output(
+        return this.output< T >(
             this.compute< MetricResultBatch< R > >( a, b, opt, 'batch', true )
                 .sort( ( a, b ) => dir === 'asc' ? a.res - b.res : b.res - a.res ),
             opt?.raw ?? this.options.raw
-        ) as T;
+        );
     }
 
     /**
@@ -676,8 +676,7 @@ export class CmpStr< R = MetricRaw > {
      * @returns {string[]} - Array of matching entries
      */
     public search (
-        needle: string, haystack: string[], flags?: NormalizeFlags,
-        processors?: CmpStrProcessors
+        needle: string, haystack: string[], flags?: NormalizeFlags, processors?: CmpStrProcessors
     ) : string[] {
         const resolved: CmpStrOptions = this.resolveOptions( { flags, processors } );
 
