@@ -29,7 +29,8 @@
 
 'use strict';
 
-import type { NormalizerFn, NormalizeFlags } from './Types';
+import type { NormalizeFlags, NormalizerFn } from './Types';
+
 import { HashTable } from './HashTable';
 
 /**

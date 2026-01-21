@@ -23,6 +23,7 @@
 
 /** Regular expression to match bracket notation in paths */
 const BRACKET_PATTERN = /\[(\d+)]/g;
+
 /** Path cach for efficient parsing */
 const PATH_CACHE: Map< string, ( string | number )[] > = new Map();
 

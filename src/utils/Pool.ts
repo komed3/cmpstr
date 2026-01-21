@@ -19,7 +19,7 @@
 
 'use strict';
 
-import type { PoolType, PoolConfig, PoolBuffer } from './Types';
+import type { PoolBuffer, PoolConfig, PoolType } from './Types';
 
 /**
  * RingPool is a circular buffer implementation that manages a pool of buffers.

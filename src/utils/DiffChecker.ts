@@ -27,7 +27,7 @@
 
 'use strict';
 
-import type { DiffOptions, DiffLine, DiffEntry, DiffGroup } from './Types';
+import type { DiffEntry, DiffGroup, DiffLine, DiffOptions } from './Types';
 
 /**
  * The DiffChecker class provides methods to compare two texts and generate

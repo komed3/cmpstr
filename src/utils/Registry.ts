@@ -15,7 +15,7 @@
 
 'use strict';
 
-import type { RegistryService, RegistryConstructor } from './Types';
+import type { RegistryConstructor, RegistryService } from './Types';
 
 /**
  * Global registry object to hold multiple registries.
