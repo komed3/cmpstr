@@ -16,9 +16,10 @@
 
 'use strict';
 
-import type { MetricInput, MetricOptions, MetricCompute } from '../utils/Types';
-import { Metric, MetricRegistry } from './Metric';
+import type { MetricCompute, MetricInput, MetricOptions } from '../utils/Types';
+
 import { Pool } from '../utils/Pool';
+import { Metric, MetricRegistry } from './Metric';
 
 export interface JaroWinklerRaw {
     matchWindow: number;

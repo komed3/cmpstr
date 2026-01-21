@@ -42,4 +42,4 @@ import './NeedlemanWunsch';
 import './QGram';
 import './SmithWaterman';
 
-export { MetricRegistry, Metric, MetricCls } from './Metric';
+export { Metric, MetricCls, MetricRegistry } from './Metric';

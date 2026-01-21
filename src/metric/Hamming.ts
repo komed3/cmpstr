@@ -17,7 +17,8 @@
 
 'use strict';
 
-import type { MetricInput, MetricOptions, MetricCompute } from '../utils/Types';
+import type { MetricCompute, MetricInput, MetricOptions } from '../utils/Types';
+
 import { Metric, MetricRegistry } from './Metric';
 
 export interface HammingRaw {

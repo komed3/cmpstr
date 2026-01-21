@@ -18,8 +18,9 @@
 'use strict';
 
 import type { MetricInput, MetricOptions, MetricCompute } from '../utils/Types';
-import { Metric, MetricRegistry } from './Metric';
+
 import { Pool } from '../utils/Pool';
+import { Metric, MetricRegistry } from './Metric';
 
 export interface JaccardRaw {
     intersection: number;

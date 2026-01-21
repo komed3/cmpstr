@@ -28,13 +28,13 @@
 'use strict';
 
 import type {
-    MetricMode, MetricInput, MetricOptions, MetricCompute, MetricRaw, MetricResult,
-    MetricResultSingle, MetricResultBatch, RegistryService
+    MetricCompute, MetricInput, MetricMode, MetricOptions, MetricRaw, MetricResult,
+    MetricResultBatch, MetricResultSingle, RegistryService
 } from '../utils/Types';
 
-import { Registry } from '../utils/Registry';
 import { Hasher, HashTable } from '../utils/HashTable';
 import { Profiler } from '../utils/Profiler';
+import { Registry } from '../utils/Registry';
 
 // Get the singleton profiler instance for performance monitoring
 const profiler = Profiler.getInstance();
