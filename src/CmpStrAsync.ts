@@ -28,13 +28,14 @@ import type {
     ResultLike, StructuredDataOptions, StructuredResultLike
 } from './utils/Types';
 
-import { CmpStr } from './CmpStr';
 import { Filter } from './utils/Filter';
 import { Normalizer } from './utils/Normalizer';
-
 import { factory } from './utils/Registry';
+
 import { Metric } from './metric';
 import { Phonetic } from './phonetic';
+
+import { CmpStr } from './CmpStr';
 
 /**
  * The CmpStrAsync class provides a fully asynchronous API for string comparison,

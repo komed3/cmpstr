@@ -34,12 +34,12 @@ import { DiffChecker } from './utils/DiffChecker';
 import { Filter } from './utils/Filter';
 import { Normalizer } from './utils/Normalizer';
 import { Profiler } from './utils/Profiler';
+import { factory } from './utils/Registry';
 import { StructuredData } from './utils/StructuredData';
 import { TextAnalyzer } from './utils/TextAnalyzer';
 
-import { factory } from './utils/Registry';
-import { MetricRegistry, Metric } from './metric';
-import { PhoneticRegistry, PhoneticMappingRegistry, Phonetic } from './phonetic';
+import { Metric, MetricRegistry } from './metric';
+import { Phonetic, PhoneticMappingRegistry, PhoneticRegistry } from './phonetic';
 
 // Import the Profiler instance for global profiling
 const profiler = Profiler.getInstance();
