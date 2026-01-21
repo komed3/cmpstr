@@ -66,6 +66,9 @@ export class SmithWatermanDistance extends Metric< SmithWatermanRaw > {
         let maxScore = 0;
 
         try {
+            // Initialize the first row to zeros (Smith-Waterman local alignment)
+            for ( let i = 0; i <= m; i++ ) prev[ i ] = 0;
+
             // Fill the DP matrix row by row (over the longer string)
             for ( let j = 1; j <= n; j++ ) {
                 // First column always zero
