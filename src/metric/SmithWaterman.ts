@@ -62,7 +62,7 @@ export class SmithWatermanDistance extends Metric< SmithWatermanRaw > {
 
         // Get two reusable arrays from the Pool for the DP rows
         const len = m + 1;
-        const [ prev, curr ] = Pool.acquireMany< Uint16Array >( 'uint16', [ len, len ] );
+        const [ prev, curr ] = Pool.acquireMany< Int32Array >( 'int32', [ len, len ] );
         let maxScore = 0;
 
         try {
@@ -106,8 +106,8 @@ export class SmithWatermanDistance extends Metric< SmithWatermanRaw > {
             };
         } finally {
             // Release arrays back to the pool
-            Pool.release( 'uint16', prev, len );
-            Pool.release( 'uint16', curr, len );
+            Pool.release( 'int32', prev, len );
+            Pool.release( 'int32', curr, len );
         }
     }
 

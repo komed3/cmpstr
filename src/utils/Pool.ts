@@ -9,7 +9,7 @@
  * By reusing pre-allocated typed arrays, it reduces memory allocations and garbage
  * collection overhead, especially for repeated or batch computations.
  * 
- * It supports different types of buffers (Uint16Array, number[], string[], Set, Map)
+ * It supports different types of buffers (Int32Array, number[], string[], Set, Map)
  * and allows for acquiring buffers of specific sizes while managing a max pool size.
  * 
  * @module Utils/Pool
@@ -33,6 +33,7 @@ class RingPool< T > {
 
     /** The buffers in the pool */
     private buffers: PoolBuffer< T >[] = [];
+
     /** The current pointer for acquiring buffers */
     private pointer: number = 0;
 
@@ -95,14 +96,14 @@ class RingPool< T > {
 /**
  * The Pool class provides a buffer pool for dynamic programming algorithms.
  * 
- * It allows for efficient reuse of buffers (Uint16Array, number[], Set, Map)
+ * It allows for efficient reuse of buffers (Int32Array, number[], Set, Map)
  * to reduce memory allocations and garbage collection overhead.
  */
 export class Pool {
 
     /** Pool Types */
     private static readonly CONFIG: Record< PoolType, PoolConfig > = {
-        'uint16':   { type: 'uint16',   maxSize: 64, maxItemSize: 2048, allowOversize: true  },
+        'int32':    { type: 'int32',    maxSize: 64, maxItemSize: 2048, allowOversize: true  },
         'number[]': { type: 'number[]', maxSize: 16, maxItemSize: 1024, allowOversize: false },
         'string[]': { type: 'string[]', maxSize:  2, maxItemSize: 1024, allowOversize: false },
         'set':      { type: 'set',      maxSize:  8, maxItemSize:    0, allowOversize: false },
@@ -111,7 +112,7 @@ export class Pool {
 
     /** Pool Rings for each type */
     private static readonly POOLS: Record< PoolType, RingPool< any > > = {
-        'uint16':   new RingPool< Uint16Array > ( 64 ),
+        'int32':    new RingPool< Int32Array > ( 64 ),
         'number[]': new RingPool< number[] > ( 16 ),
         'string[]': new RingPool< string[] > ( 2 ),
         'set':      new RingPool< Set< any > > ( 8 ),
@@ -127,7 +128,7 @@ export class Pool {
      */
     private static allocate ( type: PoolType, size: number ) : any {
         switch ( type ) {
-            case 'uint16':   return new Uint16Array ( size );
+            case 'int32':    return new Int32Array ( size );
             case 'number[]': return new Float64Array ( size );
             case 'string[]': return new Array ( size );
             case 'set':      return new Set ();
@@ -139,7 +140,7 @@ export class Pool {
      * Acquires a buffer of the specified type and size from the pool.
      * If no suitable buffer is available, it allocates a new one.
      * 
-     * @param {PoolType} type - The type of buffer to acquire (e.g., 'uint16', 'number[]', 'map')
+     * @param {PoolType} type - The type of buffer to acquire (e.g., 'int32', 'number[]', 'map')
      * @param {number} size - The size of the buffer to acquire
      * @return {T} - The acquired buffer of the specified type
      */
@@ -153,9 +154,9 @@ export class Pool {
         // If a suitable buffer is found, return it (subarray for uint16)
         const item = this.POOLS[ type ].acquire( size, CONFIG.allowOversize );
 
-        // If the type is 'uint16', return a subarray of the buffer
-        if ( item ) return type === 'uint16'
-            ? ( item.buffer as Uint16Array ).subarray( 0, size ) as T
+        // If the type is 'int32', return a subarray of the buffer
+        if ( item ) return type === 'int32'
+            ? ( item.buffer as Int32Array ).subarray( 0, size ) as T
             : item.buffer;
 
         // If no suitable buffer is found, allocate a new one

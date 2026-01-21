@@ -60,7 +60,7 @@ export class JaroWinklerDistance extends Metric< JaroWinklerRaw > {
      */
     protected override compute ( a: string, b: string, m: number, n: number ) : MetricCompute< JaroWinklerRaw > {
         // Use Pool for boolean arrays
-        const [ matchA, matchB ] = Pool.acquireMany< Uint16Array >( 'uint16', [ m, n ] );
+        const [ matchA, matchB ] = Pool.acquireMany< Int32Array >( 'int32', [ m, n ] );
 
         try {
             // Initialize match arrays
@@ -127,8 +127,8 @@ export class JaroWinklerDistance extends Metric< JaroWinklerRaw > {
             };
         } finally {
             // Release arrays back to the pool
-            Pool.release( 'uint16', matchA, m );
-            Pool.release( 'uint16', matchB, n );
+            Pool.release( 'int32', matchA, m );
+            Pool.release( 'int32', matchB, n );
         }
     }
 

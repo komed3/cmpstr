@@ -17,10 +17,7 @@ describe( 'CmpStr > Metric', () => {
         const cmp = CmpStr.create();
         const res = cmp.closest( 'hello', [ 'Hallo', 'hola', 'hey' ], 1, { flags: 'i', metric: 'dice' } );
 
-        expect( res ).toEqual( [ {
-            source: 'hello', target: 'Hallo',
-            match: 0.5
-        } ] );
+        expect( res ).toEqual( [ { source: 'hello', target: 'Hallo', match: 0.5 } ] );
 
     } );
 
@@ -36,9 +33,21 @@ describe( 'CmpStr > Metric', () => {
     it( 'Needleman-Wunsch Distance', () => {
 
         const cmp = CmpStr.create().setMetric( 'needlemanWunsch' );
+        const res = cmp.test( 'GATTACA', 'GTCGACGCA', { raw: true, opt: { gap: -2 } } );
+
+        expect( res ).toEqual( {
+            metric: 'needlemanWunsch', a: 'GATTACA', b: 'GTCGACGCA',
+            res: 0, raw: { score: -3, denum: 9 }
+        } );
+
+    } );
+
+    it( 'Jaccard Index', () => {
+
+        const cmp = CmpStr.create().setMetric( 'jaccard' );
         const res = cmp.match( [ 'Meyer', 'Müller', 'Miller', 'Meyers', 'Meier' ], 'Maier', 0.6 );
 
-        expect( res ).toHaveLength( 4 );
+        expect( res ).toHaveLength( 2 );
 
     } );
 

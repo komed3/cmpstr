@@ -63,7 +63,7 @@ export class DamerauLevenshteinDistance extends Metric< DamerauRaw > {
     ) : MetricCompute< DamerauRaw > {
         // Get three reusable arrays from the Pool for the DP rows
         const len = m + 1;
-        const [ test, prev, curr ] = Pool.acquireMany< Uint16Array >( 'uint16', [ len, len, len ] );
+        const [ test, prev, curr ] = Pool.acquireMany< Int32Array >( 'int32', [ len, len, len ] );
 
         try {
             // Initialize the first row (edit distances from empty string to a)
@@ -116,9 +116,9 @@ export class DamerauLevenshteinDistance extends Metric< DamerauRaw > {
             };
         } finally {
             // Release arrays back to the pool
-            Pool.release( 'uint16', test, len );
-            Pool.release( 'uint16', prev, len );
-            Pool.release( 'uint16', curr, len );
+            Pool.release( 'int32', test, len );
+            Pool.release( 'int32', prev, len );
+            Pool.release( 'int32', curr, len );
         }
     }
 

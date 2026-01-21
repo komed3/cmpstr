@@ -63,7 +63,7 @@ export class LevenshteinDistance extends Metric< LevenshteinRaw > {
     ) : MetricCompute< LevenshteinRaw > {
         // Get two reusable arrays from the Pool for the DP rows
         const len: number = m + 1;
-        const [ prev, curr ] = Pool.acquireMany< Uint16Array >( 'uint16', [ len, len ] );
+        const [ prev, curr ] = Pool.acquireMany< Int32Array >( 'int32', [ len, len ] );
 
         try {
             // Initialize the first row (edit distances from empty string to a)
@@ -103,8 +103,8 @@ export class LevenshteinDistance extends Metric< LevenshteinRaw > {
             };
         } finally {
             // Release arrays back to the pool
-            Pool.release( 'uint16', prev, len );
-            Pool.release( 'uint16', curr, len );
+            Pool.release( 'int32', prev, len );
+            Pool.release( 'int32', curr, len );
         }
     }
 
