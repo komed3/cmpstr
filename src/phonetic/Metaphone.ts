@@ -29,7 +29,13 @@ import { Phonetic, PhoneticRegistry, PhoneticMappingRegistry } from './Phonetic'
  */
 export class Metaphone extends Phonetic {
 
-    // Default options for the Metaphone phonetic algorithm
+    /** Regular expressions used in the Metaphone algorithm */
+    private static readonly REGEX = {
+        adjacent: /([A-BD-Z])\1+/gi,
+        vowel: /[AEIOU]/g
+    };
+
+    /** Default options for the Metaphone phonetic algorithm */
     protected static override default: PhoneticOptions = {
         map: 'en90', delimiter: ' ', length: -1, pad: '', dedupe: false
     };
@@ -50,13 +56,11 @@ export class Metaphone extends Phonetic {
      * @returns {string} - The generated Metaphone code
      */
     protected override encode ( word: string ) : string {
-
         // Remove duplicate adjacent letters except for C
-        word = word.replace( /([A-BD-Z])\1+/gi, ( m, c ) => c === 'C' ? m : c );
+        word = word.replace( Metaphone.REGEX.adjacent, ( m, c ) => c === 'C' ? m : c );
 
         // Use the base implementation for rule/mapping application
         return super.encode( word );
-
     }
 
     /**
@@ -66,10 +70,7 @@ export class Metaphone extends Phonetic {
      * @returns {string} - The adjusted Metaphone code
      */
     protected override adjustCode ( code: string ) : string {
-
-        // Remove vowels except for the first letter
-        return code.slice( 0, 1 ) + code.slice( 1 ).replace( /[AEIOU]/g, '' );
-
+        return code.slice( 0, 1 ) + code.slice( 1 ).replace( Metaphone.REGEX.vowel, '' );
     }
 
 }

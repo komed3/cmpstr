@@ -33,7 +33,7 @@ import { Phonetic, PhoneticRegistry, PhoneticMappingRegistry } from './Phonetic'
  */
 export class Soundex extends Phonetic {
 
-    // Default options for the Soundex phonetic algorithm
+    /** Default options for the Soundex phonetic algorithm */
     protected static override default: PhoneticOptions = {
         map: 'en', delimiter: ' ', length: 4, pad: '0', dedupe: true
     };
@@ -56,9 +56,7 @@ export class Soundex extends Phonetic {
      * @returns {string} - The adjusted phonetic code
      */
     protected override adjustCode ( code: string, chars: string[] ) : string {
-
         return chars[ 0 ].toUpperCase() + code.slice( 1 ).replaceAll( '0', '' );
-
     }
 
 }
