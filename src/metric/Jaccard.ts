@@ -24,12 +24,12 @@ import { Pool } from '../utils/Pool';
 export interface JaccardRaw {
     intersection: number;
     union: number;
-};
+}
 
 /**
  * JaccardIndex class extends the Metric class to implement the Jaccard Index algorithm.
  */
-export class JaccardIndex extends Metric<JaccardRaw> {
+export class JaccardIndex extends Metric< JaccardRaw > {
 
     /**
      * Constructor for the JaccardIndex class.
@@ -37,16 +37,14 @@ export class JaccardIndex extends Metric<JaccardRaw> {
      * Initializes the Jaccard Index metric with two input strings or
      * arrays of strings and optional options.
      * 
+     * Metric is symmetrical.
+     * 
      * @param {MetricInput} a - First input string or array of strings
      * @param {MetricInput} b - Second input string or array of strings
      * @param {MetricOptions} [opt] - Options for the metric computation
      */
     constructor ( a: MetricInput, b: MetricInput, opt: MetricOptions = {} ) {
-
-        // Call the parent Metric constructor with the metric name and inputs
-        // Metric is symmetrical
         super ( 'jaccard', a, b, opt, true );
-
     }
 
     /**
@@ -56,35 +54,34 @@ export class JaccardIndex extends Metric<JaccardRaw> {
      * @param {string} b - Second string
      * @param {number} m - Length of the first string
      * @param {number} n - Length of the second string
-     * @return {MetricCompute<JaccardRaw>} - Object containing the similarity result and raw values
+     * @return {MetricCompute< JaccardRaw >} - Object containing the similarity result and raw values
      */
-    protected override compute ( a: string, b: string, m: number, n: number ) : MetricCompute<JaccardRaw> {
-
+    protected override compute ( a: string, b: string, m: number, n: number ) : MetricCompute< JaccardRaw > {
         // Acquire two sets from the Pool
-        const [ setA, setB ] = Pool.acquireMany( 'set', [ m, n ] );
+        const [ setA, setB ] = Pool.acquireMany< Set< string > >( 'set', [ m, n ] );
 
-        // Fill setA and setB with unique characters from a and b
-        for ( const A of a ) setA.add( A );
-        for ( const B of b ) setB.add( B );
+        try {
+            // Fill setA and setB with unique characters from a and b
+            for ( const A of a ) setA.add( A );
+            for ( const B of b ) setB.add( B );
 
-        // Calculate intersection size
-        let intersection: number = 0;
+            // Calculate intersection size
+            let intersection = 0;
+            for ( const c of setA ) if ( setB.has( c ) ) intersection++;
 
-        for ( const c of setA ) if ( setB.has( c ) ) intersection++;
+            // Calculate union size (setA + elements in setB not in setA)
+            const union = setA.size + setB.size - intersection;
 
-        // Calculate union size (setA + elements in setB not in setA)
-        const union: number = setA.size + setB.size - intersection;
-
-        // Release sets back to the pool
-        Pool.release( 'set', setA, m );
-        Pool.release( 'set', setB, n );
-
-        // Return the result as a MetricCompute object
-        return {
-            res: union === 0 ? 1 : Metric.clamp( intersection / union ),
-            raw: { intersection, union }
-        };
-
+            // Return the result as a MetricCompute object
+            return {
+                res: union === 0 ? 1 : Metric.clamp( intersection / union ),
+                raw: { intersection, union }
+            };
+        } finally {
+            // Release sets back to the pool
+            Pool.release( 'set', setA, m );
+            Pool.release( 'set', setB, n );
+        }
     }
 
 }
