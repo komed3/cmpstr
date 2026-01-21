@@ -67,6 +67,7 @@ export class CmpStr< R = MetricRaw > {
      * @see Filter
      */
     public static readonly filter = {
+        has: Filter.has,
         add: Filter.add,
         remove: Filter.remove,
         pause: Filter.pause,
