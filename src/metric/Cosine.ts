@@ -79,10 +79,10 @@ export class CosineSimilarity extends Metric< CosineRaw > {
         const termsA = this._termFreq( a, delimiter );
         const termsB = this._termFreq( b, delimiter );
 
-        // Calculate dot product and magnitudes
-        let dotP = 0, magA = 0, magB = 0;
-
         try {
+            // Calculate dot product and magnitudes
+            let dotP = 0, magA = 0, magB = 0;
+
             // Iterate over terms in A for dotProduct and magnitudeA
             for ( const [ term, freqA ] of termsA ) {
                 const freqB = termsB.get( term ) || 0;
@@ -95,19 +95,17 @@ export class CosineSimilarity extends Metric< CosineRaw > {
 
             magA = Math.sqrt( magA );
             magB = Math.sqrt( magB );
-        }
 
-        // Release maps back to the pool
-        finally {
+            // Return the result as a MetricCompute object
+            return {
+                res: ( magA && magB ) ? Metric.clamp( dotP / ( magA * magB ) ) : 0,
+                raw: { dotProduct: dotP, magnitudeA: magA, magnitudeB: magB }
+            };
+        } finally {
+            // Release maps back to the pool
             Pool.release( 'map', termsA, termsA.size );
             Pool.release( 'map', termsB, termsB.size );
         }
-
-        // Return the result as a MetricCompute object
-        return {
-            res: ( magA && magB ) ? Metric.clamp( dotP / ( magA * magB ) ) : 0,
-            raw: { dotProduct: dotP, magnitudeA: magA, magnitudeB: magB }
-        };
     }
 
 }
