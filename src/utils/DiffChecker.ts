@@ -289,12 +289,10 @@ export class DiffChecker {
      * and calculates group metrics.
      */
     private findGroups () : void {
-
         const { contextLines } = this.options;
 
         // Helper function to add a group to the grouped array
         const addGroup = ( group: DiffLine[], start: number, end: number ) : void => {
-
             // Calculate total sizes and base length for the group
             const [ delSize, insSize, totalSize, baseLen ] = [
                 'delSize', 'insSize', 'totalSize', 'baseLen'
@@ -308,41 +306,33 @@ export class DiffChecker {
                 line: group[ 0 ].line, entries: group,
                 magnitude: this.magnitude( delSize, insSize, baseLen )
             } );
-
         };
 
         let group: DiffLine[] = [];
-        let start: number = 0, end: number = 0;
+        let start = 0, end = 0;
 
         // Iterate through each diff entry to find groups
         for ( const entry of this.entries ) {
-
-            const s: number = Math.max( 0, entry.line - contextLines );
-            const e: number = entry.line + contextLines;
+            const s = Math.max( 0, entry.line - contextLines );
+            const e = entry.line + contextLines;
 
             // If the group is empty or the current entry is adjacent to the last one
             if ( ! group.length || s <= end + 1 ) {
-
                 // If this is the first entry, set the start position
                 if ( ! group.length ) start = s;
 
                 end = Math.max( end, e );
                 group.push( entry );
-
             } else {
-
                 // If the group is not empty, finalize it and start a new one
                 addGroup( group, start, end );
 
                 group = [ entry ], start = s, end = e;
-
             }
-
         }
 
         // If there is a remaining group, finalize it
         if ( group.length ) addGroup( group, start, end );
-
     }
 
     /**
@@ -354,9 +344,7 @@ export class DiffChecker {
      * @returns {string} - Magnitude string (e.g. "++-")
      */
     private magnitude ( del: number, ins: number, baseLen: number ) : string {
-
         const { maxMagnitudeSymbols } = this.options;
-
         const total: number = del + ins;
 
         // If there are no changes or base length is zero, return empty string
@@ -368,12 +356,11 @@ export class DiffChecker {
         ) );
 
         // Calculate the number of plus and minus symbols
-        const plus: number = Math.round( ( ins / total ) * magLen );
-        const minus: number = magLen - plus;
+        const plus = Math.round( ( ins / total ) * magLen );
+        const minus = magLen - plus;
 
         // Return the magnitude string with plus and minus symbols
         return '+'.repeat( plus ) + '-'.repeat( minus );
-
     }
 
     /**
@@ -383,12 +370,11 @@ export class DiffChecker {
      * @returns {string} - Unified diff output
      */
     private output ( cli: boolean ) : string {
-
         const { mode, contextLines, groupedLines, expandLines, showChangeMagnitude, lineBreak } = this.options;
 
         // Get the lines and maximum length from the input texts
         const { linesA, linesB, maxLen } = this.text2lines();
-        const linePad: number = Math.max( 4, maxLen.toString().length );
+        const linePad = Math.max( 4, maxLen.toString().length );
 
         // Helper functions for coloring and formatting (ASCII or CLI colored)
         const highlight = ( s: string, ansi: string ) : string => cli ? `\x1b[${ansi}m${s}\x1b[0m` : s;
@@ -404,68 +390,54 @@ export class DiffChecker {
 
         // Function to output a block of lines with optional header
         const block = ( start: number, end: number, forced?: number, headerEntry?: DiffGroup | DiffLine ) : void => {
-
             // If there is a header entry, output the header
             if ( headerEntry ) header( headerEntry );
 
             // Loop through the range and output lines
             for ( let i = start; i <= end; i++ ) line( i, forced ?? i );
-
             out.push( '' );
-
         };
 
         // Function to output a header for a group or line
         const header = ( e: DiffGroup | DiffLine ) : void => {
-
             out.push( `${ ( ' '.repeat( linePad ) ) }   ${ (
                 cy( `@@ -${ ( e.line + 1 ) },${e.delSize} +${( e.line + 1 ) },${e.insSize} @@` )
             ) } ${ ( showChangeMagnitude ? ye( e.magnitude ) : '' ) }` );
-
         };
 
         // Function to output a single line with optional diff highlighting
         const line = ( i: number, forced: number ) : void => {
-
             // If the line exists in either text, output it
             if ( linesA[ i ] || linesB[ i ] ) {
-
                 // Find the diff entry for this line, if it exists
-                const entry: DiffLine | undefined = this.entries.find( e => e.line === i );
+                const entry = this.entries.find( e => e.line === i );
+
                 // Format the line number with padding
-                const lineNo: string = ( i + 1 ).toString().padStart( linePad, ' ' );
+                const lineNo = ( i + 1 ).toString().padStart( linePad, ' ' );
 
                 if ( entry && forced === i ) {
-
                     // If there is an entry, output the line with diff highlighting
                     out.push( `${lineNo} ${ rd( `- ${ mark( linesA[ i ], entry.diffs, 'del' ) }` ) }` );
                     out.push( `${ ' '.repeat( linePad ) } ${ gn( `+ ${ mark( linesB[ i ], entry.diffs, 'ins' ) }` ) }` );
-
                 } else {
-
                     // If no entry, just output the line without diff (context lines)
                     out.push( `${lineNo}   ${ gy( linesA[ i ] ) }` );
-
                 }
-
             }
-
         };
 
         // Function to mark changes in a line based on the diffs
         const mark = ( line: string, diffs: DiffEntry[], type: 'del' | 'ins' ) : string => {
-
             // If there are no diffs or the mode is line, return the line as is
             if ( ! diffs.length || mode === 'line' ) return line;
 
-            let res: string = '', idx: number = 0;
+            let res = '', idx = 0;
 
             // Loop through each diff entry and apply the changes
             for ( const d of diffs ) {
-
                 // Get the position and value based on the type
-                const pos: number = type === 'del' ? d.posA : d.posB;
-                const val: string = type === 'del' ? d.del : d.ins;
+                const pos = type === 'del' ? d.posA : d.posB;
+                const val = type === 'del' ? d.del : d.ins;
 
                 // If the value is empty, skip it
                 if ( ! val ) continue;
@@ -476,42 +448,34 @@ export class DiffChecker {
                 // Add the changed part of the line with appropriate formatting
                 res += ( type === 'del' ? del( val ) : ins( val ) );
                 idx = pos + val.length;
-
             }
 
             // Return the marked line with any remaining unchanged part
             return res + line.slice( idx );
-
         };
 
         let out: string[] = [ '' ];
 
         switch ( true ) {
-
-            // For expandLines, output the entire file context
-            case expandLines:
+            case expandLines: // For expandLines, output the entire file context
                 block( 0, maxLen );
                 break;
 
-            // For groupedLines, output each group with its start and end
-            case groupedLines:
+            case groupedLines: // For groupedLines, output each group with its start and end
                 for ( const group of this.grouped ) block(
                     group.start, group.end, undefined, group
                 );
                 break;
 
-            // For individual lines, output each entry with context lines
-            default:
+            default: // For individual lines, output each entry with context lines
                 for ( const entry of this.entries ) block(
                     entry.line - contextLines, entry.line + contextLines, entry.line, entry
                 );
                 break;
-
         }
 
         // Output the final diff as a string (ASCII or CLI colored)
         return out.join( lineBreak );
-
     }
 
     /**
@@ -519,27 +483,27 @@ export class DiffChecker {
      * 
      * @returns {DiffLine[]} - Array of line-level diffs
      */
-    public getStructuredDiff () : DiffLine[] { return this.entries }
+    public getStructuredDiff = () : DiffLine[] => this.entries;
 
     /**
      * Returns the grouped diff as an array of DiffGroup objects.
      * 
      * @returns {DiffGroup[]} - Array of grouped diffs
      */
-    public getGroupedDiff () : DiffGroup[] { return this.grouped }
+    public getGroupedDiff = () : DiffGroup[] => this.grouped;
 
     /**
      * Returns the unified diff as a plain ASCII string.
      * 
      * @returns {string} - Unified diff (ASCII)
      */
-    public getASCIIDiff () : string { return this.output( false ) }
+    public getASCIIDiff = () : string => this.output( false );
 
     /**
      * Returns the unified diff as a CLI-colored string.
      * 
      * @returns {string} - Unified diff (CLI colors)
      */
-    public getCLIDiff () : string { return this.output( true ) }
+    public getCLIDiff = () : string => this.output( true );
 
 }
