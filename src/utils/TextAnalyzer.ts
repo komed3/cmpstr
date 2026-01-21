@@ -18,11 +18,15 @@
 
 export class TextAnalyzer {
 
+    /** Regular expressions used in text analysis */
     private static readonly REGEX = {
+        number: /\d/,
         sentence: /(?<=[.!?])\s+/,
         word: /\p{L}+/gu,
         nonWord: /[^\p{L}]/gu,
-        vowelGroup: /[aeiouy]+/g
+        vowelGroup: /[aeiouy]+/g,
+        letter: /\p{L}/gu,
+        ucLetter: /\p{Lu}/gu,
     };
 
     /** The original text to analyze */
@@ -38,7 +42,7 @@ export class TextAnalyzer {
     private syllableCache: Map< string, number > = new Map ();
 
     /** Cached syllable stats */
-    private syllableStats?: { total: number, mono: number, perWord: number[] };
+    private syllableStats?: { total: number, mono: number, perWord: number[], avg: number, median: number };
 
     /**
      * Constructs a new TextAnalyzer instance with the provided input text.
@@ -98,22 +102,22 @@ export class TextAnalyzer {
     }
 
     /**
-     * Compute syllable stats.
+     * Compute internal syllable stats.
      * 
-     * @returns {{ total: number, mono: number, perWord: number[] }} - Computed syllable stats
+     * @returns {{ total: number, mono: number, max: number, min: number,
+     *             avg: number, median: number }} - Computed syllable stats
      */
-    private computeSyllableStats () : { total: number, mono: number, perWord: number[] } {
+    private computeSyllableStats () : { total: number, mono: number, perWord: number[], avg: number, median: number } {
         return this.syllableStats ||= ( () => {
-            let total = 0, mono = 0, perWord = [];
+            const perWord = this.words.map( w => this.estimateSyllables( w ) ).sort( ( a, b ) => a - b );
+            const total = perWord.reduce( ( sum, s ) => sum + s, 0 );
+            const mono = perWord.filter( s => s === 1 ).length;
 
-            for ( const w of this.words ) {
-                const s = this.estimateSyllables( w );
-                total += s;
-                if ( s === 1 ) mono++;
-                perWord.push( s );
-            }
+            const median = ! perWord.length ? 0 : perWord.length % 2 === 0
+                ? ( perWord[ perWord.length / 2 - 1 ] + perWord[ perWord.length / 2 ] ) / 2
+                : perWord[ Math.floor( perWord.length / 2 ) ];
 
-            return { total, mono, perWord };
+            return { total, mono, perWord, avg: perWord.length ? total / perWord.length : 0, median };
         } )();
     }
 
@@ -144,10 +148,7 @@ export class TextAnalyzer {
      * @return {number} - Average length of words
      */
     public getAvgWordLength () : number {
-        let totalLen = 0;
-        for ( const w of this.words ) totalLen += w.length;
-
-        return this.words.length ? totalLen / this.words.length : 0;
+        return this.words.length ? this.words.join( '' ).length / this.words.length : 0
     }
 
     /**
@@ -182,7 +183,6 @@ export class TextAnalyzer {
 
     /**
      * Gets the least common words (hapax legomena) in the text.
-     * 
      * Hapax legomena are words that occur only once in the text.
      * 
      * @returns {string[]} - Array of hapax legomena
@@ -198,7 +198,7 @@ export class TextAnalyzer {
      * 
      * @returns {boolean} - True if numbers are present, false otherwise
      */
-    public hasNumbers () : boolean { return /\d/.test( this.text ) }
+    public hasNumbers = () : boolean => TextAnalyzer.REGEX.number.test( this.text );
 
     /**
      * Calculates the ratio of uppercase letters to total letters in the text.
@@ -206,61 +206,35 @@ export class TextAnalyzer {
      * @return {number} - Ratio of uppercase letters to total letters
      */
     public getUpperCaseRatio () : number {
+        const matches = this.text.match( TextAnalyzer.REGEX.letter ) || [];
+        const upper = this.text.match( TextAnalyzer.REGEX.ucLetter )?.length || 0;
 
-        let upper: number = 0, letters: number = 0;
-
-        for ( let i = 0, len = this.text.length; i < len; i++ ) {
-
-            const c: string = this.text[ i ];
-
-            if ( /[A-Za-zÄÖÜäöüß]/.test( c ) ) {
-
-                letters++;
-
-                if ( /[A-ZÄÖÜ]/.test( c ) ) upper++;
-
-            }
-
-        }
-
-        return letters ? upper / letters : 0;
-
+        return matches.length ? upper / matches.length : 0;
     }
 
     /**
      * Gets the frequency of each character in the text.
      * 
-     * @returns {Record<string, number>} - A record of character frequencies
+     * @returns {Record< string, number >} - A record of character frequencies
      */
-    public getCharFrequency () : Record<string, number> {
-
+    public getCharFrequency () : Record< string, number > {
         return Object.fromEntries( this.charFrequency );
-
     }
 
     /**
-     * Gets the frequency of each Unicode block in the text.
+     * Gets the frequency of Unicode codepoints in the text.
      * 
-     * @returns {Record<string, number>} - A record of Unicode block frequencies
+     * @returns {Record< string, number >} - A record of Unicode codepoint frequencies
      */
-    public getUnicodeStats () : Record<string, number> {
-
-        const result: Record<string, number> = {};
+    public getUnicodeCodepoints () : Record<string, number> {
+        const result: Record< string, number > = {};
 
         for ( const [ char, count ] of this.charFrequency ) {
-
-            // Get the Unicode block for the character
-            const block: string = char
-                .charCodeAt( 0 ).toString( 16 )
-                .padStart( 4, '0' ).toUpperCase();
-
-            // Increment the count for the block
-            result[ block ] = ( result[ block ] ?? 0 ) + count;
-
+            const block = char.charCodeAt( 0 ).toString( 16 ).padStart( 4, '0' ).toUpperCase();
+            result[ block ] = ( result[ block ] || 0 ) + count;
         }
 
         return result;
-
     }
 
     /**
@@ -270,13 +244,10 @@ export class TextAnalyzer {
      * @returns {number} - Ratio of long words to total words
      */
     public getLongWordRatio ( len: number = 7 ) : number {
-
         let long: number = 0;
-
         for ( const w of this.words ) if ( w.length >= len ) long++;
 
         return this.words.length ? long / this.words.length : 0;
-
     }
 
     /**
@@ -286,13 +257,10 @@ export class TextAnalyzer {
      * @returns {number} - Ratio of short words to total words
      */
     public getShortWordRatio ( len: number = 3 ) : number {
-
         let short: number = 0;
-
         for ( const w of this.words ) if ( w.length <= len ) short++;
 
         return this.words.length ? short / this.words.length : 0;
-
     }
 
     /**
@@ -301,13 +269,7 @@ export class TextAnalyzer {
      * @returns {number} - Total estimated syllable count
      */
     public getSyllablesCount () : number {
-
-        let count: number = 0;
-
-        for ( const w of this.words ) count += this.estimateSyllables( w );
-
-        return count;
-
+        return this.computeSyllableStats().total;
     }
 
     /**
@@ -316,13 +278,7 @@ export class TextAnalyzer {
      * @returns {number} - Count of monosyllabic words
      */
     public getMonosyllabicWordCount () : number {
-
-        let count: number = 0;
-
-        for ( const w of this.words ) if ( this.estimateSyllables( w ) === 1 ) count++;
-
-        return count;
-
+        return this.computeSyllableStats().mono;
     }
 
     /**
@@ -332,13 +288,7 @@ export class TextAnalyzer {
      * @returns {number} - Count of words meeting the syllable criteria
      */
     public getMinSyllablesWordCount ( min: number ) : number {
-
-        let count: number = 0;
-
-        for ( const w of this.words ) if ( this.estimateSyllables( w ) >= min ) count++;
-
-        return count;
-
+        return this.computeSyllableStats().perWord.filter( w => w >= min ).length;
     }
 
     /**
@@ -348,13 +298,25 @@ export class TextAnalyzer {
      * @returns {number} - Count of words meeting the syllable criteria
      */
     public getMaxSyllablesWordCount ( max: number ) : number {
+        return this.computeSyllableStats().perWord.filter( w => w <= max ).length;
+    }
 
-        let count: number = 0;
+    /**
+     * Gets the average number of syllables per word in the text.
+     * 
+     * @returns {number} - Average syllables per word
+     */
+    public getAvgSyllablesPerWord () : number {
+        return this.computeSyllableStats().avg;
+    }
 
-        for ( const w of this.words ) if ( this.estimateSyllables( w ) <= max ) count++;
-
-        return count;
-
+    /**
+     * Gets the median number of syllables per word in the text.
+     * 
+     * @returns {number} - Median syllables per word
+     */
+    public getMedianSyllablesPerWord () : number {
+        return this.computeSyllableStats().median;
     }
 
     /**
@@ -363,11 +325,9 @@ export class TextAnalyzer {
      * @returns {number} - The Honore's R statistic
      */
     public getHonoresR () : number {
-
-        return ( 100 * Math.log( this.words.length ) ) / ( 1 - (
+        try { return ( 100 * Math.log( this.words.length ) ) / ( 1 - (
             this.getHapaxLegomena().length / ( this.wordHistogram.size ?? 1 )
-        ) );
-
+        ) ) } catch { return 0 }
     }
 
     /**
@@ -377,9 +337,7 @@ export class TextAnalyzer {
      * @returns {number} - Estimated reading time in minutes
      */
     public getReadingTime ( wpm: number = 200 ) : number {
-
-        return Math.max( 1, this.words.length / ( wpm ?? 1 ) );
-
+        return this.words.length / ( wpm ?? 1 );
     }
 
     /**
@@ -389,11 +347,10 @@ export class TextAnalyzer {
      *  - Flesch Reading Ease
      *  - Flesch-Kincaid Grade Level
      * 
-     * @param {'flesch'|'fleschde'|'kincaid'} [metric='flesch'] - The readability metric to calculate
+     * @param {'flesch' | 'fleschde' | 'kincaid'} [metric='flesch'] - The readability metric to calculate
      * @returns {number} - The calculated readability score
      */
     public getReadabilityScore ( metric: 'flesch' | 'fleschde' | 'kincaid' = 'flesch' ) : number {
-
         const w: number = this.words.length || 1;
         const s: number = this.sentences.length || 1;
         const y: number = this.getSyllablesCount() || 1;
@@ -402,46 +359,33 @@ export class TextAnalyzer {
         const asw: number = y / w;
 
         switch ( metric ) {
-
-            // Flesch Reading Ease formula
             case 'flesch': return 206.835 - ( 1.015 * asl ) - ( 84.6 * asw );
-
-            // Flesch Reading Ease formula for German texts
             case 'fleschde': return 180 - asl - ( 58.5 * asw );
-
-            // Flesch-Kincaid Grade Level formula
             case 'kincaid': return ( 0.39 * asl ) + ( 11.8 * asw ) - 15.59;
-
         }
-
     }
 
     /**
      * Calculates the LIX (Lesbarhetsindex) score for the text.
-     * 
      * The LIX score is a readability index that combines average word length and sentence length.
      * 
      * @returns {number} - The LIX score
      */
     public getLIXScore () : number {
-
         const w: number = this.words.length || 1;
         const s: number = this.sentences.length || 1;
         const l: number = this.getLongWordRatio() * w;
 
         return ( w / s ) + ( l / w * 100 );
-
     }
 
     /**
      * Calculates the Wiener Sachtextformel (WSTF) scores for the text.
-     * 
      * The WSTF scores are a set of readability metrics based on word and sentence characteristics.
      * 
-     * @returns {[number, number, number, number]} - An array of WSTF scores
+     * @returns {[ number, number, number, number ]} - An array of WSTF scores
      */
     public getWSTFScore () : [ number, number, number, number ] {
-
         const w: number = this.words.length || 1;
 
         const h: number = this.getMinSyllablesWordCount( 3 ) / w * 100;
@@ -455,7 +399,6 @@ export class TextAnalyzer {
             0.2963 * h + 0.1905 * s                           - 1.1144,
             0.2744 * h + 0.2656 * s                           - 1.6930
         ];
-
     }
 
 }
