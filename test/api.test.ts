@@ -1,6 +1,13 @@
 import { describe, it, expect } from 'vitest';
 import { CmpStr } from '../src';
 
+/**
+ * API Test Suite for CmpStr
+ * 
+ * These tests validate the core API functionalities of the CmpStr
+ * library, including filter management, metric listing, phonetic
+ * algorithm handling, and profiling capabilities.
+ */
 describe( 'CmpStr > API', () => {
 
     it( 'Filter', () => {

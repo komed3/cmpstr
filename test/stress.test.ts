@@ -4,8 +4,8 @@ import { CmpStr, CmpStrAsync } from '../src';
 /**
  * Stress Test Suite for CmpStr
  * 
- * These tests evaluate CmpStr's performance and memory efficiency
- * under various load conditions and data sizes.
+ * These tests evaluate CmpStr's performance and memory efficiency under
+ * various load conditions and data sizes.
  */
 describe( 'CmpStr > Stress Tests', () => {
 

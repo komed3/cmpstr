@@ -1,6 +1,13 @@
 import { describe, it, expect } from 'vitest';
 import { CmpStr, DiffChecker, Normalizer, TextAnalyzer } from '../src';
 
+/**
+ * Tools Test Suite for CmpStr
+ * 
+ * These tests validate the functionality of various utility tools
+ * provided by the CmpStr library, including Normalizer, TextAnalyzer,
+ * and DiffChecker.
+ */
 describe( 'CmpStr > Tools', () => {
 
     it( 'Similarity Matrix', () => {

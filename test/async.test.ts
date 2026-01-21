@@ -1,6 +1,13 @@
 import { describe, it, expect } from 'vitest';
 import { CmpStrAsync } from '../src';
 
+/**
+ * Async Test Suite for CmpStrAsync
+ * 
+ * These tests validate the asynchronous functionalities of the
+ * CmpStrAsync library, including async comparisons, batch processing,
+ * text search, and phonetic indexing.
+ */
 describe( 'CmpStr > Async', () => {
 
     it( 'Compare', async () => {

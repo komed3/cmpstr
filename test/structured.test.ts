@@ -1,6 +1,13 @@
 import { describe, it, expect } from 'vitest';
 import { CmpStr, CmpStrAsync, type MetricRaw } from '../src';
 
+/**
+ * Structured Data Test Suite for CmpStr
+ * 
+ * These tests validate the structured data handling capabilities of the
+ * CmpStr library, ensuring accurate lookups, matches, and closest/furthest
+ * computations within structured datasets.
+ */
 describe( 'CmpStr > Structured Data', () => {
 
     it( 'Basic Lookup', () => {

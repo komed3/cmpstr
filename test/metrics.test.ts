@@ -1,6 +1,12 @@
 import { describe, it, expect } from 'vitest';
 import { CmpStr, type CmpStrResult } from '../src';
 
+/**
+ * Metric Test Suite for CmpStr
+ * 
+ * These tests validate the various string similarity and distance
+ * metrics implemented in the CmpStr library.
+ */
 describe( 'CmpStr > Metric', () => {
 
     it( 'Levenshtein Distance', () => {
