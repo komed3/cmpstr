@@ -33,7 +33,7 @@ import type {
 } from '../utils/Types';
 
 import { Registry } from '../utils/Registry';
-import { HashTable } from '../utils/HashTable';
+import { Hasher, HashTable } from '../utils/HashTable';
 import { Profiler } from '../utils/Profiler';
 
 // Get the singleton profiler instance for performance monitoring
@@ -63,6 +63,7 @@ export abstract class Metric< R = MetricRaw > {
 
     /** Options for the metric computation, such as performance tracking */
     protected readonly options: MetricOptions;
+    protected readonly optKey: string;
 
     /** Indicates whether the metric is symmetric (same result for inputs in any order) */
     protected readonly symmetric: boolean;
@@ -128,6 +129,7 @@ export abstract class Metric< R = MetricRaw > {
 
         // Set options
         this.options = opt;
+        this.optKey = Hasher.fastFNV1a( JSON.stringify( opt, Object.keys( opt ).sort() ) ).toString();
         this.symmetric = symmetric;
     }
 
@@ -193,7 +195,8 @@ export abstract class Metric< R = MetricRaw > {
             // If the profiler is enabled, measure; else, just run
             result = profiler.run( () : MetricCompute< R > => {
                 // Generate a cache key based on the metric and pair of strings `a` and `b`
-                const key = Metric.cache.key( this.metric, [ A, B ], this.symmetric );
+                // Concatenate with options to ensure different options yield different cache entries
+                const key = Metric.cache.key( this.metric, [ A, B ], this.symmetric ) + this.optKey;
 
                 // If the key exists in the cache, return the cached result
                 // Otherwise, compute the metric using the algorithm
