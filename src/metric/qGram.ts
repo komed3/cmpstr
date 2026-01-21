@@ -46,7 +46,7 @@ export class QGramSimilarity extends Metric< QGramRaw > {
      * @param {MetricOptions} [opt] - Options for the metric computation
      */
     constructor ( a: MetricInput, b: MetricInput, opt: MetricOptions = {} ) {
-        super ( 'qgram', a, b, opt, true );
+        super ( 'qGram', a, b, opt, true );
     }
 
     /**
