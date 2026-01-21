@@ -26,7 +26,7 @@
  * Hasher Utility
  * Static class for modified FNV-1a hash algorithm implementation.
  */
-class Hasher {
+export class Hasher {
 
     /** Constants for the hash algorithm */
     private static readonly FNV_PRIME: number = 0x01000193;

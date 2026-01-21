@@ -41,7 +41,7 @@ export { PhoneticRegistry, PhoneticMappingRegistry, Phonetic, PhoneticCls } from
 // Export additional utilities and components
 export * as DeepMerge from './utils/DeepMerge';
 export { Filter } from './utils/Filter';
-export { HashTable } from './utils/HashTable';
+export { Hasher, HashTable } from './utils/HashTable';
 export { Pool } from './utils/Pool';
 export { Profiler } from './utils/Profiler';
 export { StructuredData } from './utils/StructuredData';
