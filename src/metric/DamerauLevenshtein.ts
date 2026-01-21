@@ -62,8 +62,8 @@ export class DamerauLevenshteinDistance extends Metric< DamerauRaw > {
         a: string, b: string, m: number, n: number, maxLen: number
     ) : MetricCompute< DamerauRaw > {
         // Get three reusable arrays from the Pool for the DP rows
-        const len: number = m + 1;
-        const [ test, prev, curr ] = Pool.acquireMany( 'uint16', [ len, len, len ] );
+        const len = m + 1;
+        const [ test, prev, curr ] = Pool.acquireMany< Uint16Array >( 'uint16', [ len, len, len ] );
 
         try {
             // Initialize the first row (edit distances from empty string to a)
@@ -75,17 +75,17 @@ export class DamerauLevenshteinDistance extends Metric< DamerauRaw > {
                 curr[ 0 ] = j;
 
                 // Get the character code of the current character in b
-                const cb: number = b.charCodeAt( j - 1 );
+                const cb = b.charCodeAt( j - 1 );
 
                 for ( let i = 1; i <= m; i++ ) {
                     // Get the character code of the current character in b
-                    const ca: number = a.charCodeAt( i - 1 );
+                    const ca = a.charCodeAt( i - 1 );
 
                     // If characters are the same, no cost for substitution
-                    const cost: number = ca === cb ? 0 : 1;
+                    const cost = ca === cb ? 0 : 1;
 
                     // Calculate minimum of deletion, insertion, substitution
-                    let val: number = Math.min(
+                    let val = Math.min(
                         curr[ i - 1 ] + 1,      // Insertion
                         prev[ i ] + 1,          // Deletion
                         prev[ i - 1 ] + cost    // Substitution
@@ -107,7 +107,7 @@ export class DamerauLevenshteinDistance extends Metric< DamerauRaw > {
             }
 
             // The last value in prev is the Damerau-Levenshtein distance
-            const dist: number = prev[ m ];
+            const dist = prev[ m ];
 
             // Normalize by the length of the longer string
             return {
