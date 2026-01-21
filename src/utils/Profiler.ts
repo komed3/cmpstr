@@ -28,8 +28,13 @@ export class Profiler {
 
     /** Environment detection */
     private static ENV: 'nodejs' | 'browser' | 'unknown';
+
     /** Singleton instance */
     private static instance: Profiler;
+
+    /** Pre-computed functions for time and memory retrieval */
+    private nowFn: () => number;
+    private memFn: () => number;
 
     /** Store for profiler entries */
     private store: Set< ProfilerEntry< any > > = new Set ();
@@ -66,7 +71,22 @@ export class Profiler {
      * 
      * @param {boolean} [active=false] - Optional parameter to enable the profiler
      */
-    private constructor ( private active: boolean = false ) {}
+    private constructor ( private active: boolean = false ) {
+        switch ( Profiler.ENV ) {
+            case 'nodejs':
+                this.nowFn = () => Number( process.hrtime.bigint() ) / 1e6;
+                this.memFn = () => process.memoryUsage().heapUsed;
+                break;
+            case 'browser':
+                this.nowFn = () => ( performance as any ).now();
+                this.memFn = () => ( performance as any ).memory?.usedJSHeapSize ?? 0;
+                break;
+            default:
+                this.nowFn = () => Date.now();
+                this.memFn = () => 0;
+                break;
+        }
+    }
 
     /**
      * Gets the current time based on the environment.
@@ -76,13 +96,7 @@ export class Profiler {
      * 
      * @returns {number} - Current time in milliseconds
      */
-    private now () : number {
-        switch ( Profiler.ENV ) {
-            case 'nodejs': return Number( process.hrtime.bigint() ) / 1e6;
-            case 'browser': return ( performance as any ).now();
-            default: return Date.now();
-        }
-    }
+    private now = () : number => this.nowFn();
 
     /**
      * Gets the current memory usage based on the environment.
@@ -92,13 +106,7 @@ export class Profiler {
      * 
      * @returns {number} - Current memory usage in bytes
      */
-    private mem () : number {
-        switch ( Profiler.ENV ) {
-            case 'nodejs': return process.memoryUsage().heapUsed;
-            case 'browser': return ( performance as any ).memory?.usedJSHeapSize ?? 0;
-            default: return 0;
-        }
-    }
+    private mem = () : number => this.memFn();
 
     /**
      * Profiles a synchronous function by measuring its execution time and memory usage.
