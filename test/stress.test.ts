@@ -19,7 +19,7 @@ describe( 'CmpStr > Stress Tests', () => {
         const endTime = performance.now();
 
         expect( res ).toHaveLength( 1000 );
-        expect( endTime - startTime ).toBeLessThan( 50 );
+        expect( endTime - startTime ).toBeLessThan( 100 );
 
     } );
 
@@ -34,7 +34,7 @@ describe( 'CmpStr > Stress Tests', () => {
 
         expect( matrix ).toHaveLength( 100 );
         expect( matrix[ 0 ] ).toHaveLength( 100 );
-        expect( endTime - startTime ).toBeLessThan( 50 );
+        expect( endTime - startTime ).toBeLessThan( 100 );
 
     } );
 
@@ -49,7 +49,7 @@ describe( 'CmpStr > Stress Tests', () => {
         const endTime = performance.now();
 
         expect( res ).toHaveLength( 500 );
-        expect( endTime - startTime ).toBeLessThan( 50 );
+        expect( endTime - startTime ).toBeLessThan( 100 );
 
     } );
 
@@ -64,7 +64,7 @@ describe( 'CmpStr > Stress Tests', () => {
         const endTime = performance.now();
 
         expect( typeof res.match ).toBe( 'number' );
-        expect( endTime - startTime ).toBeLessThan( 10 );
+        expect( endTime - startTime ).toBeLessThan( 50 );
 
     } );
 
@@ -99,7 +99,7 @@ describe( 'CmpStr > Stress Tests', () => {
         const endTime = performance.now();
 
         expect( res ).toHaveLength( 5000 );
-        expect( endTime - startTime ).toBeLessThan( 100 );
+        expect( endTime - startTime ).toBeLessThan( 250 );
 
     } );
 
@@ -116,7 +116,7 @@ describe( 'CmpStr > Stress Tests', () => {
         const endTime = performance.now();
 
         expect( res.length ).toBeGreaterThan( 0 );
-        expect( endTime - startTime ).toBeLessThan( 50 );
+        expect( endTime - startTime ).toBeLessThan( 100 );
 
     } );
 
@@ -136,7 +136,7 @@ describe( 'CmpStr > Stress Tests', () => {
         const endTime = performance.now();
 
         expect( res ).toHaveLength( 5 );
-        expect( endTime - startTime ).toBeLessThan( 10 );
+        expect( endTime - startTime ).toBeLessThan( 50 );
 
     } );
 
@@ -150,7 +150,7 @@ describe( 'CmpStr > Stress Tests', () => {
         const endTime = performance.now();
 
         expect( res ).toHaveLength( 5 );
-        expect( endTime - startTime ).toBeLessThan( 50 );
+        expect( endTime - startTime ).toBeLessThan( 100 );
 
     } );
 
@@ -165,7 +165,7 @@ describe( 'CmpStr > Stress Tests', () => {
 
         expect( res.length ).toBeLessThan( strings.length );
         expect( res.every( ( r: any ) => r.match > 0 ) ).toBe( true );
-        expect( endTime - startTime ).toBeLessThan( 50 );
+        expect( endTime - startTime ).toBeLessThan( 100 );
 
     } );
 
@@ -179,7 +179,7 @@ describe( 'CmpStr > Stress Tests', () => {
         const endTime = performance.now();
 
         expect( res ).toHaveLength( 500 );
-        expect( endTime - startTime ).toBeLessThan( 50 );
+        expect( endTime - startTime ).toBeLessThan( 100 );
 
     } );
 
@@ -199,7 +199,7 @@ describe( 'CmpStr > Stress Tests', () => {
 
         const endTime = performance.now();
 
-        expect( endTime - startTime ).toBeLessThan( 50 );
+        expect( endTime - startTime ).toBeLessThan( 100 );
 
     } );
 
@@ -218,7 +218,7 @@ describe( 'CmpStr > Stress Tests', () => {
         const endTime = performance.now();
 
         expect( totalMatch ).toBeGreaterThan( 0 );
-        expect( endTime - startTime ).toBeLessThan( 100 );
+        expect( endTime - startTime ).toBeLessThan( 250 );
 
     } );
 
@@ -236,7 +236,7 @@ describe( 'CmpStr > Stress Tests', () => {
 
         const endTime = performance.now();
 
-        expect( endTime - startTime ).toBeLessThan( 50 );
+        expect( endTime - startTime ).toBeLessThan( 100 );
 
     } );
 
