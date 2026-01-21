@@ -77,7 +77,7 @@ export class HammingDistance extends Metric< HammingRaw > {
 
         // Calculate the Hamming distance
         let dist = 0;
-        for ( let i = 0; i < a.length; i++ ) if ( a[ i ] !== b[ i ] ) dist++;
+        for ( let i = 0; i < m; i++ ) if ( a[ i ] !== b[ i ] ) dist++;
 
         // Return the result as a MetricCompute object
         return {
