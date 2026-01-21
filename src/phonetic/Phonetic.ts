@@ -32,7 +32,7 @@ import type {
 
 import { merge } from '../utils/DeepMerge';
 import { Registry } from '../utils/Registry';
-import { HashTable } from '../utils/HashTable';
+import { Hasher, HashTable } from '../utils/HashTable';
 import { Profiler } from '../utils/Profiler';
 
 // Get the singleton profiler instance for performance monitoring
@@ -49,8 +49,8 @@ const profiler = Profiler.getInstance();
  */
 export abstract class Phonetic {
 
-    // Cache for indexed words to avoid redundant calculations
-    private static cache: HashTable<string, string> = new HashTable ();
+    /** Cache for indexed words to avoid redundant calculations */
+    private static cache: HashTable< string, string > = new HashTable ();
 
     /**
      * Default phonetic options.
@@ -60,17 +60,18 @@ export abstract class Phonetic {
      */
     protected static default: PhoneticOptions;
 
-    // Phonetic algorithm name for identification
+    /** Phonetic algorithm name for identification */
     private readonly algo: string;
 
-    // Phonetic map and options for the algorithm
+    /** Phonetic map and options for the algorithm */
     protected readonly options: PhoneticOptions;
+    protected readonly optKey: string;
     protected readonly map: PhoneticMap;
 
     /**
      * Static method to clear the cache of indexed words.
      */
-    public static clear () : void { this.cache.clear() }
+    public static clear = () : void => this.cache.clear();
 
     /**
      * Constructor for the Phonetic class.
@@ -83,7 +84,6 @@ export abstract class Phonetic {
      * @throws {Error} - If the requested mapping is not declared
      */
     constructor ( algo: string, opt: PhoneticOptions = {} ) {
-
         // Get the phonetic default options
         const defaults = ( this.constructor as any ).default ?? {};
 
@@ -91,25 +91,23 @@ export abstract class Phonetic {
         const mapId = opt.map ?? defaults.map;
 
         // If no algorithm is specified, throw an error
-        if ( ! mapId ) throw new Error (
-            `No mapping specified for phonetic algorithm`
-        );
+        if ( ! mapId ) throw new Error ( `No mapping specified for phonetic algorithm` );
 
         // Get the mapping based on the determined map ID
         const map = PhoneticMappingRegistry.get( algo, mapId );
 
         // If the mapping is not defined, throw an error
-        if ( map === undefined ) throw new Error (
-            `Requested mapping <${mapId}> is not declared`
-        );
+        if ( map === undefined ) throw new Error ( `Requested mapping <${mapId}> is not declared` );
 
         // Set the options by merging the default options with the provided ones
         this.options = merge( merge( defaults, map.options ?? {} ), opt );
+        this.optKey = Hasher.fastFNV1a( JSON.stringify(
+            this.options, Object.keys( this.options ).sort()
+        ) ).toString();
 
         // Set the algorithm name and mapping
         this.algo = algo;
         this.map = map;
-
     }
 
     /**
@@ -123,7 +121,6 @@ export abstract class Phonetic {
      * @returns {string} - The modified word after applying all patterns
      */
     protected applyPattern ( word: string ) : string {
-
         const { patterns = [] } = this.map;
 
         // If no patterns are provided, return the input
@@ -131,16 +128,13 @@ export abstract class Phonetic {
 
         // Iterate over the patterns and replace all matches
         for ( const { pattern, replace, all = false } of patterns ) {
-
             // Search for the pattern in the word and replace it
             // Use replaceAll if 'all' is true, otherwise use replace
             word = word[ all ? 'replaceAll' : 'replace' ]( pattern, replace );
-
         }
 
         // Return the modified word after applying all patterns
         return word;
-
     }
 
     /**
@@ -154,28 +148,26 @@ export abstract class Phonetic {
      * @param {number} i - The current position within the word
      * @param {string[]} chars - The word as an array of characters
      * @param {number} charLen - The total length of the word
-     * @returns {string|undefined} - The rule code or undefined if no rule applies
+     * @returns {string | undefined} - The rule code or undefined if no rule applies
      */
     protected applyRules ( char: string, i: number, chars: string[], charLen: number ) : string | undefined {
-
         const { ruleset = [] } = this.map;
 
         // If no rules are provided, return undefined
         if ( ! ruleset || ! ruleset.length ) return undefined;
 
         // Get the surrounding characters
-        const prev: string = chars[ i - 1 ] || '', prev2: string = chars[ i - 2 ] || '';
-        const next: string = chars[ i + 1 ] || '', next2: string = chars[ i + 2 ] || '';
+        const prev = chars[ i - 1 ] || '', prev2 = chars[ i - 2 ] || '';
+        const next = chars[ i + 1 ] || '', next2 = chars[ i + 2 ] || '';
 
         // Iterate over the rules to find a matching rule for the current character
         for ( const rule of ruleset ) {
-
             // Skip if the rule does not match the current character
             if ( rule.char && rule.char !== char ) continue;
 
             // Position in the word (start, middle, end)
             if ( rule.position === 'start' && i !== 0 ) continue;
-            if ( rule.position === 'middle' && i > 0 && i < charLen ) continue;
+            if ( rule.position === 'middle' && ( i === 0 || i === charLen - 1 ) ) continue;
             if ( rule.position === 'end' && i !== charLen ) continue;
 
             // Previous character(s)
@@ -207,12 +199,10 @@ export abstract class Phonetic {
 
             // If all conditions met, return the rule code
             return rule.code;
-
         }
 
         // If no rule matched, return undefined
         return undefined;
-
     }
 
     /**
@@ -225,7 +215,6 @@ export abstract class Phonetic {
      * @returns {string} - The generated phonetic code
      */
     protected encode ( word: string ) : string {
-
         const { map = {}, ignore = [] } = this.map;
 
         // Apply patterns to the word before processing
@@ -233,23 +222,19 @@ export abstract class Phonetic {
         word = this.applyPattern( word );
 
         // Get the characters of the word and its length
-        const chars: string[] = this.word2Chars( word );
-        const charLen: number = chars.length;
-
-        let code: string = '', lastCode: string | null = null;
+        const chars = this.word2Chars( word );
+        const charLen = chars.length;
+        let code = '', lastCode: string | null = null;
 
         // Iterate over each character in the word
         for ( let i = 0; i < charLen; i++ ) {
-
-            const char: string = chars[ i ];
+            const char = chars[ i ];
 
             // Skip characters that are in the ignore list
             if ( ignore.includes( char ) ) continue;
 
             // Convert the character to its phonetic code
-            const mapped: string | undefined = this.mapChar(
-                char, i, chars, charLen, lastCode, map
-            );
+            const mapped = this.mapChar( char, i, chars, charLen, lastCode, map );
 
             // If no code is generated, skip to the next character
             if ( mapped === undefined ) continue;
@@ -259,12 +244,10 @@ export abstract class Phonetic {
 
             // If the code length exceeds the specified limit, exit early
             if ( this.exitEarly( code, i ) ) break;
-
         }
 
         // Return the adjusted phonetic code
         return this.adjustCode( code, chars );
-
     }
 
     /**
@@ -274,15 +257,14 @@ export abstract class Phonetic {
      * @param {number} i - The current position within the word
      * @param {string[]} chars - The word as an array of characters
      * @param {number} charLen - The total length of the word
-     * @param {string|null} lastCode - The last code generated (to avoid duplicates)
-     * @param {Record<string, string>} map - The phonetic mapping
-     * @returns {string|undefined} - The phonetic code or undefined if no code applies
+     * @param {string | null} lastCode - The last code generated (to avoid duplicates)
+     * @param {Record< string, string >} map - The phonetic mapping
+     * @returns {string | undefined} - The phonetic code or undefined if no code applies
      */
     protected mapChar (
         char: string, i: number, chars: string[], charLen: number,
-        lastCode: string | null, map: Record<string, string>
+        lastCode: string | null, map: Record< string, string >
     ) : string | undefined {
-
         const { dedupe = true, fallback = undefined } = this.options;
 
         // Apply phonetic rules to the character
@@ -292,7 +274,6 @@ export abstract class Phonetic {
 
         // De-duplicate the code if necessary
         return dedupe && c === lastCode ? undefined : c;
-
     }
 
     /**
@@ -302,11 +283,8 @@ export abstract class Phonetic {
      * @returns {string} - The adjusted string with fixed length
      */
     protected equalLen ( input: string ) : string {
-
         const { length = -1, pad = '0' } = this.options;
-
         return length === -1 ? input : ( input + pad.repeat( length ) ).slice( 0, length );
-
     }
 
     /**
@@ -315,7 +293,7 @@ export abstract class Phonetic {
      * @param {string} word - The input word to be converted
      * @returns {string[]} - An array of characters from the input word
      */
-    protected word2Chars ( word: string ) : string[] { return word.toLowerCase().split( '' ) }
+    protected word2Chars = ( word: string ) : string[] => word.toLowerCase().split( '' );
 
     /**
      * Determines whether to exit early based on the current phonetic code length.
@@ -325,13 +303,9 @@ export abstract class Phonetic {
      * @returns {boolean} - True if the code length exceeds the specified limit, false otherwise
      */
     protected exitEarly ( code: string, i: number ) : boolean {
-
         void [ i ];
-
         const { length = -1 } = this.options;
-
         return length > 0 && code.length >= length;
-
     }
 
     /**
@@ -341,7 +315,10 @@ export abstract class Phonetic {
      * @param {string[]} chars - Characters to be removed from the code
      * @returns {string} - The adjusted phonetic code
      */
-    protected adjustCode ( code: string, chars: string[] ) : string { void [ chars ]; return code }
+    protected adjustCode ( code: string, chars: string[] ) : string {
+        void [ chars ];
+        return code;
+    }
 
     /**
      * Processes an array of words to generate their phonetic indices.
@@ -353,36 +330,30 @@ export abstract class Phonetic {
      * @returns {string[]} - An array of phonetic indices for the input words
      */
     protected loop ( words: string[] ) : string[] {
-
         const index: string[] = [];
 
         // Loop over each word in the input array
         for ( const word of words ) {
-
             // Generate a cache key based on the algorithm and word
-            const key: string | false = Phonetic.cache.key( this.algo, [ word ] );
+            const key = Phonetic.cache.key( this.algo, [ word ] ) + this.optKey;
 
             // If the key exists in the cache, return the cached result
             // Otherwise, encode the word using the algorithm
-            const code: string = Phonetic.cache.get( key || '' ) ?? ( () => {
-
+            const code = Phonetic.cache.get( key || '' ) ?? ( () => {
                 // Get the phonetic code for the word
-                const res: string = this.encode( word );
+                const res = this.encode( word );
 
                 // If a key was generated, store the result in the cache
                 if ( key ) Phonetic.cache.set( key, res );
 
                 return res;
-
             } )();
 
             // If a code is generated, add them to the index
             if ( code && code.length ) index.push( this.equalLen( code ) );
-
         }
 
         return index;
-
     }
 
     /**
@@ -392,25 +363,33 @@ export abstract class Phonetic {
      * and ensures that the resulting codes are of equal length.
      * 
      * @param {string[]} words - An array of words to be processed
-     * @returns {Promise<string[]>} - A promise that resolves to an array of phonetic indices for the input words
+     * @returns {Promise< string[] >} - A promise that resolves to an array of phonetic indices for the input words
      */
-    protected async loopAsync ( words: string[] ) : Promise<string[]> {
-
+    protected async loopAsync ( words: string[] ) : Promise< string[] > {
         const index: string[] = [];
 
         // Loop over each word in the input array
         for ( const word of words ) {
+            // Generate a cache key based on the algorithm and word
+            const key = Phonetic.cache.key( this.algo, [ word ] ) + this.optKey;
 
-            // Get the phonetic code for the word asynchronously
-            const code: string = await Promise.resolve( this.encode( word ) );
+            // If the key exists in the cache, return the cached result
+            // Otherwise, encode the word using the algorithm
+            const code = await Promise.resolve( Phonetic.cache.get( key || '' ) ?? ( () => {
+                // Get the phonetic code for the word
+                const res = this.encode( word );
+
+                // If a key was generated, store the result in the cache
+                if ( key ) Phonetic.cache.set( key, res );
+
+                return res;
+            } )() );
 
             // If a code is generated, add them to the index
             if ( code && code.length ) index.push( this.equalLen( code ) );
-
         }
 
         return index;
-
     }
 
     /**
@@ -418,7 +397,7 @@ export abstract class Phonetic {
      * 
      * @returns {string} - The name of the algorithm
      */
-    public getAlgoName () : string { return this.algo }
+    public getAlgoName = () : string => this.algo;
 
     /**
      * Generates a phonetic index for the given input string.
@@ -427,31 +406,27 @@ export abstract class Phonetic {
      * @returns {string[]} - An array of phonetic indices for the input words
      */
     public getIndex ( input: string ) : string[] {
-
         const { delimiter = ' ' } = this.options;
 
         // Split the input string by the specified delimiter and loop over it
         return profiler.run( () => this.loop(
             input.split( delimiter ).filter( Boolean )
         ).filter( Boolean ) );
-
     }
 
     /**
      * Asynchronously generates a phonetic index for the given input string.
      * 
      * @param {string} input - The input string to be indexed
-     * @returns {Promise<string[]>} - A promise that resolves to an array of phonetic indices for the input words
+     * @returns {Promise< string[] >} - A promise that resolves to an array of phonetic indices for the input words
      */
-    public async getIndexAsync ( input: string ) : Promise<string[]> {
-
+    public async getIndexAsync ( input: string ) : Promise< string[] > {
         const { delimiter = ' ' } = this.options;
 
         // Split the input string by the specified delimiter and loop over it asynchronously
         return ( await profiler.runAsync( async () => await this.loopAsync(
             input.split( delimiter ).filter( Boolean )
         ) ) ).filter( Boolean );
-
     }
 
 }
@@ -462,7 +437,7 @@ export abstract class Phonetic {
  * This registry allows for dynamic registration and retrieval of phonetic classes,
  * enabling the use of various phonetic algorithms in a consistent manner.
  */
-export const PhoneticRegistry: RegistryService<Phonetic> = Registry( 'phonetic', Phonetic );
+export const PhoneticRegistry: RegistryService< Phonetic > = Registry( 'phonetic', Phonetic );
 
 /**
  * Type definition for the Phonetic class constructor.
@@ -481,15 +456,14 @@ export type PhoneticCls = new ( ...args: any[] ) => Phonetic;
  */
 export const PhoneticMappingRegistry: PhoneticMappingService = ( () => {
 
-    // Create a registry object to hold mappings
-    const mappings: Record<string, PhoneticMapping> = Object.create( null );
+    /** Create a registry object to hold mappings */
+    const mappings: Record< string, PhoneticMapping > = Object.create( null );
 
-    // Helper function to retrieve mappings for a specific algorithm
-    const maps = ( algo: string ) : PhoneticMapping => (
-        mappings[ algo ] ||= Object.create( null )
-    );
+    /** Helper function to retrieve mappings for a specific algorithm */
+    const maps = ( algo: string ) : PhoneticMapping => ( mappings[ algo ] ||= Object.create( null ) );
 
-    return {
+    /** Return the PhoneticMappingService implementation */
+    return Object.freeze( {
 
         /**
          * Adds a phonetic mapping for a specific algorithm and ID.
@@ -501,7 +475,6 @@ export const PhoneticMappingRegistry: PhoneticMappingService = ( () => {
          * @throws {Error} If the mapping name already exists and update is false
          */
         add ( algo: string, id: string, map: PhoneticMap, update: boolean = false ) : void {
-
             const mappings: PhoneticMapping = maps( algo );
 
             if ( ! update && id in mappings ) throw new Error (
@@ -509,7 +482,6 @@ export const PhoneticMappingRegistry: PhoneticMappingService = ( () => {
             );
 
             mappings[ id ] = map;
-
         },
 
         /**
@@ -546,6 +518,6 @@ export const PhoneticMappingRegistry: PhoneticMappingService = ( () => {
          */
         list ( algo: string ) : string[] { return Object.keys( maps( algo ) ) }
 
-    };
+    } );
 
 } )();
