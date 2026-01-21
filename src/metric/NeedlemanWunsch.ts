@@ -22,7 +22,7 @@ import { Pool } from '../utils/Pool';
 export interface NeedlemanRaw {
     score: number;
     denum: number;
-};
+}
 
 /**
  * NeedlemanWunschDistance class extends the Metric class to implement the Needleman-Wunsch algorithm.

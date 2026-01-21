@@ -24,7 +24,7 @@ import { Pool } from '../utils/Pool';
 export interface SmithWatermanRaw {
     score: number;
     denum: number;
-};
+}
 
 /**
  * SmithWatermanDistance class extends the Metric class to implement the Smith-Waterman algorithm.

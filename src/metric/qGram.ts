@@ -26,7 +26,7 @@ import { Pool } from '../utils/Pool';
 export interface QGramRaw {
     intersection: number;
     size: number;
-};
+}
 
 /**
  * QGramSimilarity class extends the Metric class to implement the q-Gram similarity algorithm.

@@ -25,7 +25,7 @@ import { Pool } from '../utils/Pool';
 export interface DamerauRaw {
     dist: number;
     maxLen: number;
-};
+}
 
 /**
  * DamerauLevenshteinDistance class extends the Metric class to implement the Damerau-Levenshtein algorithm.

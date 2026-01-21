@@ -28,7 +28,7 @@ import { Pool } from '../utils/Pool';
 export interface DiceRaw {
     intersection: number;
     size: number;
-};
+}
 
 /**
  * DiceSorensenCoefficient class extends the Metric class to implement the Dice-Sørensen coefficient.
