@@ -573,7 +573,7 @@ export interface StructuredDataResult< T = any, R = MetricRaw > {
     // The original object
     obj: T;
     // The property key that was compared
-    key: string | number | symbol;
+    key: keyof T;
     // The comparison result (CmpStrResult format)
     result: CmpStrResult;
     // Optional raw metric data
