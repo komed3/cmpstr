@@ -108,6 +108,7 @@ export class StructuredData< T = any, R = MetricRaw > {
      * 
      * @param {any} results - The raw metric results
      * @returns {IndexedResult< R >[]} - Normalized results with indices
+     * @throws {TypeError} - If results format is unsupported
      */
     private normalizeResults ( results: CmpFnResult< R > ) : IndexedResult< R >[] {
         if ( ! Array.isArray( results ) || results.length === 0 ) return [];
