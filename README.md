@@ -10,6 +10,8 @@
 [![Static Badge](https://img.shields.io/badge/ESM_%26_CJS-TypeScript?style=for-the-badge\&logo=nodedotjs\&logoColor=fff\&color=purple)](https://github.com/komed3/cmpstr/wiki/Installation-&-Setup#import-in-your-project)
 [![Static Badge](https://img.shields.io/badge/UMD_%26_ESM-JavaScript?style=for-the-badge\&logo=javascript\&logoColor=fff\&color=orange)](https://github.com/komed3/cmpstr/wiki/Installation-&-Setup#browser)
 
+[![ko-fi](https://ko-fi.com/img/githubbutton_sm.svg)](https://ko-fi.com/W7W21SQV2Q)
+
 **CmpStr** is a modern TypeScript library for advanced string comparison, similarity measurement, phonetic indexing, and text analysis. It provides a comprehensive collection of established algorithms such as Levenshtein, Dice–Sørensen, Jaro-Winkler, LCS, q-Gram, and more.
 
 The library is dependency-free, fully typed, and designed with extensibility in mind. Custom metrics, phonetic mappings, normalization filters, and processing pipelines can be integrated without modifying the core. CmpStr offers a unified, consistent API for single comparisons, batch processing, and pairwise matching across synchronous and asynchronous workflows.

@@ -61,6 +61,10 @@
   "bugs": {
     "url": "https://github.com/komed3/cmpstr/issues"
   },
+  "funding": {
+    "type": "ko-fi",
+    "url": "https://ko-fi.com/komed3"
+  },
   "files": [
     "dist",
     "README.md",
