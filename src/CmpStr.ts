@@ -114,10 +114,11 @@ export class CmpStr< R = MetricRaw > {
     public static readonly profiler = profiler.services;
 
     /**
-     * Clears the caches for normalizer, metric, and phonetic modules.
+     * Clears the caches for normalizer, filter pipelines, metric, and phonetic modules.
      */
     public static readonly clearCache = {
         normalizer: Normalizer.clear,
+        filter: Filter.clearPipeline,
         metric: Metric.clear,
         phonetic: Phonetic.clear
     };
