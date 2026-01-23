@@ -184,8 +184,17 @@ export class Filter {
      * @param {string} [hook] - Optional name of the hook to clear filters for
      */
     public static clear ( hook?: string ) : void {
+        Filter.pipeline.clear();
         if ( hook ) Filter.filters.delete( hook );
         else Filter.filters.clear();
+    }
+
+    /**
+     * Clears the entire filter pipeline cache.
+     * This forces recompilation of all pipelines on next application.
+     */
+    public static clearPipeline () : void {
+        Filter.pipeline.clear();
     }
 
 }
