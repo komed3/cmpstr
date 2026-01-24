@@ -114,6 +114,11 @@ export type NormalizerFn = ( input: string ) => string;
 export type NormalizeFlags = string;
 
 /**
+ * FilterHooks enumerates the supported filter hook names.
+ */
+export type FilterHooks = 'input';
+
+/**
  * FilterFn defines the signature for a filter function.
  * It takes a string and returns the filtered string.
  */
