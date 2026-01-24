@@ -115,8 +115,9 @@ export type NormalizeFlags = string;
 
 /**
  * FilterHooks enumerates the supported filter hook names.
+ * Allows for custom string keys as well.
  */
-export type FilterHooks = 'input';
+export type FilterHooks = 'input' | ( string & {} );
 
 /**
  * FilterFn defines the signature for a filter function.
