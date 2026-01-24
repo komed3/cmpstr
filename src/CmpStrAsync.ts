@@ -23,9 +23,9 @@
 'use strict';
 
 import type {
-    BatchResultLike, CmpStrOptions, CmpStrProcessors, CmpStrResult, MetricInput, MetricMode,
-    MetricRaw, MetricResult, MetricResultBatch, MetricResultSingle, NormalizeFlags, PhoneticOptions,
-    ResultLike, StructuredDataOptions, StructuredResultLike
+    BatchResultLike, CmpStrOptions, CmpStrProcessors, CmpStrResult, FilterHooks, MetricInput,
+    MetricMode, MetricRaw, MetricResult, MetricResultBatch, MetricResultSingle, NormalizeFlags,
+    PhoneticOptions, ResultLike, StructuredDataOptions, StructuredResultLike
 } from './utils/Types';
 
 import { Filter } from './utils/Filter';
@@ -95,10 +95,10 @@ export class CmpStrAsync< R = MetricRaw > extends CmpStr< R > {
      * Asynchronously applies all active filters to the input string or array.
      * 
      * @param {MetricInput} input - The input string or array
-     * @param {string} [hook='input'] - The filter hook
+     * @param {FilterHooks} [hook='input'] - The filter hook
      * @returns {Promise< MetricInput >} - The filtered string(s)
      */
-    protected async filterAsync ( input: MetricInput, hook: string ) : Promise< MetricInput > {
+    protected async filterAsync ( input: MetricInput, hook: FilterHooks ) : Promise< MetricInput > {
         return Filter.applyAsync( hook, input as string );
     }
 

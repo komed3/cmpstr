@@ -24,9 +24,9 @@
 'use strict';
 
 import type {
-    BatchResultLike, CmpStrOptions, CmpStrProcessors, CmpStrResult, DiffOptions, MetricInput,
-    MetricMode, MetricRaw, MetricResult, MetricResultBatch, MetricResultSingle, NormalizeFlags,
-    PhoneticOptions, ResultLike, StructuredDataOptions, StructuredResultLike
+    BatchResultLike, CmpStrOptions, CmpStrProcessors, CmpStrResult, DiffOptions, FilterHooks,
+    MetricInput, MetricMode, MetricRaw, MetricResult, MetricResultBatch, MetricResultSingle,
+    NormalizeFlags, PhoneticOptions, ResultLike, StructuredDataOptions, StructuredResultLike
 } from './utils/Types';
 
 import * as DeepMerge from './utils/DeepMerge';
@@ -241,11 +241,11 @@ export class CmpStr< R = MetricRaw > {
      * Applies all active filters to the input string or array.
      * 
      * @param {MetricInput} input - The input string or array
-     * @param {string} [hook='input'] - The filter hook
+     * @param {FilterHooks} [hook] - The filter hook
      * @returns {MetricInput} - The filtered string(s)
      */
-    protected filter ( input: MetricInput, hook: string ) : MetricInput {
-        return Filter.apply( hook, input as string );
+    protected filter ( input: MetricInput, hook: FilterHooks ) : MetricInput {
+        return Filter.apply( hook, input );
     }
 
     /**
