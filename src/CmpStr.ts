@@ -16,7 +16,8 @@
  *  - Text analysis and unified diff utilities
  *  - Full TypeScript type safety and extensibility
  * 
- * @module CmpStr
+ * @module Main
+ * @name CmpStr
  * @author Paul Köhler (komed3)
  * @license MIT
  */

@@ -24,6 +24,7 @@
  * pooling system to manage resources effectively, ensuring minimal overhead
  * and maximum performance.
  *
+ * @module Metric
  * @author Paul Köhler (komed3)
  * @license MIT
  */

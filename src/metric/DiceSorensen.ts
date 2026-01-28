@@ -14,7 +14,8 @@
  * the coefficient based on these bigrams. It handles edge cases, such as empty
  * strings and identical strings, to ensure accurate results.
  * 
- * @module Metric/DiceSorensenCoefficient
+ * @module Metric
+ * @name DiceSorensenCoefficient
  * @author Paul Köhler (komed3)
  * @license MIT
  */

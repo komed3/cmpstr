@@ -15,7 +15,8 @@
  * The key() method supports any number of string arguments, enabling flexible cache keys
  * for different use cases (e.g. normalization, metrics, etc.).
  * 
- * @module Utils/HashTable
+ * @module Utils
+ * @name HashTable
  * @author Paul Köhler (komed3)
  * @license MIT
  */

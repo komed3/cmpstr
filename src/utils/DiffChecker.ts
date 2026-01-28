@@ -20,7 +20,8 @@
  *  - Change magnitude calculation (relative to group or line)
  *  - Expand-all mode for full file context
  * 
- * @module Utils/DiffChecker
+ * @module Utils
+ * @name DiffChecker
  * @author Paul Köhler (komed3)
  * @license MIT
  */

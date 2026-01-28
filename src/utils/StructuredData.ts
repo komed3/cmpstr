@@ -13,7 +13,8 @@
  *  - Integration with CmpStr comparison methods
  *  - Optional "objects-only" output mode for minimal result structure
  * 
- * @module Utils/StructuredData
+ * @module Utils
+ * @name StructuredData
  * @author Paul Köhler (komed3)
  * @license MIT
  */

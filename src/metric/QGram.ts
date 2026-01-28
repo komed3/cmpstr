@@ -12,7 +12,8 @@
  * This metric is widely used in approximate string matching, information retrieval,
  * and computational linguistics.
  * 
- * @module Metric/QGramSimilarity
+ * @module Metric
+ * @name QGramSimilarity
  * @author Paul Köhler (komed3)
  * @license MIT
  */

@@ -21,6 +21,7 @@
  * implement the `compute` method to define the specific metric computation logic.
  * 
  * @module Metric
+ * @name Metric
  * @author Paul Köhler (komed3)
  * @license MIT
  */

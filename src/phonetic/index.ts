@@ -21,6 +21,7 @@
  *  - Consistent interface for accessing, listing, and managing phonetic algorithms
  *  - Ensures that all phonetic algorithms are available for use in the CmpStr API
  * 
+ * @module Phonetic
  * @author Paul Köhler (komed3)
  * @license MIT
  */

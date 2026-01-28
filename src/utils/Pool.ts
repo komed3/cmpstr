@@ -12,7 +12,8 @@
  * It supports different types of buffers (Int32Array, number[], string[], Set, Map)
  * and allows for acquiring buffers of specific sizes while managing a max pool size.
  * 
- * @module Utils/Pool
+ * @module Utils
+ * @name Pool
  * @author Paul Köhler (komed3)
  * @license MIT
  */

@@ -8,7 +8,8 @@
  * It is designed to manage class extensions, ensuring that all registered
  * classes extend a specified base constructor.
  * 
- * @module Utils/Registry
+ * @module Utils
+ * @name Registry
  * @author Paul Köhler (komed3)
  * @license MIT
  */

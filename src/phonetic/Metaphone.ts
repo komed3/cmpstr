@@ -14,7 +14,8 @@
  * transform input words into their Metaphone code. The algorithm drops or transforms
  * letters according to context-sensitive rules, and only retains vowels at the start.
  * 
- * @module Phonetic/Metaphone
+ * @module Phonetic
+ * @name Metaphone
  * @author Paul Köhler (komed3)
  * @license MIT
  */

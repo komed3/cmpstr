@@ -9,7 +9,8 @@
  * All interfaces are designed for extensibility and clarity, supporting both internal
  * implementation and external usage in user code.
  * 
- * @module Utils/Types
+ * @module Utils
+ * @name Types
  * @author Paul Köhler (komed3)
  * @license MIT
  */

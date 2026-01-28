@@ -9,7 +9,8 @@
  * efficiency and flexibility, it is suitable for linguistic research, readability
  * scoring, and text preprocessing tasks.
  * 
- * @module Utils/TextAnalyzer
+ * @module Utils
+ * @name TextAnalyzer
  * @author Paul Köhler (komed3)
  * @license MIT
  */

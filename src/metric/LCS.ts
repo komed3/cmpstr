@@ -11,7 +11,8 @@
  * The LCS is widely used in diff tools, bioinformatics, and approximate string
  * matching.
  * 
- * @module Metric/LCS
+ * @module Metric
+ * @name LCS
  * @author Paul Köhler (komed3)
  * @license MIT
  */

@@ -10,7 +10,8 @@
  * tokens, or n-grams. The result is a value between 0 and 1, where 1 means the
  * sets are identical and 0 means they have no elements in common.
  * 
- * @module Metric/JaccardIndex
+ * @module Metric
+ * @name JaccardIndex
  * @author Paul Köhler (komed3)
  * @license MIT
  */

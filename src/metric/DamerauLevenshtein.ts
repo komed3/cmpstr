@@ -11,7 +11,8 @@
  * This metric is particularly useful for detecting and correcting common
  * typographical errors.
  * 
- * @module Metric/DamerauLevenshtein
+ * @module Metric
+ * @name DamerauLevenshtein
  * @author Paul Köhler (komed3)
  * @license MIT
  */

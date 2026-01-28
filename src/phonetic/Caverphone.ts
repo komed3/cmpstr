@@ -12,7 +12,8 @@
  * It converts words into a standardized phonetic code, allowing for variations
  * in spelling and pronunciation to be matched.
  * 
- * @module Phonetic/Caverphone
+ * @module Phonetic
+ * @name Caverphone
  * @author Paul Köhler (komed3)
  * @license MIT
  */

@@ -9,7 +9,8 @@
  * for short strings and typographical errors, and is widely used in record linkage
  * and duplicate detection.
  * 
- * @module Metric/JaroWinkler
+ * @module Metric
+ * @name JaroWinkler
  * @author Paul Köhler (komed3)
  * @license MIT
  */

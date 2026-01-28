@@ -12,7 +12,8 @@
  * The class is optimized for minimal overhead and can be used for fine-grained
  * performance profiling.
  * 
- * @module Utils/Profiler
+ * @module Utils
+ * @name Profiler
  * @author Paul Köhler (komed3)
  * @license MIT
  */

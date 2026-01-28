@@ -11,7 +11,8 @@
  * It is widely used in approximate string matching, spell checking, and natural
  * language processing.
  * 
- * @module Metric/LevenshteinDistance
+ * @module Metric
+ * @name LevenshteinDistance
  * @author Paul Köhler (komed3)
  * @license MIT
  */

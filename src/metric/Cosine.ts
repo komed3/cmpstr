@@ -12,7 +12,8 @@
  * The result is a value between 0 and 1, where 1 means the vectors are identical and 0
  * means they are orthogonal (no similarity).
  * 
- * @module Metric/CosineSimilarity
+ * @module Metric
+ * @name CosineSimilarity
  * @author Paul Köhler (komed3)
  * @license MIT
  */

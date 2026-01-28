@@ -18,7 +18,8 @@
  * consonants. It outputs an array of strings that represents the phonetic code
  * of the input, typically limited to the length of four characters.
  * 
- * @module Phonetic/Soundex
+ * @module Phonetic
+ * @name Soundex
  * @author Paul Köhler (komed3)
  * @license MIT
  */

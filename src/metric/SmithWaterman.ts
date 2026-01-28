@@ -10,7 +10,8 @@
  * algorithm compares segments of all possible lengths and optimizes the similarity
  * measure.
  * 
- * @module Metric/SmithWatermanDistance
+ * @module Metric
+ * @name SmithWatermanDistance
  * @author Paul Köhler (komed3)
  * @license MIT
  */

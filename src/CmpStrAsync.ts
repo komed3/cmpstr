@@ -15,7 +15,8 @@
  *  - Full compatibility with the synchronous CmpStr API
  *  - Designed for large-scale, high-performance, and server-side applications
  *
- * @module CmpStrAsync
+ * @module Main
+ * @name CmpStrAsync
  * @author Paul Köhler (komed3)
  * @license MIT
  */

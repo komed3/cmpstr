@@ -22,7 +22,8 @@
  *  'n' :: Remove non-number characters
  *  'i' :: Case insensitive (convert to lowercase)
  * 
- * @module Utils/Normalizer
+ * @module Utils
+ * @name Normalizer
  * @author Paul Köhler (komed3)
  * @license MIT
  */

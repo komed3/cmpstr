@@ -14,7 +14,8 @@
  *  - `has`:   Check whether a path exists
  *  - `rmv`:   Delete a value at a path
  * 
- * @module Utils/DeepMerge
+ * @module Utils
+ * @name DeepMerge
  * @author Paul Köhler
  * @license MIT
  */

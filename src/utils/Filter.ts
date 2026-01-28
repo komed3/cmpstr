@@ -7,7 +7,8 @@
  * applied to input strings. Each filter has an id, a function, a priority, and options
  * for activation and overrideability.
  * 
- * @module Utils/Filter
+ * @module Utils
+ * @name Filter
  * @author Paul Köhler (komed3)
  * @license MIT
  */

@@ -8,7 +8,8 @@
  * entirely, including gaps. It is commonly used in bioinformatics for sequence
  * alignment.
  * 
- * @module Metric/NeedlemanWunsch
+ * @module Metric
+ * @name NeedlemanWunsch
  * @author Paul Köhler (komed3)
  * @license MIT
  */

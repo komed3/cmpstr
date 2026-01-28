@@ -19,6 +19,7 @@
  * phonetic algorithms by extending the abstract class.
  * 
  * @module Phonetic
+ * @name Phonetic
  * @author Paul Köhler (komed3)
  * @license MIT
  */

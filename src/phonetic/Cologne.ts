@@ -17,7 +17,8 @@
  * The Cologne phonetic algorithm works by mapping letters to digits, ignoring
  * certain letters, and applying specific rules to handle character combinations.
  * 
- * @module Phonetic/Cologne
+ * @module Phonetic
+ * @name Cologne
  * @author Paul Köhler (komed3)
  * @license MIT
  */
