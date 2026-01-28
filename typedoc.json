@@ -1,0 +1,33 @@
+{
+  "$schema": "https://typedoc.org/schema.json",
+  "entryPoints": [ "./src/*" ],
+  "entryPointStrategy": "expand",
+  "out": "docs",
+  "githubPages": true,
+  "searchInComments": true,
+  "searchInDocuments": true,
+  "includeVersion": true,
+  "includeHierarchySummary": true,
+  "excludePrivate": false,
+  "excludeProtected": false,
+  "excludeInternal": false,
+  "excludeExternals": true,
+  "name": "CmpStr",
+  "customFooterHtml": "<b>CmpStr v3.2</b> — Copyright © 2023–2026 Paul Köhler (komed3) <br /> Distributed under the MIT license.",
+  "hideGenerator": true,
+  "favicon": "favicon.ico",
+  "headings": {
+    "readme": false,
+    "document": false
+  },
+  "navigationLinks": {
+    "GitHub": "https://github.com/komed3/cmpstr",
+    "npm": "https://npmjs.com/cmpstr",
+    "jsDelivr": "https://jsdelivr.com/package/npm/cmpstr",
+    "Docs": "https://github.com/komed3/cmpstr/wiki",
+    "Support": "https://ko-fi.com/komed3",
+    "Example": "https://onecompiler.com/nodejs/43qr6trny"
+  },
+  "plugin": [ "typedoc-github-theme" ],
+  "theme": "typedoc-github-theme"
+}
