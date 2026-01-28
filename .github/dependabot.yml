@@ -48,3 +48,13 @@ updates:
           - "patch"
         patterns:
           - "vitest"
+
+      typedoc:
+        applies-to: version-updates
+        dependency-type: development
+        update-types:
+          - "minor"
+          - "patch"
+        patterns:
+          - "typedoc"
+          - "typedoc*"
