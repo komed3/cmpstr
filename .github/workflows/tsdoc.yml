@@ -1,0 +1,57 @@
+# ================================================================================
+#
+# Workflow: Deploy TypeDoc Documentation to GitHub Pages
+#
+# This GitHub Actions workflow will build the TypeDoc documentation for the CmpStr
+# project and deploy it to GitHub Pages whenever a new release is published.
+#
+# Typedoc will use the configuration defined in `typedoc.json`.
+#
+# ================================================================================
+
+name: Typedoc
+
+on:
+  release:
+    types: [ published ]
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+jobs:
+  deploy:
+    name: Typedoc Deployment
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v6
+
+      - name: Use Node.js 24.x
+        uses: actions/setup-node@v6
+        with:
+          node-version: 24
+          cache: npm
+
+      - name: Install Dependencies
+        run: npm ci
+
+      - name: Build Typedoc
+        run: npm run docs
+
+      - name: Setup Pages
+        uses: actions/configure-pages@v5
+
+      - name: Upload Artifact
+        uses: actions/upload-pages-artifact@v4
+        with:
+          path: docs
+
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
