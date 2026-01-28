@@ -80,6 +80,8 @@ CmpStr can also be used directly from the command line via **[cmpstr-cli](https:
 
 Comprehensive documentation, API references, and advanced usage examples are available in the [GitHub Wiki](https://github.com/komed3/cmpstr/wiki).
 
+Check out the [technical documentation](https://komed3.github.io/cmpstr) created with TypeDoc, which exposes all classes, methods and types.
+
 ## License
 
 MIT License © 2023–2026 Paul Köhler (komed3)
