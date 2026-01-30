@@ -1,6 +1,6 @@
 /**
  * Profiler Utility
- * src/utils/profiler.ts
+ * src/utils/Profiler.ts
  * 
  * @see https://en.wikipedia.org/wiki/Profiling_(computer_programming)
  * 
