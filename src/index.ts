@@ -7,7 +7,7 @@
  * filtering, and text analysis. It is designed for both high-level application development
  * and research, offering a unified API for single, batch, and pairwise operations.
  * 
- * Version: 3.2.0
+ * Version: 3.2.1
  * Author: Paul Köhler (komed3)
  * License: MIT
  * 
@@ -41,7 +41,7 @@
  * For asynchronous workloads, use `CmpStrAsync`, which provides the same API with
  * Promise-based, non-blocking methods for large-scale or I/O-bound operations.
  * 
- * @version 3.2.0
+ * @version 3.2.1
  * @author Paul Köhler (komed3)
  * @license MIT
  */
