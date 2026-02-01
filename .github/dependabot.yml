@@ -48,6 +48,7 @@ updates:
           - "patch"
         patterns:
           - "vitest"
+          - "package-verify"
 
       typedoc:
         applies-to: version-updates
