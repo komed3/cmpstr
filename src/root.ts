@@ -40,6 +40,7 @@ export { Phonetic, PhoneticCls, PhoneticMappingRegistry, PhoneticRegistry } from
 
 // Export additional utilities and components
 export * as DeepMerge from './utils/DeepMerge';
+export * as CmpStrError from './utils/Errors';
 export { Filter } from './utils/Filter';
 export { Hasher, HashTable } from './utils/HashTable';
 export { Pool } from './utils/Pool';
