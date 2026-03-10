@@ -331,7 +331,7 @@ export class CmpStr< R = MetricRaw > {
      * @param {boolean} [raw=false] - Whether to return raw results
      * @param {boolean} [skip=false] - Whether to skip normalization and filtering
      * @returns {T} - The computed metric result
-     * @throws {CmpStrValidationError} - If the inputs are invalid for the specified metric
+     * @throws {CmpStrInternalError} - If the computation fails due to internal errors
      */
     protected compute< T extends MetricResult< R > | CmpStrResult | CmpStrResult[] > (
         a: MetricInput, b: MetricInput, opt?: CmpStrOptions,
