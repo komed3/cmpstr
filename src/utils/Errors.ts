@@ -102,3 +102,39 @@ export class CmpStrError extends Error {
     }
 
 }
+
+/**
+ * Error thrown when user input (options, arguments) is invalid.
+ */
+export class CmpStrValidationError extends CmpStrError {
+    constructor ( message: string, meta?: CmpStrErrorMeta, cause?: unknown ) {
+        super( 'E_VALIDATION', message, meta, cause );
+    }
+}
+
+/**
+ * Error thrown when a requested resource is missing or not found.
+ */
+export class CmpStrNotFoundError extends CmpStrError {
+    constructor ( message: string, meta?: CmpStrErrorMeta, cause?: unknown ) {
+        super( 'E_NOT_FOUND', message, meta, cause );
+    }
+}
+
+/**
+ * Error thrown for incorrect usage or invalid state (assertions).
+ */
+export class CmpStrUsageError extends CmpStrError {
+    constructor ( message: string, meta?: CmpStrErrorMeta, cause?: unknown ) {
+        super( 'E_USAGE', message, meta, cause );
+    }
+}
+
+/**
+ * Error thrown for internal failures that should not happen under normal usage.
+ */
+export class CmpStrInternalError extends CmpStrError {
+    constructor ( message: string, meta?: CmpStrErrorMeta, cause?: unknown ) {
+        super( 'E_INTERNAL', message, meta, cause );
+    }
+}
