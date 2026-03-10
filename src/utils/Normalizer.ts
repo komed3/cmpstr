@@ -78,7 +78,7 @@ export class Normalizer {
      * 
      * @param {NormalizeFlags} flags - A string of characters representing the normalization steps
      * @returns {NormalizerFn} - A function that normalizes a string based on the provided flags
-     * @throws {CmpStrInternalError} Throws an error if the pipeline creation fails
+     * @throws {CmpStrInternalError} - Throws an error if the pipeline creation fails
      */
     private static getPipeline ( flags: NormalizeFlags ) : NormalizerFn {
         return ErrorUtil.wrap< NormalizerFn >( () => {
@@ -117,7 +117,7 @@ export class Normalizer {
      * @param {string | string[]} input - The string or array of strings to normalize
      * @param {NormalizeFlags} flags - A string of characters representing the normalization steps
      * @returns {string | string[]} - The normalized string(s)
-     * @throws {CmpStrInternalError} Throws an error if the normalization process fails
+     * @throws {CmpStrInternalError} - Throws an error if the normalization process fails
      */
     static normalize ( input: string | string[], flags: NormalizeFlags ) : string | string[] {
         return ErrorUtil.wrap< string | string[] >( () => {
@@ -153,7 +153,7 @@ export class Normalizer {
      * @param {string | string[]} input - The string or array of strings to normalize
      * @param {NormalizeFlags} flags - A string of characters representing the normalization steps
      * @returns {Promise< string | string[] >} - A promise that resolves to the normalized string(s)
-     * @throws {CmpStrInternalError} Throws an error if the normalization process fails
+     * @throws {CmpStrInternalError} - Throws an error if the normalization process fails
      */
     static async normalizeAsync ( input: string | string[], flags: NormalizeFlags ) : Promise< string | string[] > {
         return await ErrorUtil.wrapAsync< string | string[] >( async () => {

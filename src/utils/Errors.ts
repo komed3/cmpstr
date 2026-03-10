@@ -155,7 +155,7 @@ export class ErrorUtil {
      * @param {boolean} condition - The condition to assert
      * @param {string} message - The error message to throw if the condition is false
      * @param {CmpStrErrorMeta} [meta] - Optional structured metadata for the error
-     * @throws {CmpStrUsageError} If the condition is false
+     * @throws {CmpStrUsageError} - If the condition is false
      */
     public static assert ( condition: boolean, message: string, meta?: CmpStrErrorMeta ) : asserts condition {
         if ( ! condition ) throw new CmpStrUsageError ( message, meta );
@@ -167,7 +167,7 @@ export class ErrorUtil {
      * @param {unknown} err - The error to wrap
      * @param {string} message - The error message to use for the wrapped error
      * @param {CmpStrErrorMeta} [meta] - Optional structured metadata for the error
-     * @throws {CmpStrInternalError} Always throws a new `CmpStrInternalError` wrapping the original error
+     * @throws {CmpStrInternalError} - Always throws a new `CmpStrInternalError` wrapping the original error
      */
     public static create ( err: unknown, message: string, meta?: CmpStrErrorMeta ) : never {
         if ( err instanceof CmpStrError ) throw err;
@@ -178,7 +178,7 @@ export class ErrorUtil {
      * Format any error into a readable string.
      * 
      * @param {unknown} err - The error to format
-     * @returns {string} A formatted string representation of the error
+     * @returns {string} - A formatted string representation of the error
      */
     public static format ( err: unknown ) : string {
         if ( err instanceof CmpStrError ) return err.toString();
@@ -196,7 +196,7 @@ export class ErrorUtil {
      * @param {string} message - The error message to use if an exception is thrown
      * @param {CmpStrErrorMeta} [meta] - Optional structured metadata for the error
      * @return {T} The result of the function if it executes successfully
-     * @throws {CmpStrInternalError} If the function throws an error, it will be wrapped and re-thrown as a `CmpStrInternalError`
+     * @throws {CmpStrInternalError} - If the function throws an error, it will be wrapped and re-thrown as a `CmpStrInternalError`
      */
     public static wrap< T > ( fn: () => T, message: string, meta?: CmpStrErrorMeta ) : T {
         try { return fn() }
@@ -210,7 +210,7 @@ export class ErrorUtil {
      * @param {string} message - The error message to use if an exception is thrown
      * @param {CmpStrErrorMeta} [meta] - Optional structured metadata for the error
      * @return {Promise<T>} A promise that resolves to the result of the function if it executes successfully
-     * @throws {CmpStrInternalError} If the function throws an error, it will be wrapped and re-thrown as a `CmpStrInternalError`
+     * @throws {CmpStrInternalError} - If the function throws an error, it will be wrapped and re-thrown as a `CmpStrInternalError`
      */
     public static async wrapAsync< T > ( fn: () => Promise< T >, message: string, meta?: CmpStrErrorMeta ) : Promise< T > {
         try { return await fn() }

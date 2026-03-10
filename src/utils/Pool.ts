@@ -53,7 +53,7 @@ class RingPool< T > {
      * @param {number} minSize - The minimum size of the buffer to acquire
      * @param {boolean} allowOversize - Whether to allow buffers larger than minSize
      * @return {PoolBuffer< T > | null} - The acquired buffer or null if no suitable buffer is found
-     * @throws {CmpStrUsageError} Throws an error if the acquisition process fails
+     * @throws {CmpStrUsageError} - Throws an error if the acquisition process fails
      */
     public acquire ( minSize: number, allowOversize: boolean ) : PoolBuffer< T > | null {
         return ErrorUtil.wrap< PoolBuffer< T > | null >( () => {
@@ -80,7 +80,7 @@ class RingPool< T > {
      * If the pool is full, it replaces the oldest buffer with the new one.
      * 
      * @param {PoolBuffer< T >} item - The buffer to release back to the pool
-     * @throws {CmpStrUsageError} Throws an error if the release process fails
+     * @throws {CmpStrUsageError} - Throws an error if the release process fails
      */
     public release ( item: PoolBuffer< T > ) : void {
         ErrorUtil.wrap< void >( () => {
@@ -152,7 +152,7 @@ export class Pool {
      * @param {PoolType} type - The type of buffer to acquire (e.g., 'int32', 'number[]', 'map')
      * @param {number} size - The size of the buffer to acquire
      * @return {T} - The acquired buffer of the specified type
-     * @throws {CmpStrUsageError} Throws an error if the pool type is unsupported
+     * @throws {CmpStrUsageError} - Throws an error if the pool type is unsupported
      */
     public static acquire< T = any > ( type: PoolType, size: number ) : T {
         const CONFIG = this.CONFIG[ type ];
@@ -192,7 +192,7 @@ export class Pool {
      * @param {PoolType} type - The type of buffer to release
      * @param {T} buffer - The buffer to release
      * @param {number} size - The size of the buffer
-     * @throws {CmpStrUsageError} Throws an error if the pool type is unsupported
+     * @throws {CmpStrUsageError} - Throws an error if the pool type is unsupported
      */
     public static release< T = any > ( type: PoolType, buffer: T, size: number ) : void {
         const CONFIG = this.CONFIG[ type ];

@@ -111,7 +111,7 @@ export class StructuredData< T = any, R = MetricRaw > {
      * 
      * @param {any} results - The raw metric results
      * @returns {IndexedResult< R >[]} - Normalized results with indices
-     * @throws {CmpStrValidationError} If the results format is unsupported
+     * @throws {CmpStrValidationError} - If the results format is unsupported
      */
     private normalizeResults ( results: CmpFnResult< R > ) : IndexedResult< R >[] {
         if ( ! Array.isArray( results ) || results.length === 0 ) return [];
@@ -245,7 +245,7 @@ export class StructuredData< T = any, R = MetricRaw > {
      * @param {string[]} extractedStrings - The extracted strings for index mapping
      * @param {StructuredDataOptions} [opt] - Additional options
      * @returns {StructuredDataBatchResult< T, R > | T[]} - The lookup results
-     * @throws {CmpStrUsageError} If the lookup process fails
+     * @throws {CmpStrUsageError} - If the lookup process fails
      */
     private performLookup(
         fn: () => CmpFnResult< R >, extractedStrings: string[], opt?: StructuredDataOptions
@@ -263,7 +263,7 @@ export class StructuredData< T = any, R = MetricRaw > {
      * @param {string[]} extractedStrings - The extracted strings for index mapping
      * @param {StructuredDataOptions} [opt] - Additional options
      * @returns {Promise< StructuredDataBatchResult< T, R > | T[] >} - The async lookup results
-     * @throws {CmpStrUsageError} If the async lookup process fails
+     * @throws {CmpStrUsageError} - If the async lookup process fails
      */
     private async performLookupAsync (
         fn: () => Promise< CmpFnResult< R > >, extractedStrings: string[], opt?: StructuredDataOptions

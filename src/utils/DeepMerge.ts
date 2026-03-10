@@ -97,7 +97,7 @@ export function has< T extends Record< string, any > > ( t: T, path: string ) : 
  * @param {string} path - The path string, e.g. `a.b.c`
  * @param {any} value - The value to set at the specified path
  * @returns {T} - The modified object with the value set at the specified path
- * @throws {CmpStrUsageError} If the path is invalid or if a non-object value is encountered along the path
+ * @throws {CmpStrUsageError} - If the path is invalid or if a non-object value is encountered along the path
  */
 export function set< T extends Record< string, any > > ( t: T, path: string, value: any ) : T {
     if ( path === '' ) return value as T;

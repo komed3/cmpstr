@@ -84,7 +84,7 @@ export abstract class Phonetic {
      * 
      * @param {string} algo - The name of the algorithm (e.g. 'soundex')
      * @param {PhoneticOptions} [opt] - Options for the phonetic algorithm
-     * @throws {CmpStrNotFoundError} If no mapping is specified or if the requested mapping is not declared
+     * @throws {CmpStrNotFoundError} - If no mapping is specified or if the requested mapping is not declared
      */
     constructor ( algo: string, opt: PhoneticOptions = {} ) {
         // Get the phonetic default options
@@ -331,7 +331,7 @@ export abstract class Phonetic {
      * 
      * @param {string[]} words - An array of words to be processed
      * @returns {string[]} - An array of phonetic indices for the input words
-     * @throws {CmpStrInternalError} If the phonetic index generation fails
+     * @throws {CmpStrInternalError} - If the phonetic index generation fails
      */
     protected loop ( words: string[] ) : string[] {
         return ErrorUtil.wrap< string[] >( () => {
@@ -370,7 +370,7 @@ export abstract class Phonetic {
      * 
      * @param {string[]} words - An array of words to be processed
      * @returns {Promise< string[] >} - A promise that resolves to an array of phonetic indices for the input words
-     * @throws {CmpStrInternalError} If the asynchronous phonetic index generation fails
+     * @throws {CmpStrInternalError} - If the asynchronous phonetic index generation fails
      */
     protected async loopAsync ( words: string[] ) : Promise< string[] > {
         return ErrorUtil.wrapAsync< string[] >( async () => {
@@ -481,7 +481,7 @@ export const PhoneticMappingRegistry: PhoneticMappingService = ( () => {
          * @param {string} id - The unique identifier for the mapping
          * @param {PhoneticMap} map - The phonetic map to be added, containing rules and mappings
          * @param {boolean} [update=false] - Whether to allow overwriting an existing entry
-         * @throws {CmpStrUsageError} If the entry already exists and update is not allowed
+         * @throws {CmpStrUsageError} - If the entry already exists and update is not allowed
          */
         add ( algo: string, id: string, map: PhoneticMap, update: boolean = false ) : void {
             const mappings: PhoneticMapping = maps( algo );

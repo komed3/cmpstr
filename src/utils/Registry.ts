@@ -43,7 +43,7 @@ export const factory: Record< string, ( cls: string, ...args: any[] ) => Instanc
  * @param {string} reg - The name of the registry
  * @param {RegistryConstructor< T >} ctor - The base constructor that all registered classes must extend
  * @returns {RegistryService< T >} - An object with methods to register, remove, check, get, and list classes
- * @throws {Error} If the registry already exists (overwriting is forbidden)
+ * @throws {Error} - If the registry already exists (overwriting is forbidden)
  */
 export function Registry< T > ( reg: string, ctor: RegistryConstructor< T > ) : RegistryService< T > {
 
@@ -62,7 +62,7 @@ export function Registry< T > ( reg: string, ctor: RegistryConstructor< T > ) : 
          * @param {string} name - The name of the class to register
          * @param {RegistryConstructor<T>} cls - The class constructor
          * @param {boolean} [update=false] - Whether to allow overwriting an existing entry
-         * @throws {CmpStrUsageError} If the class name is invalid, if the class does not extend the base constructor,
+         * @throws {CmpStrUsageError} - If the class name is invalid, if the class does not extend the base constructor,
          *                            or if the class already exists and update is false
          */
         add ( name: string, cls: RegistryConstructor< T >, update: boolean = false ) : void {
@@ -101,7 +101,7 @@ export function Registry< T > ( reg: string, ctor: RegistryConstructor< T > ) : 
          * 
          * @param {string} name - The name of the class to retrieve
          * @returns {RegistryConstructor< T >} - The class constructor
-         * @throws {CmpStrUsageError} If the class name is invalid or if the class is not registered
+         * @throws {CmpStrUsageError} - If the class name is invalid or if the class is not registered
          */
         get ( name: string ) : RegistryConstructor< T > {
             ErrorUtil.assert( typeof name === 'string' && name.length > 0, `Class name must be a non-empty string`, { registry: reg, name } );
@@ -132,7 +132,7 @@ export function Registry< T > ( reg: string, ctor: RegistryConstructor< T > ) : 
  * @param {string} reg - The name of the registry
  * @param {T | string} cls - The class itself or name of the class to resolve
  * @returns {T | undefined} - The class constructor if found, otherwise undefined
- * @throws {CmpStrNotFoundError} If the registry or class does not exist
+ * @throws {CmpStrNotFoundError} - If the registry or class does not exist
  */
 export function resolveCls< T extends RegistryConstructor< any > > ( reg: string, cls: T | string ) : T {
     if ( ! ( reg in registry ) ) throw new CmpStrNotFoundError ( `Registry <${reg}> does not exist`, { registry: reg } );
@@ -147,7 +147,7 @@ export function resolveCls< T extends RegistryConstructor< any > > ( reg: string
  * @param {T | string} cls - The class itself or name of the class to instantiate
  * @param {...any} args - Arguments to pass to the class constructor
  * @returns {T} - An instance of the class
- * @throws {CmpStrInternalError} If instantiation fails due to an internal error
+ * @throws {CmpStrInternalError} - If instantiation fails due to an internal error
  */
 export function createFromRegistry< T extends RegistryConstructor< any > >(
     reg: string, cls: T | string, ...args: any[]
