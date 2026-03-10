@@ -20,13 +20,9 @@
       "README.md",
       "LICENSE",
       "dist/CmpStr.esm.js",
-      "dist/CmpStr.esm.js.map",
       "dist/CmpStr.esm.min.js",
-      "dist/CmpStr.esm.min.js.map",
       "dist/CmpStr.umd.js",
-      "dist/CmpStr.umd.js.map",
-      "dist/CmpStr.umd.min.js",
-      "dist/CmpStr.umd.min.js.map"
+      "dist/CmpStr.umd.min.js"
     ]
   },
   "derive": {
@@ -51,9 +47,7 @@
     "targets": {
       "full": [
         "dist/cjs/{dir}/{name}.cjs",
-        "dist/cjs/{dir}/{name}.cjs.map",
         "dist/esm/{dir}/{name}.mjs",
-        "dist/esm/{dir}/{name}.mjs.map",
         "dist/types/{dir}/{name}.d.ts"
       ],
       "dts": [

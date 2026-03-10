@@ -54,6 +54,9 @@
 
 'use strict';
 
+import { execSync } from 'child_process';
+import { readFileSync } from 'node:fs';
+
 import typescript from '@rollup/plugin-typescript';
 import { nodeResolve } from '@rollup/plugin-node-resolve';
 import commonjs from '@rollup/plugin-commonjs';
@@ -61,8 +64,6 @@ import terser from '@rollup/plugin-terser';
 import cleanup from 'rollup-plugin-cleanup';
 import prettier from 'rollup-plugin-prettier';
 
-import { execSync } from 'child_process';
-import { readFileSync } from 'node:fs';
 
 const version = JSON.parse( readFileSync( './package.json' ) ).version;
 const commit = execSync( 'git rev-parse --short HEAD' ).toString().trim();
@@ -81,7 +82,7 @@ const preamble = `/**
 const plugins = [
     commonjs(), cleanup( { comments: 'istanbul', extensions: [ 'js', 'ts' ] } ),
     nodeResolve( { extensions: [ '.js', '.ts' ] } ),
-    typescript( { tsconfig: './tsconfig.rollup.json' } )
+    typescript( { tsconfig: './tsconfig.rollup.json', sourceMap: false } )
 ];
 
 const beautify = prettier( {
@@ -115,7 +116,7 @@ export default [
             entryFileNames: '[name].mjs',
             preserveModules: true,
             preserveModulesRoot: 'src',
-            sourcemap: true,
+            sourcemap: false,
             banner
         },
         plugins: [ ...plugins, beautify ]
@@ -131,7 +132,7 @@ export default [
             exports: 'auto',
             preserveModules: true,
             preserveModulesRoot: 'src',
-            sourcemap: true,
+            sourcemap: false,
             banner
         },
         plugins: [ ...plugins, beautify ]
@@ -144,7 +145,7 @@ export default [
             file: 'dist/CmpStr.umd.js',
             format: 'umd',
             name: 'CmpStr',
-            sourcemap: true,
+            sourcemap: false,
             banner: preamble
         },
         plugins: [ ...plugins, beautify ]
@@ -158,7 +159,7 @@ export default [
             format: 'umd',
             name: 'CmpStr',
             plugins: [ minify ],
-            sourcemap: true
+            sourcemap: false
         },
         plugins: [ ...plugins ]
     },
@@ -169,7 +170,7 @@ export default [
         output: {
             file: 'dist/CmpStr.esm.js',
             format: 'es',
-            sourcemap: true,
+            sourcemap: false,
             banner: preamble
         },
         plugins: [ ...plugins, beautify ]
@@ -182,7 +183,7 @@ export default [
             file: 'dist/CmpStr.esm.min.js',
             format: 'esm',
             plugins: [ minify ],
-            sourcemap: true
+            sourcemap: false
         },
         plugins: [ ...plugins ]
     }
