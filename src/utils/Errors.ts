@@ -19,7 +19,7 @@
 
 'use strict';
 
-import type { CmpStrErrorMeta } from './Types';
+import type { CmpStrErrorJSON, CmpStrErrorMeta } from './Types';
 
 /**
  * Base error class for CmpStr.
@@ -63,6 +63,24 @@ export class CmpStrError extends Error {
         if ( typeof Error.captureStackTrace === 'function' ) {
             Error.captureStackTrace( this, this.constructor );
         }
+    }
+
+    /**
+     * Serialize the error into a plain object for JSON output.
+     */
+    public toJSON () : CmpStrErrorJSON {
+        return {
+            name: this.name,
+            code: this.code,
+            message: this.message,
+            meta: this.meta,
+            when: this.when,
+            cause: this.cause instanceof Error ? {
+                name: this.cause.name,
+                message: this.cause.message,
+                stack: ( this.cause as any ).stack
+            } : this.cause
+        };
     }
 
 }
