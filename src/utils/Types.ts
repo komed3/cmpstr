@@ -19,6 +19,19 @@
 
 /**
  * ================================================================================
+ * ERROR HANDLING
+ * ================================================================================
+ * 
+ * Types for standardized error classes and structured error metadata.
+ */
+
+/**
+ * Metadata attached to a CmpStr error.
+ */
+export type CmpStrErrorMeta = Record< string, any > | undefined;
+
+/**
+ * ================================================================================
  * PROFILER & POOL UTILITIES
  * ================================================================================
  * 
