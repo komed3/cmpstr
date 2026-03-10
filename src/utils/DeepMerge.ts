@@ -22,6 +22,8 @@
 
 'use strict';
 
+import { CmpStrUsageError } from './Errors';
+
 /** Regular expression to match bracket notation in paths */
 const BRACKET_PATTERN = /\[(\d+)]/g;
 
@@ -94,15 +96,16 @@ export function has< T extends Record< string, any > > ( t: T, path: string ) : 
  * @param {string} path - The path string, e.g. `a.b.c`
  * @param {any} value - The value to set at the specified path
  * @returns {T} - The modified object with the value set at the specified path
- * @throws {Error} - Throws an error if the key is not a valid identifier
+ * @throws {CmpStrUsageError} If the path is invalid or if a non-object value is encountered along the path
  */
 export function set< T extends Record< string, any > > ( t: T, path: string, value: any ) : T {
     if ( path === '' ) return value as T;
     const keys: ( string | number )[] = parse( path );
 
     // Throw an error if the root object is not valid
-    if ( t !== undefined && ( typeof t !== 'object' || t === null ) ) throw Error (
-        `Cannot set property <${ keys[ 0 ] }> of <${ JSON.stringify( t ) }>`
+    if ( t !== undefined && ( typeof t !== 'object' || t === null ) ) throw new CmpStrUsageError(
+        `Cannot set property <${ keys[ 0 ] }> of <${ JSON.stringify( t ) }>`,
+        { path: keys[ 0 ], target: t }
     );
 
     // Initialize the root object
@@ -114,8 +117,9 @@ export function set< T extends Record< string, any > > ( t: T, path: string, val
         const k = keys[ i ]; let n = cur[ k ];
 
         // Throw an error if the current value is not an object
-        if ( n != null && ( typeof n !== 'object' ) ) throw Error (
-            `Cannot set property <${ keys[ i + 1 ] }> of <${ JSON.stringify( n ) }>`
+        if ( n != null && ( typeof n !== 'object' ) ) throw new CmpStrUsageError(
+            `Cannot set property <${ keys[ i + 1 ] }> of <${ JSON.stringify( n ) }>`,
+            { path: keys.slice( 0, i + 2 ), value: n }
         );
 
         // Create a new object or array if the next key does not exist
