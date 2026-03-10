@@ -81,7 +81,7 @@ export class Normalizer {
      * @throws {CmpStrInternalError} Throws an error if the pipeline creation fails
      */
     private static getPipeline ( flags: NormalizeFlags ) : NormalizerFn {
-        return ErrorUtil.wrap( () => {
+        return ErrorUtil.wrap< NormalizerFn >( () => {
             // Return the cached pipeline if it exists
             if ( Normalizer.pipeline.has( flags ) ) return Normalizer.pipeline.get( flags )!;
 
@@ -120,7 +120,7 @@ export class Normalizer {
      * @throws {CmpStrInternalError} Throws an error if the normalization process fails
      */
     static normalize ( input: string | string[], flags: NormalizeFlags ) : string | string[] {
-        return ErrorUtil.wrap( () => {
+        return ErrorUtil.wrap< string | string[] >( () => {
             if ( ! flags || typeof flags !== 'string' || ! input ) return input;
 
             // Canonicalize the flags to ensure consistent ordering
@@ -156,7 +156,7 @@ export class Normalizer {
      * @throws {CmpStrInternalError} Throws an error if the normalization process fails
      */
     static async normalizeAsync ( input: string | string[], flags: NormalizeFlags ) : Promise< string | string[] > {
-        return await ErrorUtil.wrapAsync( async () => {
+        return await ErrorUtil.wrapAsync< string | string[] >( async () => {
             if ( ! flags || typeof flags !== 'string' || ! input ) return input;
 
             return await ( Array.isArray( input )

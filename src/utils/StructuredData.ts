@@ -250,7 +250,7 @@ export class StructuredData< T = any, R = MetricRaw > {
     private performLookup(
         fn: () => CmpFnResult< R >, extractedStrings: string[], opt?: StructuredDataOptions
     ) : StructuredDataBatchResult< T, R > | T[] {
-        return ErrorUtil.wrap( () =>
+        return ErrorUtil.wrap< StructuredDataBatchResult< T, R > | T[] >( () =>
             this.finalizeLookup( fn(), extractedStrings, opt ),
             'StructuredData lookup failed', { key: this.key }
         );
@@ -268,7 +268,7 @@ export class StructuredData< T = any, R = MetricRaw > {
     private async performLookupAsync (
         fn: () => Promise< CmpFnResult< R > >, extractedStrings: string[], opt?: StructuredDataOptions
     ) : Promise< StructuredDataBatchResult< T, R > | T[] > {
-        return await ErrorUtil.wrapAsync( async () =>
+        return await ErrorUtil.wrapAsync< StructuredDataBatchResult< T, R > | T[] >( async () =>
             this.finalizeLookup( await fn(), extractedStrings, opt ),
             'StructuredData async lookup failed', { key: this.key }
         );

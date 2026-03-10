@@ -83,7 +83,7 @@ class RingPool< T > {
      * @throws {CmpStrUsageError} Throws an error if the release process fails
      */
     public release ( item: PoolBuffer< T > ) : void {
-        ErrorUtil.wrap( () => {
+        ErrorUtil.wrap< void >( () => {
             if ( this.buffers.length < this.maxSize ) return void[ this.buffers.push( item ) ];
 
             this.buffers[ this.pointer ] = item;
