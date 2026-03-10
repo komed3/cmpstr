@@ -30,6 +30,7 @@
 
 import type { DiffEntry, DiffGroup, DiffLine, DiffOptions } from './Types';
 
+
 /**
  * The DiffChecker class provides methods to compare two texts and generate
  * structured diffs, grouped diffs, and unified diff outputs.

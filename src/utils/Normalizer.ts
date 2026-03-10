@@ -32,7 +32,9 @@
 
 import type { NormalizeFlags, NormalizerFn } from './Types';
 
+import { ErrorUtil } from './Errors';
 import { HashTable } from './HashTable';
+
 
 /**
  * The Normalizer class providing methods to normalize strings based on various flags.
@@ -76,33 +78,36 @@ export class Normalizer {
      * 
      * @param {NormalizeFlags} flags - A string of characters representing the normalization steps
      * @returns {NormalizerFn} - A function that normalizes a string based on the provided flags
+     * @throws {CmpStrInternalError} Throws an error if the pipeline creation fails
      */
     private static getPipeline ( flags: NormalizeFlags ) : NormalizerFn {
-        // Return the cached pipeline if it exists
-        if ( Normalizer.pipeline.has( flags ) ) return Normalizer.pipeline.get( flags )!;
+        return ErrorUtil.wrap( () => {
+            // Return the cached pipeline if it exists
+            if ( Normalizer.pipeline.has( flags ) ) return Normalizer.pipeline.get( flags )!;
 
-        // Define the normalization steps based on the flags
-        const { REGEX } = Normalizer;
-        const steps: Array< [ string, NormalizerFn ] > = [
-            [ 'd', s => s.normalize( 'NFD' ) ],
-            [ 'i', s => s.toLowerCase() ],
-            [ 'k', s => s.replace( REGEX.nonLetters, '' ) ],
-            [ 'n', s => s.replace( REGEX.nonNumbers, '' ) ],
-            [ 'r', s => s.replace( REGEX.doubleChars, '$1' ) ],
-            [ 's', s => s.replace( REGEX.specialChars, '' ) ],
-            [ 't', s => s.trim() ],
-            [ 'u', s => s.normalize( 'NFC' ) ],
-            [ 'w', s => s.replace( REGEX.whitespace, ' ' ) ],
-            [ 'x', s => s.normalize( 'NFKC' ) ]
-        ];
+            // Define the normalization steps based on the flags
+            const { REGEX } = Normalizer;
+            const steps: Array< [ string, NormalizerFn ] > = [
+                [ 'd', s => s.normalize( 'NFD' ) ],
+                [ 'i', s => s.toLowerCase() ],
+                [ 'k', s => s.replace( REGEX.nonLetters, '' ) ],
+                [ 'n', s => s.replace( REGEX.nonNumbers, '' ) ],
+                [ 'r', s => s.replace( REGEX.doubleChars, '$1' ) ],
+                [ 's', s => s.replace( REGEX.specialChars, '' ) ],
+                [ 't', s => s.trim() ],
+                [ 'u', s => s.normalize( 'NFC' ) ],
+                [ 'w', s => s.replace( REGEX.whitespace, ' ' ) ],
+                [ 'x', s => s.normalize( 'NFKC' ) ]
+            ];
 
-        // Compile the normalization function based on the provided flags
-        const pipeline = steps.filter( ( [ f ] ) => flags.includes( f ) ).map( ( [ , fn ] ) => fn );
-        const fn: NormalizerFn = s => pipeline.reduce( ( v, f ) => f( v ), s );
+            // Compile the normalization function based on the provided flags
+            const pipeline = steps.filter( ( [ f ] ) => flags.includes( f ) ).map( ( [ , fn ] ) => fn );
+            const fn: NormalizerFn = s => pipeline.reduce( ( v, f ) => f( v ), s );
 
-        // Cache the compiled function for the given flags
-        Normalizer.pipeline.set( flags, fn );
-        return fn;
+            // Cache the compiled function for the given flags
+            Normalizer.pipeline.set( flags, fn );
+            return fn;
+        }, `Failed to create normalization pipeline for flags: ${flags}`, { flags } );
     }
 
     /**
@@ -112,29 +117,32 @@ export class Normalizer {
      * @param {string | string[]} input - The string or array of strings to normalize
      * @param {NormalizeFlags} flags - A string of characters representing the normalization steps
      * @returns {string | string[]} - The normalized string(s)
+     * @throws {CmpStrInternalError} Throws an error if the normalization process fails
      */
     static normalize ( input: string | string[], flags: NormalizeFlags ) : string | string[] {
-        if ( ! flags || typeof flags !== 'string' || ! input ) return input;
+        return ErrorUtil.wrap( () => {
+            if ( ! flags || typeof flags !== 'string' || ! input ) return input;
 
-        // Canonicalize the flags to ensure consistent ordering
-        flags = this.canonicalFlags( flags );
+            // Canonicalize the flags to ensure consistent ordering
+            flags = this.canonicalFlags( flags );
 
-        // If input is an array, normalize each string in the array
-        if ( Array.isArray( input ) ) return input.map( s => Normalizer.normalize( s, flags ) ) as string[];
+            // If input is an array, normalize each string in the array
+            if ( Array.isArray( input ) ) return input.map( s => Normalizer.normalize( s, flags ) ) as string[];
 
-        // Generate a cache key based on the flags and input
-        const key: string | false = Normalizer.cache.key( flags, [ input ] );
+            // Generate a cache key based on the flags and input
+            const key: string | false = Normalizer.cache.key( flags, [ input ] );
 
-        // If the key exists in the cache, return the cached result
-        if ( key && Normalizer.cache.has( key ) ) return Normalizer.cache.get( key )!;
+            // If the key exists in the cache, return the cached result
+            if ( key && Normalizer.cache.has( key ) ) return Normalizer.cache.get( key )!;
 
-        // Normalize the input using the pipeline for the given flags
-        const res: string = Normalizer.getPipeline( flags )( input );
+            // Normalize the input using the pipeline for the given flags
+            const res: string = Normalizer.getPipeline( flags )( input );
 
-        // If a key was generated, store the result in the cache
-        if ( key ) Normalizer.cache.set( key, res );
+            // If a key was generated, store the result in the cache
+            if ( key ) Normalizer.cache.set( key, res );
 
-        return res;
+            return res;
+        }, `Failed to normalize input with flags: ${flags}`, { input, flags } );
     }
 
     /**
@@ -145,13 +153,18 @@ export class Normalizer {
      * @param {string | string[]} input - The string or array of strings to normalize
      * @param {NormalizeFlags} flags - A string of characters representing the normalization steps
      * @returns {Promise< string | string[] >} - A promise that resolves to the normalized string(s)
+     * @throws {CmpStrInternalError} Throws an error if the normalization process fails
      */
     static async normalizeAsync ( input: string | string[], flags: NormalizeFlags ) : Promise< string | string[] > {
-        return await ( Array.isArray( input )
-            // If input is an array, normalize each string in the array asynchronously
-            ? Promise.all( input.map( s => Normalizer.normalize( s, flags ) ) as string[] )
-            // If input is a single string, normalize it asynchronously
-            : Promise.resolve( Normalizer.normalize( input, flags ) ) );
+        return await ErrorUtil.wrapAsync( async () => {
+            if ( ! flags || typeof flags !== 'string' || ! input ) return input;
+
+            return await ( Array.isArray( input )
+                // If input is an array, normalize each string in the array asynchronously
+                ? Promise.all( input.map( s => Normalizer.normalize( s, flags ) ) as string[] )
+                // If input is a single string, normalize it asynchronously
+                : Promise.resolve( Normalizer.normalize( input, flags ) ) );
+        }, `Failed to asynchronously normalize input with flags: ${flags}`, { input, flags } );
     }
 
     /**

@@ -42,6 +42,7 @@ export class Filter {
      * 
      * @param {FilterHooks} hook - The name of the hook
      * @returns {FilterFn} - The compiled filter function for the hook
+     * @throws {CmpStrInternalError} Throws an error if the pipeline compilation fails
      */
     private static getPipeline ( hook: FilterHooks ) : FilterFn {
         return ErrorUtil.wrap< FilterFn >( () => {
@@ -85,6 +86,7 @@ export class Filter {
      * @param {FilterOptions} [opt] - Additional options for the filter
      * @returns {boolean} - Returns true if the filter was added,
      *                      false if it was not added due to override restrictions
+     * @throws {CmpStrInternalError} Throws an error if there is an issue adding the filter
      */
     public static add (
         hook: FilterHooks, id: string, fn: FilterFn, opt: FilterOptions = {}
@@ -168,6 +170,7 @@ export class Filter {
      * @param {FilterHooks} hook - The name of the hook
      * @param {string | string[]} input - The input string(s) to be filtered
      * @returns {string | string[]} - The filtered string(s)
+     * @throws {CmpStrInternalError} Throws an error if there is an issue applying the filters
      */
     public static apply ( hook: FilterHooks, input: string | string[] ) : string | string[] {
         return ErrorUtil.wrap< string | string[] >( () => {
@@ -183,6 +186,7 @@ export class Filter {
      * @param {FilterHooks} hook - The name of the hook
      * @param {string | string[]} input - The input string(s) to be filtered
      * @returns {Promise< string | string[] >} - The filtered string(s)
+     * @throws {CmpStrInternalError} Throws an error if there is an issue applying the filters
      */
     public static async applyAsync (
         hook: FilterHooks, input: string | string[]
