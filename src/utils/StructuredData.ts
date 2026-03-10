@@ -26,7 +26,9 @@ import type {
     StructuredDataBatchResult, StructuredDataOptions, StructuredDataResult
 } from './Types';
 
+import { CmpStrValidationError, ErrorUtil } from './Errors';
 import { Pool } from './Pool';
+
 
 /**
  * The StructuredData class provides factory methods for processing arrays of
@@ -109,7 +111,7 @@ export class StructuredData< T = any, R = MetricRaw > {
      * 
      * @param {any} results - The raw metric results
      * @returns {IndexedResult< R >[]} - Normalized results with indices
-     * @throws {TypeError} - If results format is unsupported
+     * @throws {CmpStrValidationError} If the results format is unsupported
      */
     private normalizeResults ( results: CmpFnResult< R > ) : IndexedResult< R >[] {
         if ( ! Array.isArray( results ) || results.length === 0 ) return [];
@@ -123,7 +125,7 @@ export class StructuredData< T = any, R = MetricRaw > {
         else if ( this.isCmpStrResult( first ) ) normalized = ( results as ( CmpStrResult & { raw?: R } )[] )
             .map( r => ( { metric: 'unknown', a: r.source, b: r.target, res: r.match, raw: r.raw } ) );
         // Throw on unsupported format
-        else throw new TypeError ( 'Unsupported result format for StructuredData normalization.' );
+        else throw new CmpStrValidationError( 'Unsupported result format for StructuredData normalization.' );
 
         // Attach original indices (position in the results array)
         return normalized.map( ( r, idx ) => ( { ...r, __idx: idx } ) );
@@ -243,11 +245,15 @@ export class StructuredData< T = any, R = MetricRaw > {
      * @param {string[]} extractedStrings - The extracted strings for index mapping
      * @param {StructuredDataOptions} [opt] - Additional options
      * @returns {StructuredDataBatchResult< T, R > | T[]} - The lookup results
+     * @throws {CmpStrUsageError} If the lookup process fails
      */
     private performLookup(
         fn: () => CmpFnResult< R >, extractedStrings: string[], opt?: StructuredDataOptions
     ) : StructuredDataBatchResult< T, R > | T[] {
-        return this.finalizeLookup( fn(), extractedStrings, opt );
+        return ErrorUtil.wrap( () =>
+            this.finalizeLookup( fn(), extractedStrings, opt ),
+            'StructuredData lookup failed', { key: this.key }
+        );
     }
 
     /**
@@ -257,11 +263,15 @@ export class StructuredData< T = any, R = MetricRaw > {
      * @param {string[]} extractedStrings - The extracted strings for index mapping
      * @param {StructuredDataOptions} [opt] - Additional options
      * @returns {Promise< StructuredDataBatchResult< T, R > | T[] >} - The async lookup results
+     * @throws {CmpStrUsageError} If the async lookup process fails
      */
     private async performLookupAsync (
         fn: () => Promise< CmpFnResult< R > >, extractedStrings: string[], opt?: StructuredDataOptions
     ) : Promise< StructuredDataBatchResult< T, R > | T[] > {
-        return this.finalizeLookup( await fn(), extractedStrings, opt );
+        return await ErrorUtil.wrapAsync( async () =>
+            this.finalizeLookup( await fn(), extractedStrings, opt ),
+            'StructuredData async lookup failed', { key: this.key }
+        );
     }
 
     /**
