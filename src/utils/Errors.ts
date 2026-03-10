@@ -83,4 +83,22 @@ export class CmpStrError extends Error {
         };
     }
 
+    /**
+     * Pretty string representation of the error.
+     * 
+     * @param {boolean} [stack=false] - Whether to include the stack trace in the output
+     */
+    public override toString ( stack: boolean = false ) : string {
+        const parts: string[] = [ `${this.name} [${this.code}]`, this.message ];
+
+        if ( this.meta && Object.keys( this.meta ).length ) {
+            try { parts.push( JSON.stringify( this.meta ) ) }
+            catch { /* ignore */ }
+        }
+
+        return parts.join( ' - ' ) + (
+            stack && this.stack ? `\nStack Trace:\n${this.stack}` : ''
+        );
+    }
+
 }
