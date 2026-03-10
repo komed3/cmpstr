@@ -24,6 +24,7 @@
 
 import { CmpStrUsageError } from './Errors';
 
+
 /** Regular expression to match bracket notation in paths */
 const BRACKET_PATTERN = /\[(\d+)]/g;
 

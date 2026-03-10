@@ -21,6 +21,7 @@
 
 import type { CmpStrErrorJSON, CmpStrErrorMeta } from './Types';
 
+
 /**
  * Base error class for CmpStr.
  * 
