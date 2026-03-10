@@ -125,7 +125,7 @@ export class StructuredData< T = any, R = MetricRaw > {
         else if ( this.isCmpStrResult( first ) ) normalized = ( results as ( CmpStrResult & { raw?: R } )[] )
             .map( r => ( { metric: 'unknown', a: r.source, b: r.target, res: r.match, raw: r.raw } ) );
         // Throw on unsupported format
-        else throw new CmpStrValidationError( 'Unsupported result format for StructuredData normalization.' );
+        else throw new CmpStrValidationError ( 'Unsupported result format for StructuredData normalization.' );
 
         // Attach original indices (position in the results array)
         return normalized.map( ( r, idx ) => ( { ...r, __idx: idx } ) );

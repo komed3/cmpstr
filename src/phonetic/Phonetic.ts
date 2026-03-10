@@ -94,13 +94,13 @@ export abstract class Phonetic {
         const mapId = opt.map ?? defaults.map;
 
         // If no algorithm is specified, throw an error
-        if ( ! mapId ) throw new CmpStrNotFoundError( `No mapping specified for phonetic algorithm`, { algo } );
+        if ( ! mapId ) throw new CmpStrNotFoundError ( `No mapping specified for phonetic algorithm`, { algo } );
 
         // Get the mapping based on the determined map ID
         const map = PhoneticMappingRegistry.get( algo, mapId );
 
         // If the mapping is not defined, throw an error
-        if ( map === undefined ) throw new CmpStrNotFoundError( `Requested mapping <${mapId}> is not declared`, { algo, mapId } );
+        if ( map === undefined ) throw new CmpStrNotFoundError ( `Requested mapping <${mapId}> is not declared`, { algo, mapId } );
 
         // Set the options by merging the default options with the provided ones
         this.options = merge( merge( defaults, map.options ?? {} ), opt );

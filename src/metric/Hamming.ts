@@ -21,10 +21,12 @@
 import type { MetricCompute, MetricInput, MetricOptions } from '../utils/Types';
 
 import { Metric, MetricRegistry } from './Metric';
+import { CmpStrUsageError } from '../utils/Errors';
 
 export interface HammingRaw {
     dist: number;
 }
+
 
 /**
  * HammingDistance class extends the Metric class to implement the Hamming distance.
@@ -71,9 +73,9 @@ export class HammingDistance extends Metric< HammingRaw > {
             }
 
             // Standard: Error for unequal length
-            else throw new Error (
+            else throw new CmpStrUsageError (
                 `Strings must be of equal length for Hamming Distance, a=${m} and b=${n} given, ` +
-                `use option.pad for automatic adjustment`
+                `use option.pad for automatic adjustment`, { a: m, b: n }
             );
         }
 

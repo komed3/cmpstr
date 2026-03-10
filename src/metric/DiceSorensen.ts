@@ -32,6 +32,7 @@ export interface DiceRaw {
     size: number;
 }
 
+
 /**
  * DiceSorensenCoefficient class extends the Metric class to implement the Dice-Sørensen coefficient.
  */

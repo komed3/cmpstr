@@ -28,6 +28,7 @@ export interface SmithWatermanRaw {
     denum: number;
 }
 
+
 /**
  * SmithWatermanDistance class extends the Metric class to implement the Smith-Waterman algorithm.
  */

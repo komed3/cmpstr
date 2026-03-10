@@ -30,6 +30,7 @@ export interface JaroWinklerRaw {
     prefix: number;
 }
 
+
 /**
  * JaroWinklerDistance class extends the Metric class to implement the Jaro-Winkler algorithm.
  */

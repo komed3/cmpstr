@@ -156,7 +156,7 @@ export class Pool {
      */
     public static acquire< T = any > ( type: PoolType, size: number ) : T {
         const CONFIG = this.CONFIG[ type ];
-        if ( ! CONFIG ) throw new CmpStrUsageError( `Unsupported pool type <${type}>`, { type } );
+        if ( ! CONFIG ) throw new CmpStrUsageError ( `Unsupported pool type <${type}>`, { type } );
 
         // If the requested size exceeds the maximum item size, allocate a new buffer
         if ( size > CONFIG.maxItemSize ) return this.allocate( type, size );
@@ -196,7 +196,7 @@ export class Pool {
      */
     public static release< T = any > ( type: PoolType, buffer: T, size: number ) : void {
         const CONFIG = this.CONFIG[ type ];
-        if ( ! CONFIG ) throw new CmpStrUsageError( `Unsupported pool type <${type}>`, { type } );
+        if ( ! CONFIG ) throw new CmpStrUsageError ( `Unsupported pool type <${type}>`, { type } );
         if ( size <= CONFIG.maxItemSize ) this.POOLS[ type ].release( { buffer, size } );
     }
 

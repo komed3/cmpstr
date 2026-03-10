@@ -135,7 +135,7 @@ export function Registry< T > ( reg: string, ctor: RegistryConstructor< T > ) : 
  * @throws {CmpStrNotFoundError} If the registry or class does not exist
  */
 export function resolveCls< T extends RegistryConstructor< any > > ( reg: string, cls: T | string ) : T {
-    if ( ! ( reg in registry ) ) throw new CmpStrNotFoundError( `Registry <${reg}> does not exist`, { registry: reg } );
+    if ( ! ( reg in registry ) ) throw new CmpStrNotFoundError ( `Registry <${reg}> does not exist`, { registry: reg } );
     return ( typeof cls === 'string' ? registry[ reg ]?.get( cls ) : cls ) as T;
 }
 

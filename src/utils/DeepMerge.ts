@@ -104,7 +104,7 @@ export function set< T extends Record< string, any > > ( t: T, path: string, val
     const keys: ( string | number )[] = parse( path );
 
     // Throw an error if the root object is not valid
-    if ( t !== undefined && ( typeof t !== 'object' || t === null ) ) throw new CmpStrUsageError(
+    if ( t !== undefined && ( typeof t !== 'object' || t === null ) ) throw new CmpStrUsageError (
         `Cannot set property <${ keys[ 0 ] }> of <${ JSON.stringify( t ) }>`,
         { path: keys[ 0 ], target: t }
     );
@@ -118,7 +118,7 @@ export function set< T extends Record< string, any > > ( t: T, path: string, val
         const k = keys[ i ]; let n = cur[ k ];
 
         // Throw an error if the current value is not an object
-        if ( n != null && ( typeof n !== 'object' ) ) throw new CmpStrUsageError(
+        if ( n != null && ( typeof n !== 'object' ) ) throw new CmpStrUsageError (
             `Cannot set property <${ keys[ i + 1 ] }> of <${ JSON.stringify( n ) }>`,
             { path: keys.slice( 0, i + 2 ), value: n }
         );

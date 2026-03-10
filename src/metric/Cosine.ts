@@ -31,6 +31,7 @@ export interface CosineRaw {
     magnitudeB: number;
 }
 
+
 /**
  * CosineSimilarity class extends the Metric class to implement the Cosine similarity algorithm.
  */

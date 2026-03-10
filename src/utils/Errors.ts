@@ -53,7 +53,7 @@ export class CmpStrError extends Error {
      * @param {unknown} [cause] - Optional cause (native JS Error chaining)
      */
     constructor ( code: string, message: string, meta?: CmpStrErrorMeta, cause?: unknown ) {
-        super( message );
+        super ( message );
 
         this.name = this.constructor.name;
         this.code = code;
@@ -109,7 +109,7 @@ export class CmpStrError extends Error {
  */
 export class CmpStrValidationError extends CmpStrError {
     constructor ( message: string, meta?: CmpStrErrorMeta, cause?: unknown ) {
-        super( 'E_VALIDATION', message, meta, cause );
+        super ( 'E_VALIDATION', message, meta, cause );
     }
 }
 
@@ -118,7 +118,7 @@ export class CmpStrValidationError extends CmpStrError {
  */
 export class CmpStrNotFoundError extends CmpStrError {
     constructor ( message: string, meta?: CmpStrErrorMeta, cause?: unknown ) {
-        super( 'E_NOT_FOUND', message, meta, cause );
+        super ( 'E_NOT_FOUND', message, meta, cause );
     }
 }
 
@@ -127,7 +127,7 @@ export class CmpStrNotFoundError extends CmpStrError {
  */
 export class CmpStrUsageError extends CmpStrError {
     constructor ( message: string, meta?: CmpStrErrorMeta, cause?: unknown ) {
-        super( 'E_USAGE', message, meta, cause );
+        super ( 'E_USAGE', message, meta, cause );
     }
 }
 
@@ -136,7 +136,7 @@ export class CmpStrUsageError extends CmpStrError {
  */
 export class CmpStrInternalError extends CmpStrError {
     constructor ( message: string, meta?: CmpStrErrorMeta, cause?: unknown ) {
-        super( 'E_INTERNAL', message, meta, cause );
+        super ( 'E_INTERNAL', message, meta, cause );
     }
 }
 
@@ -158,7 +158,7 @@ export class ErrorUtil {
      * @throws {CmpStrUsageError} If the condition is false
      */
     public static assert ( condition: boolean, message: string, meta?: CmpStrErrorMeta ) : asserts condition {
-        if ( ! condition ) throw new CmpStrUsageError( message, meta );
+        if ( ! condition ) throw new CmpStrUsageError ( message, meta );
     }
 
     /**
@@ -171,7 +171,7 @@ export class ErrorUtil {
      */
     public static create ( err: unknown, message: string, meta?: CmpStrErrorMeta ) : never {
         if ( err instanceof CmpStrError ) throw err;
-        throw new CmpStrInternalError( message, meta, err );
+        throw new CmpStrInternalError ( message, meta, err );
     }
 
     /**
@@ -200,7 +200,7 @@ export class ErrorUtil {
      */
     public static wrap< T > ( fn: () => T, message: string, meta?: CmpStrErrorMeta ) : T {
         try { return fn() }
-        catch ( err ) { throw new CmpStrInternalError( message, meta, err ); }
+        catch ( err ) { throw new CmpStrInternalError ( message, meta, err ); }
     }
 
     /**
@@ -214,7 +214,7 @@ export class ErrorUtil {
      */
     public static async wrapAsync< T > ( fn: () => Promise< T >, message: string, meta?: CmpStrErrorMeta ) : Promise< T > {
         try { return await fn() }
-        catch ( err ) { throw new CmpStrInternalError( message, meta, err ); }
+        catch ( err ) { throw new CmpStrInternalError ( message, meta, err ); }
     }
 
 }
