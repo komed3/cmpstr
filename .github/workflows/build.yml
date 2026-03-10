@@ -104,7 +104,7 @@ jobs:
         run: npm run build
 
       - name: Upload dist as Artifact
-        uses: actions/upload-artifact@v6
+        uses: actions/upload-artifact@v7
         with:
           name: cmpstr-dist
           path: dist/
@@ -127,7 +127,7 @@ jobs:
           cache: npm
 
       - name: Download dist Artifact
-        uses: actions/download-artifact@v6
+        uses: actions/download-artifact@v8
         with:
           name: cmpstr-dist
           path: dist/
@@ -147,7 +147,7 @@ jobs:
         run: npx verify-pkg --fail-on-warn --verbose
 
       - name: Upload Tarball as Artifact
-        uses: actions/upload-artifact@v6
+        uses: actions/upload-artifact@v7
         with:
           name: cmpstr-tgz
           path: cmpstr-*.tgz
