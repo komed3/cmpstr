@@ -200,7 +200,7 @@ export class ErrorUtil {
      */
     public static wrap< T > ( fn: () => T, message: string, meta?: CmpStrErrorMeta ) : T {
         try { return fn() }
-        catch ( err ) { throw new CmpStrInternalError ( message, meta, err ); }
+        catch ( err ) { throw new CmpStrInternalError ( message, meta, err ) }
     }
 
     /**
@@ -214,7 +214,7 @@ export class ErrorUtil {
      */
     public static async wrapAsync< T > ( fn: () => Promise< T >, message: string, meta?: CmpStrErrorMeta ) : Promise< T > {
         try { return await fn() }
-        catch ( err ) { throw new CmpStrInternalError ( message, meta, err ); }
+        catch ( err ) { throw new CmpStrInternalError ( message, meta, err ) }
     }
 
 }
