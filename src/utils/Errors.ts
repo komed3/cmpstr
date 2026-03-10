@@ -36,7 +36,7 @@ export class CmpStrError extends Error {
     public readonly meta?: CmpStrErrorMeta;
 
     /** Optional cause (native JS Error chaining) */
-    public readonly cause?: unknown;
+    public override readonly cause?: unknown;
 
     /** Timestamp when the error was created (ISO 8601) */
     public readonly when: string = new Date().toISOString();
