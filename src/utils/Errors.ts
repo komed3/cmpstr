@@ -41,4 +41,28 @@ export class CmpStrError extends Error {
     /** Timestamp when the error was created (ISO 8601) */
     public readonly when: string = new Date().toISOString();
 
+    /**
+     * Constructor for CmpStrError.
+     * 
+     * Will construct an error with a code, message, optional metadata, and optional cause.
+     * 
+     * @param {string} code - A short, machine-readable error code
+     * @param {string} message - The error message (human-readable)
+     * @param {CmpStrErrorMeta} [meta] - Optional structured metadata for the error
+     * @param {unknown} [cause] - Optional cause (native JS Error chaining)
+     */
+    constructor ( code: string, message: string, meta?: CmpStrErrorMeta, cause?: unknown ) {
+        super( message );
+
+        this.name = this.constructor.name;
+        this.code = code;
+        this.meta = meta;
+        this.cause = cause;
+
+        // Preserve stack trace (modern environments already set this)
+        if ( typeof Error.captureStackTrace === 'function' ) {
+            Error.captureStackTrace( this, this.constructor );
+        }
+    }
+
 }
