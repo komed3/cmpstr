@@ -138,3 +138,51 @@ export class CmpStrInternalError extends CmpStrError {
         super( 'E_INTERNAL', message, meta, cause );
     }
 }
+
+/**
+ * Helper utilities for throwing and formatting errors.
+ * 
+ * Provides methods for asserting conditions, wrapping unknown errors, and formatting
+ * errors into readable strings. This centralizes error handling logic and ensures
+ * consistent error messages across the codebase.
+ */
+export class ErrorUtil {
+
+    /**
+     * Throw a `CmpStrUsageError` if a condition is not met.
+     * 
+     * @param {boolean} condition - The condition to assert
+     * @param {string} message - The error message to throw if the condition is false
+     * @param {CmpStrErrorMeta} [meta] - Optional structured metadata for the error
+     * @throws {CmpStrUsageError} If the condition is false
+     */
+    public static assert ( condition: boolean, message: string, meta?: CmpStrErrorMeta ) : asserts condition {
+        if ( ! condition ) throw new CmpStrUsageError( message, meta );
+    }
+
+    /**
+     * Wrap an unknown error into a `CmpStrInternalError`.
+     * 
+     * @param {unknown} err - The error to wrap
+     * @param {string} message - The error message to use for the wrapped error
+     * @param {CmpStrErrorMeta} [meta] - Optional structured metadata for the error
+     * @throws {CmpStrInternalError} Always throws a new `CmpStrInternalError` wrapping the original error
+     */
+    public static wrap ( err: unknown, message: string, meta?: CmpStrErrorMeta ) : never {
+        if ( err instanceof CmpStrError ) throw err;
+        throw new CmpStrInternalError( message, meta, err );
+    }
+
+    /**
+     * Format any error into a readable string.
+     * 
+     * @param {unknown} err - The error to format
+     * @returns {string} A formatted string representation of the error
+     */
+    public static format ( err: unknown ) : string {
+        if ( err instanceof CmpStrError ) return err.toString();
+        if ( err instanceof Error ) return `${err.name}: ${err.message}`;
+        return String( err );
+    }
+
+}
