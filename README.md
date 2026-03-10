@@ -2,7 +2,7 @@
 
 [![Static Badge](https://img.shields.io/badge/docs-docs?style=for-the-badge\&logo=readthedocs\&logoColor=fff\&color=blue)](https://github.com/komed3/cmpstr/wiki)
 [![Static Badge](https://img.shields.io/badge/dev_docs-dev_docs?style=for-the-badge&logo=typescript&logoColor=fff&color=blue)](https://komed3.github.io/cmpstr)
-[![NPM License](https://img.shields.io/npm/l/cmpstr?style=for-the-badge&logo=unlicense&logoColor=fff)](LICENSE)
+[![NPM License](https://img.shields.io/npm/l/cmpstr?style=for-the-badge&logo=unlicense&logoColor=fff)](https://github.com/komed3/cmpstr/blob/master/LICENSE)
 [![GitHub package.json version](https://img.shields.io/github/package-json/v/komed3/cmpstr?style=for-the-badge\&logo=npm\&logoColor=fff)](https://npmjs.com/package/cmpstr)
 [![GitHub Actions Workflow Status](https://img.shields.io/github/actions/workflow/status/komed3/cmpstr/build.yml?style=for-the-badge\&logo=educative\&logoColor=fff)](https://github.com/komed3/cmpstr/actions/workflows/build.yml)
 [![NPM Downloads](https://img.shields.io/npm/dy/cmpstr?style=for-the-badge\&logo=transmission\&logoColor=fff)](https://npm-stat.com/charts.html?package=cmpstr)
@@ -13,26 +13,25 @@
 
 [![ko-fi](https://ko-fi.com/img/githubbutton_sm.svg)](https://ko-fi.com/W7W21SQV2Q)
 
-**CmpStr** is a modern TypeScript library for advanced string comparison, similarity measurement, phonetic indexing, and text analysis. It provides a comprehensive collection of established algorithms such as Levenshtein, Dice–Sørensen, Jaro-Winkler, LCS, q-Gram, and more.
+**CmpStr** is a modern TypeScript library for [advanced string comparison](https://github.com/komed3/cmpstr/wiki/Comparison-Modes), [similarity measurement](https://github.com/komed3/cmpstr/wiki/Similarity-Metrics), [phonetic indexing](https://github.com/komed3/cmpstr/wiki/Phonetic-Algorithms), and [text analysis](https://github.com/komed3/cmpstr/wiki/Diff-&-Text-Analysis). It provides a comprehensive collection of established algorithms such as Levenshtein, Dice–Sørensen, Jaro-Winkler, LCS, q-Gram, and more.
 
-The library is dependency-free, fully typed, and designed with extensibility in mind. Custom metrics, phonetic mappings, normalization filters, and processing pipelines can be integrated without modifying the core. CmpStr offers a unified, consistent API for single comparisons, batch processing, and pairwise matching across synchronous and asynchronous workflows.
+The library is dependency-free, fully typed, and designed with [extensibility](https://github.com/komed3/cmpstr/wiki/Extending-CmpStr) in mind. Custom metrics, phonetic mappings, [normalization filters, and processing pipelines](https://github.com/komed3/cmpstr/wiki/Normalization-&-Filtering) can be integrated without modifying the core. CmpStr offers a [unified, consistent API](https://github.com/komed3/cmpstr/wiki/API-Reference) for single comparisons, batch processing, and pairwise matching across synchronous and [asynchronous workflows](https://github.com/komed3/cmpstr/wiki/Asynchronous-API).
 
-Originally released in 2023 with a minimal feature set, CmpStr was fundamentally redesigned in 2025 to support a broader range of algorithms, scalable processing, and more demanding real-world use cases. The current version emphasizes determinism, performance, and architectural clarity while remaining approachable for everyday usage.
+Originally released in 2023 with a minimal feature set, CmpStr was [fundamentally redesigned in 2025](https://github.com/komed3/cmpstr/wiki/Changelog) to support a broader range of algorithms, scalable processing, and more demanding real-world use cases.
 
 ## Key Features
 
-* Unified API for string similarity, distance measurement, and matching
-* Modular metric system with built-in support for 11 different metrics
-* Integrated phonetic algorithms (e.g. Soundex, Metaphone) with a configurable registry
-* Configurable normalization and filtering pipeline for consistent input processing
-* Single, batch, and pairwise comparisons with structured, type-safe results
-* Phonetic-aware search and comparison
-* Structured data comparison via property extraction
-* Utilities for text structure and readability analysis (e.g. syllables, word statistics)
+* [Unified API](https://github.com/komed3/cmpstr/wiki/API-Reference) for string similarity, distance measurement, and matching
+* Modular metric system with [built-in support for 11 different metrics](https://github.com/komed3/cmpstr/wiki/Similarity-Metrics)
+* Integrated [phonetic algorithms](https://github.com/komed3/cmpstr/wiki/Phonetic-Algorithms) (e.g. Soundex, Metaphone) with a configurable registry
+* Configurable [normalization and filtering pipeline](https://github.com/komed3/cmpstr/wiki/Normalization-&-Filtering) for consistent input processing
+* [Single, batch, and pairwise comparisons](https://github.com/komed3/cmpstr/wiki/Comparison-Modes) with structured, type-safe results
+* [Structured data comparison](https://github.com/komed3/cmpstr/wiki/Structured-Data) via property extraction
+* Utilities for [text structure and readability analysis](https://github.com/komed3/cmpstr/wiki/Diff-&-Text-Analysis) (e.g. syllables, word statistics)
 * Diffing utilities with CLI-friendly output formats
 * TypeScript-native design with full type declarations
-* Optional asynchronous APIs for scalable, non-blocking workloads
-* Extensible architecture for custom algorithms, processors, and filters
+* Optional [asynchronous API](https://github.com/komed3/cmpstr/wiki/Asynchronous-API) for scalable, non-blocking workloads
+* [Extensible architecture](https://github.com/komed3/cmpstr/wiki/Extending-CmpStr) for custom algorithms, processors, and filters
 
 ## Getting Started
 
@@ -40,6 +39,12 @@ Install CmpStr using npm:
 
 ```sh
 npm install cmpstr
+```
+
+or with yarn:
+
+```sh
+yarn add cmpstr
 ```
 
 ### Minimal Example
@@ -85,4 +90,4 @@ Check out the [technical documentation](https://komed3.github.io/cmpstr) created
 
 ## License
 
-MIT License © 2023–2026 Paul Köhler (komed3)
+[MIT License](https://github.com/komed3/cmpstr/blob/master/LICENSE) — © 2023–2026 Paul Köhler (komed3)
