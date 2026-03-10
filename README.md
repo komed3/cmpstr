@@ -1,12 +1,15 @@
 # CmpStr – Modern String Similarity Package
 
-[![GitHub License](https://img.shields.io/github/license/komed3/cmpstr?style=for-the-badge\&logo=unlicense\&logoColor=fff)](LICENSE)
 [![Static Badge](https://img.shields.io/badge/docs-docs?style=for-the-badge\&logo=readthedocs\&logoColor=fff\&color=blue)](https://github.com/komed3/cmpstr/wiki)
-[![Static Badge](https://img.shields.io/badge/TypeScript-supported?style=for-the-badge\&logo=typescript\&logoColor=fff\&color=blue)](https://www.typescriptlang.org)
+[![Static Badge](https://img.shields.io/badge/dev_docs-dev_docs?style=for-the-badge&logo=typescript&logoColor=fff&color=blue)](https://komed3.github.io/cmpstr)
+[![NPM License](https://img.shields.io/npm/l/cmpstr?style=for-the-badge&logo=unlicense&logoColor=fff)](LICENSE)
 [![GitHub package.json version](https://img.shields.io/github/package-json/v/komed3/cmpstr?style=for-the-badge\&logo=npm\&logoColor=fff)](https://npmjs.com/package/cmpstr)
-[![npm bundle size](https://img.shields.io/bundlephobia/min/cmpstr?style=for-the-badge\&logo=gitlfs\&logoColor=fff)](https://bundlephobia.com/package/cmpstr)
-[![NPM Downloads](https://img.shields.io/npm/dy/cmpstr?style=for-the-badge\&logo=transmission\&logoColor=fff)](https://npm-stat.com/charts.html?package=cmpstr)
 [![GitHub Actions Workflow Status](https://img.shields.io/github/actions/workflow/status/komed3/cmpstr/build.yml?style=for-the-badge\&logo=educative\&logoColor=fff)](https://github.com/komed3/cmpstr/actions/workflows/build.yml)
+[![NPM Downloads](https://img.shields.io/npm/dy/cmpstr?style=for-the-badge\&logo=transmission\&logoColor=fff)](https://npm-stat.com/charts.html?package=cmpstr)
+[![jsDelivr hits (npm)](https://img.shields.io/jsdelivr/npm/hy/cmpstr?style=for-the-badge&logo=jsdelivr&logoColor=fff)
+](https://jsdelivr.com/package/npm/cmpstr)
+[![npm package minimized gzipped size](https://img.shields.io/bundlejs/size/cmpstr?format=min&style=for-the-badge&logo=gitlfs&logoColor=fff)
+](https://bundlephobia.com/package/cmpstr)
 [![Static Badge](https://img.shields.io/badge/ESM_%26_CJS-TypeScript?style=for-the-badge\&logo=nodedotjs\&logoColor=fff\&color=purple)](https://github.com/komed3/cmpstr/wiki/Installation-&-Setup#import-in-your-project)
 [![Static Badge](https://img.shields.io/badge/UMD_%26_ESM-JavaScript?style=for-the-badge\&logo=javascript\&logoColor=fff\&color=orange)](https://github.com/komed3/cmpstr/wiki/Installation-&-Setup#browser)
 
