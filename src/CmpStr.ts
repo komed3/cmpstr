@@ -32,6 +32,7 @@ import type {
 
 import * as DeepMerge from './utils/DeepMerge';
 import { DiffChecker } from './utils/DiffChecker';
+import { CmpStrInternalError, CmpStrNotFoundError, ErrorUtil } from './utils/Errors';
 import { Filter } from './utils/Filter';
 import { Normalizer } from './utils/Normalizer';
 import { Profiler } from './utils/Profiler';
@@ -41,6 +42,7 @@ import { TextAnalyzer } from './utils/TextAnalyzer';
 
 import { Metric, MetricRegistry } from './metric';
 import { Phonetic, PhoneticMappingRegistry, PhoneticRegistry } from './phonetic';
+
 
 // Import the Profiler instance for global profiling
 const profiler = Profiler.getInstance();
@@ -188,22 +190,25 @@ export class CmpStr< R = MetricRaw > {
      * 
      * @param {string} cond - The condition to met
      * @param {any} [test] - Value to test for
-     * @throws {Error} If the condition is not met
+     * @throws {CmpStrNotFoundError} - If the specified metric or phonetic algorithm is not found
+     * @throws {CmpStrInternalError} - If an unknown condition is specified
      */
     protected assert ( cond: string, test?: any ) : void {
         switch ( cond ) {
             // Check if the metric exists
-            case 'metric': if ( ! CmpStr.metric.has( test ) ) throw new Error (
+            case 'metric': if ( ! CmpStr.metric.has( test ) ) throw new CmpStrNotFoundError (
                 `CmpStr <metric> must be set, call .setMetric(), ` +
-                `use CmpStr.metric.list() for available metrics`
+                `use CmpStr.metric.list() for available metrics`,
+                { metric: test }
             ); break;
             // Check if the phonetic algorithm exists
-            case 'phonetic': if ( ! CmpStr.phonetic.has( test ) ) throw new Error (
+            case 'phonetic': if ( ! CmpStr.phonetic.has( test ) ) throw new CmpStrNotFoundError (
                 `CmpStr <phonetic> must be set, call .setPhonetic(), ` +
-                `use CmpStr.phonetic.list() for available phonetic algorithms`
+                `use CmpStr.phonetic.list() for available phonetic algorithms`,
+                { phonetic: test }
             ); break;
             // Throw an error for unknown conditions
-            default: throw new Error ( `Cmpstr condition <${cond}> unknown` );
+            default: throw new CmpStrInternalError ( `Cmpstr condition <${cond}> unknown` );
         }
     }
 
@@ -326,39 +331,46 @@ export class CmpStr< R = MetricRaw > {
      * @param {boolean} [raw=false] - Whether to return raw results
      * @param {boolean} [skip=false] - Whether to skip normalization and filtering
      * @returns {T} - The computed metric result
+     * @throws {CmpStrValidationError} - If the inputs are invalid for the specified metric
      */
     protected compute< T extends MetricResult< R > | CmpStrResult | CmpStrResult[] > (
         a: MetricInput, b: MetricInput, opt?: CmpStrOptions,
         mode?: MetricMode, raw?: boolean, skip?: boolean
     ) : T {
-        const resolved: CmpStrOptions = this.resolveOptions( opt );
-        this.assert( 'metric', resolved.metric );
+        return ErrorUtil.wrap< T >(
+            () => {
+                const resolved: CmpStrOptions = this.resolveOptions( opt );
+                this.assert( 'metric', resolved.metric );
 
-        // Prepare the input
-        const A = skip ? a : this.prepare( a, resolved );
-        const B = skip ? b : this.prepare( b, resolved );
+                // Prepare the input
+                const A = skip ? a : this.prepare( a, resolved );
+                const B = skip ? b : this.prepare( b, resolved );
 
-        // If the inputs are empty and safeEmpty is enabled, return an empty array
-        if ( resolved.safeEmpty && (
-            ( Array.isArray( A ) && A.length === 0 ) ||
-            ( Array.isArray( B ) && B.length === 0 ) ||
-            A === '' || B === ''
-        ) ) { return ( [] as unknown ) as T }
+                // If the inputs are empty and safeEmpty is enabled, return an empty array
+                if ( resolved.safeEmpty && (
+                    ( Array.isArray( A ) && A.length === 0 ) ||
+                    ( Array.isArray( B ) && B.length === 0 ) ||
+                    A === '' || B === ''
+                ) ) { return ( [] as unknown ) as T }
 
-        // Get the metric class
-        const metric: Metric< R > = factory[ 'metric' ]( resolved.metric!, A, B, resolved.opt );
+                // Get the metric class
+                const metric: Metric< R > = factory[ 'metric' ]( resolved.metric!, A, B, resolved.opt );
 
-        // Pass the original inputs to the metric
-        if ( resolved.output !== 'prep' ) metric.setOriginal( a, b );
+                // Pass the original inputs to the metric
+                if ( resolved.output !== 'prep' ) metric.setOriginal( a, b );
 
-        // Compute the metric result
-        metric.run( mode );
+                // Compute the metric result
+                metric.run( mode );
 
-        // Post-process the results
-        const result = this.postProcess( metric.getResults(), resolved );
+                // Post-process the results
+                const result = this.postProcess( metric.getResults(), resolved );
 
-        // Resolve and return the result based on the raw flag
-        return this.output< T >( result, raw ?? resolved.raw );
+                // Resolve and return the result based on the raw flag
+                return this.output< T >( result, raw ?? resolved.raw );
+            },
+            `Failed to compute metric <${ opt?.metric ?? this.options.metric }> for the given inputs`,
+            { a, b, options: opt }
+        );
     }
 
     /**
@@ -368,14 +380,15 @@ export class CmpStr< R = MetricRaw > {
      * @param {MetricResult< R >} result - The metric result
      * @param {boolean} [raw] - Whether to return raw results
      * @returns {T} - The resolved result
+     * @throws {CmpStrInternalError} - If the output format cannot be resolved
      */
     protected output< T extends MetricResult< R > | CmpStrResult | CmpStrResult[] > (
         result: MetricResult< R >, raw?: boolean
     ) : T {
-        return ( raw ?? this.options.raw ? result : Array.isArray( result )
+        return ErrorUtil.wrap< T >( () => ( raw ?? this.options.raw ? result : Array.isArray( result )
             ? result.map( r => ( { source: r.a, target: r.b, match: r.res } ) )
             : { source: result.a, target: result.b, match: result.res }
-        ) as T;
+        ) as T, `Failed to resolve output format for the metric result`, { result, raw } );
     }
 
     /**
@@ -431,10 +444,13 @@ export class CmpStr< R = MetricRaw > {
      * 
      * @param {string} opt - The serialized options
      * @returns {this}
+     * @throws {CmpStrValidationError} - If the provided string is not valid JSON
      */
     public setSerializedOptions ( opt: string ) : this {
-        this.options = JSON.parse( opt );
-        return this;
+        return ErrorUtil.wrap< this >( () => {
+            this.options = JSON.parse( opt );
+            return this;
+        }, `Failed to parse serialized options, invalid JSON string`, { opt } );
     }
 
     /**
