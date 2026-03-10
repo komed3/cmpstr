@@ -32,9 +32,11 @@ import type {
 } from '../utils/Types';
 
 import { merge } from '../utils/DeepMerge';
+import { CmpStrNotFoundError, ErrorUtil } from '../utils/Errors';
 import { Hasher, HashTable } from '../utils/HashTable';
 import { Profiler } from '../utils/Profiler';
 import { Registry } from '../utils/Registry';
+
 
 // Get the singleton profiler instance for performance monitoring
 const profiler = Profiler.getInstance();
@@ -82,7 +84,7 @@ export abstract class Phonetic {
      * 
      * @param {string} algo - The name of the algorithm (e.g. 'soundex')
      * @param {PhoneticOptions} [opt] - Options for the phonetic algorithm
-     * @throws {Error} - If the requested mapping is not declared
+     * @throws {CmpStrNotFoundError} - If no mapping is specified or if the requested mapping is not declared
      */
     constructor ( algo: string, opt: PhoneticOptions = {} ) {
         // Get the phonetic default options
@@ -92,13 +94,13 @@ export abstract class Phonetic {
         const mapId = opt.map ?? defaults.map;
 
         // If no algorithm is specified, throw an error
-        if ( ! mapId ) throw new Error ( `No mapping specified for phonetic algorithm` );
+        if ( ! mapId ) throw new CmpStrNotFoundError ( `No mapping specified for phonetic algorithm`, { algo } );
 
         // Get the mapping based on the determined map ID
         const map = PhoneticMappingRegistry.get( algo, mapId );
 
         // If the mapping is not defined, throw an error
-        if ( map === undefined ) throw new Error ( `Requested mapping <${mapId}> is not declared` );
+        if ( map === undefined ) throw new CmpStrNotFoundError ( `Requested mapping <${mapId}> is not declared`, { algo, mapId } );
 
         // Set the options by merging the default options with the provided ones
         this.options = merge( merge( defaults, map.options ?? {} ), opt );
@@ -329,32 +331,35 @@ export abstract class Phonetic {
      * 
      * @param {string[]} words - An array of words to be processed
      * @returns {string[]} - An array of phonetic indices for the input words
+     * @throws {CmpStrInternalError} - If the phonetic index generation fails
      */
     protected loop ( words: string[] ) : string[] {
-        const index: string[] = [];
+        return ErrorUtil.wrap< string[] >( () => {
+            const index: string[] = [];
 
-        // Loop over each word in the input array
-        for ( const word of words ) {
-            // Generate a cache key based on the algorithm and word
-            const key = Phonetic.cache.key( this.algo, [ word ] ) + this.optKey;
+            // Loop over each word in the input array
+            for ( const word of words ) {
+                // Generate a cache key based on the algorithm and word
+                const key = Phonetic.cache.key( this.algo, [ word ] ) + this.optKey;
 
-            // If the key exists in the cache, return the cached result
-            // Otherwise, encode the word using the algorithm
-            const code = Phonetic.cache.get( key || '' ) ?? ( () => {
-                // Get the phonetic code for the word
-                const res = this.encode( word );
+                // If the key exists in the cache, return the cached result
+                // Otherwise, encode the word using the algorithm
+                const code = Phonetic.cache.get( key || '' ) ?? ( () => {
+                    // Get the phonetic code for the word
+                    const res = this.encode( word );
 
-                // If a key was generated, store the result in the cache
-                if ( key ) Phonetic.cache.set( key, res );
+                    // If a key was generated, store the result in the cache
+                    if ( key ) Phonetic.cache.set( key, res );
 
-                return res;
-            } )();
+                    return res;
+                } )();
 
-            // If a code is generated, add them to the index
-            if ( code && code.length ) index.push( this.equalLen( code ) );
-        }
+                // If a code is generated, add them to the index
+                if ( code && code.length ) index.push( this.equalLen( code ) );
+            }
 
-        return index;
+            return index;
+        }, `Failed to generate phonetic index`, { algo: this.algo, words } );
     }
 
     /**
@@ -365,32 +370,35 @@ export abstract class Phonetic {
      * 
      * @param {string[]} words - An array of words to be processed
      * @returns {Promise< string[] >} - A promise that resolves to an array of phonetic indices for the input words
+     * @throws {CmpStrInternalError} - If the asynchronous phonetic index generation fails
      */
     protected async loopAsync ( words: string[] ) : Promise< string[] > {
-        const index: string[] = [];
+        return ErrorUtil.wrapAsync< string[] >( async () => {
+            const index: string[] = [];
 
-        // Loop over each word in the input array
-        for ( const word of words ) {
-            // Generate a cache key based on the algorithm and word
-            const key = Phonetic.cache.key( this.algo, [ word ] ) + this.optKey;
+            // Loop over each word in the input array
+            for ( const word of words ) {
+                // Generate a cache key based on the algorithm and word
+                const key = Phonetic.cache.key( this.algo, [ word ] ) + this.optKey;
 
-            // If the key exists in the cache, return the cached result
-            // Otherwise, encode the word using the algorithm
-            const code = await Promise.resolve( Phonetic.cache.get( key || '' ) ?? ( () => {
-                // Get the phonetic code for the word
-                const res = this.encode( word );
+                // If the key exists in the cache, return the cached result
+                // Otherwise, encode the word using the algorithm
+                const code = await Promise.resolve( Phonetic.cache.get( key || '' ) ?? ( () => {
+                    // Get the phonetic code for the word
+                    const res = this.encode( word );
 
-                // If a key was generated, store the result in the cache
-                if ( key ) Phonetic.cache.set( key, res );
+                    // If a key was generated, store the result in the cache
+                    if ( key ) Phonetic.cache.set( key, res );
 
-                return res;
-            } )() );
+                    return res;
+                } )() );
 
-            // If a code is generated, add them to the index
-            if ( code && code.length ) index.push( this.equalLen( code ) );
-        }
+                // If a code is generated, add them to the index
+                if ( code && code.length ) index.push( this.equalLen( code ) );
+            }
 
-        return index;
+            return index;
+        }, `Failed to generate phonetic index asynchronously`, { algo: this.algo, words } );
     }
 
     /**
@@ -473,13 +481,13 @@ export const PhoneticMappingRegistry: PhoneticMappingService = ( () => {
          * @param {string} id - The unique identifier for the mapping
          * @param {PhoneticMap} map - The phonetic map to be added, containing rules and mappings
          * @param {boolean} [update=false] - Whether to allow overwriting an existing entry
-         * @throws {Error} If the mapping name already exists and update is false
+         * @throws {CmpStrUsageError} - If the entry already exists and update is not allowed
          */
         add ( algo: string, id: string, map: PhoneticMap, update: boolean = false ) : void {
             const mappings: PhoneticMapping = maps( algo );
 
-            if ( ! update && id in mappings ) throw new Error (
-                `Entry <${id}> already exists / use <update=true> to overwrite`
+            ErrorUtil.assert( ! ( ! id || id in mappings ) || update,
+                `Entry <${id}> already exists / use <update=true> to overwrite`, { algo, id }
             );
 
             mappings[ id ] = map;

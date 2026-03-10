@@ -17,6 +17,8 @@
 'use strict';
 
 import type { RegistryConstructor, RegistryService } from './Types';
+import { CmpStrNotFoundError, ErrorUtil } from './Errors';
+
 
 /**
  * Global registry object to hold multiple registries.
@@ -41,14 +43,12 @@ export const factory: Record< string, ( cls: string, ...args: any[] ) => Instanc
  * @param {string} reg - The name of the registry
  * @param {RegistryConstructor< T >} ctor - The base constructor that all registered classes must extend
  * @returns {RegistryService< T >} - An object with methods to register, remove, check, get, and list classes
- * @throws {Error} If the registry already exists (overwriting is forbidden)
+ * @throws {Error} - If the registry already exists (overwriting is forbidden)
  */
 export function Registry< T > ( reg: string, ctor: RegistryConstructor< T > ) : RegistryService< T > {
 
     /** Throws an error if the registry already exists */
-    if ( reg in registry || reg in factory ) throw new Error (
-        `Registry <${reg}> already exists / overwriting is forbidden`
-    );
+    ErrorUtil.assert( ! ( reg in registry || reg in factory ), `Registry <${reg}> already exists / overwriting is forbidden`, { registry: reg } );
 
     /** Create a registry object to hold class constructors */
     const classes: Record< string, RegistryConstructor< T > > = Object.create( null );
@@ -62,12 +62,14 @@ export function Registry< T > ( reg: string, ctor: RegistryConstructor< T > ) : 
          * @param {string} name - The name of the class to register
          * @param {RegistryConstructor<T>} cls - The class constructor
          * @param {boolean} [update=false] - Whether to allow overwriting an existing entry
-         * @throws {TypeError} If the class does not extend the base constructor
-         * @throws {Error} If the class name already exists and update is false
+         * @throws {CmpStrUsageError} - If the class name is invalid, if the class does not extend the base constructor,
+         *                            or if the class already exists and update is false
          */
         add ( name: string, cls: RegistryConstructor< T >, update: boolean = false ) : void {
-            if ( ! ( cls.prototype instanceof ctor ) ) throw new TypeError ( `Class must extend <${reg}>` );
-            if ( ! update && name in classes ) throw new Error ( `Entry <${name}> already exists / use <update=true> to overwrite` );
+            ErrorUtil.assert( typeof name === 'string' && name.length > 0, `Class name must be a non-empty string`, { registry: reg, name } );
+            ErrorUtil.assert( typeof cls === 'function', `Class must be a constructor function`, { registry: reg, class: cls } );
+            ErrorUtil.assert( cls.prototype instanceof ctor, `Class must extend <${reg}>`, { registry: reg, class: cls } );
+            ErrorUtil.assert( update || ! ( name in classes ), `Class <${name}> already exists / use <update=true> to overwrite`, { registry: reg, name } );
 
             classes[ name ] = cls;
         },
@@ -99,10 +101,12 @@ export function Registry< T > ( reg: string, ctor: RegistryConstructor< T > ) : 
          * 
          * @param {string} name - The name of the class to retrieve
          * @returns {RegistryConstructor< T >} - The class constructor
-         * @throws {Error} If the class is not registered
+         * @throws {CmpStrUsageError} - If the class name is invalid or if the class is not registered
          */
         get ( name: string ) : RegistryConstructor< T > {
-            if ( ! ( name in classes ) ) throw new Error ( `Class <${name}> not registered for <${reg}>` );
+            ErrorUtil.assert( typeof name === 'string' && name.length > 0, `Class name must be a non-empty string`, { registry: reg, name } );
+            ErrorUtil.assert( name in classes, `Class <${name}> not registered for <${reg}>`, { registry: reg, name } );
+
             return classes[ name ];
         }
 
@@ -128,10 +132,10 @@ export function Registry< T > ( reg: string, ctor: RegistryConstructor< T > ) : 
  * @param {string} reg - The name of the registry
  * @param {T | string} cls - The class itself or name of the class to resolve
  * @returns {T | undefined} - The class constructor if found, otherwise undefined
- * @throws {ReferenceError} If the registry does not exist
+ * @throws {CmpStrNotFoundError} - If the registry or class does not exist
  */
 export function resolveCls< T extends RegistryConstructor< any > > ( reg: string, cls: T | string ) : T {
-    if ( ! ( reg in registry ) ) throw new ReferenceError ( `Registry <${reg}> does not exist` );
+    if ( ! ( reg in registry ) ) throw new CmpStrNotFoundError ( `Registry <${reg}> does not exist`, { registry: reg } );
     return ( typeof cls === 'string' ? registry[ reg ]?.get( cls ) : cls ) as T;
 }
 
@@ -143,13 +147,16 @@ export function resolveCls< T extends RegistryConstructor< any > > ( reg: string
  * @param {T | string} cls - The class itself or name of the class to instantiate
  * @param {...any} args - Arguments to pass to the class constructor
  * @returns {T} - An instance of the class
- * @throws {Error} If the class cannot be instantiated
+ * @throws {CmpStrInternalError} - If instantiation fails due to an internal error
  */
 export function createFromRegistry< T extends RegistryConstructor< any > >(
     reg: string, cls: T | string, ...args: any[]
 ) : InstanceType< T > {
     cls = resolveCls< T >( reg, cls );
 
-    try { return new ( cls as InstanceType< T > ) ( ...args ) }
-    catch ( err ) { throw new Error ( `Cannot instantiate class <${cls.name ?? cls}>`, { cause: err } ) }
+    return ErrorUtil.wrap< InstanceType< T > >(
+        () => new ( cls as InstanceType< T > ) ( ...args ),
+        `Failed to create instance of class <${cls.name ?? cls}> from registry <${reg}>`,
+        { registry: reg, class: cls, args }
+    );
 }

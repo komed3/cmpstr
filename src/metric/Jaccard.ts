@@ -28,6 +28,7 @@ export interface JaccardRaw {
     union: number;
 }
 
+
 /**
  * JaccardIndex class extends the Metric class to implement the Jaccard Index algorithm.
  */

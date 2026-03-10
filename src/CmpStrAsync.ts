@@ -29,6 +29,7 @@ import type {
     PhoneticOptions, ResultLike, StructuredDataOptions, StructuredResultLike
 } from './utils/Types';
 
+import { ErrorUtil } from './utils/Errors';
 import { Filter } from './utils/Filter';
 import { Normalizer } from './utils/Normalizer';
 import { factory } from './utils/Registry';
@@ -37,6 +38,7 @@ import { Metric } from './metric';
 import { Phonetic } from './phonetic';
 
 import { CmpStr } from './CmpStr';
+
 
 /**
  * The CmpStrAsync class provides a fully asynchronous API for string comparison,
@@ -157,39 +159,46 @@ export class CmpStrAsync< R = MetricRaw > extends CmpStr< R > {
      * @param {boolean} [raw=false] - Whether to return raw results
      * @param {boolean} [skip=false] - Whether to skip normalization and filtering
      * @returns {Promise< T >} - The computed metric result
+     * @throws {CmpStrInternalError} - If the computation fails due to internal errors
      */
     protected async computeAsync< T extends MetricResult< R > | CmpStrResult | CmpStrResult[] > (
         a: MetricInput, b: MetricInput, opt?: CmpStrOptions,
         mode?: MetricMode, raw?: boolean, skip?: boolean
     ) : Promise< T > {
-        const resolved = this.resolveOptions( opt );
-        this.assert( 'metric', resolved.metric );
+        return ErrorUtil.wrapAsync< T >(
+            async () => {
+                const resolved = this.resolveOptions( opt );
+                this.assert( 'metric', resolved.metric );
 
-        // Prepare the input
-        const A = skip ? a : await this.prepareAsync( a, resolved );
-        const B = skip ? b : await this.prepareAsync( b, resolved );
+                // Prepare the input
+                const A = skip ? a : await this.prepareAsync( a, resolved );
+                const B = skip ? b : await this.prepareAsync( b, resolved );
 
-        // If the inputs are empty and safeEmpty is enabled, return an empty array
-        if ( resolved.safeEmpty && (
-            ( Array.isArray( A ) && A.length === 0 ) ||
-            ( Array.isArray( B ) && B.length === 0 ) ||
-            A === '' || B === ''
-        ) ) { return ( [] as unknown ) as T }
+                // If the inputs are empty and safeEmpty is enabled, return an empty array
+                if ( resolved.safeEmpty && (
+                    ( Array.isArray( A ) && A.length === 0 ) ||
+                    ( Array.isArray( B ) && B.length === 0 ) ||
+                    A === '' || B === ''
+                ) ) { return ( [] as unknown ) as T }
 
-        // Get the metric class
-        const metric: Metric< R > = factory[ 'metric' ]( resolved.metric!, A, B, resolved.opt );
+                // Get the metric class
+                const metric: Metric< R > = factory[ 'metric' ]( resolved.metric!, A, B, resolved.opt );
 
-        // Pass the original inputs to the metric
-        if ( resolved.output !== 'prep' ) metric.setOriginal( a, b );
+                // Pass the original inputs to the metric
+                if ( resolved.output !== 'prep' ) metric.setOriginal( a, b );
 
-        // Compute the metric result
-        await metric.runAsync( mode );
+                // Compute the metric result
+                await metric.runAsync( mode );
 
-        // Post-process the results and concat the original inputs
-        const result = this.postProcess( metric.getResults(), resolved );
+                // Post-process the results and concat the original inputs
+                const result = this.postProcess( metric.getResults(), resolved );
 
-        // Resolve and return the result based on the raw flag
-        return this.output< T >( result, raw ?? resolved.raw );
+                // Resolve and return the result based on the raw flag
+                return this.output< T >( result, raw ?? resolved.raw );
+            },
+            `Failed to compute metric <${opt?.metric ?? this.options.metric}> for the given inputs`,
+            { a, b, opt }
+        );
     }
 
     /**

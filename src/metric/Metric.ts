@@ -33,9 +33,11 @@ import type {
     MetricResultBatch, MetricResultSingle, RegistryService
 } from '../utils/Types';
 
+import { CmpStrInternalError, CmpStrUsageError, ErrorUtil } from '../utils/Errors';
 import { Hasher, HashTable } from '../utils/HashTable';
 import { Profiler } from '../utils/Profiler';
 import { Registry } from '../utils/Registry';
+
 
 // Get the singleton profiler instance for performance monitoring
 const profiler = Profiler.getInstance();
@@ -110,7 +112,7 @@ export abstract class Metric< R = MetricRaw > {
      * @param {MetricInput} b - Second input string or array of strings
      * @param {MetricOptions} [opt] - Options for the metric computation
      * @param {boolean} [symmetric=false] - Whether the metric is symmetric (same result for inputs in any order)
-     * @throws {Error} - If inputs `a` or `b` are empty
+     * @throws {CmpStrUsageError} - If the inputs are empty or invalid
      */
     constructor (
         metric: string, a: MetricInput, b: MetricInput,
@@ -124,9 +126,7 @@ export abstract class Metric< R = MetricRaw > {
         this.b = Array.isArray( b ) ? b : [ b ];
 
         // Validate inputs: ensure they are not empty
-        if ( this.a.length === 0 || this.b.length === 0 ) throw new Error (
-            `Inputs <a> and <b> must not be empty`
-        );
+        ErrorUtil.assert( this.a.length > 0 && this.b.length > 0, `Inputs <a> and <b> must not be empty`, { a: this.a, b: this.b } );
 
         // Set options
         this.options = opt;
@@ -164,11 +164,11 @@ export abstract class Metric< R = MetricRaw > {
      * @param {number} n - Length of the second string
      * @param {number} maxLen - Maximum length of the strings
      * @returns {MetricCompute< R >} - The result of the metric computation
-     * @throws {Error} - If not overridden in a subclass
+     * @throws {CmpStrInternalError} - If the method is not overridden in a subclass
      */
     protected compute ( a: string, b: string, m: number, n: number, maxLen: number ) : MetricCompute< R > {
         void [ a, b, m, n, maxLen ];
-        throw new Error ( `Method compute() must be overridden in a subclass` );
+        throw new CmpStrInternalError ( `Method compute() must be overridden in a subclass` );
     }
 
     /**
@@ -180,49 +180,52 @@ export abstract class Metric< R = MetricRaw > {
      * @param {number} i - Pointer to the first string
      * @param {number} j - Pointer to the second string
      * @returns {MetricResultSingle< R >} - The result of the metric computation
+     * @throws {CmpStrInternalError} - If the metric computation fails for the given inputs
      */
     private runSingle ( i: number, j: number ) : MetricResultSingle< R > {
-        // Type safety: convert inputs to strings
-        let a = String ( this.a[ i ] ), A = a;
-        let b = String ( this.b[ j ] ), B = b;
+        return ErrorUtil.wrap< MetricResultSingle< R > >( () => {
+            // Type safety: convert inputs to strings
+            let a = String ( this.a[ i ] ), A = a;
+            let b = String ( this.b[ j ] ), B = b;
 
-        // Get lengths
-        let m = A.length, n = B.length;
+            // Get lengths
+            let m = A.length, n = B.length;
 
-        // Pre-compute trivial cases (identical, empty, etc.)
-        let result = this.preCompute( A, B, m, n );
+            // Pre-compute trivial cases (identical, empty, etc.)
+            let result = this.preCompute( A, B, m, n );
 
-        if ( ! result ) {
-            // If the profiler is enabled, measure; else, just run
-            result = profiler.run( () : MetricCompute< R > => {
-                // If the metric is symmetrical, swap `a` and `b` (shorter string first)
-                if ( this.symmetric ) [ A, B, m, n ] = Metric.swap( A, B, m, n );
+            if ( ! result ) {
+                // If the profiler is enabled, measure; else, just run
+                result = profiler.run( () : MetricCompute< R > => {
+                    // If the metric is symmetrical, swap `a` and `b` (shorter string first)
+                    if ( this.symmetric ) [ A, B, m, n ] = Metric.swap( A, B, m, n );
 
-                // Generate a cache key based on the metric and pair of strings `a` and `b`
-                // Concatenate with options to ensure different options yield different cache entries
-                const key = Metric.cache.key( this.metric, [ A, B ], this.symmetric ) + this.optKey;
+                    // Generate a cache key based on the metric and pair of strings `a` and `b`
+                    // Concatenate with options to ensure different options yield different cache entries
+                    const key = Metric.cache.key( this.metric, [ A, B ], this.symmetric ) + this.optKey;
 
-                // If the key exists in the cache, return the cached result
-                // Otherwise, compute the metric using the algorithm
-                return Metric.cache.get( key || '' ) ?? ( () => {
-                    // Compute the similarity using the algorithm
-                    const res = this.compute( A, B, m, n, Math.max( m, n ) );
+                    // If the key exists in the cache, return the cached result
+                    // Otherwise, compute the metric using the algorithm
+                    return Metric.cache.get( key || '' ) ?? ( () => {
+                        // Compute the similarity using the algorithm
+                        const res = this.compute( A, B, m, n, Math.max( m, n ) );
 
-                    // If a key was generated, store the result in the cache
-                    if ( key ) Metric.cache.set( key, res );
+                        // If a key was generated, store the result in the cache
+                        if ( key ) Metric.cache.set( key, res );
 
-                    return res;
-                } )();
-            } );
-        }
+                        return res;
+                    } )();
+                } );
+            }
 
-        // Build metric result object
-        return {
-            metric: this.metric,
-            a: this.origA[ i ] ?? a,
-            b: this.origB[ j ] ?? b,
-            ...result
-        };
+            // Build metric result object
+            return {
+                metric: this.metric,
+                a: this.origA[ i ] ?? a,
+                b: this.origB[ j ] ?? b,
+                ...result
+            };
+        }, `Failed to compute metric for inputs at indices a[${i}] and b[${j}]`, { i, j } );
     }
 
     /**
@@ -344,11 +347,11 @@ export abstract class Metric< R = MetricRaw > {
      * 
      * @returns {boolean} - True if both inputs are arrays of equal length
      * @param {boolean} [safe=false] - If true, does not throw an error if lengths are not equal
-     * @throws {Error} - If `safe` is false and the lengths of `a` and `b` are not equal
+     * @throws {CmpStrUsageError} - If `safe` is false and the lengths of `a` and `b` are not equal
      */
     public isPairwise ( safe: boolean = false ) : boolean {
         return this.isBatch() && this.a.length === this.b.length ? true : ! safe && ( () => {
-            throw new Error ( `Mode <pairwise> requires arrays of equal length` );
+            throw new CmpStrUsageError ( `Mode <pairwise> requires arrays of equal length`, { a: this.a, b: this.b } );
         } )();
     }
 
@@ -387,7 +390,7 @@ export abstract class Metric< R = MetricRaw > {
      * 
      * @param {MetricMode} [mode] - The mode to run the metric in (optional)
      * @param {boolean} [clear=true] - Whether to clear previous results before running
-     * @throws {Error} - If an unsupported mode is specified
+     * @throws {CmpStrInternalError} - If an unsupported mode is specified
      */
     public run ( mode?: MetricMode, clear: boolean = true ) : void {
         // Clear previous results if requested
@@ -403,7 +406,7 @@ export abstract class Metric< R = MetricRaw > {
             // Pairwise mode runs the metric on corresponding pairs of a[] and b[]
             case 'pairwise': if ( this.isPairwise() ) this.runPairwise(); break;
             // Unsupported mode
-            default: throw new Error ( `Unsupported mode <${mode}>` );
+            default: throw new CmpStrInternalError ( `Unsupported mode <${mode}>` );
         }
     }
 
@@ -413,7 +416,7 @@ export abstract class Metric< R = MetricRaw > {
      * @param {MetricMode} [mode] - The mode to run the metric in (optional)
      * @param {boolean} [clear=true] - Whether to clear previous results before running
      * @returns {Promise<void>} - A promise that resolves when the metric computation is complete
-     * @throws {Error} - If an unsupported mode is specified
+     * @throws {CmpStrInternalError} - If an unsupported mode is specified
      */
     public async runAsync ( mode?: MetricMode, clear: boolean = true ) : Promise<void> {
         // Clear previous results if requested
@@ -429,7 +432,7 @@ export abstract class Metric< R = MetricRaw > {
             // Pairwise mode runs the metric on corresponding pairs of a[] and b[]
             case 'pairwise': if ( this.isPairwise() ) await this.runPairwiseAsync(); break;
             // Unsupported mode
-            default: throw new Error ( `Unsupported async mode <${mode}>` );
+            default: throw new CmpStrInternalError ( `Unsupported async mode <${mode}>` );
         }
     }
 
@@ -448,7 +451,7 @@ export abstract class Metric< R = MetricRaw > {
      */
     public getResults () : MetricResult< R > {
         // Ensure that the metric has been run before getting the result
-        if ( this.results === undefined ) throw new Error ( `run() must be called before getResult()` );
+        ErrorUtil.assert( this.results !== undefined, `run() must be called before getResults()` );
 
         // Return the result(s)
         return this.results;

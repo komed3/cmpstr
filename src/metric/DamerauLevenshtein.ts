@@ -29,6 +29,7 @@ export interface DamerauRaw {
     maxLen: number;
 }
 
+
 /**
  * DamerauLevenshteinDistance class extends the Metric class to implement the Damerau-Levenshtein algorithm.
  */

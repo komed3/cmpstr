@@ -27,7 +27,8 @@ import { Metric, MetricRegistry } from './Metric';
 export interface LevenshteinRaw {
     dist: number;
     maxLen: number;
-};
+}
+
 
 /**
  * LevenshteinDistance class extends the Metric class to implement the Levenshtein distance algorithm.

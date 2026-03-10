@@ -29,6 +29,7 @@ export interface LCSRaw {
     maxLen: number;
 }
 
+
 /**
  * LCSMetric class extends the Metric class to implement the Longest Common Subsequence algorithm.
  */

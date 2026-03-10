@@ -30,6 +30,7 @@ export interface QGramRaw {
     size: number;
 }
 
+
 /**
  * QGramSimilarity class extends the Metric class to implement the q-Gram similarity algorithm.
  */

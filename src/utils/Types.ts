@@ -19,6 +19,41 @@
 
 /**
  * ================================================================================
+ * ERROR HANDLING
+ * ================================================================================
+ * 
+ * Types for standardized error classes and structured error metadata.
+ */
+
+/**
+ * Metadata attached to a CmpStr error.
+ */
+export type CmpStrErrorMeta = Record< string, any > | undefined;
+
+/**
+ * Structured format for CmpStr errors when serialized to JSON.
+ */
+export interface CmpStrErrorJSON {
+    // The name of the error class
+    name: string;
+    // The error message
+    code: string;
+    // The error message
+    message: string;
+    // Optional structured metadata
+    meta?: CmpStrErrorMeta;
+    // Timestamp when the error was created (ISO 8601)
+    when: string;
+    // Optional cause (serialized if it's an Error-like object)
+    cause?: {
+        name: string;
+        message: string;
+        stack?: string;
+    } | unknown;
+}
+
+/**
+ * ================================================================================
  * PROFILER & POOL UTILITIES
  * ================================================================================
  * 

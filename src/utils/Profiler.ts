@@ -22,6 +22,7 @@
 
 import type { ProfilerEntry, ProfilerService } from './Types';
 
+
 /**
  * Profiler class for measuring execution time and memory usage of functions.
  */

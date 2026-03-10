@@ -16,6 +16,8 @@
 'use strict';
 
 import type { FilterEntry, FilterFn, FilterHooks, FilterOptions } from './Types';
+import { ErrorUtil } from './Errors';
+
 
 /**
  * The Filter class provides a way to manage and apply filters to strings based on hooks.
@@ -40,25 +42,28 @@ export class Filter {
      * 
      * @param {FilterHooks} hook - The name of the hook
      * @returns {FilterFn} - The compiled filter function for the hook
+     * @throws {CmpStrInternalError} - Throws an error if the pipeline compilation fails
      */
     private static getPipeline ( hook: FilterHooks ) : FilterFn {
-        // Return the cached pipeline if it exists
-        const cached = Filter.pipeline.get( hook );
-        if ( cached ) return cached;
+        return ErrorUtil.wrap< FilterFn >( () => {
+            // Return the cached pipeline if it exists
+            const cached = Filter.pipeline.get( hook );
+            if ( cached ) return cached;
 
-        // Get the filters for the specified hook
-        const filter = Filter.filters.get( hook );
-        if ( ! filter ) return ( s: string ) => s;
+            // Get the filters for the specified hook
+            const filter = Filter.filters.get( hook );
+            if ( ! filter ) return ( s: string ) => s;
 
-        // Compile the pipeline from active filters sorted by priority
-        const pipeline = Array.from( filter.values() ).filter( f => f.active )
-            .sort( ( a, b ) => a.priority - b.priority ).map( f => f.fn );
+            // Compile the pipeline from active filters sorted by priority
+            const pipeline = Array.from( filter.values() ).filter( f => f.active )
+                .sort( ( a, b ) => a.priority - b.priority ).map( f => f.fn );
 
-        const fn: FilterFn = ( input: string ) => pipeline.reduce( ( v, f ) => f( v ), input );
+            const fn: FilterFn = ( input: string ) => pipeline.reduce( ( v, f ) => f( v ), input );
 
-        // Cache the compiled pipeline
-        Filter.pipeline.set( hook, fn );
-        return fn;
+            // Cache the compiled pipeline
+            Filter.pipeline.set( hook, fn );
+            return fn;
+        }, `Error compiling filter pipeline for hook <${hook}>`, { hook } );
     }
 
     /**
@@ -81,24 +86,27 @@ export class Filter {
      * @param {FilterOptions} [opt] - Additional options for the filter
      * @returns {boolean} - Returns true if the filter was added,
      *                      false if it was not added due to override restrictions
+     * @throws {CmpStrInternalError} - Throws an error if there is an issue adding the filter
      */
     public static add (
         hook: FilterHooks, id: string, fn: FilterFn, opt: FilterOptions = {}
     ) : boolean {
-        const { priority = 10, active = true, overrideable = true } = opt;
+        return ErrorUtil.wrap< boolean >( () => {
+            const { priority = 10, active = true, overrideable = true } = opt;
 
-        // Check if the filter already exists
-        const filter = Filter.filters.get( hook ) ?? new Map< string, FilterEntry >();
-        const index = filter.get( id );
+            // Check if the filter already exists
+            const filter = Filter.filters.get( hook ) ?? new Map< string, FilterEntry >();
+            const index = filter.get( id );
 
-        // If the filter already exists and is not overrideable, return false
-        if ( index && ! index.overrideable ) return false;
+            // If the filter already exists and is not overrideable, return false
+            if ( index && ! index.overrideable ) return false;
 
-        // Add or update the filter entry
-        filter.set( id, { id, fn, priority, active, overrideable } );
-        Filter.filters.set( hook, filter );
-        Filter.pipeline.delete( hook );
-        return true;
+            // Add or update the filter entry
+            filter.set( id, { id, fn, priority, active, overrideable } );
+            Filter.filters.set( hook, filter );
+            Filter.pipeline.delete( hook );
+            return true;
+        }, `Error adding filter <${id}> to hook <${hook}>`, { hook, id, opt } );
     }
 
     /**
@@ -162,10 +170,13 @@ export class Filter {
      * @param {FilterHooks} hook - The name of the hook
      * @param {string | string[]} input - The input string(s) to be filtered
      * @returns {string | string[]} - The filtered string(s)
+     * @throws {CmpStrInternalError} - Throws an error if there is an issue applying the filters
      */
     public static apply ( hook: FilterHooks, input: string | string[] ) : string | string[] {
-        const fn = Filter.getPipeline( hook );
-        return Array.isArray( input ) ? input.map( fn ) : fn( input );
+        return ErrorUtil.wrap< string | string[] >( () => {
+            const fn = Filter.getPipeline( hook );
+            return Array.isArray( input ) ? input.map( fn ) : fn( input );
+        }, `Error applying filters for hook <${hook}>`, { hook, input } );
     }
 
     /**
@@ -175,14 +186,17 @@ export class Filter {
      * @param {FilterHooks} hook - The name of the hook
      * @param {string | string[]} input - The input string(s) to be filtered
      * @returns {Promise< string | string[] >} - The filtered string(s)
+     * @throws {CmpStrInternalError} - Throws an error if there is an issue applying the filters
      */
     public static async applyAsync (
         hook: FilterHooks, input: string | string[]
     ) : Promise< string | string[] > {
-        const fn = Filter.getPipeline( hook );
-        return Array.isArray( input )
-            ? Promise.all( input.map( fn ) )
-            : Promise.resolve( fn( input ) );
+        return ErrorUtil.wrapAsync< string | string[] >( async () => {
+            const fn = Filter.getPipeline( hook );
+            return Array.isArray( input )
+                ? Promise.all( input.map( fn ) )
+                : Promise.resolve( fn( input ) );
+        }, `Error applying filters for hook <${hook}>`, { hook, input } );
     }
 
     /**
