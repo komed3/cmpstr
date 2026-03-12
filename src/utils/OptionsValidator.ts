@@ -17,8 +17,8 @@
 
 'use strict';
 
-import { MetricRegistry } from '../metric';
 import { CmpStrValidationError } from './Errors';
+import { MetricRegistry } from '../metric';
 
 
 /**
@@ -63,11 +63,27 @@ export class OptionsValidator {
         if ( flags.length === 0 ) return;
         for ( let i = 0, len = flags.length; i < len; i += 1 ) {
             if ( ! OptionsValidator.ALLOWED_FLAGS.has( flags[ i ] ) ) {
-                throw new CmpStrValidationError ( 
+                throw new CmpStrValidationError (
                     `Invalid normalization flag <${ flags[ i ] }> in <flags>`,
                     { flags, invalid: flags[ i ] }
                 );
             }
+        }
+    }
+
+    /**
+     * Validate CmpStr output mode.
+     * 
+     * @param {unknown} output - The output mode to validate
+     * @throws {CmpStrValidationError} If the output mode is not a string or not allowed
+     */
+    public static validateOutput ( output: unknown ) : void {
+        if ( output === undefined ) return;
+        if ( typeof output !== 'string' || ! OptionsValidator.ALLOWED_OUTPUT.has( output ) ) {
+            throw new CmpStrValidationError (
+                `Invalid option <output>: expected ${ Array.from( OptionsValidator.ALLOWED_OUTPUT ).join( ' | ' ) }`,
+                { output }
+            );
         }
     }
 
