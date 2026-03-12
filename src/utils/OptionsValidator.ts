@@ -17,6 +17,9 @@
 
 'use strict';
 
+import { CmpStrValidationError } from './Errors';
+
+
 /**
  * Utility for validating CmpStr options.
  * 
@@ -29,5 +32,19 @@ export class OptionsValidator {
 
     // Allowed output modes
     private static readonly ALLOWED_OUTPUT = new Set( [ 'orig', 'prep' ] );
+
+    /**
+     * Validate boolean-like values.
+     * 
+     * @param {unknown} value - The value to validate
+     * @param {string} name - The name of the option (for error messages)
+     * @throws {CmpStrValidationError} If the value is not a boolean
+     */
+    public static validateBoolean ( value: unknown, name: string ) : void {
+        if ( value === undefined ) return;
+        if ( typeof value !== 'boolean' ) throw new CmpStrValidationError (
+            `Invalid option <${name}>: expected boolean`, { name, value }
+        );
+    }
 
 }
