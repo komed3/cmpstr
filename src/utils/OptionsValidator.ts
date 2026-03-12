@@ -26,13 +26,13 @@ import { PhoneticRegistry } from '../phonetic';
  */
 export class OptionsValidator {
 
-    // Allowed normalization flags
+    /** Allowed normalization flags */
     private static readonly ALLOWED_FLAGS = new Set( [ 'd', 'u', 'x', 'w', 't', 'r', 's', 'k', 'n', 'i' ] );
-    // Allowed output modes
+    /** Allowed output modes */
     private static readonly ALLOWED_OUTPUT = new Set( [ 'orig', 'prep' ] );
-    // Allowed comparison modes
+    /** Allowed comparison modes */
     private static readonly ALLOWED_MODES = new Set( [ 'default', 'batch', 'single', 'pairwise' ] );
-    // Allowed processor types
+    /** Allowed processor types */
     private static readonly ALLOWED_PROCESSORS = new Set( [ 'phonetic' ] );
 
     /**
