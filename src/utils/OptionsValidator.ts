@@ -182,6 +182,27 @@ export class OptionsValidator {
     }
 
     /**
+     * Validate phonetic algorithm against the PhoneticRegistry.
+     * 
+     * Checks that the phonetic algorithm is a non-empty string and exists in the registry.
+     * This allows for validating both built-in and dynamically registered phonetic algorithms.
+     * 
+     * @param {unknown} phonetic - The phonetic algorithm name to validate
+     * @throws {CmpStrValidationError} - If the phonetic algorithm is not a string or not registered
+     */
+    public static validatePhonetic ( phonetic: unknown ) : void {
+        if ( phonetic === undefined ) return;
+        if ( typeof phonetic !== 'string' || phonetic.length === 0 ) throw new CmpStrValidationError (
+            `Invalid option <phonetic>: expected non-empty string`, { phonetic }
+        );
+
+        if ( ! PhoneticRegistry.has( phonetic ) ) throw new CmpStrValidationError (
+            `Phonetic algorithm <${phonetic}> is not registered`,
+            { phonetic, available: PhoneticRegistry.list() }
+        );
+    }
+
+    /**
      * Validate metric options.
      * 
      * This method checks for the presence of specific metric options and validates their types.
@@ -201,7 +222,10 @@ export class OptionsValidator {
         if ( 'gap' in opt ) this.validateNumber( opt.gap, 'opt.gap' );
     }
 
-    public static validateProcessorOptions ( opt?: CmpStrProcessors ) : void {}
+    public static validateProcessors ( opt?: CmpStrProcessors ) : void {
+        // 1. validate processor types
+        // 2. validate phonetic (algo and options)
+    }
 
     /**
      * Validate the provided CmpStr options object.
@@ -228,7 +252,7 @@ export class OptionsValidator {
         if ( 'output' in opt ) this.validateOutput( opt.output );
 
         if ( 'opt' in opt ) this.validateMetricOptions( opt.opt );
-        if ( 'processors' in opt ) this.validateProcessorOptions( opt.processors );
+        if ( 'processors' in opt ) this.validateProcessors( opt.processors );
     }
 
 }
