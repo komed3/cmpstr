@@ -47,4 +47,21 @@ export class OptionsValidator {
         );
     }
 
+    public static validateFlags ( flags: unknown ) : void {
+        if ( flags === undefined ) return;
+        if ( typeof flags !== 'string' ) throw new CmpStrValidationError (
+            `Invalid option <flags>: expected string`, { flags }
+        );
+
+        if ( flags.length === 0 ) return;
+        for ( let i = 0, len = flags.length; i < len; i += 1 ) {
+            if ( ! OptionsValidator.ALLOWED_FLAGS.has( flags[ i ] ) ) {
+                throw new CmpStrValidationError ( 
+                    `Invalid normalization flag <${ flags[ i ] }> in <flags>`,
+                    { flags, invalid: flags[ i ] }
+                );
+            }
+        }
+    }
+
 }
