@@ -17,6 +17,7 @@
 
 'use strict';
 
+import { MetricRegistry } from '../metric';
 import { CmpStrValidationError } from './Errors';
 
 
@@ -47,6 +48,12 @@ export class OptionsValidator {
         );
     }
 
+    /**
+     * Validate normalization flags.
+     * 
+     * @param {unknown} flags - The flags to validate
+     * @throws {CmpStrValidationError} If the flags are not a string or contain invalid characters
+     */
     public static validateFlags ( flags: unknown ) : void {
         if ( flags === undefined ) return;
         if ( typeof flags !== 'string' ) throw new CmpStrValidationError (
@@ -62,6 +69,27 @@ export class OptionsValidator {
                 );
             }
         }
+    }
+
+    /**
+     * Validate metric against the MetricRegistry.
+     * 
+     * By checking the registry, ensures that dynamically registered metrics
+     * are also validated correctly.
+     * 
+     * @param {unknown} metric - The metric name to validate
+     * @throws {CmpStrValidationError} If the metric is not a string or not registered
+     */
+    public static validateMetric ( metric: unknown ) : void {
+        if ( metric === undefined ) return;
+        if ( typeof metric !== 'string' || metric.length === 0 ) throw new CmpStrValidationError (
+            `Invalid option <metric>: expected non-empty string`, { metric }
+        );
+
+        if ( ! MetricRegistry.has( metric ) ) throw new CmpStrValidationError (
+            `Metric <${metric}> is not registered`,
+            { metric, available: MetricRegistry.list() }
+        );
     }
 
 }
