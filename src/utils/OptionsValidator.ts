@@ -17,7 +17,7 @@
 
 'use strict';
 
-import type { CmpStrProcessors } from './Types';
+import type { CmpStrOptions, CmpStrProcessors } from './Types';
 
 import { CmpStrValidationError } from './Errors';
 import { MetricRegistry } from '../metric';
@@ -36,6 +36,33 @@ export class OptionsValidator {
 
     // Allowed output modes
     private static readonly ALLOWED_OUTPUT = new Set( [ 'orig', 'prep' ] );
+
+    /**
+     * Validate the provided CmpStr options object.
+     * 
+     * This method performs a series of checks on the options object, including:
+     * - Checking that boolean options are actually booleans
+     * - Validating normalization flags
+     * - Validating output mode
+     * - Validating that the specified metric exists in the MetricRegistry
+     * - Validating that any specified phonetic algorithm exists in the PhoneticRegistry
+     * 
+     * If any validation fails, a CmpStrValidationError is thrown with details about the failure.
+     * 
+     * @param {CmpStrOptions} [opt] - The options object to validate
+     * @throws {CmpStrValidationError} If any validation check fails
+     */
+    public static validateOptions ( opt?: CmpStrOptions ) : void {
+        if ( ! opt ) return;
+
+        if ( 'raw' in opt ) this.validateBoolean( opt.raw, 'raw' );
+        if ( 'removeZero' in opt ) this.validateBoolean( opt.removeZero, 'removeZero' );
+        if ( 'safeEmpty' in opt ) this.validateBoolean( opt.safeEmpty, 'safeEmpty' );
+        if ( 'flags' in opt ) this.validateFlags( opt.flags );
+        if ( 'metric' in opt ) this.validateMetric( opt.metric );
+        if ( 'output' in opt ) this.validateOutput( opt.output );
+        if ( 'processors' in opt ) this.validateProcessors( opt.processors );
+    }
 
     /**
      * Validate boolean-like values.
