@@ -33,13 +33,10 @@ export class OptionsValidator {
 
     // Allowed normalization flags
     private static readonly ALLOWED_FLAGS = new Set( [ 'd', 'u', 'x', 'w', 't', 'r', 's', 'k', 'n', 'i' ] );
-
     // Allowed output modes
     private static readonly ALLOWED_OUTPUT = new Set( [ 'orig', 'prep' ] );
-
     // Allowed comparison modes
     private static readonly ALLOWED_MODES = new Set( [ 'default', 'batch', 'single', 'pairwise' ] );
-
     // Allowed processor types
     private static readonly ALLOWED_PROCESSORS = new Set( [ 'phonetic' ] );
 
@@ -54,34 +51,6 @@ export class OptionsValidator {
     }
 
     /**
-     * Validate the provided CmpStr options object.
-     * 
-     * This method performs a series of checks on the options object, including:
-     * - Checking that boolean options are actually booleans
-     * - Validating normalization flags
-     * - Validating output mode
-     * - Validating that the specified metric exists in the MetricRegistry
-     * - Validating that any specified phonetic algorithm exists in the PhoneticRegistry
-     * 
-     * If any validation fails, a CmpStrValidationError is thrown with details about the failure.
-     * 
-     * @param {CmpStrOptions} [opt] - The options object to validate
-     * @throws {CmpStrValidationError} - If any validation check fails
-     */
-    public static validateOptions ( opt?: CmpStrOptions ) : void {
-        if ( ! opt ) return;
-
-        if ( 'raw' in opt ) this.validateBoolean( opt.raw, 'raw' );
-        if ( 'removeZero' in opt ) this.validateBoolean( opt.removeZero, 'removeZero' );
-        if ( 'safeEmpty' in opt ) this.validateBoolean( opt.safeEmpty, 'safeEmpty' );
-        if ( 'flags' in opt ) this.validateFlags( opt.flags );
-        if ( 'metric' in opt ) this.validateMetric( opt.metric );
-        if ( 'output' in opt ) this.validateOutput( opt.output );
-
-        if ( 'processors' in opt ) this.validateProcessors( opt.processors );
-    }
-
-    /**
      * Validate boolean-like values.
      * 
      * @param {unknown} value - The value to validate
@@ -92,6 +61,34 @@ export class OptionsValidator {
         if ( value === undefined ) return;
         if ( typeof value !== 'boolean' ) throw new CmpStrValidationError (
             `Invalid option <${name}>: expected boolean`, { name, value }
+        );
+    }
+
+    /**
+     * Validate number-like values.
+     * 
+     * @param {unknown} value - The value to validate
+     * @param {string} name - The name of the option (for error messages)
+     * @throws {CmpStrValidationError} - If the value is not a number or is NaN
+     */
+    public static validateNumber ( value: unknown, name: string ) : void {
+        if ( value === undefined ) return;
+        if ( typeof value !== 'number' || isNaN( value ) ) throw new CmpStrValidationError (
+            `Invalid option <${name}>: expected number`, { name, value }
+        );
+    }
+
+    /**
+     * Validate string-like values.
+     * 
+     * @param {unknown} value - The value to validate
+     * @param {string} name - The name of the option (for error messages)
+     * @throws {CmpStrValidationError} - If the value is not a string
+     */
+    public static validateString ( value: unknown, name: string ) : void {
+        if ( value === undefined ) return;
+        if ( typeof value !== 'string' ) throw new CmpStrValidationError (
+            `Invalid option <${name}>: expected string`, { name, value }
         );
     }
 
@@ -110,11 +107,9 @@ export class OptionsValidator {
         if ( flags.length === 0 ) return;
         for ( let i = 0, len = flags.length; i < len; i += 1 ) {
             if ( ! OptionsValidator.ALLOWED_FLAGS.has( flags[ i ] ) ) {
-                throw new CmpStrValidationError (
-                    `Invalid normalization flag <${ flags[ i ] }> in <flags>: expected ${
-                        OptionsValidator.set2string( OptionsValidator.ALLOWED_FLAGS )
-                    }`, { flags, invalid: flags[ i ] }
-                );
+                throw new CmpStrValidationError ( `Invalid normalization flag <${ flags[ i ] }> in <flags>: expected ${
+                    OptionsValidator.set2string( OptionsValidator.ALLOWED_FLAGS )
+                }`, { flags, invalid: flags[ i ] } );
             }
         }
     }
@@ -128,11 +123,45 @@ export class OptionsValidator {
     public static validateOutput ( output: unknown ) : void {
         if ( output === undefined ) return;
         if ( typeof output !== 'string' || ! OptionsValidator.ALLOWED_OUTPUT.has( output ) ) {
-            throw new CmpStrValidationError (
-                `Invalid option <output>: expected ${
-                    OptionsValidator.set2string( OptionsValidator.ALLOWED_OUTPUT )
-                }`, { output }
-            );
+            throw new CmpStrValidationError ( `Invalid option <output>: expected ${
+                OptionsValidator.set2string( OptionsValidator.ALLOWED_OUTPUT )
+            }`, { output } );
+        }
+    }
+
+    /**
+     * Validate CmpStr comparison mode.
+     * 
+     * @param {unknown} mode - The comparison mode to validate
+     * @throws {CmpStrValidationError} - If the comparison mode is not a string or not allowed
+     */
+    public static validateMode ( mode: unknown ) : void {
+        if ( mode === undefined ) return;
+        if ( typeof mode !== 'string' || ! OptionsValidator.ALLOWED_MODES.has( mode ) ) {
+            throw new CmpStrValidationError ( `Invalid option <mode>: expected ${
+                OptionsValidator.set2string( OptionsValidator.ALLOWED_MODES )
+            }`, { mode } );
+        }
+    }
+
+    /**
+     * Validate CmpStr processor options.
+     * 
+     * @param {unknown} processors - The processor options to validate
+     * @throws {CmpStrValidationError} - If the processor options are not an object or contain invalid processor types
+     */
+    public static validateProcessorTypes ( processors: unknown ) : void {
+        if ( processors === undefined ) return;
+        if ( typeof processors !== 'object' || processors === null ) throw new CmpStrValidationError (
+            `Invalid option <processors>: expected object`, { processors }
+        );
+
+        for ( const key in processors ) {
+            if ( ! OptionsValidator.ALLOWED_PROCESSORS.has( key ) ) {
+                throw new CmpStrValidationError ( `Invalid processor type <${key}> in <processors>: expected ${
+                    OptionsValidator.set2string( OptionsValidator.ALLOWED_PROCESSORS )
+                }`, { processors, invalid: key } );
+            }
         }
     }
 
@@ -185,6 +214,34 @@ export class OptionsValidator {
                 { algo, available: PhoneticRegistry.list() }
             );
         }
+    }
+
+    /**
+     * Validate the provided CmpStr options object.
+     * 
+     * This method performs a series of checks on the options object, including:
+     * - Checking that boolean options are actually booleans
+     * - Validating normalization flags
+     * - Validating output mode
+     * - Validating that the specified metric exists in the MetricRegistry
+     * - Validating that any specified phonetic algorithm exists in the PhoneticRegistry
+     * 
+     * If any validation fails, a CmpStrValidationError is thrown with details about the failure.
+     * 
+     * @param {CmpStrOptions} [opt] - The options object to validate
+     * @throws {CmpStrValidationError} - If any validation check fails
+     */
+    public static validateOptions ( opt?: CmpStrOptions ) : void {
+        if ( ! opt ) return;
+
+        if ( 'raw' in opt ) this.validateBoolean( opt.raw, 'raw' );
+        if ( 'removeZero' in opt ) this.validateBoolean( opt.removeZero, 'removeZero' );
+        if ( 'safeEmpty' in opt ) this.validateBoolean( opt.safeEmpty, 'safeEmpty' );
+        if ( 'flags' in opt ) this.validateFlags( opt.flags );
+        if ( 'metric' in opt ) this.validateMetric( opt.metric );
+        if ( 'output' in opt ) this.validateOutput( opt.output );
+
+        if ( 'processors' in opt ) this.validateProcessors( opt.processors );
     }
 
 }
