@@ -43,6 +43,7 @@ export * as DeepMerge from './utils/DeepMerge';
 export * as CmpStrError from './utils/Errors';
 export { Filter } from './utils/Filter';
 export { Hasher, HashTable } from './utils/HashTable';
+export { OptionsValidator } from './utils/OptionsValidator';
 export { Pool } from './utils/Pool';
 export { Profiler } from './utils/Profiler';
 export { StructuredData } from './utils/StructuredData';
