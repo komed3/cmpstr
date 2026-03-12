@@ -50,7 +50,7 @@ export class OptionsValidator {
      * If any validation fails, a CmpStrValidationError is thrown with details about the failure.
      * 
      * @param {CmpStrOptions} [opt] - The options object to validate
-     * @throws {CmpStrValidationError} If any validation check fails
+     * @throws {CmpStrValidationError} - If any validation check fails
      */
     public static validateOptions ( opt?: CmpStrOptions ) : void {
         if ( ! opt ) return;
@@ -69,7 +69,7 @@ export class OptionsValidator {
      * 
      * @param {unknown} value - The value to validate
      * @param {string} name - The name of the option (for error messages)
-     * @throws {CmpStrValidationError} If the value is not a boolean
+     * @throws {CmpStrValidationError} - If the value is not a boolean
      */
     public static validateBoolean ( value: unknown, name: string ) : void {
         if ( value === undefined ) return;
@@ -82,7 +82,7 @@ export class OptionsValidator {
      * Validate normalization flags.
      * 
      * @param {unknown} flags - The flags to validate
-     * @throws {CmpStrValidationError} If the flags are not a string or contain invalid characters
+     * @throws {CmpStrValidationError} - If the flags are not a string or contain invalid characters
      */
     public static validateFlags ( flags: unknown ) : void {
         if ( flags === undefined ) return;
@@ -105,7 +105,7 @@ export class OptionsValidator {
      * Validate CmpStr output mode.
      * 
      * @param {unknown} output - The output mode to validate
-     * @throws {CmpStrValidationError} If the output mode is not a string or not allowed
+     * @throws {CmpStrValidationError} - If the output mode is not a string or not allowed
      */
     public static validateOutput ( output: unknown ) : void {
         if ( output === undefined ) return;
@@ -124,7 +124,7 @@ export class OptionsValidator {
      * This allows for validating both built-in and dynamically registered metrics.
      * 
      * @param {unknown} metric - The metric name to validate
-     * @throws {CmpStrValidationError} If the metric is not a string or not registered
+     * @throws {CmpStrValidationError} - If the metric is not a string or not registered
      */
     public static validateMetric ( metric: unknown ) : void {
         if ( metric === undefined ) return;
@@ -145,7 +145,7 @@ export class OptionsValidator {
      * This allows for validating both built-in and dynamically registered phonetic algorithms.
      * 
      * @param {unknown} processors - The processors options to validate
-     * @throws {CmpStrValidationError} If the processors option is invalid or references an unknown phonetic algorithm
+     * @throws {CmpStrValidationError} - If the processors option is invalid or references an unknown phonetic algorithm
      */
     public static validateProcessors ( processors: unknown ) : void {
         if ( processors === undefined ) return;
