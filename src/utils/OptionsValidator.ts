@@ -2,7 +2,12 @@
  * CmpStr Options Validator
  * src/utils/OptionsValidator.ts
  * 
- * ...
+ * This module provides the OptionsValidator class, which contains static methods for validating
+ * the options passed to the CmpStr function. It checks for correct types, allowed values, and
+ * the existence of specified metrics and phonetic algorithms in their respective registries.
+ * 
+ * If any validation fails, a CmpStrValidationError is thrown with a descriptive message and
+ * relevant details about the invalid option.
  * 
  * @module Utils
  * @name OptionsValidator
@@ -22,7 +27,8 @@ import { PhoneticRegistry } from '../phonetic';
 /**
  * Utility for validating CmpStr options.
  * 
- * ...
+ * This class provides static methods to validate various aspects of the
+ * options object passed to CmpStr.
  */
 export class OptionsValidator {
 
@@ -102,9 +108,11 @@ export class OptionsValidator {
         if ( flags.length === 0 ) return;
         for ( let i = 0, len = flags.length; i < len; i++ ) {
             if ( ! OptionsValidator.ALLOWED_FLAGS.has( flags[ i ] ) ) {
-                throw new CmpStrValidationError ( `Invalid normalization flag <${ flags[ i ] }> in <flags>: expected ${
-                    OptionsValidator.set2string( OptionsValidator.ALLOWED_FLAGS )
-                }`, { flags, invalid: flags[ i ] } );
+                throw new CmpStrValidationError (
+                    `Invalid normalization flag <${ flags[ i ] }> in <flags>: expected ${
+                        OptionsValidator.set2string( OptionsValidator.ALLOWED_FLAGS )
+                    }`, { flags, invalid: flags[ i ] }
+                );
             }
         }
     }
