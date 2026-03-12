@@ -12,7 +12,7 @@
 
 'use strict';
 
-import type { CmpStrOptions, CmpStrProcessors, MetricOptions } from './Types';
+import type { CmpStrOptions, CmpStrProcessors, MetricOptions, PhoneticOptions } from './Types';
 
 import { CmpStrValidationError } from './Errors';
 import { MetricRegistry } from '../metric';
@@ -169,7 +169,7 @@ export class OptionsValidator {
      * @param {unknown} metric - The metric name to validate
      * @throws {CmpStrValidationError} - If the metric is not a string or not registered
      */
-    public static validateMetric ( metric: unknown ) : void {
+    public static validateMetricName ( metric: unknown ) : void {
         if ( metric === undefined ) return;
         if ( typeof metric !== 'string' || metric.length === 0 ) throw new CmpStrValidationError (
             `Invalid option <metric>: expected non-empty string`, { metric }
@@ -178,27 +178,6 @@ export class OptionsValidator {
         if ( ! MetricRegistry.has( metric ) ) throw new CmpStrValidationError (
             `Metric <${metric}> is not registered`,
             { metric, available: MetricRegistry.list() }
-        );
-    }
-
-    /**
-     * Validate phonetic algorithm against the PhoneticRegistry.
-     * 
-     * Checks that the phonetic algorithm is a non-empty string and exists in the registry.
-     * This allows for validating both built-in and dynamically registered phonetic algorithms.
-     * 
-     * @param {unknown} phonetic - The phonetic algorithm name to validate
-     * @throws {CmpStrValidationError} - If the phonetic algorithm is not a string or not registered
-     */
-    public static validatePhonetic ( phonetic: unknown ) : void {
-        if ( phonetic === undefined ) return;
-        if ( typeof phonetic !== 'string' || phonetic.length === 0 ) throw new CmpStrValidationError (
-            `Invalid option <phonetic>: expected non-empty string`, { phonetic }
-        );
-
-        if ( ! PhoneticRegistry.has( phonetic ) ) throw new CmpStrValidationError (
-            `Phonetic algorithm <${phonetic}> is not registered`,
-            { phonetic, available: PhoneticRegistry.list() }
         );
     }
 
@@ -222,9 +201,47 @@ export class OptionsValidator {
         if ( 'gap' in opt ) this.validateNumber( opt.gap, 'opt.gap' );
     }
 
+    /**
+     * Validate phonetic algorithm against the PhoneticRegistry.
+     * 
+     * Checks that the phonetic algorithm is a non-empty string and exists in the registry.
+     * This allows for validating both built-in and dynamically registered phonetic algorithms.
+     * 
+     * @param {unknown} phonetic - The phonetic algorithm name to validate
+     * @throws {CmpStrValidationError} - If the phonetic algorithm is not a string or not registered
+     */
+    public static validatePhoneticName ( phonetic: unknown ) : void {
+        if ( phonetic === undefined ) return;
+        if ( typeof phonetic !== 'string' || phonetic.length === 0 ) throw new CmpStrValidationError (
+            `Invalid option <phonetic>: expected non-empty string`, { phonetic }
+        );
+
+        if ( ! PhoneticRegistry.has( phonetic ) ) throw new CmpStrValidationError (
+            `Phonetic algorithm <${phonetic}> is not registered`,
+            { phonetic, available: PhoneticRegistry.list() }
+        );
+    }
+
+    public static validatePhoneticOptions ( opt?: PhoneticOptions ) : void {
+        if ( ! opt ) return;
+
+        if ( 'map' in opt ) this.validateString( opt.map, 'opt.map' );
+        if ( 'delimiter' in opt ) this.validateString( opt.delimiter, 'opt.delimiter' );
+        if ( 'length' in opt ) this.validateNumber( opt.length, 'opt.length' );
+        if ( 'pad' in opt ) this.validateString( opt.pad, 'opt.pad' );
+        if ( 'dedupe' in opt ) this.validateBoolean( opt.dedupe, 'opt.dedupe' );
+        if ( 'fallback' in opt ) this.validateString( opt.fallback, 'opt.fallback' );
+    }
+
     public static validateProcessors ( opt?: CmpStrProcessors ) : void {
-        // 1. validate processor types
-        // 2. validate phonetic (algo and options)
+        if ( ! opt ) return;
+
+        this.validateProcessorTypes( opt );
+
+        if ( 'phonetic' in opt ) {
+            this.validatePhoneticName( opt.phonetic );
+            this.validatePhoneticOptions( opt.phonetic!.opt );
+        }
     }
 
     /**
@@ -248,7 +265,7 @@ export class OptionsValidator {
         if ( 'removeZero' in opt ) this.validateBoolean( opt.removeZero, 'removeZero' );
         if ( 'safeEmpty' in opt ) this.validateBoolean( opt.safeEmpty, 'safeEmpty' );
         if ( 'flags' in opt ) this.validateFlags( opt.flags );
-        if ( 'metric' in opt ) this.validateMetric( opt.metric );
+        if ( 'metric' in opt ) this.validateMetricName( opt.metric );
         if ( 'output' in opt ) this.validateOutput( opt.output );
 
         if ( 'opt' in opt ) this.validateMetricOptions( opt.opt );
