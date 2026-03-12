@@ -17,8 +17,11 @@
 
 'use strict';
 
+import type { CmpStrProcessors } from './Types';
+
 import { CmpStrValidationError } from './Errors';
 import { MetricRegistry } from '../metric';
+import { PhoneticRegistry } from '../phonetic';
 
 
 /**
@@ -90,8 +93,8 @@ export class OptionsValidator {
     /**
      * Validate metric against the MetricRegistry.
      * 
-     * By checking the registry, ensures that dynamically registered metrics
-     * are also validated correctly.
+     * Checks that the metric is a non-empty string and exists in the registry.
+     * This allows for validating both built-in and dynamically registered metrics.
      * 
      * @param {unknown} metric - The metric name to validate
      * @throws {CmpStrValidationError} If the metric is not a string or not registered
@@ -106,6 +109,36 @@ export class OptionsValidator {
             `Metric <${metric}> is not registered`,
             { metric, available: MetricRegistry.list() }
         );
+    }
+
+    /**
+     * Validate phonetic processor options.
+     * 
+     * Checks that the phonetic algorithm is specified correctly and exists in the registry.
+     * This allows for validating both built-in and dynamically registered phonetic algorithms.
+     * 
+     * @param {unknown} processors - The processors options to validate
+     * @throws {CmpStrValidationError} If the processors option is invalid or references an unknown phonetic algorithm
+     */
+    public static validateProcessors ( processors: unknown ) : void {
+        if ( processors === undefined ) return;
+        if ( typeof processors !== 'object' || processors === null ) throw new CmpStrValidationError (
+            `Invalid option <processors>: expected object`, { processors }
+        );
+
+        if ( ( processors as CmpStrProcessors ).phonetic ) {
+            const { algo } = ( processors as CmpStrProcessors ).phonetic!;
+
+            if ( typeof algo !== 'string' || algo.length === 0 ) throw new CmpStrValidationError (
+                `Invalid option <processors.phonetic.algo>: expected non-empty string`,
+                { processors }
+            );
+
+            if ( ! PhoneticRegistry.has( algo ) ) throw new CmpStrValidationError (
+                `Phonetic algorithm <${algo}> is not registered`,
+                { algo, available: PhoneticRegistry.list() }
+            );
+        }
     }
 
 }
