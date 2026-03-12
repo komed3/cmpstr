@@ -181,7 +181,25 @@ export class OptionsValidator {
         );
     }
 
-    public static validateMetricOptions ( opt?: MetricOptions ) : void {}
+    /**
+     * Validate metric options.
+     * 
+     * This method checks for the presence of specific metric options and validates their types.
+     * 
+     * @param {unknown} opt - The metric options to validate
+     * @throws {CmpStrValidationError} - If any metric option is invalid
+     */
+    public static validateMetricOptions ( opt?: MetricOptions ) : void {
+        if ( ! opt ) return;
+
+        if ( 'mode' in opt ) this.validateMode( opt.mode );
+        if ( 'delimiter' in opt ) this.validateString( opt.delimiter, 'opt.delimiter' );
+        if ( 'pad' in opt ) this.validateString( opt.pad, 'opt.pad' );
+        if ( 'q' in opt ) this.validateNumber( opt.q, 'opt.q' );
+        if ( 'match' in opt ) this.validateNumber( opt.match, 'opt.match' );
+        if ( 'mismatch' in opt ) this.validateNumber( opt.mismatch, 'opt.mismatch' );
+        if ( 'gap' in opt ) this.validateNumber( opt.gap, 'opt.gap' );
+    }
 
     public static validateProcessorOptions ( opt?: CmpStrProcessors ) : void {}
 
