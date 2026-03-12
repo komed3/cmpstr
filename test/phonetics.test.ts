@@ -11,31 +11,23 @@ import { CmpStr } from '../src';
 describe( 'CmpStr > Phonetics', () => {
 
     it( 'Soundex', () => {
-
         const cmp = CmpStr.create().setProcessors( { phonetic: { algo: 'soundex' } } );
-
         const res = cmp.search( 'Rubin', [ 'Rupert', 'Robert', 'Ronny', 'Robot' ] );
 
         expect( res ).toEqual( [ 'Rupert', 'Robert', 'Robot' ] );
-
     } );
 
     it( 'Cologne', () => {
-
         const cmp = CmpStr.create().setMetric( 'levenshtein' );
-
         const res = cmp.match( [ 'Meyer', 'Müller', 'Miller', 'Meyers', 'Meier' ], 'Maier', 0.8, {
             processors: { phonetic: { algo: 'cologne' } }
         } );
 
         expect( res ).toHaveLength( 2 );
-
     } );
 
     it( 'Metaphone', () => {
-
         const cmp = CmpStr.create().setProcessors( { phonetic: { algo: 'metaphone' } } );
-
         const res = cmp.phoneticIndex(
             'One morning, when Gregor Samsa woke from troubled dreams, he found himself transformed ' +
             'in his bed into a horrible vermin. He lay on his armour-like back, and if he lifted his ' +
@@ -46,17 +38,13 @@ describe( 'CmpStr > Phonetics', () => {
         );
 
         expect( res ).toMatch( /^ON MRNNK EN KRKR SMS WK FRM TRBLT TRM(.+)/ );
-
     } );
 
     it( 'Caverphone', () => {
-
         const cmp = CmpStr.create().setProcessors( { phonetic: { algo: 'caverphone' } } );
-
         const res = cmp.phoneticIndex( 'Thompson' );
 
         expect( res ).toBe( 'TMPSN11111' );
-
     } );
 
 } );

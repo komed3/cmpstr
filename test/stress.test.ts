@@ -10,7 +10,6 @@ import { CmpStr, CmpStrAsync } from '../src';
 describe( 'CmpStr > Stress Tests', () => {
 
     it( 'Large Batch Comparison - 1000 strings', () => {
-
         const cmp = CmpStr.create( { metric: 'levenshtein' } );
         const largeArray = Array.from( { length: 1000 }, ( _, i ) => `string_${i}_test` );
 
@@ -20,11 +19,9 @@ describe( 'CmpStr > Stress Tests', () => {
 
         expect( res ).toHaveLength( 1000 );
         expect( endTime - startTime ).toBeLessThan( 100 );
-
     } );
 
     it( 'Large Matrix Computation - 100 strings', () => {
-
         const cmp = CmpStr.create( { metric: 'dice' } );
         const strings = Array.from( { length: 100 }, ( _, i ) => `test_${i}` );
 
@@ -35,11 +32,9 @@ describe( 'CmpStr > Stress Tests', () => {
         expect( matrix ).toHaveLength( 100 );
         expect( matrix[ 0 ] ).toHaveLength( 100 );
         expect( endTime - startTime ).toBeLessThan( 100 );
-
     } );
 
     it( 'Pairwise Comparison - 500x500', () => {
-
         const cmp = CmpStr.create( { metric: 'levenshtein' } );
         const array1 = Array.from( { length: 500 }, ( _, i ) => `a_${i}` );
         const array2 = Array.from( { length: 500 }, ( _, i ) => `b_${i}` );
@@ -50,11 +45,9 @@ describe( 'CmpStr > Stress Tests', () => {
 
         expect( res ).toHaveLength( 500 );
         expect( endTime - startTime ).toBeLessThan( 100 );
-
     } );
 
     it( 'Very Long Strings - 10000 characters', () => {
-
         const cmp = CmpStr.create( { metric: 'hamming', opt: { pad: '0' } } );
         const longString1 = 'a'.repeat( 10000 );
         const longString2 = 'a'.repeat( 9999 ) + 'b';
@@ -65,11 +58,9 @@ describe( 'CmpStr > Stress Tests', () => {
 
         expect( typeof res.match ).toBe( 'number' );
         expect( endTime - startTime ).toBeLessThan( 50 );
-
     } );
 
     it( 'Multiple Metrics Comparison', () => {
-
         const testString = 'performance';
         const targetString = 'performance test';
         const metrics = [ 'levenshtein', 'jaccard', 'dice', 'jaroWinkler' ];
@@ -84,11 +75,9 @@ describe( 'CmpStr > Stress Tests', () => {
 
         expect( results ).toHaveLength( 4 );
         results.forEach( r => expect( r.match ).toBeGreaterThan( 0 ) );
-
     } );
 
     it( 'Structured Data Lookup - 5000 objects', () => {
-
         const cmp = CmpStr.create( { metric: 'levenshtein', flags: 'i' } );
         const data = Array.from( { length: 5000 }, ( _, i ) => ( {
             id: i, name: `Product_${i}`, category: `Category_${ i % 10 }`
@@ -100,11 +89,9 @@ describe( 'CmpStr > Stress Tests', () => {
 
         expect( res ).toHaveLength( 5000 );
         expect( endTime - startTime ).toBeLessThan( 250 );
-
     } );
 
     it( 'Search in Large Text Array', () => {
-
         const cmp = CmpStr.create( { metric: 'dice' } );
         const textArray = Array.from( { length: 2000 }, ( _, i ) => {
             const words = [ 'hello', 'world', 'test', 'performance', 'stress', 'memory' ];
@@ -117,19 +104,11 @@ describe( 'CmpStr > Stress Tests', () => {
 
         expect( res.length ).toBeGreaterThan( 0 );
         expect( endTime - startTime ).toBeLessThan( 100 );
-
     } );
 
     it( 'Unicode Stress Test - Large Multilingual Strings', () => {
-
         const cmp = CmpStr.create( { metric: 'levenshtein' } );
-        const multilingualArray = [
-            '你好世界',
-            'مرحبا بالعالم',
-            'Здравствуй мир',
-            '🎉🎊🎈',
-            'Καλημέρα κόσμε'
-        ];
+        const multilingualArray = [ '你好世界', 'مرحبا بالعالم', 'Здравствуй мир', '🎉🎊🎈', 'Καλημέρα κόσμε' ];
 
         const startTime = performance.now();
         const res = cmp.batchTest( multilingualArray, '你好世界' );
@@ -137,11 +116,9 @@ describe( 'CmpStr > Stress Tests', () => {
 
         expect( res ).toHaveLength( 5 );
         expect( endTime - startTime ).toBeLessThan( 50 );
-
     } );
 
     it( 'Closest Match with Large Dataset', () => {
-
         const cmp = CmpStr.create( { metric: 'jaroWinkler' } );
         const largeArray = Array.from( { length: 1000 }, ( _, i ) => `item_${i}_test` );
 
@@ -151,11 +128,9 @@ describe( 'CmpStr > Stress Tests', () => {
 
         expect( res ).toHaveLength( 5 );
         expect( endTime - startTime ).toBeLessThan( 100 );
-
     } );
 
     it( 'Zero-Result Removal on Large Dataset', () => {
-
         const cmp = CmpStr.create( { metric: 'levenshtein', removeZero: true } );
         const strings = Array.from( { length: 500 }, ( _, i ) => i % 2 === 0 ? `match_${i}` : `nomatch_${i}` );
 
@@ -166,11 +141,9 @@ describe( 'CmpStr > Stress Tests', () => {
         expect( res.length ).toBeLessThan( strings.length );
         expect( res.every( ( r: any ) => r.match > 0 ) ).toBe( true );
         expect( endTime - startTime ).toBeLessThan( 100 );
-
     } );
 
     it( 'Async Batch Processing - 500 items', async () => {
-
         const cmp = CmpStrAsync.create( { metric: 'dice' } );
         const items = Array.from( { length: 500 }, ( _, i ) => `async_item_${i}` );
 
@@ -180,11 +153,9 @@ describe( 'CmpStr > Stress Tests', () => {
 
         expect( res ).toHaveLength( 500 );
         expect( endTime - startTime ).toBeLessThan( 100 );
-
     } );
 
     it( 'Mixed Operations Performance', () => {
-
         const cmp = CmpStr.create( { metric: 'levenshtein' } );
         const strings = Array.from( { length: 200 }, ( _, i ) => `str_${i}` );
 
@@ -200,11 +171,9 @@ describe( 'CmpStr > Stress Tests', () => {
         const endTime = performance.now();
 
         expect( endTime - startTime ).toBeLessThan( 100 );
-
     } );
 
     it( 'Memory Efficiency - Many Small Comparisons', () => {
-
         const cmp = CmpStr.create( { metric: 'hamming', opt: { pad: '0' } } );
 
         const startTime = performance.now();
@@ -219,11 +188,9 @@ describe( 'CmpStr > Stress Tests', () => {
 
         expect( totalMatch ).toBeGreaterThan( 0 );
         expect( endTime - startTime ).toBeLessThan( 250 );
-
     } );
 
     it( 'Clone and Reuse Performance', () => {
-
         const original = CmpStr.create( { metric: 'levenshtein', flags: 'i' } );
         const strings = Array.from( { length: 100 }, ( _, i ) => `clone_${i}` );
 
@@ -237,7 +204,6 @@ describe( 'CmpStr > Stress Tests', () => {
         const endTime = performance.now();
 
         expect( endTime - startTime ).toBeLessThan( 100 );
-
     } );
 
 } );
