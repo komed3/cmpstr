@@ -32,9 +32,10 @@ import type {
 
 import * as DeepMerge from './utils/DeepMerge';
 import { DiffChecker } from './utils/DiffChecker';
-import { CmpStrInternalError, CmpStrNotFoundError, ErrorUtil } from './utils/Errors';
+import { CmpStrInternalError, CmpStrNotFoundError, CmpStrValidationError, ErrorUtil } from './utils/Errors';
 import { Filter } from './utils/Filter';
 import { Normalizer } from './utils/Normalizer';
+import { OptionsValidator } from './utils/OptionsValidator';
 import { Profiler } from './utils/Profiler';
 import { factory } from './utils/Registry';
 import { StructuredData } from './utils/StructuredData';
@@ -331,16 +332,19 @@ export class CmpStr< R = MetricRaw > {
      * @param {boolean} [raw=false] - Whether to return raw results
      * @param {boolean} [skip=false] - Whether to skip normalization and filtering
      * @returns {T} - The computed metric result
+     * @throws {CmpStrValidationError} - If the options are invalid
      * @throws {CmpStrInternalError} - If the computation fails due to internal errors
      */
     protected compute< T extends MetricResult< R > | CmpStrResult | CmpStrResult[] > (
         a: MetricInput, b: MetricInput, opt?: CmpStrOptions,
         mode?: MetricMode, raw?: boolean, skip?: boolean
     ) : T {
+        const resolved: CmpStrOptions = this.resolveOptions( opt );
+        OptionsValidator.validateOptions( resolved );
+        this.assert( 'metric', resolved.metric );
+
         return ErrorUtil.wrap< T >(
             () => {
-                const resolved: CmpStrOptions = this.resolveOptions( opt );
-                this.assert( 'metric', resolved.metric );
 
                 // Prepare the input
                 const A = skip ? a : this.prepare( a, resolved );
@@ -422,9 +426,12 @@ export class CmpStr< R = MetricRaw > {
      * 
      * @param {CmpStrOptions} opt - The options
      * @returns {this}
+     * @throws {CmpStrValidationError} - If the provided options are invalid
      */
     public setOptions ( opt: CmpStrOptions ) : this {
+        OptionsValidator.validateOptions( opt );
         this.options = opt;
+
         return this;
     }
 
@@ -433,9 +440,13 @@ export class CmpStr< R = MetricRaw > {
      * 
      * @param {CmpStrOptions} opt - The options to merge
      * @returns {this}
+     * @throws {CmpStrValidationError} - If the merged options are invalid
      */
     public mergeOptions ( opt: CmpStrOptions ) : this {
+        OptionsValidator.validateOptions( opt );
         DeepMerge.merge( this.options, opt );
+        OptionsValidator.validateOptions( this.options );
+
         return this;
     }
 
@@ -444,13 +455,21 @@ export class CmpStr< R = MetricRaw > {
      * 
      * @param {string} opt - The serialized options
      * @returns {this}
-     * @throws {CmpStrValidationError} - If the provided string is not valid JSON
+     * @throws {CmpStrValidationError} - If the provided string is not valid JSON or the options are invalid
      */
     public setSerializedOptions ( opt: string ) : this {
-        return ErrorUtil.wrap< this >( () => {
-            this.options = JSON.parse( opt );
+        try {
+            const parsed = JSON.parse( opt );
+            OptionsValidator.validateOptions( parsed );
+            this.options = parsed;
+
             return this;
-        }, `Failed to parse serialized options, invalid JSON string`, { opt } );
+        } catch ( err ) {
+            if ( err instanceof SyntaxError ) throw new CmpStrValidationError (
+                `Failed to parse serialized options, invalid JSON string`, { opt, error: err.message }
+            );
+            throw err;
+        }
     }
 
     /**
@@ -459,9 +478,11 @@ export class CmpStr< R = MetricRaw > {
      * @param {string} path - The path to the option
      * @param {any} value - The value to set
      * @returns {this}
+     * @throws {CmpStrValidationError} - If the updated options are invalid
      */
     public setOption ( path: string, value: any ) : this {
         DeepMerge.set( this.options, path, value );
+        OptionsValidator.validateOptions( this.options );
         return this;
     }
 
