@@ -3,6 +3,14 @@ import { CmpStr } from '../src';
 import { Metric, MetricRegistry } from '../src/metric';
 import { CmpStrValidationError } from '../src/utils/Errors';
 
+/**
+ * Options Validator Test Suite for CmpStr
+ * 
+ * These tests validate the behavior of the OptionsValidator utility in CmpStr,
+ * ensuring that it correctly throws validation errors when invalid options are
+ * provided, and that it accepts valid options including dynamically registered
+ * metrics.
+ */
 describe( 'CmpStr Options Validator', () => {
 
     afterEach( () => { if ( MetricRegistry.has( 'dummy' ) ) MetricRegistry.remove( 'dummy' ) } );
