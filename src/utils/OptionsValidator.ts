@@ -37,6 +37,22 @@ export class OptionsValidator {
     // Allowed output modes
     private static readonly ALLOWED_OUTPUT = new Set( [ 'orig', 'prep' ] );
 
+    // Allowed comparison modes
+    private static readonly ALLOWED_MODES = new Set( [ 'default', 'batch', 'single', 'pairwise' ] );
+
+    // Allowed processor types
+    private static readonly ALLOWED_PROCESSORS = new Set( [ 'phonetic' ] );
+
+    /**
+     * Helper method to convert a Set to a string for error messages.
+     * 
+     * @param {Set< string >} set - The set to convert
+     * @returns {string} - A string representation of the set
+     */
+    private static set2string ( set: Set< string > ) : string {
+        return Array.from( set ).join( ' | ' );
+    }
+
     /**
      * Validate the provided CmpStr options object.
      * 
@@ -61,6 +77,7 @@ export class OptionsValidator {
         if ( 'flags' in opt ) this.validateFlags( opt.flags );
         if ( 'metric' in opt ) this.validateMetric( opt.metric );
         if ( 'output' in opt ) this.validateOutput( opt.output );
+
         if ( 'processors' in opt ) this.validateProcessors( opt.processors );
     }
 
@@ -94,8 +111,9 @@ export class OptionsValidator {
         for ( let i = 0, len = flags.length; i < len; i += 1 ) {
             if ( ! OptionsValidator.ALLOWED_FLAGS.has( flags[ i ] ) ) {
                 throw new CmpStrValidationError (
-                    `Invalid normalization flag <${ flags[ i ] }> in <flags>`,
-                    { flags, invalid: flags[ i ] }
+                    `Invalid normalization flag <${ flags[ i ] }> in <flags>: expected ${
+                        OptionsValidator.set2string( OptionsValidator.ALLOWED_FLAGS )
+                    }`, { flags, invalid: flags[ i ] }
                 );
             }
         }
@@ -111,8 +129,9 @@ export class OptionsValidator {
         if ( output === undefined ) return;
         if ( typeof output !== 'string' || ! OptionsValidator.ALLOWED_OUTPUT.has( output ) ) {
             throw new CmpStrValidationError (
-                `Invalid option <output>: expected ${ Array.from( OptionsValidator.ALLOWED_OUTPUT ).join( ' | ' ) }`,
-                { output }
+                `Invalid option <output>: expected ${
+                    OptionsValidator.set2string( OptionsValidator.ALLOWED_OUTPUT )
+                }`, { output }
             );
         }
     }
