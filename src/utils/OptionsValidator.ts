@@ -33,7 +33,7 @@ export class OptionsValidator {
     /** Allowed comparison modes */
     private static readonly ALLOWED_MODES = new Set( [ 'default', 'batch', 'single', 'pairwise' ] );
     /** Allowed processor types */
-    private static readonly ALLOWED_PROCESSORS = new Set( [ 'phonetic' ] );
+    private static readonly ALLOWED_PROCESSORS = new Map( [ [ 'phonetic', 'validatePhonetic' ] ] );
 
     /**
      * Helper method to convert a Set to a string for error messages.
@@ -140,27 +140,6 @@ export class OptionsValidator {
     }
 
     /**
-     * Validate CmpStr processor types.
-     * 
-     * @param {unknown} processors - The processor options to validate
-     * @throws {CmpStrValidationError} - If the processor options are not an object or contain invalid processor types
-     */
-    public static validateProcessorTypes ( processors: unknown ) : void {
-        if ( processors === undefined ) return;
-        if ( typeof processors !== 'object' || processors === null ) throw new CmpStrValidationError (
-            `Invalid option <processors>: expected object`, { processors }
-        );
-
-        for ( const key in processors ) {
-            if ( ! OptionsValidator.ALLOWED_PROCESSORS.has( key ) ) {
-                throw new CmpStrValidationError ( `Invalid processor type <${key}> in <processors>: expected ${
-                    OptionsValidator.set2string( OptionsValidator.ALLOWED_PROCESSORS )
-                }`, { processors, invalid: key } );
-            }
-        }
-    }
-
-    /**
      * Validate metric against the MetricRegistry.
      * 
      * Checks that the metric is a non-empty string and exists in the registry.
@@ -221,6 +200,15 @@ export class OptionsValidator {
         );
     }
 
+    /**
+     * Validate phonetic processor options.
+     * 
+     * This method checks for the presence of specific phonetic processor options
+     * and validates their types.
+     * 
+     * @param {unknown} opt - The phonetic processor options to validate
+     * @throws {CmpStrValidationError} - If any phonetic processor option is invalid
+     */
     public static validatePhoneticOptions ( opt?: PhoneticOptions ) : void {
         if ( ! opt ) return;
 
@@ -232,14 +220,42 @@ export class OptionsValidator {
         if ( 'fallback' in opt ) this.validateString( opt.fallback, 'opt.fallback' );
     }
 
+    /**
+     * Validate phonetic processor options within the processors object.
+     * 
+     * This method checks for the presence of the 'phonetic' processor and validates its options
+     * using the validatePhoneticName and validatePhoneticOptions methods.
+     * 
+     * @param {unknown} opt - The processors options to validate
+     * @throws {CmpStrValidationError} - If any phonetic processor option is invalid
+     */
+    public static validatePhonetic ( opt?: CmpStrProcessors[ 'phonetic' ] ) : void {
+        if ( ! opt ) return;
+
+        this.validatePhoneticName( opt.algo );
+        this.validatePhoneticOptions( opt.opt );
+    }
+
+    /**
+     * Validate processor options.
+     * 
+     * Checks that each processor type is allowed and validates its options using
+     * the corresponding validation method.
+     * 
+     * @param {unknown} opt - The processor options to validate
+     * @throws {CmpStrValidationError} - If any processor option is invalid
+     */
     public static validateProcessors ( opt?: CmpStrProcessors ) : void {
         if ( ! opt ) return;
 
-        this.validateProcessorTypes( opt );
-
-        if ( 'phonetic' in opt ) {
-            this.validatePhoneticName( opt.phonetic?.algo );
-            this.validatePhoneticOptions( opt.phonetic!.opt );
+        for ( const [ key, o ] of Object.entries( opt ) ) {
+            if ( OptionsValidator.ALLOWED_PROCESSORS.has( key ) ) {
+                ( OptionsValidator as any )[ OptionsValidator.ALLOWED_PROCESSORS.get( key )! ]( o );
+            } else {
+                throw new CmpStrValidationError ( `Invalid processor type <${key}> in <processors>: expected ${
+                    OptionsValidator.set2string( new Set( OptionsValidator.ALLOWED_PROCESSORS.keys() ) )
+                }`, { processors: opt, invalid: key } );
+            }
         }
     }
 
