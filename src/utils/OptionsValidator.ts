@@ -2,12 +2,7 @@
  * CmpStr Options Validator
  * src/utils/OptionsValidator.ts
  * 
- * This module provides a lightweight, high-performance validator for user supplied
- * CmpStr options. It only performs a small number of checks and delegates to the
- * existing registries for metric and phonetic validation.
- * 
- * The goal is to fail fast on obvious invalid input while avoiding any heavy
- * computation or allocations that could cause "overheat".
+ * ...
  * 
  * @module Utils
  * @name OptionsValidator
@@ -17,7 +12,7 @@
 
 'use strict';
 
-import type { CmpStrOptions, CmpStrProcessors } from './Types';
+import type { CmpStrOptions, CmpStrProcessors, MetricOptions } from './Types';
 
 import { CmpStrValidationError } from './Errors';
 import { MetricRegistry } from '../metric';
@@ -27,7 +22,7 @@ import { PhoneticRegistry } from '../phonetic';
 /**
  * Utility for validating CmpStr options.
  * 
- * The validator is designed to be lightweight and safe to call frequently.
+ * ...
  */
 export class OptionsValidator {
 
@@ -145,7 +140,7 @@ export class OptionsValidator {
     }
 
     /**
-     * Validate CmpStr processor options.
+     * Validate CmpStr processor types.
      * 
      * @param {unknown} processors - The processor options to validate
      * @throws {CmpStrValidationError} - If the processor options are not an object or contain invalid processor types
@@ -186,47 +181,20 @@ export class OptionsValidator {
         );
     }
 
-    /**
-     * Validate phonetic processor options.
-     * 
-     * Checks that the phonetic algorithm is specified correctly and exists in the registry.
-     * This allows for validating both built-in and dynamically registered phonetic algorithms.
-     * 
-     * @param {unknown} processors - The processors options to validate
-     * @throws {CmpStrValidationError} - If the processors option is invalid or references an unknown phonetic algorithm
-     */
-    public static validateProcessors ( processors: unknown ) : void {
-        if ( processors === undefined ) return;
-        if ( typeof processors !== 'object' || processors === null ) throw new CmpStrValidationError (
-            `Invalid option <processors>: expected object`, { processors }
-        );
+    public static validateMetricOptions ( opt?: MetricOptions ) : void {}
 
-        if ( ( processors as CmpStrProcessors ).phonetic ) {
-            const { algo } = ( processors as CmpStrProcessors ).phonetic!;
-
-            if ( typeof algo !== 'string' || algo.length === 0 ) throw new CmpStrValidationError (
-                `Invalid option <processors.phonetic.algo>: expected non-empty string`,
-                { processors }
-            );
-
-            if ( ! PhoneticRegistry.has( algo ) ) throw new CmpStrValidationError (
-                `Phonetic algorithm <${algo}> is not registered`,
-                { algo, available: PhoneticRegistry.list() }
-            );
-        }
-    }
+    public static validateProcessorOptions ( opt?: CmpStrProcessors ) : void {}
 
     /**
      * Validate the provided CmpStr options object.
      * 
      * This method performs a series of checks on the options object, including:
-     * - Checking that boolean options are actually booleans
-     * - Validating normalization flags
-     * - Validating output mode
-     * - Validating that the specified metric exists in the MetricRegistry
-     * - Validating that any specified phonetic algorithm exists in the PhoneticRegistry
+     * - Boolean options (raw, removeZero, safeEmpty)
+     * - Normalization flags
+     * - Metric and output mode
+     * - Processor and metric options
      * 
-     * If any validation fails, a CmpStrValidationError is thrown with details about the failure.
+     * If any validation fails, a CmpStrValidationError is thrown.
      * 
      * @param {CmpStrOptions} [opt] - The options object to validate
      * @throws {CmpStrValidationError} - If any validation check fails
@@ -241,7 +209,8 @@ export class OptionsValidator {
         if ( 'metric' in opt ) this.validateMetric( opt.metric );
         if ( 'output' in opt ) this.validateOutput( opt.output );
 
-        if ( 'processors' in opt ) this.validateProcessors( opt.processors );
+        if ( 'opt' in opt ) this.validateMetricOptions( opt.opt );
+        if ( 'processors' in opt ) this.validateProcessorOptions( opt.processors );
     }
 
 }
