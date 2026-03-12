@@ -176,8 +176,7 @@ export class OptionsValidator {
         );
 
         if ( ! MetricRegistry.has( metric ) ) throw new CmpStrValidationError (
-            `Metric <${metric}> is not registered`,
-            { metric, available: MetricRegistry.list() }
+            `Metric <${metric}> is not registered`, { metric, available: MetricRegistry.list() }
         );
     }
 
@@ -239,7 +238,7 @@ export class OptionsValidator {
         this.validateProcessorTypes( opt );
 
         if ( 'phonetic' in opt ) {
-            this.validatePhoneticName( opt.phonetic );
+            this.validatePhoneticName( opt.phonetic?.algo );
             this.validatePhoneticOptions( opt.phonetic!.opt );
         }
     }
