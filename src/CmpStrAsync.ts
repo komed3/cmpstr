@@ -159,16 +159,18 @@ export class CmpStrAsync< R = MetricRaw > extends CmpStr< R > {
      * @param {boolean} [raw=false] - Whether to return raw results
      * @param {boolean} [skip=false] - Whether to skip normalization and filtering
      * @returns {Promise< T >} - The computed metric result
+     * @throws {CmpStrValidationError} - If the options are invalid
      * @throws {CmpStrInternalError} - If the computation fails due to internal errors
      */
     protected async computeAsync< T extends MetricResult< R > | CmpStrResult | CmpStrResult[] > (
         a: MetricInput, b: MetricInput, opt?: CmpStrOptions,
         mode?: MetricMode, raw?: boolean, skip?: boolean
     ) : Promise< T > {
+        const resolved = this.resolveOptions( opt );
+        this.assert( 'metric', resolved.metric );
+
         return ErrorUtil.wrapAsync< T >(
             async () => {
-                const resolved = this.resolveOptions( opt );
-                this.assert( 'metric', resolved.metric );
 
                 // Prepare the input
                 const A = skip ? a : await this.prepareAsync( a, resolved );
