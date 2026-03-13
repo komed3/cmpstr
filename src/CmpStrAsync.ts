@@ -381,13 +381,21 @@ export class CmpStrAsync< R = MetricRaw > extends CmpStr< R > {
      * @returns {Promise< number[][] >} - The similarity matrix
      */
     public async matrixAsync ( input: string[], opt?: CmpStrOptions ) : Promise< number[][] > {
-        input = await this.prepareAsync( input, this.resolveOptions( opt ) ) as string[];
+        const resolved = this.resolveOptions( opt );
+        const arr = await this.prepareAsync( input, resolved ) as string[];
+        const n = arr.length;
+        const out = Array.from( { length: n }, () => new Array< number >( n ).fill( 0 ) );
 
-        return Promise.all( input.map( async a => (
-            await this.computeAsync< MetricResultBatch< R > >(
-                a, input, undefined, 'batch', true, true
-            ).then( r => r.map( b => b.res ?? 0 ) ) )
-        ) );
+        for ( let i = 0; i < n; i++ ) for ( let j = i; j < n; j++ ) {
+            const score = ( await this.computeAsync< MetricResultSingle< R > >(
+                arr[ i ], arr[ j ], resolved, 'single', true, true
+            ) ).res;
+
+            out[ i ][ j ] = score;
+            out[ j ][ i ] = score;
+        }
+
+        return out;
     }
 
     /**

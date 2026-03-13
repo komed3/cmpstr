@@ -743,11 +743,21 @@ export class CmpStr< R = MetricRaw > {
      * @returns {number[][]} - The similarity matrix
      */
     public matrix ( input: string[], opt?: CmpStrOptions ) : number[][] {
-        input = this.prepare( input, this.resolveOptions( opt ) ) as string[];
+        const resolved = this.resolveOptions( opt );
+        const arr = this.prepare( input, resolved ) as string[];
+        const n = arr.length;
+        const out = Array.from( { length: n }, () => new Array< number >( n ).fill( 0 ) );
 
-        return input.map( a => this.compute< MetricResultBatch< R > >(
-            a, input, undefined, 'batch', true, true
-        ).map( b => b.res ?? 0 ) );
+        for ( let i = 0; i < n; i++ ) for ( let j = i; j < n; j++ ) {
+            const score = this.compute< MetricResultSingle< R > >(
+                arr[ i ], arr[ j ], resolved, 'single', true, true
+            ).res;
+
+            out[ i ][ j ] = score;
+            out[ j ][ i ] = score;
+        }
+
+        return out;
     }
 
     /**
