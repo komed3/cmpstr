@@ -116,18 +116,24 @@ export class Normalizer {
      * 
      * @param {string | string[]} input - The string or array of strings to normalize
      * @param {NormalizeFlags} flags - A string of characters representing the normalization steps
+     * @param {NormalizeFlags} [normalizedFlags] - Optional pre-canonicalized flags to avoid redundant canonicalization
      * @returns {string | string[]} - The normalized string(s)
      * @throws {CmpStrInternalError} - Throws an error if the normalization process fails
      */
-    static normalize ( input: string | string[], flags: NormalizeFlags ) : string | string[] {
+    static normalize (
+        input: string | string[], flags: NormalizeFlags,
+        normalizedFlags?: NormalizeFlags
+    ) : string | string[] {
         return ErrorUtil.wrap< string | string[] >( () => {
             if ( ! flags || typeof flags !== 'string' || ! input ) return input;
 
             // Canonicalize the flags to ensure consistent ordering
-            flags = this.canonicalFlags( flags );
+            flags = normalizedFlags ?? this.canonicalFlags( flags );
 
             // If input is an array, normalize each string in the array
-            if ( Array.isArray( input ) ) return input.map( s => Normalizer.normalize( s, flags ) ) as string[];
+            if ( Array.isArray( input ) ) return input.map(
+                s => Normalizer.normalize( s, flags, flags )
+            ) as string[];
 
             // Generate a cache key based on the flags and input
             const key: string | false = Normalizer.cache.key( flags, [ input ] );
