@@ -365,7 +365,10 @@ export class CmpStrAsync< R = MetricRaw > extends CmpStr< R > {
         const hstk = await this.prepareAsync( haystack, resolved ) as string[];
 
         // Filter the haystack based on the normalized test string
-        return haystack.filter( ( _, i ) => hstk[ i ].includes( test ) );
+        const out: string[] = [];
+        for ( const i of hstk ) if ( i.includes( test ) ) out.push( i );
+
+        return out;
     }
 
     /**
