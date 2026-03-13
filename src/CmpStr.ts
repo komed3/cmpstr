@@ -224,13 +224,17 @@ export class CmpStr< R = MetricRaw > {
 
     /**
      * Resolves the options for the CmpStr instance, merging the provided options with
-     * the existing options.
+     * the existing options. Validates them and throws if the options are invalid.
      * 
      * @param {CmpStrOptions} [opt] - Optional options to merge
      * @returns {CmpStrOptions} - The resolved options
+     * @throws {CmpStrValidationError} - If the merged options are invalid
      */
     protected resolveOptions ( opt?: CmpStrOptions ) : CmpStrOptions {
-        return DeepMerge.merge( { ...( this.options ?? Object.create( null ) ) }, opt );
+        const merged = DeepMerge.merge( { ...( this.options ?? Object.create( null ) ) }, opt );
+        OptionsValidator.validateOptions( merged );
+
+        return merged;
     }
 
     /**
