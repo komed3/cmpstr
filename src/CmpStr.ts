@@ -725,7 +725,12 @@ export class CmpStr< R = MetricRaw > {
         const hstk: string[] = this.prepare( haystack, resolved ) as string[];
 
         // Filter the haystack based on the normalized test string
-        return haystack.filter( ( _, i ) => hstk[ i ].includes( test ) );
+        const out: string[] = [];
+        for ( let i = 0; i < hstk.length; i++ ) {
+            if ( hstk[ i ].includes( test ) ) out.push( haystack[ i ] );
+        }
+
+        return out;
     }
 
     /**
