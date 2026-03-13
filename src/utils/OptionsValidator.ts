@@ -150,9 +150,6 @@ export class OptionsValidator {
     /**
      * Validate metric against the MetricRegistry.
      * 
-     * Checks that the metric is a non-empty string and exists in the registry.
-     * This allows for validating both built-in and dynamically registered metrics.
-     * 
      * @param {unknown} metric - The metric name to validate
      * @throws {CmpStrValidationError} - If the metric is not a string or not registered
      */
@@ -190,9 +187,6 @@ export class OptionsValidator {
     /**
      * Validate phonetic algorithm against the PhoneticRegistry.
      * 
-     * Checks that the phonetic algorithm is a non-empty string and exists in the registry.
-     * This allows for validating both built-in and dynamically registered phonetic algorithms.
-     * 
      * @param {unknown} phonetic - The phonetic algorithm name to validate
      * @throws {CmpStrValidationError} - If the phonetic algorithm is not a string or not registered
      */
@@ -211,9 +205,6 @@ export class OptionsValidator {
     /**
      * Validate phonetic processor options.
      * 
-     * This method checks for the presence of specific phonetic processor options
-     * and validates their types.
-     * 
      * @param {unknown} opt - The phonetic processor options to validate
      * @throws {CmpStrValidationError} - If any phonetic processor option is invalid
      */
@@ -231,9 +222,6 @@ export class OptionsValidator {
     /**
      * Validate phonetic processor options within the processors object.
      * 
-     * This method checks for the presence of the 'phonetic' processor and validates its options
-     * using the validatePhoneticName and validatePhoneticOptions methods.
-     * 
      * @param {unknown} opt - The processors options to validate
      * @throws {CmpStrValidationError} - If any phonetic processor option is invalid
      */
@@ -246,9 +234,6 @@ export class OptionsValidator {
 
     /**
      * Validate processor options.
-     * 
-     * Checks that each processor type is allowed and validates its options using
-     * the corresponding validation method.
      * 
      * @param {unknown} opt - The processor options to validate
      * @throws {CmpStrValidationError} - If any processor option is invalid
@@ -269,12 +254,6 @@ export class OptionsValidator {
 
     /**
      * Validate the provided CmpStr options object.
-     * 
-     * This method performs a series of checks on the options object, including:
-     * - Boolean options (raw, removeZero, safeEmpty)
-     * - Normalization flags
-     * - Metric and output mode
-     * - Processor and metric options
      * 
      * If any validation fails, a CmpStrValidationError is thrown.
      * 
