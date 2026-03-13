@@ -32,7 +32,7 @@ import type {
 
 import * as DeepMerge from './utils/DeepMerge';
 import { DiffChecker } from './utils/DiffChecker';
-import { CmpStrInternalError, CmpStrNotFoundError, CmpStrValidationError, ErrorUtil } from './utils/Errors';
+import { CmpStrInternalError, CmpStrValidationError, ErrorUtil } from './utils/Errors';
 import { Filter } from './utils/Filter';
 import { Normalizer } from './utils/Normalizer';
 import { OptionsValidator } from './utils/OptionsValidator';
@@ -191,25 +191,14 @@ export class CmpStr< R = MetricRaw > {
      * 
      * @param {string} cond - The condition to met
      * @param {any} [test] - Value to test for
-     * @throws {CmpStrNotFoundError} - If the specified metric or phonetic algorithm is not found
+     * @throws {CmpStrValidationError} - If the specified metric or phonetic algorithm is not found
      * @throws {CmpStrInternalError} - If an unknown condition is specified
      */
     protected assert ( cond: string, test?: any ) : void {
         switch ( cond ) {
-            // Check if the metric exists
-            case 'metric': if ( ! CmpStr.metric.has( test ) ) throw new CmpStrNotFoundError (
-                `CmpStr <metric> must be set, call .setMetric(), ` +
-                `use CmpStr.metric.list() for available metrics`,
-                { metric: test }
-            ); break;
-            // Check if the phonetic algorithm exists
-            case 'phonetic': if ( ! CmpStr.phonetic.has( test ) ) throw new CmpStrNotFoundError (
-                `CmpStr <phonetic> must be set, call .setPhonetic(), ` +
-                `use CmpStr.phonetic.list() for available phonetic algorithms`,
-                { phonetic: test }
-            ); break;
-            // Throw an error for unknown conditions
             default: throw new CmpStrInternalError ( `Cmpstr condition <${cond}> unknown` );
+            case 'metric': OptionsValidator.validateMetricName( test ); break;
+            case 'phonetic': OptionsValidator.validatePhoneticName( test ); break;
         }
     }
 
