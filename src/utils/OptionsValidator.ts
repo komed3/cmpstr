@@ -106,14 +106,12 @@ export class OptionsValidator {
         );
 
         if ( flags.length === 0 ) return;
-        for ( let i = 0, len = flags.length; i < len; i++ ) {
-            if ( ! OptionsValidator.ALLOWED_FLAGS.has( flags[ i ] ) ) {
-                throw new CmpStrValidationError (
-                    `Invalid normalization flag <${ flags[ i ] }> in <flags>: expected ${
-                        OptionsValidator.set2string( OptionsValidator.ALLOWED_FLAGS )
-                    }`, { flags, invalid: flags[ i ] }
-                );
-            }
+        for ( const ch of flags ) {
+            if ( ! OptionsValidator.ALLOWED_FLAGS.has( ch ) ) throw new CmpStrValidationError (
+                `Invalid normalization flag <${ ch }> in <flags>: expected ${
+                    OptionsValidator.set2string( OptionsValidator.ALLOWED_FLAGS )
+                }`, { flags, invalid: ch }
+            );
         }
     }
 
