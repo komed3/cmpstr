@@ -387,12 +387,14 @@ export class CmpStrAsync< R = MetricRaw > extends CmpStr< R > {
         const out = Array.from( { length: n }, () => new Array< number >( n ).fill( 0 ) );
 
         for ( let i = 0; i < n; i++ ) for ( let j = i; j < n; j++ ) {
-            const score = ( await this.computeAsync< MetricResultSingle< R > >(
-                arr[ i ], arr[ j ], resolved, 'single', true, true
-            ) ).res;
+            if ( i === j ) { out[ i ][ j ] = 1 } else {
+                const score = ( await this.computeAsync< MetricResultSingle< R > >(
+                    arr[ i ], arr[ j ], resolved, 'single', true, true
+                ) ).res;
 
-            out[ i ][ j ] = score;
-            out[ j ][ i ] = score;
+                out[ i ][ j ] = score;
+                out[ j ][ i ] = score;
+            }
         }
 
         return out;
