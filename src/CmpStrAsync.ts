@@ -366,7 +366,9 @@ export class CmpStrAsync< R = MetricRaw > extends CmpStr< R > {
 
         // Filter the haystack based on the normalized test string
         const out: string[] = [];
-        for ( const i of hstk ) if ( i.includes( test ) ) out.push( i );
+        for ( let i = 0; i < hstk.length; i++ ) {
+            if ( hstk[ i ].includes( test ) ) out.push( haystack[ i ] );
+        }
 
         return out;
     }
