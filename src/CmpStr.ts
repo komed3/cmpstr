@@ -344,7 +344,6 @@ export class CmpStr< R = MetricRaw > {
         mode?: MetricMode, raw?: boolean, skip?: boolean
     ) : T {
         const resolved: CmpStrOptions = this.resolveOptions( opt );
-        OptionsValidator.validateOptions( resolved );
         this.assert( 'metric', resolved.metric );
 
         return ErrorUtil.wrap< T >(
@@ -447,7 +446,6 @@ export class CmpStr< R = MetricRaw > {
      * @throws {CmpStrValidationError} - If the merged options are invalid
      */
     public mergeOptions ( opt: CmpStrOptions ) : this {
-        OptionsValidator.validateOptions( opt );
         DeepMerge.merge( this.options, opt );
         OptionsValidator.validateOptions( this.options );
 
