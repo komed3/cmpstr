@@ -24,6 +24,9 @@ import { ErrorUtil } from './Errors';
  */
 export class Filter {
 
+    /** Filter function that returns the input string unchanged */
+    private static readonly IDENTITY: FilterFn = s => s;
+
     /**
      * A static map to hold all filters.
      * The key is the hook name, and the value is an Map of FilterEntry objects.
@@ -52,13 +55,19 @@ export class Filter {
 
             // Get the filters for the specified hook
             const filter = Filter.filters.get( hook );
-            if ( ! filter ) return ( s: string ) => s;
+            if ( ! filter ) return Filter.IDENTITY;
 
             // Compile the pipeline from active filters sorted by priority
-            const pipeline = Array.from( filter.values() ).filter( f => f.active )
-                .sort( ( a, b ) => a.priority - b.priority ).map( f => f.fn );
+            const pipeline: FilterEntry[] = [];
 
-            const fn: FilterFn = ( input: string ) => pipeline.reduce( ( v, f ) => f( v ), input );
+            for ( const f of filter.values() ) if ( f.active ) pipeline.push( f );
+            pipeline.sort( ( a, b ) => a.priority - b.priority );
+
+            const fn: FilterFn = ( input: string ) => {
+                let v = input;
+                for ( let i = 0; i < pipeline.length; i++ ) v = pipeline[ i ].fn( v );
+                return v;
+            };
 
             // Cache the compiled pipeline
             Filter.pipeline.set( hook, fn );
