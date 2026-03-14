@@ -68,9 +68,9 @@ export class Hasher {
 
         // Final mixing to improve distribution
         hash ^= hash >>> 16;
-        hash = Math.imul( hash, 0x85ebca6b );
+        hash *= 0x85ebca6b;
         hash ^= hash >>> 13;
-        hash = Math.imul( hash, 0xc2b2ae35 );
+        hash *= 0xc2b2ae35;
         hash ^= hash >>> 16;
 
         // Convert to unsigned 32-bit integer
@@ -118,10 +118,24 @@ export class HashTable< K extends string, T > {
      * @returns {string | false} - A unique hash key or false if any string is too long
      */
     public key ( label: K, strs: string[], sorted: boolean = false ) : string | false {
-        for ( const str of strs ) if ( str.length > HashTable.MAX_LEN ) return false;
+        const n = strs.length;
+        const hashes: number[] = new Array( n );
 
-        const hashes = strs.map( s => Hasher.fastFNV1a( s ) );
-        return [ label, ...( sorted ? hashes.sort() : hashes ) ].join( '-' );
+        // Hash each string and check length
+        for ( let i = 0; i < n; i++ ) {
+            const s = strs[ i ];
+            if ( s.length > HashTable.MAX_LEN ) return false;
+            hashes[ i ] = Hasher.fastFNV1a( s );
+        }
+
+        // Optionally sort the hashes to create a consistent key regardless of input order
+        if ( sorted ) hashes.sort( ( a, b )=> a - b );
+
+        // Create the final key by concatenating the label and the hashes
+        let key: string = label;
+        for ( let i = 0; i < hashes.length; i++ ) key += '-' + hashes[ i ];
+
+        return key;
     }
 
     /**
