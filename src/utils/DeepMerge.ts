@@ -28,7 +28,7 @@ export class DeepMerge {
 
     /** Regular expression to match bracket notation in paths */
     private static readonly BRACKET_PATTERN = /\[(\d+)]/g;
-    /** Path cach for efficient parsing */
+    /** Path cache for efficient parsing */
     private static readonly PATH_CACHE: Map< string, ( string | number )[] > = new Map();
 
     /**
@@ -173,8 +173,10 @@ export class DeepMerge {
                 let empty = true;
 
                 // Check if the value is an empty array
-                if ( typeof val === 'object' ) for ( let i = 0; i < val.length; i++ ) {
-                    if ( val[ i ] != null ) { empty = false; break }
+                if ( typeof val === 'object' ) {
+                    if ( Array.isArray( val ) ) for ( let i = 0; i < val.length; i++ ) {
+                        if ( val[ i ] != null ) { empty = false; break }
+                    } else empty = false;
                 }
 
                 // Delete the key if it is an empty array or an empty object
