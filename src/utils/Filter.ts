@@ -190,7 +190,13 @@ export class Filter {
     public static apply ( hook: FilterHooks, input: string | string[] ) : string | string[] {
         return ErrorUtil.wrap< string | string[] >( () => {
             const fn = Filter.getPipeline( hook );
-            return Array.isArray( input ) ? input.map( fn ) : fn( input );
+            if ( typeof input === 'string' ) return fn( input );
+
+            const arr = input as string[];
+            const out = new Array( arr.length );
+
+            for ( let i = 0; i < arr.length; i++ ) out[ i ] = fn( arr[ i ] );
+            return out;
         }, `Error applying filters for hook <${hook}>`, { hook, input } );
     }
 
@@ -203,14 +209,15 @@ export class Filter {
      * @returns {Promise< string | string[] >} - The filtered string(s)
      * @throws {CmpStrInternalError} - Throws an error if there is an issue applying the filters
      */
-    public static async applyAsync (
-        hook: FilterHooks, input: string | string[]
-    ) : Promise< string | string[] > {
+    public static async applyAsync ( hook: FilterHooks, input: string | string[] ) : Promise< string | string[] > {
         return ErrorUtil.wrapAsync< string | string[] >( async () => {
             const fn = Filter.getPipeline( hook );
-            return Array.isArray( input )
-                ? Promise.all( input.map( fn ) )
-                : Promise.resolve( fn( input ) );
+            if ( typeof input === 'string' ) return new Promise( ( r ) => r( fn( input ) ) );
+
+            const arr = input as string[];
+            const out = new Array( arr.length );
+            for ( let i = 0; i < arr.length; i++ ) out[ i ] = new Promise( ( r ) => r( fn( arr[ i ] ) ) );
+            return Promise.all( out );
         }, `Error applying filters for hook <${hook}>`, { hook, input } );
     }
 
@@ -222,6 +229,7 @@ export class Filter {
      */
     public static clear ( hook?: FilterHooks ) : void {
         Filter.pipeline.clear();
+
         if ( hook ) Filter.filters.delete( hook );
         else Filter.filters.clear();
     }
