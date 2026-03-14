@@ -86,9 +86,10 @@ class RingPool< T > {
      */
     public release ( item: PoolBuffer< T > ) : void {
         ErrorUtil.wrap< void >( () => {
-            if ( this.buffers.length < this.maxSize ) return void[ this.buffers.push( item ) ];
+            const buffers = this.buffers;
+            if ( buffers.length < this.maxSize ) { buffers.push( item ); return }
 
-            this.buffers[ this.pointer ] = item;
+            buffers[ this.pointer ] = item;
             this.pointer = ( this.pointer + 1 ) % this.maxSize;
         }, `Failed to release buffer back to pool`, { item } );
     }
