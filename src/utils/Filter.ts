@@ -55,7 +55,12 @@ export class Filter {
 
             // Get the filters for the specified hook
             const filter = Filter.filters.get( hook );
-            if ( ! filter ) return Filter.IDENTITY;
+
+            // If no filters exist for the hook, cache and return the identity function
+            if ( ! filter ) {
+                Filter.pipeline.set( hook, Filter.IDENTITY );
+                return Filter.IDENTITY;
+            }
 
             // Compile the pipeline from active filters sorted by priority
             const pipeline: FilterEntry[] = [];
@@ -66,10 +71,11 @@ export class Filter {
             const fn: FilterFn = ( input: string ) => {
                 let v = input;
                 for ( let i = 0; i < pipeline.length; i++ ) v = pipeline[ i ].fn( v );
+
                 return v;
             };
 
-            // Cache the compiled pipeline
+            // Cache and return the compiled pipeline
             Filter.pipeline.set( hook, fn );
             return fn;
         }, `Error compiling filter pipeline for hook <${hook}>`, { hook } );
