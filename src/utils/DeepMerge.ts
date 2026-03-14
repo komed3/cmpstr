@@ -67,6 +67,9 @@ export class DeepMerge {
             const n = Number( s ); return Number.isInteger( n ) && String( n ) === s ? n : s;
         } );
 
+        // Prevent cache from growing indefinitely by clearing it when it exceeds 2000 entries
+        if ( DeepMerge.PATH_CACHE.size > 2000 ) DeepMerge.PATH_CACHE.clear();
+
         DeepMerge.PATH_CACHE.set( p, parsed );
         return parsed;
     }
