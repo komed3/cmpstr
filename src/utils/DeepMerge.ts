@@ -32,6 +32,28 @@ export class DeepMerge {
     private static readonly PATH_CACHE: Map< string, ( string | number )[] > = new Map();
 
     /**
+     * Walk through an object using an array of keys and return
+     * whether the path exists and its value.
+     * 
+     * @param {any} obj - The object to walk through
+     * @param {( string | number )[]} keys - An array of keys representing the path to walk
+     * @returns {{ exists: false } | { exists: true, value: any }} -
+     *      An object indicating whether the path exists and its value if it does
+     */
+    private static walk ( obj: any, keys: ( string | number )[] ) : { exists: false } | { exists: true, value: any } {
+        let o = obj;
+
+        for ( let i = 0; i < keys.length; i++ ) {
+            const k = keys[ i ];
+            if ( o == null || !( k in o ) ) return { exists: false };
+            o = o[ k ];
+        }
+
+        return { exists: true, value: o };
+    }
+
+
+    /**
      * Parse a path string into an array of keys.
      * 
      * @param {string} p - The path string, e.g. `a.b.c` or `a[0].b`
@@ -58,14 +80,7 @@ export class DeepMerge {
      * @returns {boolean} - True if the path exists, otherwise false
      */
     public static has< T extends Record< string, any > > ( t: T, path: string ) : boolean {
-        let o: any = t;
-
-        for ( const k of DeepMerge.parse( path ) ) {
-            if ( o == null || ! ( k in o ) ) return false;
-            o = o[ k ];
-        }
-
-        return true;
+        return DeepMerge.walk( t, DeepMerge.parse( path ) ).exists;
     }
 
     /**
@@ -79,14 +94,8 @@ export class DeepMerge {
      * @returns {R | undefined} - The value at the specified path, otherwise the default value
      */
     public static get< T extends Record< string, any >, R = any > ( t: T, path: string, fb?: R ) : R | undefined {
-        let o: any = t;
-
-        for ( const k of DeepMerge.parse( path ) ) {
-            if ( o == null || ! ( k in o ) ) return fb;
-            o = o[ k ];
-        }
-
-        return o;
+        const r = DeepMerge.walk( t, DeepMerge.parse( path ) );
+        return r.exists ? r.value : fb;
     }
 
     /**
