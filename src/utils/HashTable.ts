@@ -45,32 +45,25 @@ export class Hasher {
      */
     public static fastFNV1a ( str: string ) : number {
         const len = str.length;
+        const limit = len & ~3;
         let hash = this.HASH_OFFSET;
+        let i = 0;
 
         // Process 4 characters at a time for better performance
-        const chunks = Math.floor( len / 4 );
-
-        for ( let i = 0; i < chunks; i++ ) {
-            const pos = i * 4;
-            const chunk = str.charCodeAt( pos ) 
-                | ( str.charCodeAt( pos + 1 ) << 8 ) 
-                | ( str.charCodeAt( pos + 2 ) << 16 ) 
-                | ( str.charCodeAt( pos + 3 ) << 24 );
+        for ( ; i < limit; i += 4 ) {
+            const chunk = str.charCodeAt( i ) |
+                ( str.charCodeAt( i + 1 ) << 8 ) |
+                ( str.charCodeAt( i + 2 ) << 16 ) |
+                ( str.charCodeAt( i + 3 ) << 24 );
 
             hash ^= chunk;
             hash = Math.imul( hash, this.FNV_PRIME );
         }
 
-        // Handle remaining characters
-        const remaining = len % 4;
-
-        if ( remaining > 0 ) {
-            const pos = chunks * 4;
-
-            for ( let i = 0; i < remaining; i++ ) {
-                hash ^= str.charCodeAt( pos + i );
-                hash = Math.imul( hash, this.FNV_PRIME );
-            }
+        // Process remaining characters
+        for ( ; i < len; i++ ) {
+            hash ^= str.charCodeAt( i );
+            hash = Math.imul( hash, this.FNV_PRIME );
         }
 
         // Final mixing to improve distribution
@@ -82,7 +75,6 @@ export class Hasher {
 
         // Convert to unsigned 32-bit integer
         return hash >>> 0;
-
     }
 
 }
