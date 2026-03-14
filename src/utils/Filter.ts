@@ -31,13 +31,13 @@ export class Filter {
      * A static map to hold all filters.
      * The key is the hook name, and the value is an Map of FilterEntry objects.
      */
-    private static filters: Map< FilterHooks, Map< string, FilterEntry > > = new Map ();
+    private static filters = new Map< FilterHooks, Map< string, FilterEntry > > ();
 
     /**
      * A map that holds the pipeline of filters to be applied.
      * The key is the hook name, and the value is the compiled function.
      */
-    private static pipeline: Map< FilterHooks, FilterFn > = new Map ();
+    private static pipeline = new Map< FilterHooks, FilterFn > ();
 
     /**
      * Retrieves the compiled filter function for a given hook.
@@ -71,7 +71,7 @@ export class Filter {
             for ( const f of filter.values() ) if ( f.active ) pipeline.push( f );
             pipeline.sort( ( a, b ) => a.priority - b.priority );
 
-            const fn: FilterFn = ( input: string ) => {
+            const fn: FilterFn = pipeline.length === 0 ? Filter.IDENTITY : ( input: string ) => {
                 let v = input;
                 for ( let i = 0; i < pipeline.length; i++ ) v = pipeline[ i ].fn( v );
 
@@ -230,12 +230,12 @@ export class Filter {
     public static async applyAsync ( hook: FilterHooks, input: string | string[] ) : Promise< string | string[] > {
         return ErrorUtil.wrapAsync< string | string[] >( async () => {
             const fn = Filter.getPipeline( hook );
-            if ( typeof input === 'string' ) return new Promise( ( r ) => r( fn( input ) ) );
+            if ( typeof input === 'string' ) return Promise.resolve( fn( input ) );
 
             const arr = input as string[];
             const out = new Array( arr.length );
 
-            for ( let i = 0; i < arr.length; i++ ) out[ i ] = new Promise( ( r ) => r( fn( arr[ i ] ) ) );
+            for ( let i = 0; i < arr.length; i++ ) out[ i ] = Promise.resolve( fn( arr[ i ] ) );
             return Promise.all( out );
         }, `Error applying filters for hook <${hook}>`, { hook, input } );
     }
