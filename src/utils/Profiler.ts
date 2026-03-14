@@ -39,7 +39,7 @@ export class Profiler {
     private memFn: () => number;
 
     /** Store for profiler entries */
-    private store: Set< ProfilerEntry< any > > = new Set ();
+    private store = new Set< ProfilerEntry< any > > ();
 
     /** Total time and memory consumption */
     private totalTime: number = 0;

@@ -159,16 +159,18 @@ export class CmpStrAsync< R = MetricRaw > extends CmpStr< R > {
      * @param {boolean} [raw=false] - Whether to return raw results
      * @param {boolean} [skip=false] - Whether to skip normalization and filtering
      * @returns {Promise< T >} - The computed metric result
+     * @throws {CmpStrValidationError} - If the options are invalid
      * @throws {CmpStrInternalError} - If the computation fails due to internal errors
      */
     protected async computeAsync< T extends MetricResult< R > | CmpStrResult | CmpStrResult[] > (
         a: MetricInput, b: MetricInput, opt?: CmpStrOptions,
         mode?: MetricMode, raw?: boolean, skip?: boolean
     ) : Promise< T > {
+        const resolved = this.resolveOptions( opt );
+        this.assert( 'metric', resolved.metric );
+
         return ErrorUtil.wrapAsync< T >(
             async () => {
-                const resolved = this.resolveOptions( opt );
-                this.assert( 'metric', resolved.metric );
 
                 // Prepare the input
                 const A = skip ? a : await this.prepareAsync( a, resolved );
@@ -365,7 +367,12 @@ export class CmpStrAsync< R = MetricRaw > extends CmpStr< R > {
         const hstk = await this.prepareAsync( haystack, resolved ) as string[];
 
         // Filter the haystack based on the normalized test string
-        return haystack.filter( ( _, i ) => hstk[ i ].includes( test ) );
+        const out: string[] = [];
+        for ( let i = 0; i < hstk.length; i++ ) {
+            if ( hstk[ i ].includes( test ) ) out.push( haystack[ i ] );
+        }
+
+        return out;
     }
 
     /**
@@ -376,13 +383,23 @@ export class CmpStrAsync< R = MetricRaw > extends CmpStr< R > {
      * @returns {Promise< number[][] >} - The similarity matrix
      */
     public async matrixAsync ( input: string[], opt?: CmpStrOptions ) : Promise< number[][] > {
-        input = await this.prepareAsync( input, this.resolveOptions( opt ) ) as string[];
+        const resolved = this.resolveOptions( opt );
+        const arr = await this.prepareAsync( input, resolved ) as string[];
+        const n = arr.length;
+        const out = Array.from( { length: n }, () => new Array< number >( n ).fill( 0 ) );
 
-        return Promise.all( input.map( async a => (
-            await this.computeAsync< MetricResultBatch< R > >(
-                a, input, undefined, 'batch', true, true
-            ).then( r => r.map( b => b.res ?? 0 ) ) )
-        ) );
+        for ( let i = 0; i < n; i++ ) for ( let j = i; j < n; j++ ) {
+            if ( i === j ) { out[ i ][ j ] = 1 } else {
+                const score = ( await this.computeAsync< MetricResultSingle< R > >(
+                    arr[ i ], arr[ j ], resolved, 'single', true, true
+                ) ).res;
+
+                out[ i ][ j ] = score;
+                out[ j ][ i ] = score;
+            }
+        }
+
+        return out;
     }
 
     /**

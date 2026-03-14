@@ -31,7 +31,7 @@ import type {
     PhoneticOptions, RegistryService
 } from '../utils/Types';
 
-import { merge } from '../utils/DeepMerge';
+import { DeepMerge } from '../utils/DeepMerge';
 import { CmpStrNotFoundError, ErrorUtil } from '../utils/Errors';
 import { Hasher, HashTable } from '../utils/HashTable';
 import { Profiler } from '../utils/Profiler';
@@ -103,7 +103,7 @@ export abstract class Phonetic {
         if ( map === undefined ) throw new CmpStrNotFoundError ( `Requested mapping <${mapId}> is not declared`, { algo, mapId } );
 
         // Set the options by merging the default options with the provided ones
-        this.options = merge( merge( defaults, map.options ?? {} ), opt );
+        this.options = DeepMerge.merge( DeepMerge.merge( defaults, map.options ?? {} ), opt );
         this.optKey = Hasher.fastFNV1a( JSON.stringify(
             this.options, Object.keys( this.options ).sort()
         ) ).toString();

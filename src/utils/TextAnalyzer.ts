@@ -38,9 +38,9 @@ export class TextAnalyzer {
     private sentences: string[] = [];
 
     /** Frequency maps for characters and words */
-    private charFrequency: Map< string, number > = new Map ();
-    private wordHistogram: Map< string, number > = new Map ();
-    private syllableCache: Map< string, number > = new Map ();
+    private charFrequency = new Map< string, number > ();
+    private wordHistogram = new Map< string, number > ();
+    private syllableCache = new Map< string, number > ();
 
     /** Cached syllable stats */
     private syllableStats?: { total: number, mono: number, perWord: number[], avg: number, median: number };

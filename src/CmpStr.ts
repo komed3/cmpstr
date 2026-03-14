@@ -30,9 +30,9 @@ import type {
     NormalizeFlags, PhoneticOptions, ResultLike, StructuredDataOptions, StructuredResultLike
 } from './utils/Types';
 
-import * as DeepMerge from './utils/DeepMerge';
+import { DeepMerge } from './utils/DeepMerge';
 import { DiffChecker } from './utils/DiffChecker';
-import { CmpStrInternalError, CmpStrNotFoundError, CmpStrValidationError, ErrorUtil } from './utils/Errors';
+import { CmpStrInternalError, CmpStrValidationError, ErrorUtil } from './utils/Errors';
 import { Filter } from './utils/Filter';
 import { Normalizer } from './utils/Normalizer';
 import { OptionsValidator } from './utils/OptionsValidator';
@@ -191,25 +191,14 @@ export class CmpStr< R = MetricRaw > {
      * 
      * @param {string} cond - The condition to met
      * @param {any} [test] - Value to test for
-     * @throws {CmpStrNotFoundError} - If the specified metric or phonetic algorithm is not found
+     * @throws {CmpStrValidationError} - If the specified metric or phonetic algorithm is not found
      * @throws {CmpStrInternalError} - If an unknown condition is specified
      */
     protected assert ( cond: string, test?: any ) : void {
         switch ( cond ) {
-            // Check if the metric exists
-            case 'metric': if ( ! CmpStr.metric.has( test ) ) throw new CmpStrNotFoundError (
-                `CmpStr <metric> must be set, call .setMetric(), ` +
-                `use CmpStr.metric.list() for available metrics`,
-                { metric: test }
-            ); break;
-            // Check if the phonetic algorithm exists
-            case 'phonetic': if ( ! CmpStr.phonetic.has( test ) ) throw new CmpStrNotFoundError (
-                `CmpStr <phonetic> must be set, call .setPhonetic(), ` +
-                `use CmpStr.phonetic.list() for available phonetic algorithms`,
-                { phonetic: test }
-            ); break;
-            // Throw an error for unknown conditions
             default: throw new CmpStrInternalError ( `Cmpstr condition <${cond}> unknown` );
+            case 'metric': OptionsValidator.validateMetricName( test ); break;
+            case 'phonetic': OptionsValidator.validatePhoneticName( test ); break;
         }
     }
 
@@ -224,13 +213,17 @@ export class CmpStr< R = MetricRaw > {
 
     /**
      * Resolves the options for the CmpStr instance, merging the provided options with
-     * the existing options.
+     * the existing options. Validates them and throws if the options are invalid.
      * 
      * @param {CmpStrOptions} [opt] - Optional options to merge
      * @returns {CmpStrOptions} - The resolved options
+     * @throws {CmpStrValidationError} - If the merged options are invalid
      */
     protected resolveOptions ( opt?: CmpStrOptions ) : CmpStrOptions {
-        return DeepMerge.merge( { ...( this.options ?? Object.create( null ) ) }, opt );
+        const merged = DeepMerge.merge( { ...( this.options ?? Object.create( null ) ) }, opt );
+        OptionsValidator.validateOptions( merged );
+
+        return merged;
     }
 
     /**
@@ -340,7 +333,6 @@ export class CmpStr< R = MetricRaw > {
         mode?: MetricMode, raw?: boolean, skip?: boolean
     ) : T {
         const resolved: CmpStrOptions = this.resolveOptions( opt );
-        OptionsValidator.validateOptions( resolved );
         this.assert( 'metric', resolved.metric );
 
         return ErrorUtil.wrap< T >(
@@ -443,7 +435,6 @@ export class CmpStr< R = MetricRaw > {
      * @throws {CmpStrValidationError} - If the merged options are invalid
      */
     public mergeOptions ( opt: CmpStrOptions ) : this {
-        OptionsValidator.validateOptions( opt );
         DeepMerge.merge( this.options, opt );
         OptionsValidator.validateOptions( this.options );
 
@@ -725,7 +716,12 @@ export class CmpStr< R = MetricRaw > {
         const hstk: string[] = this.prepare( haystack, resolved ) as string[];
 
         // Filter the haystack based on the normalized test string
-        return haystack.filter( ( _, i ) => hstk[ i ].includes( test ) );
+        const out: string[] = [];
+        for ( let i = 0; i < hstk.length; i++ ) {
+            if ( hstk[ i ].includes( test ) ) out.push( haystack[ i ] );
+        }
+
+        return out;
     }
 
     /**
@@ -736,11 +732,23 @@ export class CmpStr< R = MetricRaw > {
      * @returns {number[][]} - The similarity matrix
      */
     public matrix ( input: string[], opt?: CmpStrOptions ) : number[][] {
-        input = this.prepare( input, this.resolveOptions( opt ) ) as string[];
+        const resolved = this.resolveOptions( opt );
+        const arr = this.prepare( input, resolved ) as string[];
+        const n = arr.length;
+        const out = Array.from( { length: n }, () => new Array< number >( n ).fill( 0 ) );
 
-        return input.map( a => this.compute< MetricResultBatch< R > >(
-            a, input, undefined, 'batch', true, true
-        ).map( b => b.res ?? 0 ) );
+        for ( let i = 0; i < n; i++ ) for ( let j = i; j < n; j++ ) {
+            if ( i === j ) { out[ i ][ j ] = 1 } else {
+                const score = this.compute< MetricResultSingle< R > >(
+                    arr[ i ], arr[ j ], resolved, 'single', true, true
+                ).res;
+
+                out[ i ][ j ] = score;
+                out[ j ][ i ] = score;
+            }
+        }
+
+        return out;
     }
 
     /**

@@ -45,32 +45,25 @@ export class Hasher {
      */
     public static fastFNV1a ( str: string ) : number {
         const len = str.length;
+        const limit = len & ~3;
         let hash = this.HASH_OFFSET;
+        let i = 0;
 
         // Process 4 characters at a time for better performance
-        const chunks = Math.floor( len / 4 );
-
-        for ( let i = 0; i < chunks; i++ ) {
-            const pos = i * 4;
-            const chunk = str.charCodeAt( pos ) 
-                | ( str.charCodeAt( pos + 1 ) << 8 ) 
-                | ( str.charCodeAt( pos + 2 ) << 16 ) 
-                | ( str.charCodeAt( pos + 3 ) << 24 );
+        for ( ; i < limit; i += 4 ) {
+            const chunk = str.charCodeAt( i ) |
+                ( str.charCodeAt( i + 1 ) << 8 ) |
+                ( str.charCodeAt( i + 2 ) << 16 ) |
+                ( str.charCodeAt( i + 3 ) << 24 );
 
             hash ^= chunk;
             hash = Math.imul( hash, this.FNV_PRIME );
         }
 
-        // Handle remaining characters
-        const remaining = len % 4;
-
-        if ( remaining > 0 ) {
-            const pos = chunks * 4;
-
-            for ( let i = 0; i < remaining; i++ ) {
-                hash ^= str.charCodeAt( pos + i );
-                hash = Math.imul( hash, this.FNV_PRIME );
-            }
+        // Process remaining characters
+        for ( ; i < len; i++ ) {
+            hash ^= str.charCodeAt( i );
+            hash = Math.imul( hash, this.FNV_PRIME );
         }
 
         // Final mixing to improve distribution
@@ -82,7 +75,6 @@ export class Hasher {
 
         // Convert to unsigned 32-bit integer
         return hash >>> 0;
-
     }
 
 }
@@ -98,22 +90,24 @@ export class HashTable< K extends string, T > {
 
     /** The max. length of a string to hash, which is set to 2048 characters */
     private static readonly MAX_LEN: number = 2048;
-    /** The max. size of the hash table, which is set to 10,000 */
-    private static readonly TABLE_SIZE: number = 10_000;
 
     /**
      * The internal map to store entries.
      * The key is a string generated from the label and any number of hashed strings.
      * The value is of type T.
      */
-    private table: Map< string, T > = new Map ();
+    private table = new Map< string, T > ();
 
     /**
      * Creates an instance of HashTable.
      * 
-     * @param {boolean} [LRU=true] - Whether to use Least Recently Used (LRU) eviction policy
+     * @param {boolean} [FIFO=true] - Whether to use FIFO eviction (true) when the table is full
+     * @param {number} [maxSize=10000] - The maximum number of entries in the hash table
      */
-    constructor ( private readonly LRU: boolean = true ) {}
+    constructor (
+        private readonly FIFO: boolean = true,
+        private readonly maxSize = 10000
+    ) {}
 
     /**
      * Generates a unique hash key for any number of string arguments.
@@ -126,10 +120,24 @@ export class HashTable< K extends string, T > {
      * @returns {string | false} - A unique hash key or false if any string is too long
      */
     public key ( label: K, strs: string[], sorted: boolean = false ) : string | false {
-        for ( const str of strs ) if ( str.length > HashTable.MAX_LEN ) return false;
+        const n = strs.length;
+        const hashes: number[] = new Array( n );
 
-        const hashes = strs.map( s => Hasher.fastFNV1a( s ) );
-        return [ label, ...( sorted ? hashes.sort() : hashes ) ].join( '-' );
+        // Hash each string and check length
+        for ( let i = 0; i < n; i++ ) {
+            const s = strs[ i ];
+            if ( s.length > HashTable.MAX_LEN ) return false;
+            hashes[ i ] = Hasher.fastFNV1a( s );
+        }
+
+        // Optionally sort the hashes to create a consistent key regardless of input order
+        if ( sorted ) hashes.sort( ( a, b )=> a - b );
+
+        // Create the final key by concatenating the label and the hashes
+        let key: string = label;
+        for ( let i = 0; i < hashes.length; i++ ) key += '-' + hashes[ i ];
+
+        return key;
     }
 
     /**
@@ -138,7 +146,9 @@ export class HashTable< K extends string, T > {
      * @param {string} key - The key to check
      * @returns {boolean} - True if the key exists, false otherwise
      */
-    public has = ( key: string ) : boolean => this.table.has( key );
+    public has ( key: string ) : boolean {
+        return this.table.has( key );
+    }
 
     /**
      * Retrieves the entry from the hash table by its key.
@@ -146,11 +156,14 @@ export class HashTable< K extends string, T > {
      * @param {string} key - The key to look up
      * @returns {T | undefined} - The entry if found, undefined otherwise
      */
-    public get = ( key: string ) : T | undefined => this.table.get( key );
+    public get ( key: string ) : T | undefined {
+        return this.table.get( key );
+    }
 
     /**
      * Adds an entry to the hash table.
-     * If the table is full, it evicts the least recently used entry (if LRU is enabled).
+     * If the table is full, it evicts the least recently used entry
+     * (if FIFO is enabled) or returns false.
      * 
      * @param {string} key - The hashed key for the entry
      * @param {T} entry - The entry itself to add
@@ -161,8 +174,8 @@ export class HashTable< K extends string, T > {
         if ( ! update && this.table.has( key ) ) return false;
 
         // Evict least recently used entry if table is full
-        while ( ! this.table.has( key ) && this.table.size >= HashTable.TABLE_SIZE ) {
-            if ( ! this.LRU ) return false;
+        if ( ! this.table.has( key ) && this.table.size >= this.maxSize ) {
+            if ( ! this.FIFO ) return false;
             this.table.delete( this.table.keys().next().value! );
         }
 
@@ -176,19 +189,25 @@ export class HashTable< K extends string, T > {
      * @param {string} key - The key of the entry to delete
      * @returns {boolean} - True if the entry was deleted, false if the key was not found
      */
-    public delete = ( key: string ) : boolean => this.table.delete( key );
+    public delete ( key: string ) : boolean {
+        return this.table.delete( key );
+    }
 
     /**
      * Clears the hash table.
      * This method removes all entries from the hash table.
      */
-    public clear = () : void => this.table.clear();
+    public clear () : void {
+        this.table.clear();
+    }
 
     /**
      * Returns the current size of the hash table.
      * 
      * @returns {number} - The number of entries in the hash table
      */
-    public size = () : number => this.table.size;
+    public size () : number {
+        return this.table.size;
+    }
 
 }

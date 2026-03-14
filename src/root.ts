@@ -9,7 +9,7 @@
  * Please visit CmpStr's documentation for more information:
  * https://github.com/komed3/cmpstr/wiki/Extending-CmpStr
  * 
- * @version 3.2.2
+ * @version 3.2.3
  * @author Paul Köhler (komed3)
  * @license MIT
  */
@@ -39,7 +39,7 @@ export { Metric, MetricCls, MetricRegistry } from './metric';
 export { Phonetic, PhoneticCls, PhoneticMappingRegistry, PhoneticRegistry } from './phonetic';
 
 // Export additional utilities and components
-export * as DeepMerge from './utils/DeepMerge';
+export { DeepMerge } from './utils/DeepMerge';
 export * as CmpStrError from './utils/Errors';
 export { Filter } from './utils/Filter';
 export { Hasher, HashTable } from './utils/HashTable';

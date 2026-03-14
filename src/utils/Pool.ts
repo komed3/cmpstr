@@ -57,16 +57,18 @@ class RingPool< T > {
      */
     public acquire ( minSize: number, allowOversize: boolean ) : PoolBuffer< T > | null {
         return ErrorUtil.wrap< PoolBuffer< T > | null >( () => {
-            const len = this.buffers.length;
+            const buffers = this.buffers;
+            const len = buffers.length;
 
             // Iterate through the buffers in the pool
             for ( let i = 0; i < len; i++ ) {
-                const idx = ( this.pointer + i ) & ( len - 1 );
-                const item = this.buffers[ idx ];
+                const idx = ( this.pointer + i ) % len;
+                const item = buffers[ idx ];
+                const size = item.size;
 
                 // Get buffer that exactly matches the requested size and move pointer
-                if ( item.size >= minSize && ( allowOversize || item.size === minSize ) ) {
-                    this.pointer = ( idx + 1 ) & ( len - 1 );
+                if ( size >= minSize && ( allowOversize || size === minSize ) ) {
+                    this.pointer = ( idx + 1 ) % len;
                     return item;
                 }
             }
@@ -84,9 +86,10 @@ class RingPool< T > {
      */
     public release ( item: PoolBuffer< T > ) : void {
         ErrorUtil.wrap< void >( () => {
-            if ( this.buffers.length < this.maxSize ) return void[ this.buffers.push( item ) ];
+            const buffers = this.buffers;
+            if ( buffers.length < this.maxSize ) { buffers.push( item ); return }
 
-            this.buffers[ this.pointer ] = item;
+            buffers[ this.pointer ] = item;
             this.pointer = ( this.pointer + 1 ) % this.maxSize;
         }, `Failed to release buffer back to pool`, { item } );
     }
@@ -182,8 +185,12 @@ export class Pool {
      * @return {T[]} - An array of acquired buffers of the specified type
      */
     public static acquireMany< T = any > ( type: PoolType, sizes: number[] ) : T[] {
-        return sizes.map( size => this.acquire< T >( type, size ) );
+        const out = new Array< T >( sizes.length );
+        for ( let i = 0; i < sizes.length; i++ ) out[ i ] = this.acquire< T >( type, sizes[ i ] );
+
+        return out;
     }
+
 
     /**
      * Releases a buffer back to the pool.

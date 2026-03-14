@@ -33,13 +33,13 @@ import { PhoneticRegistry } from '../phonetic';
 export class OptionsValidator {
 
     /** Allowed normalization flags */
-    private static readonly ALLOWED_FLAGS = new Set( [ 'd', 'u', 'x', 'w', 't', 'r', 's', 'k', 'n', 'i' ] );
+    private static readonly ALLOWED_FLAGS = new Set ( [ 'd', 'u', 'x', 'w', 't', 'r', 's', 'k', 'n', 'i' ] );
     /** Allowed output modes */
-    private static readonly ALLOWED_OUTPUT = new Set( [ 'orig', 'prep' ] );
+    private static readonly ALLOWED_OUTPUT = new Set ( [ 'orig', 'prep' ] );
     /** Allowed comparison modes */
-    private static readonly ALLOWED_MODES = new Set( [ 'default', 'batch', 'single', 'pairwise' ] );
+    private static readonly ALLOWED_MODES = new Set ( [ 'default', 'batch', 'single', 'pairwise' ] );
     /** Allowed processor types */
-    private static readonly ALLOWED_PROCESSORS = new Map( [ [ 'phonetic', 'validatePhonetic' ] ] );
+    private static readonly ALLOWED_PROCESSORS = new Map ( [ [ 'phonetic', 'validatePhonetic' ] ] );
 
     /**
      * Helper method to convert a Set to a string for error messages.
@@ -244,7 +244,7 @@ export class OptionsValidator {
                 ( OptionsValidator as any )[ OptionsValidator.ALLOWED_PROCESSORS.get( key )! ]( o );
             } else {
                 throw new CmpStrValidationError ( `Invalid processor type <${key}> in <processors>: expected ${
-                    OptionsValidator.set2string( new Set( OptionsValidator.ALLOWED_PROCESSORS.keys() ) )
+                    OptionsValidator.set2string( new Set ( OptionsValidator.ALLOWED_PROCESSORS.keys() ) )
                 }`, { processors: opt, invalid: key } );
             }
         }
