@@ -170,12 +170,15 @@ export class DeepMerge {
             // If preserveEmpty is false, check if the object or array is empty
             if ( ! preserveEmpty ) {
                 const val = obj[ key ];
+                let empty = true;
 
-                // If the value is an empty array or object, delete the key
-                if ( typeof val === 'object' && (
-                    ( Array.isArray( val ) && val.every( v => v == null ) ) ||
-                    ( ! Array.isArray( val ) && Object.keys( val ).length === 0 )
-                ) ) delete obj[ key ];
+                // Check if the value is an empty array
+                if ( typeof val === 'object' ) for ( let i = 0; i < val.length; i++ ) {
+                    if ( val[ i ] != null ) { empty = false; break }
+                }
+
+                // Delete the key if it is an empty array or an empty object
+                if ( empty ) delete obj[ key ];
             }
 
             return true;
