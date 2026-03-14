@@ -185,8 +185,12 @@ export class Pool {
      * @return {T[]} - An array of acquired buffers of the specified type
      */
     public static acquireMany< T = any > ( type: PoolType, sizes: number[] ) : T[] {
-        return sizes.map( size => this.acquire< T >( type, size ) );
+        const out = new Array< T >( sizes.length );
+        for ( let i = 0; i < sizes.length; i++ ) out[ i ] = this.acquire< T >( type, sizes[ i ] );
+
+        return out;
     }
+
 
     /**
      * Releases a buffer back to the pool.
