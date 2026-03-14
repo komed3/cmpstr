@@ -198,30 +198,29 @@ export class DeepMerge {
     ) : T {
         const target: T = t ?? Object.create( null );
 
-        // Iterate over the keys of the source object and merge them into the target object
-        Object.keys( o ).forEach( k => {
+        for ( const k in o ) {
             const val = o[ k ];
 
             // Skip undefined values if mergeUndefined is false
-            if ( ! mergeUndefined && val === undefined ) return;
+            if ( ! mergeUndefined && val === undefined ) continue;
 
             // Prevent prototype pollution
-            if ( k === '__proto__' || k === 'constructor' ) return;
+            if ( k === '__proto__' || k === 'constructor' ) continue;
 
             // If val is an object (but not array), merge recursively
             if ( val !== null && typeof val === 'object' && ! Array.isArray( val ) ) {
                 const existing = target[ k ];
-                ( target as any )[ k ] = DeepMerge.merge(
+
+                target[ k ] = DeepMerge.merge(
                     existing !== null && typeof existing === 'object' && ! Array.isArray( existing )
-                        ? existing as Record< string, any > : Object.create( null ),
-                    val as Record< string, any >,
+                        ? existing : Object.create( null ),
+                    val,
                     mergeUndefined
                 );
             }
 
-            // Primitive or array → replace
-            else ( target as any )[ k ] = val;
-        } );
+            else target[ k ] = val;
+        }
 
         return target;
     }
