@@ -39,7 +39,7 @@ export { Metric, MetricCls, MetricRegistry } from './metric';
 export { Phonetic, PhoneticCls, PhoneticMappingRegistry, PhoneticRegistry } from './phonetic';
 
 // Export additional utilities and components
-export * as DeepMerge from './utils/DeepMerge';
+export { DeepMerge } from './utils/DeepMerge';
 export * as CmpStrError from './utils/Errors';
 export { Filter } from './utils/Filter';
 export { Hasher, HashTable } from './utils/HashTable';

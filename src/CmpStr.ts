@@ -30,7 +30,7 @@ import type {
     NormalizeFlags, PhoneticOptions, ResultLike, StructuredDataOptions, StructuredResultLike
 } from './utils/Types';
 
-import * as DeepMerge from './utils/DeepMerge';
+import { DeepMerge } from './utils/DeepMerge';
 import { DiffChecker } from './utils/DiffChecker';
 import { CmpStrInternalError, CmpStrValidationError, ErrorUtil } from './utils/Errors';
 import { Filter } from './utils/Filter';
