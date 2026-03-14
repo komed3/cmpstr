@@ -57,15 +57,17 @@ class RingPool< T > {
      */
     public acquire ( minSize: number, allowOversize: boolean ) : PoolBuffer< T > | null {
         return ErrorUtil.wrap< PoolBuffer< T > | null >( () => {
-            const len = this.buffers.length;
+            const buffers = this.buffers;
+            const len = buffers.length;
 
             // Iterate through the buffers in the pool
             for ( let i = 0; i < len; i++ ) {
                 const idx = ( this.pointer + i ) % len;
-                const item = this.buffers[ idx ];
+                const item = buffers[ idx ];
+                const size = item.size;
 
                 // Get buffer that exactly matches the requested size and move pointer
-                if ( item.size >= minSize && ( allowOversize || item.size === minSize ) ) {
+                if ( size >= minSize && ( allowOversize || size === minSize ) ) {
                     this.pointer = ( idx + 1 ) % len;
                     return item;
                 }
