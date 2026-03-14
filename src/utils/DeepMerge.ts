@@ -29,7 +29,7 @@ export class DeepMerge {
     /** Regular expression to match bracket notation in paths */
     private static readonly BRACKET_PATTERN = /\[(\d+)]/g;
     /** Path cache for efficient parsing */
-    private static readonly PATH_CACHE: Map< string, ( string | number )[] > = new Map();
+    private static readonly PATH_CACHE = new Map< string, ( string | number )[] >();
 
     /**
      * Walk through an object using an array of keys and return

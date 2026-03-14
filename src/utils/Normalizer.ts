@@ -45,13 +45,13 @@ export class Normalizer {
      * A map that holds normalization functions based on the flags.
      * This allows for reusing normalization logic without recomputing it.
      */
-    private static pipeline: Map< string, NormalizerFn > = new Map ();
+    private static pipeline = new Map< string, NormalizerFn > ();
 
     /**
      * A cache to store normalized strings based on the flags and input.
      * This helps avoid recomputing normalization for the same input and flags.
      */
-    private static cache: HashTable< NormalizeFlags, string > = new HashTable ();
+    private static cache = new HashTable< NormalizeFlags, string > ();
 
     /** Regular expressions used in normalization steps */
     private static readonly REGEX = {
@@ -69,7 +69,7 @@ export class Normalizer {
      * @returns {NormalizeFlags} - The canonicalized flags
      */
     private static canonicalFlags ( flags: NormalizeFlags ) : NormalizeFlags {
-        return Array.from( new Set( flags ) ).sort().join( '' ) as NormalizeFlags;
+        return Array.from( new Set ( flags ) ).sort().join( '' ) as NormalizeFlags;
     }
 
     /**

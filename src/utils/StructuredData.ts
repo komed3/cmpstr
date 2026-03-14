@@ -148,7 +148,7 @@ export class StructuredData< T = any, R = MetricRaw > {
         removeZero?: boolean, objectsOnly?: boolean
     ) : StructuredDataResult< T, R >[] | T[] {
         // Create map: string value -> indices in extractedStrings
-        const stringToIndices: Map< string, number[] > = new Map();
+        const stringToIndices = new Map< string, number[] > ();
 
         for ( let i = 0; i < extractedStrings.length; i++ ) {
             const str = extractedStrings[ i ];
@@ -157,8 +157,8 @@ export class StructuredData< T = any, R = MetricRaw > {
             stringToIndices.get( str )!.push( i );
         }
 
-        const output = new Array<StructuredDataResult< T, R > | T>( results.length );
-        const occurrenceCount: Map< string, number > = new Map();
+        const output = new Array< StructuredDataResult< T, R > | T >( results.length );
+        const occurrenceCount = new Map< string, number > ();
         let out = 0;
 
         for ( let i = 0; i < results.length; i++ ) {

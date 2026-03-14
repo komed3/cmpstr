@@ -96,7 +96,7 @@ export class HashTable< K extends string, T > {
      * The key is a string generated from the label and any number of hashed strings.
      * The value is of type T.
      */
-    private table: Map< string, T > = new Map ();
+    private table = new Map< string, T > ();
 
     /**
      * Creates an instance of HashTable.
