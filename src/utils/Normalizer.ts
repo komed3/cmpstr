@@ -83,28 +83,37 @@ export class Normalizer {
     private static getPipeline ( flags: NormalizeFlags ) : NormalizerFn {
         return ErrorUtil.wrap< NormalizerFn >( () => {
             // Return the cached pipeline if it exists
-            if ( Normalizer.pipeline.has( flags ) ) return Normalizer.pipeline.get( flags )!;
+            const cached = Normalizer.pipeline.get( flags );
+            if ( cached ) return cached;
 
-            // Define the normalization steps based on the flags
+            // Build the normalization pipeline based on the flags
             const { REGEX } = Normalizer;
-            const steps: Array< [ string, NormalizerFn ] > = [
-                [ 'd', s => s.normalize( 'NFD' ) ],
-                [ 'i', s => s.toLowerCase() ],
-                [ 'k', s => s.replace( REGEX.nonLetters, '' ) ],
-                [ 'n', s => s.replace( REGEX.nonNumbers, '' ) ],
-                [ 'r', s => s.replace( REGEX.doubleChars, '$1' ) ],
-                [ 's', s => s.replace( REGEX.specialChars, '' ) ],
-                [ 't', s => s.trim() ],
-                [ 'u', s => s.normalize( 'NFC' ) ],
-                [ 'w', s => s.replace( REGEX.whitespace, ' ' ) ],
-                [ 'x', s => s.normalize( 'NFKC' ) ]
-            ];
+            const steps: NormalizerFn[] = [];
 
-            // Compile the normalization function based on the provided flags
-            const pipeline = steps.filter( ( [ f ] ) => flags.includes( f ) ).map( ( [ , fn ] ) => fn );
-            const fn: NormalizerFn = s => pipeline.reduce( ( v, f ) => f( v ), s );
+            for ( let i = 0; i < flags.length; i++ ) {
+                switch ( flags[ i ] ) {
+                    case 'd': steps.push( s => s.normalize( 'NFD' ) ); break;
+                    case 'i': steps.push( s => s.toLowerCase() ); break;
+                    case 'k': steps.push( s => s.replace( REGEX.nonLetters, '' ) ); break;
+                    case 'n': steps.push( s => s.replace( REGEX.nonNumbers, '' ) ); break;
+                    case 'r': steps.push( s => s.replace( REGEX.doubleChars, '$1' ) ); break;
+                    case 's': steps.push( s => s.replace( REGEX.specialChars, '' ) ); break;
+                    case 't': steps.push( s => s.trim() ); break;
+                    case 'u': steps.push( s => s.normalize( 'NFC' ) ); break;
+                    case 'w': steps.push( s => s.replace( REGEX.whitespace, ' ' ) ); break;
+                    case 'x': steps.push( s => s.normalize( 'NFKC' ) ); break;
+                }
+            }
 
-            // Cache the compiled function for the given flags
+            // Create a normalization function that applies all the steps in sequence
+            const fn: NormalizerFn = ( input: string ) => {
+                let v = input;
+                for ( let i = 0; i < steps.length; i++ ) v = steps[ i ]( v );
+
+                return v;
+            };
+
+            // Cache and return the normalization function for the given flags
             Normalizer.pipeline.set( flags, fn );
             return fn;
         }, `Failed to create normalization pipeline for flags: ${flags}`, { flags } );
@@ -129,25 +138,27 @@ export class Normalizer {
 
             // Canonicalize the flags to ensure consistent ordering
             flags = normalizedFlags ?? this.canonicalFlags( flags );
+            const pipeline = Normalizer.getPipeline( flags );
+
+            // Function to normalize a single string using the pipeline and cache
+            const normalizeOne = ( s: string ) : string => {
+                // Generate a cache key based on the flags and input
+                const key: string | false = Normalizer.cache.key( flags, [ s ] );
+
+                // If the key exists in the cache, return the cached result
+                if ( key && Normalizer.cache.has( key ) ) return Normalizer.cache.get( key )!;
+
+                // Normalize the input using the pipeline for the given flags
+                const res = pipeline( s );
+
+                // If a key was generated, store the result in the cache
+                if ( key ) Normalizer.cache.set( key, res );
+
+                return res;
+            };
 
             // If input is an array, normalize each string in the array
-            if ( Array.isArray( input ) ) return input.map(
-                s => Normalizer.normalize( s, flags, flags )
-            ) as string[];
-
-            // Generate a cache key based on the flags and input
-            const key: string | false = Normalizer.cache.key( flags, [ input ] );
-
-            // If the key exists in the cache, return the cached result
-            if ( key && Normalizer.cache.has( key ) ) return Normalizer.cache.get( key )!;
-
-            // Normalize the input using the pipeline for the given flags
-            const res: string = Normalizer.getPipeline( flags )( input );
-
-            // If a key was generated, store the result in the cache
-            if ( key ) Normalizer.cache.set( key, res );
-
-            return res;
+            return Array.isArray( input ) ? input.map( normalizeOne ) : normalizeOne( input );
         }, `Failed to normalize input with flags: ${flags}`, { input, flags } );
     }
 
@@ -182,4 +193,4 @@ export class Normalizer {
         Normalizer.cache.clear();
     }
 
-};
+}
