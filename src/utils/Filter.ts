@@ -44,14 +44,17 @@ export class Filter {
      * If the function is not cached, it compiles it from the active filters.
      * 
      * @param {FilterHooks} hook - The name of the hook
+     * @param {boolean} [force=false] - If true, forces recompilation of the pipeline even if it is cached
      * @returns {FilterFn} - The compiled filter function for the hook
      * @throws {CmpStrInternalError} - Throws an error if the pipeline compilation fails
      */
-    private static getPipeline ( hook: FilterHooks ) : FilterFn {
+    private static getPipeline ( hook: FilterHooks, force: boolean = false ) : FilterFn {
         return ErrorUtil.wrap< FilterFn >( () => {
             // Return the cached pipeline if it exists
-            const cached = Filter.pipeline.get( hook );
-            if ( cached ) return cached;
+            if ( ! force ) {
+                const cached = Filter.pipeline.get( hook );
+                if ( cached ) return cached;
+            }
 
             // Get the filters for the specified hook
             const filter = Filter.filters.get( hook );
@@ -103,9 +106,7 @@ export class Filter {
      *                      false if it was not added due to override restrictions
      * @throws {CmpStrInternalError} - Throws an error if there is an issue adding the filter
      */
-    public static add (
-        hook: FilterHooks, id: string, fn: FilterFn, opt: FilterOptions = {}
-    ) : boolean {
+    public static add ( hook: FilterHooks, id: string, fn: FilterFn, opt: FilterOptions = {} ) : boolean {
         return ErrorUtil.wrap< boolean >( () => {
             const { priority = 10, active = true, overrideable = true } = opt;
 
@@ -115,26 +116,31 @@ export class Filter {
 
             // If the filter already exists and is not overrideable, return false
             if ( index && ! index.overrideable ) return false;
+            // If the filter already exists and has the same properties, return true (no change)
+            if ( index && index.fn === fn && index.priority === priority && index.active === active ) return true;
 
             // Add or update the filter entry
             filter.set( id, { id, fn, priority, active, overrideable } );
             Filter.filters.set( hook, filter );
-            Filter.pipeline.delete( hook );
+            Filter.getPipeline( hook, true );
+
             return true;
         }, `Error adding filter <${id}> to hook <${hook}>`, { hook, id, opt } );
     }
 
     /**
-     * Removes a filter by its hook and id.
+     * Removes a filter from the specified hook by its id.
      * 
      * @param {FilterHooks} hook - The name of the hook
      * @param {string} id - The id of the filter
      * @returns {boolean} - Returns true if the filter was removed, false if it was not found
      */
     public static remove ( hook: FilterHooks, id: string ) : boolean {
-        Filter.pipeline.delete( hook );
         const filter = Filter.filters.get( hook );
-        return filter ? filter.delete( id ) : false;
+        if ( ! filter || ! filter.delete( id ) ) return false;
+
+        Filter.getPipeline( hook, true );
+        return true;
     }
 
     /**
@@ -145,9 +151,15 @@ export class Filter {
      * @returns {boolean} - Returns true if the filter was paused, false if it was not found
      */
     public static pause ( hook: FilterHooks, id: string ) : boolean {
-        Filter.pipeline.delete( hook );
-        const f = Filter.filters.get( hook )?.get( id );
-        return !! ( f && ( f.active = false, true ) );
+        const filter = Filter.filters.get( hook );
+        if ( ! filter ) return false;
+
+        const f = filter.get( id );
+        if ( ! f || ! f.active ) return false;
+
+        f.active = false;
+        Filter.getPipeline( hook, true );
+        return true;
     }
 
     /**
@@ -158,9 +170,15 @@ export class Filter {
      * @returns {boolean} - Returns true if the filter was resumed, false if it was not found
      */
     public static resume ( hook: FilterHooks, id: string ) : boolean {
-        Filter.pipeline.delete( hook );
-        const f = Filter.filters.get( hook )?.get( id );
-        return !! ( f && ( f.active = true, true ) );
+        const filter = Filter.filters.get( hook );
+        if ( ! filter ) return false;
+
+        const f = filter.get( id );
+        if ( ! f || f.active ) return false;
+
+        f.active = true;
+        Filter.getPipeline( hook, true );
+        return true;
     }
 
     /**
@@ -216,6 +234,7 @@ export class Filter {
 
             const arr = input as string[];
             const out = new Array( arr.length );
+
             for ( let i = 0; i < arr.length; i++ ) out[ i ] = new Promise( ( r ) => r( fn( arr[ i ] ) ) );
             return Promise.all( out );
         }, `Error applying filters for hook <${hook}>`, { hook, input } );
@@ -228,7 +247,7 @@ export class Filter {
      * @param {FilterHooks} [hook] - Optional name of the hook to clear filters for
      */
     public static clear ( hook?: FilterHooks ) : void {
-        Filter.pipeline.clear();
+        Filter.clearPipeline();
 
         if ( hook ) Filter.filters.delete( hook );
         else Filter.filters.clear();
