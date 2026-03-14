@@ -38,7 +38,8 @@ export class DeepMerge {
      * @returns {( string | number )[]} - An array of keys, e.g. `['a', 'b', 'c']` or `['a', 0, 'b']`
      */
     public static parse ( p: string ) : ( string | number )[] {
-        if ( DeepMerge.PATH_CACHE.has( p ) ) return DeepMerge.PATH_CACHE.get( p )!;
+        const cached = DeepMerge.PATH_CACHE.get( p );
+        if ( cached ) return cached;
 
         const parsed = p.replace( DeepMerge.BRACKET_PATTERN, '.$1' ).split( '.' ).map( s => {
             const n = Number( s ); return Number.isInteger( n ) && String( n ) === s ? n : s;
