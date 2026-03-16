@@ -82,7 +82,9 @@ export class StructuredData< T = any, R = MetricRaw > {
      * 
      * @returns {string[]} - Array of extracted strings
      */
-    private extract = () : string[] => this.extractFrom< T >( this.data, this.key );
+    private extract () : string[] {
+        return this.extractFrom< T >( this.data, this.key );
+    }
 
     /**
      * Type guard to check if a value is MetricResultSingle<R>.
