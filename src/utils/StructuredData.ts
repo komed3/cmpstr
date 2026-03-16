@@ -72,18 +72,14 @@ export class StructuredData< T = any, R = MetricRaw > {
      */
     private extractFrom< A > ( arr: readonly A[], key: keyof A ) : string[] {
         const n = arr.length;
-        const result = Pool.acquire< string[] >( 'string[]', n );
+        const result = new Array< string > ( n );
 
-        try {
-            for ( let i = 0; i < n; i++ ) {
-                const val = arr[ i ][ key ];
-                result[ i ] = val != null ? String( val ) : '';
-            }
-
-            return result;
-        } finally {
-            Pool.release< string[] >( 'string[]', result, n );
+        for ( let i = 0; i < n; i++ ) {
+            const val = arr[ i ][ key ];
+            result[ i ] = val != null ? String( val ) : '';
         }
+
+        return result;
     }
 
     /**
