@@ -150,61 +150,67 @@ export class StructuredData< T = any, R = MetricRaw > {
         removeZero?: boolean, objectsOnly?: boolean
     ) : StructuredDataResult< T, R >[] | T[] {
         // Create map: string value -> indices in extractedStrings
-        const stringToIndices = new Map< string, number[] > ();
+        const m = extractedStrings.length, n = results.length;
+        const stringToIndices = Pool.acquire< Map< string, number[] > >( 'map', m );
+        stringToIndices.clear();
 
-        for ( let i = 0; i < extractedStrings.length; i++ ) {
-            const str = extractedStrings[ i ];
+        try {
+            for ( let i = 0; i < m; i++ ) {
+                const str = extractedStrings[ i ];
 
-            if ( ! stringToIndices.has( str ) ) stringToIndices.set( str, [] );
-            stringToIndices.get( str )!.push( i );
-        }
-
-        const output = new Array< StructuredDataResult< T, R > | T >( results.length );
-        const occurrenceCount = new Map< string, number > ();
-        let out = 0;
-
-        for ( let i = 0; i < results.length; i++ ) {
-            const result = results[ i ];
-
-            // Skip zero results if configured
-            if ( removeZero && result.res === 0 ) continue;
-
-            const targetStr = result.b || '';
-            const indices = stringToIndices.get( targetStr );
-
-            // Fall back to positional index if string not found
-            let dataIndex: number;
-
-            if ( indices && indices.length > 0 ) {
-                // Track occurrence of this value in results
-                const occurrence = occurrenceCount.get( targetStr ) ?? 0;
-                occurrenceCount.set( targetStr, occurrence + 1 );
-                // Cycle through duplicates
-                dataIndex = indices[ occurrence % indices.length ];
-            } else {
-                // If no match found, use the original position indicator
-                dataIndex = result.__idx ?? i;
+                if ( ! stringToIndices.has( str ) ) stringToIndices.set( str, [] );
+                stringToIndices.get( str )!.push( i );
             }
 
-            // Ensure dataIndex is valid
-            if ( dataIndex < 0 || dataIndex >= sourceData.length ) continue;
+            const output = new Array< StructuredDataResult< T, R > | T >( n );
+            const occurrenceCount = new Map< string, number > ();
+            let out = 0;
 
-            const sourceObj = sourceData[ dataIndex ];
-            const mappedTarget = extractedStrings[ dataIndex ] || targetStr;
+            for ( let i = 0; i < n; i++ ) {
+                const result = results[ i ];
 
-            // If objectsOnly, push just the original object
-            if ( objectsOnly ) output[ out++ ] = sourceObj;
+                // Skip zero results if configured
+                if ( removeZero && result.res === 0 ) continue;
 
-            // Build the result object
-            else output[ out++ ] = {
-                obj: sourceObj, key: this.key, result: {
-                    source: result.a, target: mappedTarget, match: result.res
-                }, ...( result.raw ? { raw: result.raw } : null )
-            };
+                const targetStr = result.b || '';
+                const indices = stringToIndices.get( targetStr );
+
+                // Fall back to positional index if string not found
+                let dataIndex: number;
+
+                if ( indices && indices.length > 0 ) {
+                    // Track occurrence of this value in results
+                    const occurrence = occurrenceCount.get( targetStr ) ?? 0;
+                    occurrenceCount.set( targetStr, occurrence + 1 );
+                    // Cycle through duplicates
+                    dataIndex = indices[ occurrence % indices.length ];
+                } else {
+                    // If no match found, use the original position indicator
+                    dataIndex = result.__idx ?? i;
+                }
+
+                // Ensure dataIndex is valid
+                if ( dataIndex < 0 || dataIndex >= sourceData.length ) continue;
+
+                const sourceObj = sourceData[ dataIndex ];
+                const mappedTarget = extractedStrings[ dataIndex ] || targetStr;
+
+                // If objectsOnly, push just the original object
+                if ( objectsOnly ) output[ out++ ] = sourceObj;
+
+                // Build the result object
+                else output[ out++ ] = {
+                    obj: sourceObj, key: this.key, result: {
+                        source: result.a, target: mappedTarget, match: result.res
+                    }, ...( result.raw ? { raw: result.raw } : null )
+                };
+            }
+
+            output.length = out;
+            return output as StructuredDataResult< T, R >[] | T[];
+        } finally {
+            Pool.release< Map< string, number[] > >( 'map', stringToIndices, m );
         }
-
-        output.length = out;
-        return output as StructuredDataResult< T, R >[] | T[];
     }
 
     /**
