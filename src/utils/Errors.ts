@@ -36,9 +36,6 @@ export class CmpStrError extends Error {
     /** Optional structured metadata for the error */
     public readonly meta?: CmpStrErrorMeta;
 
-    /** Optional cause (native JS Error chaining) */
-    public override readonly cause?: unknown;
-
     /** Timestamp when the error was created (ISO 8601) */
     public readonly when: string = new Date().toISOString();
 
@@ -53,12 +50,11 @@ export class CmpStrError extends Error {
      * @param {unknown} [cause] - Optional cause (native JS Error chaining)
      */
     constructor ( code: string, message: string, meta?: CmpStrErrorMeta, cause?: unknown ) {
-        super ( message );
+        super ( message, cause !== undefined ? { cause } : undefined );
 
         this.name = this.constructor.name;
         this.code = code;
         this.meta = meta;
-        this.cause = cause;
 
         // Preserve stack trace (modern environments already set this)
         if ( typeof Error.captureStackTrace === 'function' ) {
