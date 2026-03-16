@@ -120,13 +120,17 @@ export class Profiler {
      * Enables the profiler.
      * Sets the active state to true, allowing profiling to occur.
      */
-    public enable = () : void => { this.active = true }
+    public enable () : void {
+        this.active = true
+    }
 
     /**
      * Disables the profiler.
      * Sets the active state to false, preventing further profiling.
      */
-    public disable = () : void => { this.active = false }
+    public disable () : void {
+        this.active = false
+    }
 
     /**
      * Resets the profiler by clearing the store, total time and memory consumption.
@@ -167,21 +171,27 @@ export class Profiler {
      * 
      * @returns {ProfilerEntry< any >[]} - An array of profiler entries
      */
-    public getAll = () : ProfilerEntry< any >[] => [ ...this.store ];
+    public getAll () : ProfilerEntry< any >[] {
+        return [ ...this.store ];
+    }
 
     /**
      * Retrieves the last profiler entry stored in the profiler.
      * 
      * @returns {ProfilerEntry< any > | undefined} - The last profiler entry or undefined if no entries exist
      */
-    public getLast = () : ProfilerEntry< any > | undefined => this.getAll().pop();
+    public getLast () : ProfilerEntry< any > | undefined {
+        return this.last;
+    }
 
     /**
      * Retrieves the total time and memory consumption recorded by the profiler.
      * 
      * @returns {{ time: number, mem: number }} - An object containing total time and memory usage
      */
-    public getTotal = () : { time: number, mem: number } => ( { time: this.totalTime, mem: this.totalMem } );
+    public getTotal () : { time: number, mem: number } {
+        return { time: this.totalTime, mem: this.totalMem };
+    }
 
     /**
      * Returns the services provided by the Profiler class.
