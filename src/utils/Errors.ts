@@ -64,8 +64,10 @@ export class CmpStrError extends Error {
 
     /**
      * Serialize the error into a plain object for JSON output.
+     * 
+     * @param {boolean} [stack=false] - Whether to include the stack trace in the JSON
      */
-    public toJSON () : CmpStrErrorJSON {
+    public toJSON ( stack: boolean = false ) : CmpStrErrorJSON {
         return {
             name: this.name,
             code: this.code,
@@ -75,7 +77,7 @@ export class CmpStrError extends Error {
             cause: this.cause instanceof Error ? {
                 name: this.cause.name,
                 message: this.cause.message,
-                stack: ( this.cause as any ).stack
+                stack: stack && this.cause.stack
             } : this.cause
         };
     }
