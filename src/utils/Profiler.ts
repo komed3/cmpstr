@@ -39,7 +39,7 @@ export class Profiler {
     private memFn: () => number;
 
     /** Store for profiler entries */
-    private store = new Set< ProfilerEntry< any > > ();
+    private store: ProfilerEntry< any >[] = [];
     private last?: ProfilerEntry< any >;
 
     /** Total time and memory consumption */
@@ -109,7 +109,7 @@ export class Profiler {
 
         // Add the profiling entry to the store
         const entry = { time: deltaTime, mem: deltaMem, res, meta };
-        this.store.add( entry ); this.last = entry;
+        this.store.push( entry ); this.last = entry;
         this.totalTime += deltaTime, this.totalMem += deltaMem;
 
         return res;
@@ -137,7 +137,7 @@ export class Profiler {
      * This method is useful for starting a new profiling session.
      */
     public clear () : void {
-        this.store.clear();
+        this.store = [];
         this.totalTime = 0;
         this.totalMem = 0;
     }
@@ -172,7 +172,7 @@ export class Profiler {
      * @returns {ProfilerEntry< any >[]} - An array of profiler entries
      */
     public getAll () : ProfilerEntry< any >[] {
-        return [ ...this.store ];
+        return this.store;
     }
 
     /**
