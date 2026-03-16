@@ -40,6 +40,7 @@ export class Profiler {
 
     /** Store for profiler entries */
     private store = new Set< ProfilerEntry< any > > ();
+    private last?: ProfilerEntry< any >;
 
     /** Total time and memory consumption */
     private totalTime: number = 0;
@@ -91,26 +92,6 @@ export class Profiler {
     }
 
     /**
-     * Gets the current time based on the environment.
-     * 
-     * Uses process.hrtime.bigint() for Node.js, performance.now() for browsers,
-     * and Date.now() as a fallback.
-     * 
-     * @returns {number} - Current time in milliseconds
-     */
-    private now = () : number => this.nowFn();
-
-    /**
-     * Gets the current memory usage based on the environment.
-     * 
-     * Uses process.memoryUsage().heapUsed for Node.js, performance.memory.usedJSHeapSize
-     * for browsers, and returns 0 as a fallback.
-     * 
-     * @returns {number} - Current memory usage in bytes
-     */
-    private mem = () : number => this.memFn();
-
-    /**
      * Profiles a synchronous function by measuring its execution time and memory usage.
      * 
      * @param {() => T} fn - Function to be executed and profiled
@@ -118,17 +99,18 @@ export class Profiler {
      * @returns {T} - The result of the executed function
      */
     private profile< T > ( fn: () => T, meta: Record< string, any > ) : T {
-        const startTime = this.now(), startMem  = this.mem();
+        const startTime = this.nowFn(), startMem  = this.memFn();
 
         // Execute the function and capture the result
         const res = fn();
 
         // Calculate the time and memory consumption
-        const deltaTime = this.now() - startTime, deltaMem  = this.mem() - startMem;
+        const deltaTime = this.nowFn() - startTime, deltaMem  = this.memFn() - startMem;
 
         // Add the profiling entry to the store
-        this.store.add( { time: deltaTime, mem: deltaMem, res, meta } );
-        this.totalTime += deltaTime, this.totalMem  += deltaMem;
+        const entry = { time: deltaTime, mem: deltaMem, res, meta };
+        this.store.add( entry ); this.last = entry;
+        this.totalTime += deltaTime, this.totalMem += deltaMem;
 
         return res;
     }
