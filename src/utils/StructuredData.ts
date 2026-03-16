@@ -149,10 +149,13 @@ export class StructuredData< T = any, R = MetricRaw > {
         results: IndexedResult< R >[], sourceData: T[], extractedStrings: string[],
         removeZero?: boolean, objectsOnly?: boolean
     ) : StructuredDataResult< T, R >[] | T[] {
-        // Create map: string value -> indices in extractedStrings
         const m = extractedStrings.length, n = results.length;
         const stringToIndices = Pool.acquire< Map< string, number[] > >( 'map', m );
+        const occurrenceCount = Pool.acquire< Map< string, number > >( 'map', n );
+        const output = new Array< StructuredDataResult< T, R > | T >( n );
+
         stringToIndices.clear();
+        occurrenceCount.clear();
 
         try {
             for ( let i = 0; i < m; i++ ) {
@@ -162,8 +165,6 @@ export class StructuredData< T = any, R = MetricRaw > {
                 stringToIndices.get( str )!.push( i );
             }
 
-            const output = new Array< StructuredDataResult< T, R > | T >( n );
-            const occurrenceCount = new Map< string, number > ();
             let out = 0;
 
             for ( let i = 0; i < n; i++ ) {
@@ -210,6 +211,7 @@ export class StructuredData< T = any, R = MetricRaw > {
             return output as StructuredDataResult< T, R >[] | T[];
         } finally {
             Pool.release< Map< string, number[] > >( 'map', stringToIndices, m );
+            Pool.release< Map< string, number > >( 'map', occurrenceCount, n );
         }
     }
 
