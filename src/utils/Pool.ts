@@ -116,6 +116,7 @@ export class Pool {
     /** Pool Types */
     private static readonly CONFIG: Record< PoolType, PoolConfig > = {
         'int32':    { type: 'int32',    maxSize: 64, maxItemSize: 2048, allowOversize: true  },
+        'arr[]':    { type: 'arr[]',    maxSize:  4, maxItemSize: 1024, allowOversize: false },
         'number[]': { type: 'number[]', maxSize: 16, maxItemSize: 1024, allowOversize: false },
         'string[]': { type: 'string[]', maxSize:  2, maxItemSize: 1024, allowOversize: false },
         'set':      { type: 'set',      maxSize:  8, maxItemSize:    0, allowOversize: false },
@@ -125,6 +126,7 @@ export class Pool {
     /** Pool Rings for each type */
     private static readonly POOLS: Record< PoolType, RingPool< any > > = {
         'int32':    new RingPool< Int32Array > ( 64 ),
+        'arr[]':    new RingPool< Array< any > >( 4 ),
         'number[]': new RingPool< number[] > ( 16 ),
         'string[]': new RingPool< string[] > ( 2 ),
         'set':      new RingPool< Set< any > > ( 8 ),
@@ -141,6 +143,7 @@ export class Pool {
     private static allocate ( type: PoolType, size: number ) : any {
         switch ( type ) {
             case 'int32':    return new Int32Array ( size );
+            case 'arr[]':    return new Array ( size );
             case 'number[]': return new Float64Array ( size );
             case 'string[]': return new Array ( size );
             case 'set':      return new Set ();
