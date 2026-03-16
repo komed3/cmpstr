@@ -39,6 +39,10 @@ import { Pool } from './Pool';
  */
 export class StructuredData< T = any, R = MetricRaw > {
 
+    /** Sorting functions for ascending and descending order based on the 'res' property. */
+    private static readonly SORT_ASC = ( a: IndexedResult< any >, b: IndexedResult< any > ) => a.res - b.res;
+    private static readonly SORT_DESC = ( a: IndexedResult< any >, b: IndexedResult< any > ) => b.res - a.res;
+
     /**
      * Creates a new StructuredData instance for processing structured data.
      * 
@@ -226,10 +230,7 @@ export class StructuredData< T = any, R = MetricRaw > {
      */
     private sort ( results: IndexedResult< R >[], sort?: string | boolean ) : IndexedResult< R >[] {
         if ( ! sort || results.length <= 1 ) return results;
-
-        // Determine sort direction and sort based on match score
-        const asc = sort === 'asc';
-        return results.sort( ( a, b ) => asc ? a.res - b.res : b.res - a.res );
+        return results.sort( sort === 'asc' ? StructuredData.SORT_ASC : StructuredData.SORT_DESC );
     }
 
     /**
