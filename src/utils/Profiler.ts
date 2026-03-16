@@ -108,7 +108,7 @@ export class Profiler {
         const deltaTime = this.nowFn() - startTime, deltaMem  = this.memFn() - startMem;
 
         // Add the profiling entry to the store
-        const entry = { time: deltaTime, mem: deltaMem, res, meta };
+        const entry: ProfilerEntry< T > = { time: deltaTime, mem: deltaMem, res, meta };
         this.store.push( entry ); this.last = entry;
         this.totalTime += deltaTime, this.totalMem += deltaMem;
 
