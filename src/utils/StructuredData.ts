@@ -160,9 +160,10 @@ export class StructuredData< T = any, R = MetricRaw > {
         try {
             for ( let i = 0; i < m; i++ ) {
                 const str = extractedStrings[ i ];
+                let arr = stringToIndices.get( str );
 
-                if ( ! stringToIndices.has( str ) ) stringToIndices.set( str, [] );
-                stringToIndices.get( str )!.push( i );
+                if ( ! arr ) { arr = []; stringToIndices.set( str, arr ) }
+                arr.push( i );
             }
 
             let out = 0;
