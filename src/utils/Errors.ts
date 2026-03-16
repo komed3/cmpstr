@@ -23,6 +23,20 @@ import type { CmpStrErrorJSON, CmpStrErrorMeta } from './Types';
 
 
 /**
+ * Standardized error codes for CmpStr errors.
+ * 
+ * These codes are used in the `code` field of `CmpStrError` instances to allow
+ * for easy programmatic handling of different error types without relying on
+ * string matching of messages or class names.
+ */
+export const enum ErrorCode {
+    VALIDATION = 'E_VALIDATION',
+    NOT_FOUND = 'E_NOT_FOUND',
+    USAGE = 'E_USAGE',
+    INTERNAL = 'E_INTERNAL'
+}
+
+/**
  * Base error class for CmpStr.
  * 
  * It provides a standard `code` field and a consistent `toString()` / `toJSON()`
@@ -112,7 +126,7 @@ export class CmpStrError extends Error {
  */
 export class CmpStrValidationError extends CmpStrError {
     constructor ( message: string, meta?: CmpStrErrorMeta, cause?: unknown ) {
-        super ( 'E_VALIDATION', message, meta, cause );
+        super ( ErrorCode.VALIDATION, message, meta, cause );
     }
 }
 
@@ -121,7 +135,7 @@ export class CmpStrValidationError extends CmpStrError {
  */
 export class CmpStrNotFoundError extends CmpStrError {
     constructor ( message: string, meta?: CmpStrErrorMeta, cause?: unknown ) {
-        super ( 'E_NOT_FOUND', message, meta, cause );
+        super ( ErrorCode.NOT_FOUND, message, meta, cause );
     }
 }
 
@@ -130,7 +144,7 @@ export class CmpStrNotFoundError extends CmpStrError {
  */
 export class CmpStrUsageError extends CmpStrError {
     constructor ( message: string, meta?: CmpStrErrorMeta, cause?: unknown ) {
-        super ( 'E_USAGE', message, meta, cause );
+        super ( ErrorCode.USAGE, message, meta, cause );
     }
 }
 
@@ -139,7 +153,7 @@ export class CmpStrUsageError extends CmpStrError {
  */
 export class CmpStrInternalError extends CmpStrError {
     constructor ( message: string, meta?: CmpStrErrorMeta, cause?: unknown ) {
-        super ( 'E_INTERNAL', message, meta, cause );
+        super ( ErrorCode.INTERNAL, message, meta, cause );
     }
 }
 
