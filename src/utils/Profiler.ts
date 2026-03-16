@@ -92,27 +92,16 @@ export class Profiler {
     }
 
     /**
-     * Profiles a synchronous function by measuring its execution time and memory usage.
+     * Stores a profiler entry in the store and updates the total time and memory consumption.
      * 
-     * @param {() => T} fn - Function to be executed and profiled
-     * @param {Record< string, any >} meta - Metadata to be associated with the profiling entry
-     * @returns {T} - The result of the executed function
+     * @param {ProfilerEntry< T >} entry - The profiler entry to be stored
      */
-    private profile< T > ( fn: () => T, meta: Record< string, any > ) : T {
-        const startTime = this.nowFn(), startMem  = this.memFn();
+    private storeRes< T > ( entry: ProfilerEntry< T > ) : void {
+        this.store.push( entry );
+        this.last = entry;
 
-        // Execute the function and capture the result
-        const res = fn();
-
-        // Calculate the time and memory consumption
-        const deltaTime = this.nowFn() - startTime, deltaMem  = this.memFn() - startMem;
-
-        // Add the profiling entry to the store
-        const entry: ProfilerEntry< T > = { time: deltaTime, mem: deltaMem, res, meta };
-        this.store.push( entry ); this.last = entry;
-        this.totalTime += deltaTime, this.totalMem += deltaMem;
-
-        return res;
+        this.totalTime += entry.time;
+        this.totalMem += entry.mem;
     }
 
 
@@ -151,7 +140,16 @@ export class Profiler {
      * @returns {T} - The result of the executed function
      */
     public run< T > ( fn: () => T, meta: Record< string, any > = {} ) : T {
-        return this.active ? this.profile( fn, meta ) : fn();
+        if ( ! this.active ) return fn();
+
+        // Calculate the time and memory consumption
+        const startTime = this.nowFn(), startMem  = this.memFn();
+        const res = fn();
+        const deltaTime = this.nowFn() - startTime, deltaMem  = this.memFn() - startMem;
+
+        // Add the profiling entry to the store
+        this.storeRes( { time: deltaTime, mem: deltaMem, res, meta } );
+        return res;
     }
 
     /**
@@ -163,7 +161,16 @@ export class Profiler {
      * @returns {Promise< T >} - A promise that resolves to the result of the executed function
      */
     public async runAsync< T > ( fn: () => Promise< T >, meta: Record< string, any > = {} ) : Promise< T > {
-        return this.active ? this.profile( async () => await fn(), meta ) : await fn();
+        if ( ! this.active ) return await fn();
+
+        // Calculate the time and memory consumption
+        const startTime = this.nowFn(), startMem  = this.memFn();
+        const res = await fn();
+        const deltaTime = this.nowFn() - startTime, deltaMem  = this.memFn() - startMem;
+
+        // Add the profiling entry to the store
+        this.storeRes( { time: deltaTime, mem: deltaMem, res, meta } );
+        return res;
     }
 
     /**
