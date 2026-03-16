@@ -124,18 +124,33 @@ export class StructuredData< T = any, R = MetricRaw > {
         if ( ! Array.isArray( results ) || results.length === 0 ) return [];
 
         const first = results[ 0 ];
-        let normalized: IndexedResult< R >[] = [];
+        let out = new Array< IndexedResult< R > >( results.length );
 
         // Check if it's MetricResultSingle format
-        if ( this.isMetricResult( first ) ) normalized = results as MetricResultSingle< R >[];
-        // Check if it's CmpStrResult format -> convert to MetricResultSingle
-        else if ( this.isCmpStrResult( first ) ) normalized = ( results as ( CmpStrResult & { raw?: R } )[] )
-            .map( r => ( { metric: 'unknown', a: r.source, b: r.target, res: r.match, raw: r.raw } ) );
-        // Throw on unsupported format
-        else throw new CmpStrValidationError ( 'Unsupported result format for StructuredData normalization.' );
+        if ( this.isMetricResult( first ) ) {
+            const src = results as MetricResultSingle< R >[];
+            for ( let i = 0; i < src.length; i++ ) out[ i ] = { ...src[ i ], __idx: i };
+        }
 
-        // Attach original indices (position in the results array)
-        return normalized.map( ( r, idx ) => ( { ...r, __idx: idx } ) );
+        // Check if it's CmpStrResult format -> convert to MetricResultSingle
+        else if ( this.isCmpStrResult( first ) ) {
+            const src = results as ( CmpStrResult & { raw?: R } )[];
+
+            for ( let i = 0; i < src.length; i++ ) {
+                const r = src[ i ];
+                out[ i ] = {
+                    metric: 'unknown', a: r.source, b: r.target,
+                    res: r.match, raw: r.raw, __idx: i
+                };
+            }
+        }
+
+        // Throw on unsupported format
+        else throw new CmpStrValidationError (
+            'Unsupported result format for StructuredData normalization.'
+        );
+
+        return out;
     }
 
     /**
