@@ -205,6 +205,13 @@ export interface FilterEntry {
 export type RegistryConstructor< T > = abstract new ( ...args: any[] ) => T;
 
 /**
+ * ClassConstructor is a type alias for a class constructor that can be used to create instances.
+ * 
+ * @template T - The class type
+ */
+export type ClassConstructor< T > = new ( ...args: [] ) => T;
+
+/**
  * RegistryService defines the API for a generic registry of classes.
  * 
  * @template T - The class type managed by the registry
