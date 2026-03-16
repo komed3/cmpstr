@@ -195,8 +195,10 @@ export class ErrorUtil {
      * @throws {CmpStrInternalError} - If the function throws an error, it will be wrapped and re-thrown as a `CmpStrInternalError`
      */
     public static wrap< T > ( fn: () => T, message: string, meta?: CmpStrErrorMeta ) : T {
-        try { return fn() }
-        catch ( err ) { throw new CmpStrInternalError ( message, meta, err ) }
+        try { return fn() } catch ( err ) {
+            if ( err instanceof CmpStrError ) throw err;
+            throw new CmpStrInternalError( message, meta, err );
+        }
     }
 
     /**
@@ -205,12 +207,14 @@ export class ErrorUtil {
      * @param {() => Promise< T >} fn - The asynchronous function to execute
      * @param {string} message - The error message to use if an exception is thrown
      * @param {CmpStrErrorMeta} [meta] - Optional structured metadata for the error
-     * @return {Promise<T>} A promise that resolves to the result of the function if it executes successfully
+     * @return {Promise< T >} A promise that resolves to the result of the function if it executes successfully
      * @throws {CmpStrInternalError} - If the function throws an error, it will be wrapped and re-thrown as a `CmpStrInternalError`
      */
     public static async wrapAsync< T > ( fn: () => Promise< T >, message: string, meta?: CmpStrErrorMeta ) : Promise< T > {
-        try { return await fn() }
-        catch ( err ) { throw new CmpStrInternalError ( message, meta, err ) }
+        try { return await fn() } catch ( err ) {
+            if ( err instanceof CmpStrError ) throw err;
+            throw new CmpStrInternalError( message, meta, err );
+        }
     }
 
 }
