@@ -165,7 +165,7 @@ export class ErrorUtil {
      * @param {CmpStrErrorMeta} [meta] - Optional structured metadata for the error
      * @throws {CmpStrInternalError} - Always throws a new `CmpStrInternalError` wrapping the original error
      */
-    public static create ( err: unknown, message: string, meta?: CmpStrErrorMeta ) : never {
+    public static rethrow ( err: unknown, message: string, meta?: CmpStrErrorMeta ) : never {
         if ( err instanceof CmpStrError ) throw err;
         throw new CmpStrInternalError ( message, meta, err );
     }
