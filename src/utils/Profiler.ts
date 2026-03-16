@@ -51,7 +51,7 @@ export class Profiler {
      * Detects if running in Node.js or browser and sets the ENV property accordingly.
      */
     protected static detectEnv () : void {
-        if ( typeof process !== 'undefined' ) Profiler.ENV = 'nodejs';
+        if ( typeof process !== 'undefined' && process.versions?.node ) Profiler.ENV = 'nodejs';
         else if ( typeof performance !== 'undefined' ) Profiler.ENV = 'browser';
         else Profiler.ENV = 'unknown';
     }
@@ -81,7 +81,7 @@ export class Profiler {
                 this.memFn = () => process.memoryUsage().heapUsed;
                 break;
             case 'browser':
-                this.nowFn = () => ( performance as any ).now();
+                this.nowFn = () => performance.now();
                 this.memFn = () => ( performance as any ).memory?.usedJSHeapSize ?? 0;
                 break;
             default:
