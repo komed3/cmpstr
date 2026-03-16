@@ -63,6 +63,29 @@ export class CmpStrError extends Error {
     }
 
     /**
+     * Format the error into a readable string, including code, message, and optional metadata.
+     * 
+     * @param {boolean} [stack=false] - Whether to include the stack trace in the output
+     */
+    public format ( stack: boolean = false ) : string {
+        const parts: string[] = [ `${this.name} [${this.code}]`, this.message ];
+
+        if ( this.meta && Object.keys( this.meta ).length ) {
+            try { parts.push( JSON.stringify( this.meta ) ) }
+            catch { /* ignore */ }
+        }
+
+        return parts.join( ' - ' ) + ( stack && this.stack ? `\nStack Trace:\n${this.stack}` : '' );
+    }
+
+    /**
+     * Pretty string representation of the error.
+     */
+    public override toString () : string {
+        return this.format( false );
+    }
+
+    /**
      * Serialize the error into a plain object for JSON output.
      * 
      * @param {boolean} [stack=false] - Whether to include the stack trace in the JSON
@@ -80,24 +103,6 @@ export class CmpStrError extends Error {
                 stack: stack && this.cause.stack
             } : this.cause
         };
-    }
-
-    /**
-     * Pretty string representation of the error.
-     * 
-     * @param {boolean} [stack=false] - Whether to include the stack trace in the output
-     */
-    public override toString ( stack: boolean = false ) : string {
-        const parts: string[] = [ `${this.name} [${this.code}]`, this.message ];
-
-        if ( this.meta && Object.keys( this.meta ).length ) {
-            try { parts.push( JSON.stringify( this.meta ) ) }
-            catch { /* ignore */ }
-        }
-
-        return parts.join( ' - ' ) + (
-            stack && this.stack ? `\nStack Trace:\n${this.stack}` : ''
-        );
     }
 
 }
