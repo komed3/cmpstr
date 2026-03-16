@@ -77,7 +77,7 @@ export class Profiler {
     private constructor ( private active: boolean = false ) {
         switch ( Profiler.ENV ) {
             case 'nodejs':
-                this.nowFn = () => Number( process.hrtime.bigint() ) / 1e6;
+                this.nowFn = () => Number( process.hrtime.bigint() ) * 1e-6;
                 this.memFn = () => process.memoryUsage().heapUsed;
                 break;
             case 'browser':
@@ -97,8 +97,7 @@ export class Profiler {
      * @param {ProfilerEntry< T >} entry - The profiler entry to be stored
      */
     private storeRes< T > ( entry: ProfilerEntry< T > ) : void {
-        this.store.push( entry );
-        this.last = entry;
+        this.store.push( this.last = entry );
 
         this.totalTime += entry.time;
         this.totalMem += entry.mem;
@@ -126,7 +125,9 @@ export class Profiler {
      * This method is useful for starting a new profiling session.
      */
     public clear () : void {
-        this.store = [];
+        this.store.length = 0;
+        this.last = undefined;
+
         this.totalTime = 0;
         this.totalMem = 0;
     }
@@ -161,7 +162,7 @@ export class Profiler {
      * @returns {Promise< T >} - A promise that resolves to the result of the executed function
      */
     public async runAsync< T > ( fn: () => Promise< T >, meta: Record< string, any > = {} ) : Promise< T > {
-        if ( ! this.active ) return await fn();
+        if ( ! this.active ) return fn();
 
         // Calculate the time and memory consumption
         const startTime = this.nowFn(), startMem  = this.memFn();
@@ -179,7 +180,7 @@ export class Profiler {
      * @returns {ProfilerEntry< any >[]} - An array of profiler entries
      */
     public getAll () : ProfilerEntry< any >[] {
-        return this.store;
+        return [ ...this.store ];
     }
 
     /**
