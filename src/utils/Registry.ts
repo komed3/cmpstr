@@ -136,7 +136,7 @@ export function Registry< T > ( reg: string, ctor: RegistryConstructor< T > ) : 
  */
 export function resolveCls< T extends RegistryConstructor< any > > ( reg: string, cls: T | string ) : T {
     if ( ! ( reg in registry ) ) throw new CmpStrNotFoundError ( `Registry <${reg}> does not exist`, { registry: reg } );
-    return ( typeof cls === 'string' ? registry[ reg ]?.get( cls ) : cls ) as T;
+    return ( typeof cls === 'string' ? registry[ reg ].get( cls ) : cls ) as T;
 }
 
 /**
@@ -152,11 +152,11 @@ export function resolveCls< T extends RegistryConstructor< any > > ( reg: string
 export function createFromRegistry< T extends RegistryConstructor< any > >(
     reg: string, cls: T | string, ...args: any[]
 ) : InstanceType< T > {
-    cls = resolveCls< T >( reg, cls );
+    const ctor = resolveCls< T >( reg, cls ) as unknown as new ( ...args: any[] ) => InstanceType< T >;
 
     return ErrorUtil.wrap< InstanceType< T > >(
-        () => new ( cls as InstanceType< T > ) ( ...args ),
-        `Failed to create instance of class <${cls.name ?? cls}> from registry <${reg}>`,
+        () => new ctor ( ...args ),
+        `Failed to create instance of class <${ ctor.name ?? cls }> from registry <${reg}>`,
         { registry: reg, class: cls, args }
     );
 }
