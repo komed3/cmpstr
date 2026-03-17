@@ -30,4 +30,18 @@ import { PhoneticRegistry } from '../phonetic';
  * This class provides static methods to validate various aspects of the
  * options object passed to CmpStr.
  */
-export class OptionsValidator {}
+export class OptionsValidator {
+
+    /** Allowed normalization flags */
+    private static readonly ALLOWED_FLAGS = new Set ( [ 'd', 'u', 'x', 'w', 't', 'r', 's', 'k', 'n', 'i' ] );
+    /** Allowed output modes */
+    private static readonly ALLOWED_OUTPUT = new Set ( [ 'orig', 'prep' ] );
+    /** Allowed comparison modes */
+    private static readonly ALLOWED_MODES = new Set ( [ 'default', 'batch', 'single', 'pairwise' ] );
+
+    /** Processor dispatch table */
+    private static readonly PROCESSORS = {
+        phonetic: ( opt: CmpStrProcessors[ 'phonetic' ] ) => OptionsValidator.validatePhonetic( opt )
+    } as const;
+
+}
