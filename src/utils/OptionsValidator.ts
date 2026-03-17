@@ -166,12 +166,13 @@ export class OptionsValidator {
      * 
      * @param {unknown} value - The value to validate.
      * @param {string} name - The name of the option (for error messages).
+     * @param {string} label - The label to use in error messages (e.g. "Metric" or "Phonetic algorithm").
      * @param {( v: string ) => boolean} has - A function that checks if the registry contains a given name.
      * @param {() => string[]} list - A function that returns a list of registered names for error messages.
      * @throws {CmpStrValidationError} If the value is not a non-empty string or is not registered.
      */
     private static validateRegistryName (
-        value: unknown, name: string, has: ( v: string ) => boolean, list: () => string[]
+        value: unknown, name: string, label: string, has: ( v: string ) => boolean, list: () => string[]
     ) : void {
         if ( value === undefined ) return;
 
@@ -180,8 +181,7 @@ export class OptionsValidator {
         );
 
         if ( ! has( value ) ) throw new CmpStrValidationError (
-            `${name === 'metric' ? 'Metric' : 'Phonetic algorithm'} <${value}> is not registered`,
-            { name, value, available: list() }
+            `${label} <${value}> is not registered`, { name, value, available: list() }
         );
     }
 
@@ -281,7 +281,10 @@ export class OptionsValidator {
      * @throws {CmpStrValidationError} - If the metric is not a string or not registered
      */
     public static validateMetricName ( value: unknown ) : void {
-        OptionsValidator.validateRegistryName( value, 'metric', MetricRegistry.has, MetricRegistry.list );
+        OptionsValidator.validateRegistryName(
+            value, 'metric', 'Comparison metric',
+            MetricRegistry.has, MetricRegistry.list
+        );
     }
 
     /**
@@ -291,7 +294,10 @@ export class OptionsValidator {
      * @throws {CmpStrValidationError} - If the phonetic algorithm is not a string or not registered
      */
     public static validatePhoneticName ( value: unknown ) : void {
-        OptionsValidator.validateRegistryName( value, 'phonetic', PhoneticRegistry.has, PhoneticRegistry.list );
+        OptionsValidator.validateRegistryName(
+            value, 'phonetic', 'Phonetic algorithm',
+            PhoneticRegistry.has, PhoneticRegistry.list
+        );
     }
 
     /**
