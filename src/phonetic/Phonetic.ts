@@ -74,7 +74,9 @@ export abstract class Phonetic {
     /**
      * Static method to clear the cache of indexed words.
      */
-    public static clear = () : void => this.cache.clear();
+    public static clear () : void {
+        this.cache.clear();
+    }
 
     /**
      * Constructor for the Phonetic class.
@@ -296,7 +298,9 @@ export abstract class Phonetic {
      * @param {string} word - The input word to be converted
      * @returns {string[]} - An array of characters from the input word
      */
-    protected word2Chars = ( word: string ) : string[] => word.toLowerCase().split( '' );
+    protected word2Chars ( word: string ) : string[] {
+        return word.toLowerCase().split( '' );
+    }
 
     /**
      * Determines whether to exit early based on the current phonetic code length.
@@ -406,7 +410,9 @@ export abstract class Phonetic {
      * 
      * @returns {string} - The name of the algorithm
      */
-    public getAlgoName = () : string => this.algo;
+    public getAlgoName () : string {
+        return this.algo;
+    }
 
     /**
      * Generates a phonetic index for the given input string.
