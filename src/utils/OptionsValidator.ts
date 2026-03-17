@@ -306,4 +306,19 @@ export class OptionsValidator {
         }
     }
 
+    public static validateOptions ( opt?: CmpStrOptions ) : void {
+        if ( ! opt ) return;
+
+        if ( 'raw' in opt ) this.validateBoolean( opt.raw, 'raw' );
+        if ( 'removeZero' in opt ) this.validateBoolean( opt.removeZero, 'removeZero' );
+        if ( 'safeEmpty' in opt ) this.validateBoolean( opt.safeEmpty, 'safeEmpty' );
+
+        if ( 'flags' in opt ) this.validateFlags( opt.flags );
+        if ( 'metric' in opt ) this.validateMetricName( opt.metric );
+        if ( 'output' in opt ) this.validateOutput( opt.output );
+
+        if ( 'opt' in opt ) this.validateMetricOptions( opt.opt );
+        if ( 'processors' in opt ) this.validateProcessors( opt.processors );
+    }
+
 }
