@@ -39,6 +39,10 @@ import { Pool } from './Pool';
  */
 export class StructuredData< T = any, R = MetricRaw > {
 
+    /** Sorting functions for ascending and descending order based on the 'res' property. */
+    private static readonly SORT_ASC = ( a: IndexedResult< any >, b: IndexedResult< any > ) => a.res - b.res;
+    private static readonly SORT_DESC = ( a: IndexedResult< any >, b: IndexedResult< any > ) => b.res - a.res;
+
     /**
      * Creates a new StructuredData instance for processing structured data.
      * 
@@ -67,11 +71,12 @@ export class StructuredData< T = any, R = MetricRaw > {
      * @returns {string[]} - Array of extracted strings
      */
     private extractFrom< A > ( arr: readonly A[], key: keyof A ) : string[] {
-        const result = Pool.acquire< string[] >( 'string[]', arr.length );
+        const n = arr.length;
+        const result = new Array< string > ( n );
 
-        for ( let i = 0; i < arr.length; i++ ) {
+        for ( let i = 0; i < n; i++ ) {
             const val = arr[ i ][ key ];
-            result[ i ] = typeof val === 'string' ? val : String( val ?? '' );
+            result[ i ] = val != null ? String( val ) : '';
         }
 
         return result;
@@ -82,7 +87,9 @@ export class StructuredData< T = any, R = MetricRaw > {
      * 
      * @returns {string[]} - Array of extracted strings
      */
-    private extract = () : string[] => this.extractFrom< T >( this.data, this.key );
+    private extract () : string[] {
+        return this.extractFrom< T >( this.data, this.key );
+    }
 
     /**
      * Type guard to check if a value is MetricResultSingle<R>.
@@ -117,18 +124,33 @@ export class StructuredData< T = any, R = MetricRaw > {
         if ( ! Array.isArray( results ) || results.length === 0 ) return [];
 
         const first = results[ 0 ];
-        let normalized: IndexedResult< R >[] = [];
+        let out = new Array< IndexedResult< R > >( results.length );
 
         // Check if it's MetricResultSingle format
-        if ( this.isMetricResult( first ) ) normalized = results as MetricResultSingle< R >[];
-        // Check if it's CmpStrResult format -> convert to MetricResultSingle
-        else if ( this.isCmpStrResult( first ) ) normalized = ( results as ( CmpStrResult & { raw?: R } )[] )
-            .map( r => ( { metric: 'unknown', a: r.source, b: r.target, res: r.match, raw: r.raw } ) );
-        // Throw on unsupported format
-        else throw new CmpStrValidationError ( 'Unsupported result format for StructuredData normalization.' );
+        if ( this.isMetricResult( first ) ) {
+            const src = results as MetricResultSingle< R >[];
+            for ( let i = 0; i < src.length; i++ ) out[ i ] = { ...src[ i ], __idx: i };
+        }
 
-        // Attach original indices (position in the results array)
-        return normalized.map( ( r, idx ) => ( { ...r, __idx: idx } ) );
+        // Check if it's CmpStrResult format -> convert to MetricResultSingle
+        else if ( this.isCmpStrResult( first ) ) {
+            const src = results as ( CmpStrResult & { raw?: R } )[];
+
+            for ( let i = 0; i < src.length; i++ ) {
+                const r = src[ i ];
+                out[ i ] = {
+                    metric: 'unknown', a: r.source, b: r.target,
+                    res: r.match, raw: r.raw, __idx: i
+                };
+            }
+        }
+
+        // Throw on unsupported format
+        else throw new CmpStrValidationError (
+            'Unsupported result format for StructuredData normalization.'
+        );
+
+        return out;
     }
 
     /**
@@ -147,62 +169,71 @@ export class StructuredData< T = any, R = MetricRaw > {
         results: IndexedResult< R >[], sourceData: T[], extractedStrings: string[],
         removeZero?: boolean, objectsOnly?: boolean
     ) : StructuredDataResult< T, R >[] | T[] {
-        // Create map: string value -> indices in extractedStrings
-        const stringToIndices: Map< string, number[] > = new Map();
+        const m = extractedStrings.length, n = results.length;
+        const stringToIndices = Pool.acquire< Map< string, number[] > >( 'map', m );
+        const occurrenceCount = Pool.acquire< Map< string, number > >( 'map', n );
+        const output = new Array< StructuredDataResult< T, R > | T >( n );
 
-        for ( let i = 0; i < extractedStrings.length; i++ ) {
-            const str = extractedStrings[ i ];
+        stringToIndices.clear();
+        occurrenceCount.clear();
 
-            if ( ! stringToIndices.has( str ) ) stringToIndices.set( str, [] );
-            stringToIndices.get( str )!.push( i );
-        }
+        try {
+            for ( let i = 0; i < m; i++ ) {
+                const str = extractedStrings[ i ];
+                let arr = stringToIndices.get( str );
 
-        const output = new Array<StructuredDataResult< T, R > | T>( results.length );
-        const occurrenceCount: Map< string, number > = new Map();
-        let out = 0;
-
-        for ( let i = 0; i < results.length; i++ ) {
-            const result = results[ i ];
-
-            // Skip zero results if configured
-            if ( removeZero && result.res === 0 ) continue;
-
-            const targetStr = result.b || '';
-            const indices = stringToIndices.get( targetStr );
-
-            // Fall back to positional index if string not found
-            let dataIndex: number;
-
-            if ( indices && indices.length > 0 ) {
-                // Track occurrence of this value in results
-                const occurrence = occurrenceCount.get( targetStr ) ?? 0;
-                occurrenceCount.set( targetStr, occurrence + 1 );
-                // Cycle through duplicates
-                dataIndex = indices[ occurrence % indices.length ];
-            } else {
-                // If no match found, use the original position indicator
-                dataIndex = result.__idx ?? i;
+                if ( ! arr ) { arr = []; stringToIndices.set( str, arr ) }
+                arr.push( i );
             }
 
-            // Ensure dataIndex is valid
-            if ( dataIndex < 0 || dataIndex >= sourceData.length ) continue;
+            let out = 0;
 
-            const sourceObj = sourceData[ dataIndex ];
-            const mappedTarget = extractedStrings[ dataIndex ] || targetStr;
+            for ( let i = 0; i < n; i++ ) {
+                const result = results[ i ];
 
-            // If objectsOnly, push just the original object
-            if ( objectsOnly ) output[ out++ ] = sourceObj;
+                // Skip zero results if configured
+                if ( removeZero && result.res === 0 ) continue;
 
-            // Build the result object
-            else output[ out++ ] = {
-                obj: sourceObj, key: this.key, result: {
-                    source: result.a, target: mappedTarget, match: result.res
-                }, ...( result.raw ? { raw: result.raw } : null )
-            };
+                const targetStr = result.b || '';
+                const indices = stringToIndices.get( targetStr );
+
+                // Fall back to positional index if string not found
+                let dataIndex: number;
+
+                if ( indices && indices.length > 0 ) {
+                    // Track occurrence of this value in results
+                    const occurrence = occurrenceCount.get( targetStr ) ?? 0;
+                    occurrenceCount.set( targetStr, occurrence + 1 );
+                    // Cycle through duplicates
+                    dataIndex = indices[ occurrence % indices.length ];
+                } else {
+                    // If no match found, use the original position indicator
+                    dataIndex = result.__idx ?? i;
+                }
+
+                // Ensure dataIndex is valid
+                if ( dataIndex < 0 || dataIndex >= sourceData.length ) continue;
+
+                const sourceObj = sourceData[ dataIndex ];
+                const mappedTarget = extractedStrings[ dataIndex ] || targetStr;
+
+                // If objectsOnly, push just the original object
+                if ( objectsOnly ) output[ out++ ] = sourceObj;
+
+                // Build the result object
+                else output[ out++ ] = {
+                    obj: sourceObj, key: this.key, result: {
+                        source: result.a, target: mappedTarget, match: result.res
+                    }, ...( result.raw ? { raw: result.raw } : null )
+                };
+            }
+
+            output.length = out;
+            return output as StructuredDataResult< T, R >[] | T[];
+        } finally {
+            Pool.release< Map< string, number[] > >( 'map', stringToIndices, m );
+            Pool.release< Map< string, number > >( 'map', occurrenceCount, n );
         }
-
-        output.length = out;
-        return output as StructuredDataResult< T, R >[] | T[];
     }
 
     /**
@@ -215,10 +246,7 @@ export class StructuredData< T = any, R = MetricRaw > {
      */
     private sort ( results: IndexedResult< R >[], sort?: string | boolean ) : IndexedResult< R >[] {
         if ( ! sort || results.length <= 1 ) return results;
-
-        // Determine sort direction and sort based on match score
-        const asc = sort === 'asc';
-        return results.sort( ( a, b ) => asc ? a.res - b.res : b.res - a.res );
+        return results.sort( sort === 'asc' ? StructuredData.SORT_ASC : StructuredData.SORT_DESC );
     }
 
     /**

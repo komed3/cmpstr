@@ -30,9 +30,9 @@ import type {
     NormalizeFlags, PhoneticOptions, ResultLike, StructuredDataOptions, StructuredResultLike
 } from './utils/Types';
 
-import * as DeepMerge from './utils/DeepMerge';
+import { DeepMerge } from './utils/DeepMerge';
 import { DiffChecker } from './utils/DiffChecker';
-import { CmpStrInternalError, CmpStrNotFoundError, CmpStrValidationError, ErrorUtil } from './utils/Errors';
+import { CmpStrInternalError, CmpStrValidationError, ErrorUtil } from './utils/Errors';
 import { Filter } from './utils/Filter';
 import { Normalizer } from './utils/Normalizer';
 import { OptionsValidator } from './utils/OptionsValidator';
@@ -191,25 +191,14 @@ export class CmpStr< R = MetricRaw > {
      * 
      * @param {string} cond - The condition to met
      * @param {any} [test] - Value to test for
-     * @throws {CmpStrNotFoundError} - If the specified metric or phonetic algorithm is not found
+     * @throws {CmpStrValidationError} - If the specified metric or phonetic algorithm is not found
      * @throws {CmpStrInternalError} - If an unknown condition is specified
      */
     protected assert ( cond: string, test?: any ) : void {
         switch ( cond ) {
-            // Check if the metric exists
-            case 'metric': if ( ! CmpStr.metric.has( test ) ) throw new CmpStrNotFoundError (
-                `CmpStr <metric> must be set, call .setMetric(), ` +
-                `use CmpStr.metric.list() for available metrics`,
-                { metric: test }
-            ); break;
-            // Check if the phonetic algorithm exists
-            case 'phonetic': if ( ! CmpStr.phonetic.has( test ) ) throw new CmpStrNotFoundError (
-                `CmpStr <phonetic> must be set, call .setPhonetic(), ` +
-                `use CmpStr.phonetic.list() for available phonetic algorithms`,
-                { phonetic: test }
-            ); break;
-            // Throw an error for unknown conditions
             default: throw new CmpStrInternalError ( `Cmpstr condition <${cond}> unknown` );
+            case 'metric': OptionsValidator.validateMetricName( test ); break;
+            case 'phonetic': OptionsValidator.validatePhoneticName( test ); break;
         }
     }
 
@@ -224,13 +213,17 @@ export class CmpStr< R = MetricRaw > {
 
     /**
      * Resolves the options for the CmpStr instance, merging the provided options with
-     * the existing options.
+     * the existing options. Validates them and throws if the options are invalid.
      * 
      * @param {CmpStrOptions} [opt] - Optional options to merge
      * @returns {CmpStrOptions} - The resolved options
+     * @throws {CmpStrValidationError} - If the merged options are invalid
      */
     protected resolveOptions ( opt?: CmpStrOptions ) : CmpStrOptions {
-        return DeepMerge.merge( { ...( this.options ?? Object.create( null ) ) }, opt );
+        const merged = DeepMerge.merge( { ...( this.options ?? Object.create( null ) ) }, opt );
+        OptionsValidator.validateOptions( merged );
+
+        return merged;
     }
 
     /**
@@ -285,7 +278,7 @@ export class CmpStr< R = MetricRaw > {
      */
     protected postProcess ( result: MetricResult< R >, opt?: CmpStrOptions ) : MetricResult< R > {
         // Remove "zero similarity" from batch results if configured
-        if ( opt?.removeZero && Array.isArray( result ) ) result = result.filter( r => r.res > 0 );
+        if ( Array.isArray( result ) && opt?.removeZero ) result = result.filter( r => r.res > 0 );
 
         return result;
     }
@@ -340,7 +333,6 @@ export class CmpStr< R = MetricRaw > {
         mode?: MetricMode, raw?: boolean, skip?: boolean
     ) : T {
         const resolved: CmpStrOptions = this.resolveOptions( opt );
-        OptionsValidator.validateOptions( resolved );
         this.assert( 'metric', resolved.metric );
 
         return ErrorUtil.wrap< T >(
@@ -372,7 +364,7 @@ export class CmpStr< R = MetricRaw > {
                 // Resolve and return the result based on the raw flag
                 return this.output< T >( result, raw ?? resolved.raw );
             },
-            `Failed to compute metric <${ opt?.metric ?? this.options.metric }> for the given inputs`,
+            `Failed to compute metric <${resolved.metric}> for the given inputs`,
             { a, b, options: opt }
         );
     }
@@ -409,7 +401,12 @@ export class CmpStr< R = MetricRaw > {
      * 
      * @returns {CmpStr< R >} - The cloned instance
      */
-    public clone = () : CmpStr< R > => Object.assign( Object.create( Object.getPrototypeOf( this ) ), this );
+    public clone () : CmpStr< R > {
+        const inst = Object.assign( Object.create( Object.getPrototypeOf( this ) ), this );
+        inst.options = DeepMerge.merge( Object.create( null ), this.options );
+
+        return inst;
+    }
 
     /**
      * Resets the instance, clearing all data and options.
@@ -417,7 +414,7 @@ export class CmpStr< R = MetricRaw > {
      * @returns {this}
      */
     public reset () : this {
-        for ( const k in this.options ) delete ( this.options as any )[ k ];
+        this.options = Object.create( null );
         return this
     }
 
@@ -443,7 +440,6 @@ export class CmpStr< R = MetricRaw > {
      * @throws {CmpStrValidationError} - If the merged options are invalid
      */
     public mergeOptions ( opt: CmpStrOptions ) : this {
-        OptionsValidator.validateOptions( opt );
         DeepMerge.merge( this.options, opt );
         OptionsValidator.validateOptions( this.options );
 
@@ -466,7 +462,8 @@ export class CmpStr< R = MetricRaw > {
             return this;
         } catch ( err ) {
             if ( err instanceof SyntaxError ) throw new CmpStrValidationError (
-                `Failed to parse serialized options, invalid JSON string`, { opt, error: err.message }
+                `Failed to parse serialized options, invalid JSON string`,
+                { opt, error: err instanceof Error ? err.message : String( err ) }
             );
             throw err;
         }
@@ -503,7 +500,9 @@ export class CmpStr< R = MetricRaw > {
      * @param {boolean} enable - Whether to enable or disable raw output
      * @returns {this}
      */
-    public setRaw = ( enable: boolean ) : this => this.setOption( 'raw', enable );
+    public setRaw ( enable: boolean ) : this {
+        return this.setOption( 'raw', enable );
+    }
 
     /**
      * Sets the similatity metric to use (e.g., 'levenshtein', 'dice').
@@ -511,7 +510,9 @@ export class CmpStr< R = MetricRaw > {
      * @param {string} name - The metric name
      * @returns {this}
      */
-    public setMetric = ( name: string ) : this => this.setOption( 'metric', name );
+    public setMetric ( name: string ) : this {
+        return this.setOption( 'metric', name );
+    }
 
     /**
      * Sets the normalization flags (e.g., 'itw', 'nfc').
@@ -519,14 +520,18 @@ export class CmpStr< R = MetricRaw > {
      * @param {NormalizeFlags} flags - The normalization flags
      * @returns {this}
      */
-    public setFlags = ( flags: NormalizeFlags ) : this => this.setOption( 'flags', flags );
+    public setFlags ( flags: NormalizeFlags ) : this {
+        return this.setOption( 'flags', flags );
+    }
 
     /**
      * Removes the normalization flags entirely.
      * 
      * @return {this}
      */
-    public rmvFlags = () : this => this.rmvOption( 'flags' );
+    public rmvFlags () : this {
+        return this.rmvOption( 'flags' );
+    }
 
     /**
      * Sets the pre-processors to use for preparing the input.
@@ -534,28 +539,36 @@ export class CmpStr< R = MetricRaw > {
      * @param {CmpStrProcessors} opt - The processors to set
      * @returns {this}
      */
-    public setProcessors = ( opt: CmpStrProcessors ) : this => this.setOption( 'processors', opt );
+    public setProcessors ( opt: CmpStrProcessors ) : this {
+        return this.setOption( 'processors', opt );
+    }
 
     /**
      * Removes the processors entirely.
      * 
      * @returns {this}
      */
-    public rmvProcessors = () : this => this.rmvOption( 'processors' );
+    public rmvProcessors () : this {
+        return this.rmvOption( 'processors' );
+    }
 
     /**
      * Returns the current options object.
      * 
      * @returns {CmpStrOptions} - The options
      */
-    public getOptions = () : CmpStrOptions => this.options;
+    public getOptions () : CmpStrOptions {
+        return this.options;
+    }
 
     /**
      * Returns the options as a JSON string.
      * 
      * @returns {string} - The serialized options
      */
-    public getSerializedOptions = () : string => JSON.stringify( this.options );
+    public getSerializedOptions () : string {
+        return JSON.stringify( this.options );
+    }
 
     /**
      * Returns a specific option value by path.
@@ -563,7 +576,9 @@ export class CmpStr< R = MetricRaw > {
      * @param {string} path - The path to the option
      * @returns {any} - The option value
      */
-    public getOption = ( path: string ) : any => DeepMerge.get( this.options, path );
+    public getOption ( path: string ) : any {
+        return DeepMerge.get( this.options, path );
+    }
 
     /**
      * ================================================================================-
@@ -725,22 +740,41 @@ export class CmpStr< R = MetricRaw > {
         const hstk: string[] = this.prepare( haystack, resolved ) as string[];
 
         // Filter the haystack based on the normalized test string
-        return haystack.filter( ( _, i ) => hstk[ i ].includes( test ) );
+        const out: string[] = [];
+        for ( let i = 0, len = hstk.length; i < len; i++ ) {
+            if ( hstk[ i ].includes( test ) ) out.push( haystack[ i ] );
+        }
+
+        return out;
     }
 
     /**
      * Computes a similarity matrix for the given input array.
+     * 
+     * Only works for symmetric metrics.
      * 
      * @param {string[]} input - The input array
      * @param {CmpStrOptions} [opt] - Optional options
      * @returns {number[][]} - The similarity matrix
      */
     public matrix ( input: string[], opt?: CmpStrOptions ) : number[][] {
-        input = this.prepare( input, this.resolveOptions( opt ) ) as string[];
+        const resolved = this.resolveOptions( opt );
+        const arr = this.prepare( input, resolved ) as string[];
+        const n = arr.length;
+        const out = Array.from( { length: n }, () => new Array< number >( n ).fill( 0 ) );
 
-        return input.map( a => this.compute< MetricResultBatch< R > >(
-            a, input, undefined, 'batch', true, true
-        ).map( b => b.res ?? 0 ) );
+        for ( let i = 0; i < n; i++ ) for ( let j = i; j < n; j++ ) {
+            if ( i === j ) { out[ i ][ j ] = 1 } else {
+                const score = this.compute< MetricResultSingle< R > >(
+                    arr[ i ], arr[ j ], resolved, 'single', true, true
+                ).res;
+
+                out[ i ][ j ] = score;
+                out[ j ][ i ] = score;
+            }
+        }
+
+        return out;
     }
 
     /**

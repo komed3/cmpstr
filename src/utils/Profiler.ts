@@ -39,7 +39,8 @@ export class Profiler {
     private memFn: () => number;
 
     /** Store for profiler entries */
-    private store: Set< ProfilerEntry< any > > = new Set ();
+    private store: ProfilerEntry< any >[] = [];
+    private last?: ProfilerEntry< any >;
 
     /** Total time and memory consumption */
     private totalTime: number = 0;
@@ -50,7 +51,7 @@ export class Profiler {
      * Detects if running in Node.js or browser and sets the ENV property accordingly.
      */
     protected static detectEnv () : void {
-        if ( typeof process !== 'undefined' ) Profiler.ENV = 'nodejs';
+        if ( typeof process !== 'undefined' && process.versions?.node ) Profiler.ENV = 'nodejs';
         else if ( typeof performance !== 'undefined' ) Profiler.ENV = 'browser';
         else Profiler.ENV = 'unknown';
     }
@@ -76,11 +77,11 @@ export class Profiler {
     private constructor ( private active: boolean = false ) {
         switch ( Profiler.ENV ) {
             case 'nodejs':
-                this.nowFn = () => Number( process.hrtime.bigint() ) / 1e6;
+                this.nowFn = () => Number( process.hrtime.bigint() ) * 1e-6;
                 this.memFn = () => process.memoryUsage().heapUsed;
                 break;
             case 'browser':
-                this.nowFn = () => ( performance as any ).now();
+                this.nowFn = () => performance.now();
                 this.memFn = () => ( performance as any ).memory?.usedJSHeapSize ?? 0;
                 break;
             default:
@@ -91,46 +92,15 @@ export class Profiler {
     }
 
     /**
-     * Gets the current time based on the environment.
+     * Stores a profiler entry in the store and updates the total time and memory consumption.
      * 
-     * Uses process.hrtime.bigint() for Node.js, performance.now() for browsers,
-     * and Date.now() as a fallback.
-     * 
-     * @returns {number} - Current time in milliseconds
+     * @param {ProfilerEntry< T >} entry - The profiler entry to be stored
      */
-    private now = () : number => this.nowFn();
+    private storeRes< T > ( entry: ProfilerEntry< T > ) : void {
+        this.store.push( this.last = entry );
 
-    /**
-     * Gets the current memory usage based on the environment.
-     * 
-     * Uses process.memoryUsage().heapUsed for Node.js, performance.memory.usedJSHeapSize
-     * for browsers, and returns 0 as a fallback.
-     * 
-     * @returns {number} - Current memory usage in bytes
-     */
-    private mem = () : number => this.memFn();
-
-    /**
-     * Profiles a synchronous function by measuring its execution time and memory usage.
-     * 
-     * @param {() => T} fn - Function to be executed and profiled
-     * @param {Record< string, any >} meta - Metadata to be associated with the profiling entry
-     * @returns {T} - The result of the executed function
-     */
-    private profile< T > ( fn: () => T, meta: Record< string, any > ) : T {
-        const startTime = this.now(), startMem  = this.mem();
-
-        // Execute the function and capture the result
-        const res = fn();
-
-        // Calculate the time and memory consumption
-        const deltaTime = this.now() - startTime, deltaMem  = this.mem() - startMem;
-
-        // Add the profiling entry to the store
-        this.store.add( { time: deltaTime, mem: deltaMem, res, meta } );
-        this.totalTime += deltaTime, this.totalMem  += deltaMem;
-
-        return res;
+        this.totalTime += entry.time;
+        this.totalMem += entry.mem;
     }
 
 
@@ -138,20 +108,26 @@ export class Profiler {
      * Enables the profiler.
      * Sets the active state to true, allowing profiling to occur.
      */
-    public enable = () : void => { this.active = true }
+    public enable () : void {
+        this.active = true
+    }
 
     /**
      * Disables the profiler.
      * Sets the active state to false, preventing further profiling.
      */
-    public disable = () : void => { this.active = false }
+    public disable () : void {
+        this.active = false
+    }
 
     /**
      * Resets the profiler by clearing the store, total time and memory consumption.
      * This method is useful for starting a new profiling session.
      */
     public clear () : void {
-        this.store.clear();
+        this.store.length = 0;
+        this.last = undefined;
+
         this.totalTime = 0;
         this.totalMem = 0;
     }
@@ -165,7 +141,16 @@ export class Profiler {
      * @returns {T} - The result of the executed function
      */
     public run< T > ( fn: () => T, meta: Record< string, any > = {} ) : T {
-        return this.active ? this.profile( fn, meta ) : fn();
+        if ( ! this.active ) return fn();
+
+        // Calculate the time and memory consumption
+        const startTime = this.nowFn(), startMem  = this.memFn();
+        const res = fn();
+        const deltaTime = this.nowFn() - startTime, deltaMem  = this.memFn() - startMem;
+
+        // Add the profiling entry to the store
+        this.storeRes( { time: deltaTime, mem: deltaMem, res, meta } );
+        return res;
     }
 
     /**
@@ -177,7 +162,16 @@ export class Profiler {
      * @returns {Promise< T >} - A promise that resolves to the result of the executed function
      */
     public async runAsync< T > ( fn: () => Promise< T >, meta: Record< string, any > = {} ) : Promise< T > {
-        return this.active ? this.profile( async () => await fn(), meta ) : await fn();
+        if ( ! this.active ) return fn();
+
+        // Calculate the time and memory consumption
+        const startTime = this.nowFn(), startMem  = this.memFn();
+        const res = await fn();
+        const deltaTime = this.nowFn() - startTime, deltaMem  = this.memFn() - startMem;
+
+        // Add the profiling entry to the store
+        this.storeRes( { time: deltaTime, mem: deltaMem, res, meta } );
+        return res;
     }
 
     /**
@@ -185,21 +179,27 @@ export class Profiler {
      * 
      * @returns {ProfilerEntry< any >[]} - An array of profiler entries
      */
-    public getAll = () : ProfilerEntry< any >[] => [ ...this.store ];
+    public getAll () : ProfilerEntry< any >[] {
+        return [ ...this.store ];
+    }
 
     /**
      * Retrieves the last profiler entry stored in the profiler.
      * 
      * @returns {ProfilerEntry< any > | undefined} - The last profiler entry or undefined if no entries exist
      */
-    public getLast = () : ProfilerEntry< any > | undefined => this.getAll().pop();
+    public getLast () : ProfilerEntry< any > | undefined {
+        return this.last;
+    }
 
     /**
      * Retrieves the total time and memory consumption recorded by the profiler.
      * 
      * @returns {{ time: number, mem: number }} - An object containing total time and memory usage
      */
-    public getTotal = () : { time: number, mem: number } => ( { time: this.totalTime, mem: this.totalMem } );
+    public getTotal () : { time: number, mem: number } {
+        return { time: this.totalTime, mem: this.totalMem };
+    }
 
     /**
      * Returns the services provided by the Profiler class.

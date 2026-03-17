@@ -23,6 +23,20 @@ import type { CmpStrErrorJSON, CmpStrErrorMeta } from './Types';
 
 
 /**
+ * Standardized error codes for CmpStr errors.
+ * 
+ * These codes are used in the `code` field of `CmpStrError` instances to allow
+ * for easy programmatic handling of different error types without relying on
+ * string matching of messages or class names.
+ */
+export const enum ErrorCode {
+    VALIDATION = 'E_VALIDATION',
+    NOT_FOUND = 'E_NOT_FOUND',
+    USAGE = 'E_USAGE',
+    INTERNAL = 'E_INTERNAL'
+}
+
+/**
  * Base error class for CmpStr.
  * 
  * It provides a standard `code` field and a consistent `toString()` / `toJSON()`
@@ -35,9 +49,6 @@ export class CmpStrError extends Error {
 
     /** Optional structured metadata for the error */
     public readonly meta?: CmpStrErrorMeta;
-
-    /** Optional cause (native JS Error chaining) */
-    public override readonly cause?: unknown;
 
     /** Timestamp when the error was created (ISO 8601) */
     public readonly when: string = new Date().toISOString();
@@ -53,12 +64,11 @@ export class CmpStrError extends Error {
      * @param {unknown} [cause] - Optional cause (native JS Error chaining)
      */
     constructor ( code: string, message: string, meta?: CmpStrErrorMeta, cause?: unknown ) {
-        super ( message );
+        super ( message, cause !== undefined ? { cause } : undefined );
 
         this.name = this.constructor.name;
         this.code = code;
         this.meta = meta;
-        this.cause = cause;
 
         // Preserve stack trace (modern environments already set this)
         if ( typeof Error.captureStackTrace === 'function' ) {
@@ -67,9 +77,34 @@ export class CmpStrError extends Error {
     }
 
     /**
-     * Serialize the error into a plain object for JSON output.
+     * Format the error into a readable string, including code, message, and optional metadata.
+     * 
+     * @param {boolean} [stack=false] - Whether to include the stack trace in the output
      */
-    public toJSON () : CmpStrErrorJSON {
+    public format ( stack: boolean = false ) : string {
+        const parts: string[] = [ `${this.name} [${this.code}]`, this.message ];
+
+        if ( this.meta ) for ( const _ in this.meta ) {
+            parts.push( JSON.stringify( this.meta ) );
+            break;
+        }
+
+        return parts.join( ' - ' ) + ( stack && this.stack ? `\nStack Trace:\n${this.stack}` : '' );
+    }
+
+    /**
+     * Pretty string representation of the error.
+     */
+    public override toString () : string {
+        return this.format( false );
+    }
+
+    /**
+     * Serialize the error into a plain object for JSON output.
+     * 
+     * @param {boolean} [stack=false] - Whether to include the stack trace in the JSON
+     */
+    public toJSON ( stack: boolean = false ) : CmpStrErrorJSON {
         return {
             name: this.name,
             code: this.code,
@@ -79,27 +114,9 @@ export class CmpStrError extends Error {
             cause: this.cause instanceof Error ? {
                 name: this.cause.name,
                 message: this.cause.message,
-                stack: ( this.cause as any ).stack
+                stack: stack && this.cause.stack
             } : this.cause
         };
-    }
-
-    /**
-     * Pretty string representation of the error.
-     * 
-     * @param {boolean} [stack=false] - Whether to include the stack trace in the output
-     */
-    public override toString ( stack: boolean = false ) : string {
-        const parts: string[] = [ `${this.name} [${this.code}]`, this.message ];
-
-        if ( this.meta && Object.keys( this.meta ).length ) {
-            try { parts.push( JSON.stringify( this.meta ) ) }
-            catch { /* ignore */ }
-        }
-
-        return parts.join( ' - ' ) + (
-            stack && this.stack ? `\nStack Trace:\n${this.stack}` : ''
-        );
     }
 
 }
@@ -109,7 +126,7 @@ export class CmpStrError extends Error {
  */
 export class CmpStrValidationError extends CmpStrError {
     constructor ( message: string, meta?: CmpStrErrorMeta, cause?: unknown ) {
-        super ( 'E_VALIDATION', message, meta, cause );
+        super ( ErrorCode.VALIDATION, message, meta, cause );
     }
 }
 
@@ -118,7 +135,7 @@ export class CmpStrValidationError extends CmpStrError {
  */
 export class CmpStrNotFoundError extends CmpStrError {
     constructor ( message: string, meta?: CmpStrErrorMeta, cause?: unknown ) {
-        super ( 'E_NOT_FOUND', message, meta, cause );
+        super ( ErrorCode.NOT_FOUND, message, meta, cause );
     }
 }
 
@@ -127,7 +144,7 @@ export class CmpStrNotFoundError extends CmpStrError {
  */
 export class CmpStrUsageError extends CmpStrError {
     constructor ( message: string, meta?: CmpStrErrorMeta, cause?: unknown ) {
-        super ( 'E_USAGE', message, meta, cause );
+        super ( ErrorCode.USAGE, message, meta, cause );
     }
 }
 
@@ -136,7 +153,7 @@ export class CmpStrUsageError extends CmpStrError {
  */
 export class CmpStrInternalError extends CmpStrError {
     constructor ( message: string, meta?: CmpStrErrorMeta, cause?: unknown ) {
-        super ( 'E_INTERNAL', message, meta, cause );
+        super ( ErrorCode.INTERNAL, message, meta, cause );
     }
 }
 
@@ -169,7 +186,7 @@ export class ErrorUtil {
      * @param {CmpStrErrorMeta} [meta] - Optional structured metadata for the error
      * @throws {CmpStrInternalError} - Always throws a new `CmpStrInternalError` wrapping the original error
      */
-    public static create ( err: unknown, message: string, meta?: CmpStrErrorMeta ) : never {
+    public static rethrow ( err: unknown, message: string, meta?: CmpStrErrorMeta ) : never {
         if ( err instanceof CmpStrError ) throw err;
         throw new CmpStrInternalError ( message, meta, err );
     }
@@ -199,8 +216,10 @@ export class ErrorUtil {
      * @throws {CmpStrInternalError} - If the function throws an error, it will be wrapped and re-thrown as a `CmpStrInternalError`
      */
     public static wrap< T > ( fn: () => T, message: string, meta?: CmpStrErrorMeta ) : T {
-        try { return fn() }
-        catch ( err ) { throw new CmpStrInternalError ( message, meta, err ) }
+        try { return fn() } catch ( err ) {
+            if ( err instanceof CmpStrError ) throw err;
+            throw new CmpStrInternalError( message, meta, err );
+        }
     }
 
     /**
@@ -209,12 +228,14 @@ export class ErrorUtil {
      * @param {() => Promise< T >} fn - The asynchronous function to execute
      * @param {string} message - The error message to use if an exception is thrown
      * @param {CmpStrErrorMeta} [meta] - Optional structured metadata for the error
-     * @return {Promise<T>} A promise that resolves to the result of the function if it executes successfully
+     * @return {Promise< T >} A promise that resolves to the result of the function if it executes successfully
      * @throws {CmpStrInternalError} - If the function throws an error, it will be wrapped and re-thrown as a `CmpStrInternalError`
      */
     public static async wrapAsync< T > ( fn: () => Promise< T >, message: string, meta?: CmpStrErrorMeta ) : Promise< T > {
-        try { return await fn() }
-        catch ( err ) { throw new CmpStrInternalError ( message, meta, err ) }
+        try { return await fn() } catch ( err ) {
+            if ( err instanceof CmpStrError ) throw err;
+            throw new CmpStrInternalError( message, meta, err );
+        }
     }
 
 }

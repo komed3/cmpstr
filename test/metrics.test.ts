@@ -58,7 +58,7 @@ describe( 'CmpStr > Metric', () => {
         ] );
 
         expect( () => { cmp.pairs( [ 'heLLo', 'hi', 'Hola' ], [ 'hallo', 'allo' ] ) } ).toThrowError(
-            `Failed to compute metric <jaroWinkler> for the given inputs`
+            `Mode <pairwise> requires arrays of equal length`
         );
     } );
 

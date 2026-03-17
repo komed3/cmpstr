@@ -17,7 +17,10 @@
 
 'use strict';
 
-import type { CmpStrOptions, CmpStrProcessors, MetricOptions, PhoneticOptions } from './Types';
+import type {
+    CmpStrOptions, CmpStrProcessors, MetricOptions, PhoneticOptions,
+    StructuredDataOptions, ValidatorFn
+} from './Types';
 
 import { CmpStrValidationError } from './Errors';
 import { MetricRegistry } from '../metric';
@@ -33,22 +36,153 @@ import { PhoneticRegistry } from '../phonetic';
 export class OptionsValidator {
 
     /** Allowed normalization flags */
-    private static readonly ALLOWED_FLAGS = new Set( [ 'd', 'u', 'x', 'w', 't', 'r', 's', 'k', 'n', 'i' ] );
+    private static readonly ALLOWED_FLAGS = new Set ( [ 'd', 'u', 'x', 'w', 't', 'r', 's', 'k', 'n', 'i' ] );
     /** Allowed output modes */
-    private static readonly ALLOWED_OUTPUT = new Set( [ 'orig', 'prep' ] );
+    private static readonly ALLOWED_OUTPUT = new Set ( [ 'orig', 'prep' ] );
     /** Allowed comparison modes */
-    private static readonly ALLOWED_MODES = new Set( [ 'default', 'batch', 'single', 'pairwise' ] );
-    /** Allowed processor types */
-    private static readonly ALLOWED_PROCESSORS = new Map( [ [ 'phonetic', 'validatePhonetic' ] ] );
+    private static readonly ALLOWED_MODES = new Set ( [ 'default', 'batch', 'single', 'pairwise' ] );
+    /** Allowed sort modes */
+    private static readonly ALLOWED_SORT = new Set ( [ 'asc', 'desc' ] );
+
+    /** Processor dispatch table */
+    private static readonly PROCESSORS = {
+        phonetic: ( opt: CmpStrProcessors[ 'phonetic' ] ) : void => {
+            if ( ! opt ) return;
+
+            OptionsValidator.validatePhoneticName( opt.algo );
+            OptionsValidator.validatePhoneticOptions( opt.opt );
+        }
+    } as const;
+
+    /** Metric options validation dispatch table */
+    private static readonly METRIC_OPT_MAP = {
+        mode:      ( v: unknown ) => OptionsValidator.validateMode( v ),
+        delimiter: ( v: unknown ) => OptionsValidator.validateString( v, 'opt.delimiter' ),
+        pad:       ( v: unknown ) => OptionsValidator.validateString( v, 'opt.pad' ),
+        q:         ( v: unknown ) => OptionsValidator.validateNumber( v, 'opt.q' ),
+        match:     ( v: unknown ) => OptionsValidator.validateNumber( v, 'opt.match' ),
+        mismatch:  ( v: unknown ) => OptionsValidator.validateNumber( v, 'opt.mismatch' ),
+        gap:       ( v: unknown ) => OptionsValidator.validateNumber( v, 'opt.gap' )
+    } as const;
+
+    /** Phonetic algorithm options validation dispatch table */
+    private static readonly PHONETIC_OPT_MAP = {
+        map:       ( v: unknown ) => OptionsValidator.validateString( v, 'processors.phonetic.opt.map' ),
+        delimiter: ( v: unknown ) => OptionsValidator.validateString( v, 'processors.phonetic.opt.delimiter' ),
+        length:    ( v: unknown ) => OptionsValidator.validateNumber( v, 'processors.phonetic.opt.length' ),
+        pad:       ( v: unknown ) => OptionsValidator.validateString( v, 'processors.phonetic.opt.pad' ),
+        dedupe:    ( v: unknown ) => OptionsValidator.validateBoolean( v, 'processors.phonetic.opt.dedupe' ),
+        fallback:  ( v: unknown ) => OptionsValidator.validateString( v, 'processors.phonetic.opt.fallback' )
+    } as const;
+
+    /** CmpStr options validation dispatch table */
+    private static readonly CMPSTR_OPT_MAP = {
+        raw:         ( v: unknown ) => OptionsValidator.validateBoolean( v, 'raw' ),
+        removeZero:  ( v: unknown ) => OptionsValidator.validateBoolean( v, 'removeZero' ),
+        safeEmpty:   ( v: unknown ) => OptionsValidator.validateBoolean( v, 'safeEmpty' ),
+
+        flags:       ( v: unknown ) => OptionsValidator.validateFlags( v ),
+        metric:      ( v: unknown ) => OptionsValidator.validateMetricName( v ),
+        output:      ( v: unknown ) => OptionsValidator.validateOutput( v ),
+
+        opt:         ( v: any ) => OptionsValidator.validateMetricOptions( v ),
+        processors:  ( v: any ) => OptionsValidator.validateProcessors( v ),
+
+        sort:        ( v: unknown ) => OptionsValidator.validateSort( v, 'sort' ),
+        objectsOnly: ( v: unknown ) => OptionsValidator.validateBoolean( v, 'objectsOnly' )
+    } as const;
 
     /**
-     * Helper method to convert a Set to a string for error messages.
+     * Internal helper to convert a Set to a string for error messages.
      * 
      * @param {Set< string >} set - The set to convert
      * @returns {string} - A string representation of the set
      */
     private static set2string ( set: Set< string > ) : string {
         return Array.from( set ).join( ' | ' );
+    }
+
+    /**
+     * Internal helper to validate primitive types.
+     * 
+     * @param {unknown} value - The value to validate.
+     * @param {string} name - The name of the option (for error messages).
+     * @param {'boolean' | 'number' | 'string'} type - The expected type of the value.
+     * @throws {CmpStrValidationError} If the value is not of the expected type or is NaN (for numbers).
+     */
+    private static validateType ( value: unknown, name: string, type: 'boolean' | 'number' | 'string' ) : void {
+        if ( value === undefined ) return;
+
+        if ( typeof value !== type || ( type === 'number' && Number.isNaN( value ) ) ) {
+            throw new CmpStrValidationError (
+                `Invalid option <${name}>: expected ${type}`,
+                { name, value }
+            );
+        }
+    }
+
+    /**
+     * Internal helper to validate enum-like values.
+     * 
+     * @param {unknown} value - The value to validate.
+     * @param {string} name - The name of the option (for error messages).
+     * @param {Set< string >} set - The set of allowed values.
+     * @throws {CmpStrValidationError} If the value is not a string or is not in the allowed set.
+     */
+    private static validateEnum ( value: unknown, name: string, set: Set< string > ) : void {
+        if ( value === undefined ) return;
+
+        if ( typeof value !== 'string' || ! set.has( value ) ) {
+            throw new CmpStrValidationError (
+                `Invalid option <${name}>: expected ${ OptionsValidator.set2string( set ) }`,
+                { name, value }
+            );
+        }
+    }
+
+    /**
+     * Internal helper to validate objects against a dispatch table of validation functions.
+     * 
+     * @param {unknown} opt - The object to validate.
+     * @param {Object} map - A dispatch table mapping keys to validation functions.
+     * @throws {CmpStrValidationError} If any property in the object fails validation.
+     */
+    private static validateMap< T extends Record< string, ValidatorFn > > ( opt: unknown, map: T ) : void {
+        if ( ! opt ) return;
+
+        for ( const k in opt ) {
+            const fn = map[ k as keyof typeof map ];
+
+            if ( ! fn ) throw new CmpStrValidationError (
+                `Invalid option <${k}>`, { option: k, value: map[ k ] }
+            );
+
+            fn( ( opt as any )[ k ] );
+        }
+    }
+
+    /**
+     * Internal helper to validate registry-based options (metrics and phonetic algorithms).
+     * 
+     * @param {unknown} value - The value to validate.
+     * @param {string} name - The name of the option (for error messages).
+     * @param {string} label - The label to use in error messages (e.g. "Metric" or "Phonetic algorithm").
+     * @param {( v: string ) => boolean} has - A function that checks if the registry contains a given name.
+     * @param {() => string[]} list - A function that returns a list of registered names for error messages.
+     * @throws {CmpStrValidationError} If the value is not a non-empty string or is not registered.
+     */
+    private static validateRegistryName (
+        value: unknown, name: string, label: string, has: ( v: string ) => boolean, list: () => string[]
+    ) : void {
+        if ( value === undefined ) return;
+
+        if ( typeof value !== 'string' || value.length === 0 ) throw new CmpStrValidationError (
+            `Invalid option <${name}>: expected non-empty string`, { name, value }
+        );
+
+        if ( ! has( value ) ) throw new CmpStrValidationError (
+            `${label} <${value}> is not registered`, { name, value, available: list() }
+        );
     }
 
     /**
@@ -59,10 +193,7 @@ export class OptionsValidator {
      * @throws {CmpStrValidationError} - If the value is not a boolean
      */
     public static validateBoolean ( value: unknown, name: string ) : void {
-        if ( value === undefined ) return;
-        if ( typeof value !== 'boolean' ) throw new CmpStrValidationError (
-            `Invalid option <${name}>: expected boolean`, { name, value }
-        );
+        OptionsValidator.validateType( value, name, 'boolean' );
     }
 
     /**
@@ -73,10 +204,7 @@ export class OptionsValidator {
      * @throws {CmpStrValidationError} - If the value is not a number or is NaN
      */
     public static validateNumber ( value: unknown, name: string ) : void {
-        if ( value === undefined ) return;
-        if ( typeof value !== 'number' || isNaN( value ) ) throw new CmpStrValidationError (
-            `Invalid option <${name}>: expected number`, { name, value }
-        );
+        OptionsValidator.validateType( value, name, 'number' );
     }
 
     /**
@@ -87,30 +215,29 @@ export class OptionsValidator {
      * @throws {CmpStrValidationError} - If the value is not a string
      */
     public static validateString ( value: unknown, name: string ) : void {
-        if ( value === undefined ) return;
-        if ( typeof value !== 'string' ) throw new CmpStrValidationError (
-            `Invalid option <${name}>: expected string`, { name, value }
-        );
+        OptionsValidator.validateType( value, name, 'string' );
     }
 
     /**
      * Validate normalization flags.
      * 
-     * @param {unknown} flags - The flags to validate
+     * @param {unknown} value - The flags to validate
      * @throws {CmpStrValidationError} - If the flags are not a string or contain invalid characters
      */
-    public static validateFlags ( flags: unknown ) : void {
-        if ( flags === undefined ) return;
-        if ( typeof flags !== 'string' ) throw new CmpStrValidationError (
-            `Invalid option <flags>: expected string`, { flags }
+    public static validateFlags ( value: unknown ) : void {
+        if ( value === undefined ) return;
+
+        if ( typeof value !== 'string' ) throw new CmpStrValidationError (
+            `Invalid option <flags>: expected string`, { flags: value }
         );
 
-        if ( flags.length === 0 ) return;
-        for ( const ch of flags ) {
+        for ( let i = 0; i < value.length; i++ ) {
+            const ch = value[ i ];
+
             if ( ! OptionsValidator.ALLOWED_FLAGS.has( ch ) ) throw new CmpStrValidationError (
-                `Invalid normalization flag <${ ch }> in <flags>: expected ${
+                `Invalid normalization flag <${ch}> in <flags>: expected ${
                     OptionsValidator.set2string( OptionsValidator.ALLOWED_FLAGS )
-                }`, { flags, invalid: ch }
+                }`, { flags: value, invalid: ch }
             );
         }
     }
@@ -118,158 +245,124 @@ export class OptionsValidator {
     /**
      * Validate CmpStr output mode.
      * 
-     * @param {unknown} output - The output mode to validate
+     * @param {unknown} value - The output mode to validate
      * @throws {CmpStrValidationError} - If the output mode is not a string or not allowed
      */
-    public static validateOutput ( output: unknown ) : void {
-        if ( output === undefined ) return;
-        if ( typeof output !== 'string' || ! OptionsValidator.ALLOWED_OUTPUT.has( output ) ) {
-            throw new CmpStrValidationError ( `Invalid option <output>: expected ${
-                OptionsValidator.set2string( OptionsValidator.ALLOWED_OUTPUT )
-            }`, { output } );
-        }
+    public static validateOutput ( value: unknown ) : void {
+        OptionsValidator.validateEnum( value, 'output', OptionsValidator.ALLOWED_OUTPUT );
     }
 
     /**
      * Validate CmpStr comparison mode.
      * 
-     * @param {unknown} mode - The comparison mode to validate
+     * @param {unknown} value - The comparison mode to validate
      * @throws {CmpStrValidationError} - If the comparison mode is not a string or not allowed
      */
-    public static validateMode ( mode: unknown ) : void {
-        if ( mode === undefined ) return;
-        if ( typeof mode !== 'string' || ! OptionsValidator.ALLOWED_MODES.has( mode ) ) {
-            throw new CmpStrValidationError ( `Invalid option <mode>: expected ${
-                OptionsValidator.set2string( OptionsValidator.ALLOWED_MODES )
-            }`, { mode } );
-        }
+    public static validateMode ( value: unknown ) : void {
+        OptionsValidator.validateEnum( value, 'mode', OptionsValidator.ALLOWED_MODES );
     }
 
     /**
-     * Validate metric against the MetricRegistry.
+     * Validate CmpStr structured data sort mode.
      * 
-     * @param {unknown} metric - The metric name to validate
+     * @param {unknown} value - The sort mode to validate
+     * @param {string} name - The name of the option (for error messages)
+     * @throws {CmpStrValidationError} - If the sort mode is neither 'asc', 'desc', nor a boolean
+     */
+    public static validateSort ( value: unknown, name: string ): void {
+        if ( value === undefined || typeof value === 'boolean' ) return;
+        OptionsValidator.validateEnum( value, name, OptionsValidator.ALLOWED_SORT );
+    }
+
+    /**
+     * Validate metric name against the MetricRegistry.
+     * 
+     * @param {unknown} value - The metric name to validate
      * @throws {CmpStrValidationError} - If the metric is not a string or not registered
      */
-    public static validateMetricName ( metric: unknown ) : void {
-        if ( metric === undefined ) return;
-        if ( typeof metric !== 'string' || metric.length === 0 ) throw new CmpStrValidationError (
-            `Invalid option <metric>: expected non-empty string`, { metric }
+    public static validateMetricName ( value: unknown ) : void {
+        OptionsValidator.validateRegistryName(
+            value, 'metric', 'Comparison metric',
+            MetricRegistry.has, MetricRegistry.list
         );
+    }
 
-        if ( ! MetricRegistry.has( metric ) ) throw new CmpStrValidationError (
-            `Metric <${metric}> is not registered`, { metric, available: MetricRegistry.list() }
+    /**
+     * Validate phonetic algorithm name against the PhoneticRegistry.
+     * 
+     * @param {unknown} value - The phonetic algorithm name to validate
+     * @throws {CmpStrValidationError} - If the phonetic algorithm is not a string or not registered
+     */
+    public static validatePhoneticName ( value: unknown ) : void {
+        OptionsValidator.validateRegistryName(
+            value, 'phonetic', 'Phonetic algorithm',
+            PhoneticRegistry.has, PhoneticRegistry.list
         );
     }
 
     /**
      * Validate metric options.
      * 
-     * This method checks for the presence of specific metric options and validates their types.
-     * 
-     * @param {unknown} opt - The metric options to validate
+     * @param {MetricOptions} opt - The metric options to validate
      * @throws {CmpStrValidationError} - If any metric option is invalid
      */
     public static validateMetricOptions ( opt?: MetricOptions ) : void {
-        if ( ! opt ) return;
-
-        if ( 'mode' in opt ) this.validateMode( opt.mode );
-        if ( 'delimiter' in opt ) this.validateString( opt.delimiter, 'opt.delimiter' );
-        if ( 'pad' in opt ) this.validateString( opt.pad, 'opt.pad' );
-        if ( 'q' in opt ) this.validateNumber( opt.q, 'opt.q' );
-        if ( 'match' in opt ) this.validateNumber( opt.match, 'opt.match' );
-        if ( 'mismatch' in opt ) this.validateNumber( opt.mismatch, 'opt.mismatch' );
-        if ( 'gap' in opt ) this.validateNumber( opt.gap, 'opt.gap' );
+        OptionsValidator.validateMap( opt, OptionsValidator.METRIC_OPT_MAP );
     }
 
     /**
-     * Validate phonetic algorithm against the PhoneticRegistry.
+     * Validate phonetic options.
      * 
-     * @param {unknown} phonetic - The phonetic algorithm name to validate
-     * @throws {CmpStrValidationError} - If the phonetic algorithm is not a string or not registered
-     */
-    public static validatePhoneticName ( phonetic: unknown ) : void {
-        if ( phonetic === undefined ) return;
-        if ( typeof phonetic !== 'string' || phonetic.length === 0 ) throw new CmpStrValidationError (
-            `Invalid option <phonetic>: expected non-empty string`, { phonetic }
-        );
-
-        if ( ! PhoneticRegistry.has( phonetic ) ) throw new CmpStrValidationError (
-            `Phonetic algorithm <${phonetic}> is not registered`,
-            { phonetic, available: PhoneticRegistry.list() }
-        );
-    }
-
-    /**
-     * Validate phonetic processor options.
-     * 
-     * @param {unknown} opt - The phonetic processor options to validate
-     * @throws {CmpStrValidationError} - If any phonetic processor option is invalid
+     * @param {PhoneticOptions} opt - The phonetic options to validate
+     * @throws {CmpStrValidationError} - If any phonetic option is invalid
      */
     public static validatePhoneticOptions ( opt?: PhoneticOptions ) : void {
-        if ( ! opt ) return;
-
-        if ( 'map' in opt ) this.validateString( opt.map, 'opt.map' );
-        if ( 'delimiter' in opt ) this.validateString( opt.delimiter, 'opt.delimiter' );
-        if ( 'length' in opt ) this.validateNumber( opt.length, 'opt.length' );
-        if ( 'pad' in opt ) this.validateString( opt.pad, 'opt.pad' );
-        if ( 'dedupe' in opt ) this.validateBoolean( opt.dedupe, 'opt.dedupe' );
-        if ( 'fallback' in opt ) this.validateString( opt.fallback, 'opt.fallback' );
-    }
-
-    /**
-     * Validate phonetic processor options within the processors object.
-     * 
-     * @param {unknown} opt - The processors options to validate
-     * @throws {CmpStrValidationError} - If any phonetic processor option is invalid
-     */
-    public static validatePhonetic ( opt?: CmpStrProcessors[ 'phonetic' ] ) : void {
-        if ( ! opt ) return;
-
-        this.validatePhoneticName( opt.algo );
-        this.validatePhoneticOptions( opt.opt );
+        OptionsValidator.validateMap( opt, OptionsValidator.PHONETIC_OPT_MAP );
     }
 
     /**
      * Validate processor options.
      * 
+     * This method iterates over the keys in the provided processor options and dispatches
+     * validation to the corresponding function in the PROCESSORS table.
+     * 
+     * If an invalid processor type is found, a CmpStrValidationError is thrown indicating
+     * the invalid type and the expected processor types.
+     * 
      * @param {unknown} opt - The processor options to validate
-     * @throws {CmpStrValidationError} - If any processor option is invalid
+     * @throws {CmpStrValidationError} - If any processor type is invalid
      */
     public static validateProcessors ( opt?: CmpStrProcessors ) : void {
         if ( ! opt ) return;
 
-        for ( const [ key, o ] of Object.entries( opt ) ) {
-            if ( OptionsValidator.ALLOWED_PROCESSORS.has( key ) ) {
-                ( OptionsValidator as any )[ OptionsValidator.ALLOWED_PROCESSORS.get( key )! ]( o );
-            } else {
-                throw new CmpStrValidationError ( `Invalid processor type <${key}> in <processors>: expected ${
-                    OptionsValidator.set2string( new Set( OptionsValidator.ALLOWED_PROCESSORS.keys() ) )
-                }`, { processors: opt, invalid: key } );
-            }
+        for ( const key in opt ) {
+            const fn = OptionsValidator.PROCESSORS[ key as keyof typeof OptionsValidator.PROCESSORS ];
+
+            if ( ! fn ) throw new CmpStrValidationError (
+                `Invalid processor type <${key}> in <processors>: expected ${
+                    Object.keys( OptionsValidator.PROCESSORS ).join( ' | ' )
+                }`, { processors: opt, invalid: key }
+            );
+
+            fn( ( opt as any )[ key ] );
         }
     }
 
     /**
      * Validate the provided CmpStr options object.
      * 
-     * If any validation fails, a CmpStrValidationError is thrown.
+     * This method performs a comprehensive validation of the options object passed to CmpStr.
+     * It checks for the presence and validity of all supported options, including primitive
+     * types, enum-like values, registry-based names, and nested processor options.
      * 
-     * @param {CmpStrOptions} [opt] - The options object to validate
+     * If any validation check fails, a CmpStrValidationError is thrown with a descriptive
+     * message and relevant details about the invalid option.
+     * 
+     * @param {CmpStrOptions | StructuredDataOptions} [opt] - The options object to validate
      * @throws {CmpStrValidationError} - If any validation check fails
      */
-    public static validateOptions ( opt?: CmpStrOptions ) : void {
-        if ( ! opt ) return;
-
-        if ( 'raw' in opt ) this.validateBoolean( opt.raw, 'raw' );
-        if ( 'removeZero' in opt ) this.validateBoolean( opt.removeZero, 'removeZero' );
-        if ( 'safeEmpty' in opt ) this.validateBoolean( opt.safeEmpty, 'safeEmpty' );
-        if ( 'flags' in opt ) this.validateFlags( opt.flags );
-        if ( 'metric' in opt ) this.validateMetricName( opt.metric );
-        if ( 'output' in opt ) this.validateOutput( opt.output );
-
-        if ( 'opt' in opt ) this.validateMetricOptions( opt.opt );
-        if ( 'processors' in opt ) this.validateProcessors( opt.processors );
+    public static validateOptions ( opt?: CmpStrOptions | StructuredDataOptions ) : void {
+        OptionsValidator.validateMap( opt, OptionsValidator.CMPSTR_OPT_MAP );
     }
 
 }

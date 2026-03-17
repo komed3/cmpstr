@@ -101,7 +101,7 @@ export interface ProfilerService< T > {
 /**
  * PoolType enumerates the supported buffer types for the Pool utility.
  */
-export type PoolType = 'int32' | 'number[]' | 'string[]' | 'set' | 'map';
+export type PoolType = 'int32' | 'arr[]' | 'number[]' | 'string[]' | 'set' | 'map';
 
 /**
  * PoolConfig defines the configuration for a buffer pool.
@@ -128,6 +128,20 @@ export interface PoolBuffer< T > {
     // The size of the buffer
     size: number;
 }
+
+/**
+ * ================================================================================
+ * VALIDATION
+ * ================================================================================
+ * 
+ * Types for option validation.
+ */
+
+/**
+ * ValidatorFn defines the signature for a validation function.
+ * It takes an unknown value and either returns void if valid or throws an error if invalid.
+ */
+export type ValidatorFn = ( v: unknown ) => void;
 
 /**
  * ================================================================================

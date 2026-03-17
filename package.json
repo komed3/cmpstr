@@ -2,7 +2,7 @@
   "name": "cmpstr",
   "description": "CmpStr is a lightweight, fast and well performing package for calculating string similarity",
   "license": "MIT",
-  "version": "3.2.2",
+  "version": "3.3.0",
   "author": {
     "name": "komed3 (Paul Köhler)",
     "email": "webmaster@komed3.de",
@@ -74,19 +74,28 @@
     "node": ">=18.0.0"
   },
   "types": "./dist/types/index.d.ts",
-  "browser": "./dist/CmpStr.umd.min.js",
   "main": "./dist/cjs/index.cjs",
-  "module": "./dist/esm/index.mjs",
   "exports": {
     ".": {
+      "browser": "./dist/CmpStr.umd.min.js",
       "types": "./dist/types/index.d.ts",
+      "import": "./dist/esm/index.mjs",
       "require": "./dist/cjs/index.cjs",
-      "import": "./dist/esm/index.mjs"
+      "default": "./dist/esm/index.mjs"
     },
     "./root": {
       "types": "./dist/types/root.d.ts",
       "require": "./dist/cjs/root.cjs",
-      "import": "./dist/esm/root.mjs"
+      "import": "./dist/esm/root.mjs",
+      "default": "./dist/esm/root.mjs"
+    },
+    "./bundle": {
+      "import": "./dist/CmpStr.esm.js",
+      "default": "./dist/CmpStr.esm.js"
+    },
+    "./bundle/min": {
+      "import": "./dist/CmpStr.esm.min.js",
+      "default": "./dist/CmpStr.esm.min.js"
     }
   },
   "scripts": {

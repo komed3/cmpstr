@@ -80,7 +80,9 @@ export abstract class Metric< R = MetricRaw > {
     /**
      * Static method to clear the cache of metric computations.
      */
-    public static clear = () : void => this.cache.clear();
+    public static clear () : void {
+        this.cache.clear();
+    }
 
     /**
      * Swaps two strings and their lengths if the first is longer than the second.
@@ -91,9 +93,9 @@ export abstract class Metric< R = MetricRaw > {
      * @param {number} n - Length of the second string
      * @returns {[ string, string, number, number ]} - Swapped strings and lengths
      */
-    protected static swap = ( a: string, b: string, m: number, n: number ) : [
-        string, string, number, number
-    ] => m > n ? [ b, a, n, m ] : [ a, b, m, n ];
+    protected static swap ( a: string, b: string, m: number, n: number ) : [ string, string, number, number ] {
+        return m > n ? [ b, a, n, m ] : [ a, b, m, n ];
+    }
 
     /**
      * Clamps the similarity result between 0 and 1.
@@ -101,7 +103,9 @@ export abstract class Metric< R = MetricRaw > {
      * @param {number} res - The input similarity to clamp
      * @returns {number} - The clamped similarity (0 to 1)
      */
-    protected static clamp = ( res: number ) : number => Math.max( 0, Math.min( 1, res ) );
+    protected static clamp ( res: number ) : number {
+        return Math.max( 0, Math.min( 1, res ) );
+    }
 
     /**
      * Constructor for the Metric class.
@@ -202,13 +206,15 @@ export abstract class Metric< R = MetricRaw > {
 
                     // Generate a cache key based on the metric and pair of strings `a` and `b`
                     // Concatenate with options to ensure different options yield different cache entries
-                    const key = Metric.cache.key( this.metric, [ A, B ], this.symmetric ) + this.optKey;
+                    let key = Metric.cache.key( this.metric, [ A, B ], this.symmetric );
+                    if ( key ) key += this.optKey;
 
                     // If the key exists in the cache, return the cached result
                     // Otherwise, compute the metric using the algorithm
                     return Metric.cache.get( key || '' ) ?? ( () => {
                         // Compute the similarity using the algorithm
-                        const res = this.compute( A, B, m, n, Math.max( m, n ) );
+                        const maxLen = m > n ? m : n;
+                        const res = this.compute( A, B, m, n, maxLen );
 
                         // If a key was generated, store the result in the cache
                         if ( key ) Metric.cache.set( key, res );
@@ -221,8 +227,8 @@ export abstract class Metric< R = MetricRaw > {
             // Build metric result object
             return {
                 metric: this.metric,
-                a: this.origA[ i ] ?? a,
-                b: this.origB[ j ] ?? b,
+                a: this.origA.length > i ? this.origA[ i ] : a,
+                b: this.origB.length > j ? this.origB[ j ] : b,
                 ...result
             };
         }, `Failed to compute metric for inputs at indices a[${i}] and b[${j}]`, { i, j } );
@@ -254,7 +260,6 @@ export abstract class Metric< R = MetricRaw > {
                 results.push( this.runSingle( i, j ) );
 
         // Populate the results
-        // `this.results` will be an array of MetricResultSingle
         this.results = results;
     }
 
@@ -262,16 +267,15 @@ export abstract class Metric< R = MetricRaw > {
      * Run the metric computation for batch inputs (arrays of strings) asynchronously.
      */
     private async runBatchAsync () : Promise< void > {
-        const results: MetricResultBatch< R > = [];
+        const tasks: Promise< MetricResultSingle< R > >[] = [];
 
         // Loop through each combination of strings in a[] and b[]
         for ( let i = 0; i < this.a.length; i++ )
             for ( let j = 0; j < this.b.length; j++ )
-                results.push( await this.runSingleAsync( i, j ) );
+                tasks.push( this.runSingleAsync( i, j ) );
 
         // Populate the results
-        // `this.results` will be an array of MetricResultSingle
-        this.results = results;
+        this.results = await Promise.all( tasks );
     }
 
     /**
@@ -287,7 +291,6 @@ export abstract class Metric< R = MetricRaw > {
         for ( let i = 0; i < this.a.length; i++ ) results.push( this.runSingle( i, i ) );
 
         // Populate the results
-        // `this.results` will be an array of MetricResultSingle
         this.results = results;
     }
 
@@ -295,15 +298,14 @@ export abstract class Metric< R = MetricRaw > {
      * Run the metric computation for pairwise inputs (A[i] vs B[i]) asynchronously.
      */
     private async runPairwiseAsync () : Promise< void > {
-        const results: MetricResultBatch< R > = [];
+        const tasks: Promise< MetricResultSingle< R > >[] = [];
 
         // Compute metric for each corresponding pair
         for ( let i = 0; i < this.a.length; i++ )
-            results.push( await this.runSingleAsync( i, i ) );
+            tasks.push( this.runSingleAsync( i, i ) );
 
         // Populate the results
-        // `this.results` will be an array of MetricResultSingle
-        this.results = results;
+        this.results = await Promise.all( tasks );
     }
 
     /**
@@ -327,7 +329,9 @@ export abstract class Metric< R = MetricRaw > {
      * 
      * @returns {boolean} - True if either input is an array with more than one element
      */
-    public isBatch = () : boolean => this.a.length > 1 || this.b.length > 1;
+    public isBatch () : boolean {
+        return this.a.length > 1 || this.b.length > 1;
+    }
 
     /**
      * Check if the inputs are in single mode.
@@ -337,7 +341,9 @@ export abstract class Metric< R = MetricRaw > {
      * 
      * @returns {boolean} - True if both inputs are single strings
      */
-    public isSingle = () : boolean => ! this.isBatch();
+    public isSingle () : boolean {
+        return ! this.isBatch();
+    }
 
     /**
      * Check if the inputs are in pairwise mode.
@@ -363,7 +369,9 @@ export abstract class Metric< R = MetricRaw > {
      * 
      * @returns {boolean} - True if the metric is symmetric
      */
-    public isSymmetrical = () : boolean => this.symmetric;
+    public isSymmetrical () : boolean {
+        return this.symmetric;
+    }
 
     /**
      * Determine which mode to run the metric in.
@@ -374,7 +382,9 @@ export abstract class Metric< R = MetricRaw > {
      * @param {MetricMode} [mode] - The mode to run the metric in (optional)
      * @returns {MetricMode} - The determined mode
      */
-    public whichMode = ( mode?: MetricMode ) : MetricMode => mode ?? this.options?.mode ?? 'default';
+    public whichMode ( mode?: MetricMode ) : MetricMode {
+        return mode ?? this.options.mode ?? 'default';
+    }
 
     /**
      * Clear the cached results of the metric.
@@ -383,7 +393,9 @@ export abstract class Metric< R = MetricRaw > {
      * any previously computed results. It can be useful for re-running the metric
      * with new inputs or options.
      */
-    public clear = () : void => this.results = undefined;
+    public clear () : void {
+        this.results = undefined;
+    }
 
     /**
      * Run the metric computation based on the specified mode.
@@ -398,7 +410,7 @@ export abstract class Metric< R = MetricRaw > {
 
         switch ( this.whichMode( mode ) ) {
             // Default mode runs the metric on single inputs or falls back to batch mode
-            case 'default': if ( this.isSingle() ) { this.results = this.runSingle( 0, 0 ); break; }
+            case 'default': if ( this.isSingle() ) { this.results = this.runSingle( 0, 0 ); break }
             // Batch mode runs the metric on all combinations of a[] and b[]
             case 'batch': this.runBatch(); break;
             // Single mode runs the metric on the first elements of a[] and b[]
@@ -418,13 +430,13 @@ export abstract class Metric< R = MetricRaw > {
      * @returns {Promise<void>} - A promise that resolves when the metric computation is complete
      * @throws {CmpStrInternalError} - If an unsupported mode is specified
      */
-    public async runAsync ( mode?: MetricMode, clear: boolean = true ) : Promise<void> {
+    public async runAsync ( mode?: MetricMode, clear: boolean = true ) : Promise< void > {
         // Clear previous results if requested
         if ( clear ) this.clear();
 
         switch ( this.whichMode( mode ) ) {
             // Default mode runs the metric on single inputs or falls back to batch mode
-            case 'default': if ( this.isSingle() ) { this.results = await this.runSingleAsync( 0, 0 ); break; }
+            case 'default': if ( this.isSingle() ) { this.results = await this.runSingleAsync( 0, 0 ); break }
             // Batch mode runs the metric on all combinations of a[] and b[]
             case 'batch': await this.runBatchAsync(); break;
             // Single mode runs the metric on the first elements of a[] and b[]
@@ -441,7 +453,9 @@ export abstract class Metric< R = MetricRaw > {
      * 
      * @returns {string} - The name of the metric
      */
-    public getMetricName = () : string => this.metric;
+    public getMetricName () : string {
+        return this.metric;
+    }
 
     /**
      * Get the result of the metric computation.
