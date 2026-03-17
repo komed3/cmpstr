@@ -9,7 +9,7 @@
  * Please visit CmpStr's documentation for more information:
  * https://github.com/komed3/cmpstr/wiki/Extending-CmpStr
  * 
- * @version 3.2.3
+ * @version 3.3.0
  * @author Paul Köhler (komed3)
  * @license MIT
  */
