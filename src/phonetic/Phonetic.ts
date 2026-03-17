@@ -70,6 +70,7 @@ export abstract class Phonetic {
     protected readonly options: PhoneticOptions;
     protected readonly optKey: string;
     protected readonly map: PhoneticMap;
+    protected readonly ignoreSet: Set< string >;
 
     /**
      * Static method to clear the cache of indexed words.
@@ -109,8 +110,8 @@ export abstract class Phonetic {
         this.optKey = Hasher.fastFNV1a( JSON.stringify( this.options, Object.keys( this.options ).sort() ) ).toString();
 
         // Set the algorithm name and mapping
-        this.algo = algo;
-        this.map = map;
+        this.algo = algo; this.map = map;
+        this.ignoreSet = new Set ( map.ignore ?? [] );
     }
 
     /**
@@ -127,13 +128,13 @@ export abstract class Phonetic {
         const { patterns = [] } = this.map;
 
         // If no patterns are provided, return the input
-        if ( ! patterns || ! patterns.length ) return word;
+        if ( ! patterns.length ) return word;
 
         // Iterate over the patterns and replace all matches
         for ( const { pattern, replace, all = false } of patterns ) {
             // Search for the pattern in the word and replace it
             // Use replaceAll if 'all' is true, otherwise use replace
-            word = word[ all ? 'replaceAll' : 'replace' ]( pattern, replace );
+            word = all ? word.replaceAll( pattern, replace ) : word.replace( pattern, replace );
         }
 
         // Return the modified word after applying all patterns
@@ -157,11 +158,12 @@ export abstract class Phonetic {
         const { ruleset = [] } = this.map;
 
         // If no rules are provided, return undefined
-        if ( ! ruleset || ! ruleset.length ) return undefined;
+        if ( ! ruleset.length ) return undefined;
 
         // Get the surrounding characters
         const prev = chars[ i - 1 ] || '', prev2 = chars[ i - 2 ] || '';
         const next = chars[ i + 1 ] || '', next2 = chars[ i + 2 ] || '';
+        const str = chars.join( '' );
 
         // Iterate over the rules to find a matching rule for the current character
         for ( const rule of ruleset ) {
@@ -171,7 +173,7 @@ export abstract class Phonetic {
             // Position in the word (start, middle, end)
             if ( rule.position === 'start' && i !== 0 ) continue;
             if ( rule.position === 'middle' && ( i === 0 || i === charLen - 1 ) ) continue;
-            if ( rule.position === 'end' && i !== charLen ) continue;
+            if ( rule.position === 'end' && i !== charLen - 1 ) continue;
 
             // Previous character(s)
             if ( rule.prev && ! rule.prev.includes( prev ) ) continue;
@@ -185,14 +187,14 @@ export abstract class Phonetic {
             if ( rule.next2 && ! rule.next2.includes( next2 ) ) continue;
             if ( rule.next2Not && rule.next2Not.includes( next2 ) ) continue;
 
-            // Special case: Beginning of a word (e.g. chars.slice(0, n))
+            // Special case: Beginning of a word
             if ( rule.leading && ! rule.leading.includes(
-                chars.slice( 0, rule.leading.length ).join( '' )
+                str.slice( 0, rule.leading.length )
             ) ) continue;
 
-            // Special case: end of word (e.g. chars.slice(-n))
+            // Special case: end of word
             if ( rule.trailing && ! rule.trailing.includes(
-                chars.slice( -rule.trailing.length ).join( '' )
+                str.slice( -rule.trailing.length )
             ) ) continue;
 
             // Check multiple characters (e.g. bigram/trigram)
@@ -218,7 +220,7 @@ export abstract class Phonetic {
      * @returns {string} - The generated phonetic code
      */
     protected encode ( word: string ) : string {
-        const { map = {}, ignore = [] } = this.map;
+        const { map = {} } = this.map;
 
         // Apply patterns to the word before processing
         // This allows for pre-processing of the word based on defined patterns
@@ -234,7 +236,7 @@ export abstract class Phonetic {
             const char = chars[ i ];
 
             // Skip characters that are in the ignore list
-            if ( ignore.includes( char ) ) continue;
+            if ( this.ignoreSet.has( char ) ) continue;
 
             // Convert the character to its phonetic code
             const mapped = this.mapChar( char, i, chars, charLen, lastCode, map );
@@ -297,7 +299,7 @@ export abstract class Phonetic {
      * @returns {string[]} - An array of characters from the input word
      */
     protected word2Chars ( word: string ) : string[] {
-        return word.toLowerCase().split( '' );
+        return Array.from( word.toLowerCase() );
     }
 
     /**
@@ -308,7 +310,7 @@ export abstract class Phonetic {
      * @returns {boolean} - True if the code length exceeds the specified limit, false otherwise
      */
     protected exitEarly ( code: string, i: number ) : boolean {
-        void [ i ];
+        void i;
         const { length = -1 } = this.options;
         return length > 0 && code.length >= length;
     }
