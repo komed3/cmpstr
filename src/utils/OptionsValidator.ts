@@ -144,7 +144,12 @@ export class OptionsValidator {
 
         for ( const k in opt ) {
             const fn = map[ k as keyof typeof map ];
-            if ( fn ) fn( ( opt as any )[ k ] );
+
+            if ( ! fn ) throw new CmpStrValidationError (
+                `Invalid option <${k}>`, { option: k, value: map[ k ] }
+            );
+
+            fn( ( opt as any )[ k ] );
         }
     }
 
