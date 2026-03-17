@@ -93,6 +93,30 @@ export class OptionsValidator {
     }
 
     /**
+     * Internal helper to validate registry-based options (metrics and phonetic algorithms).
+     * 
+     * @param {unknown} value - The value to validate.
+     * @param {string} name - The name of the option (for error messages).
+     * @param {( v: string ) => boolean} has - A function that checks if the registry contains a given name.
+     * @param {() => string[]} list - A function that returns a list of registered names for error messages.
+     * @throws {CmpStrValidationError} If the value is not a non-empty string or is not registered.
+     */
+    private static validateRegistryName (
+        value: unknown, name: string, has: ( v: string ) => boolean, list: () => string[]
+    ) : void {
+        if ( value === undefined ) return;
+
+        if ( typeof value !== 'string' || value.length === 0 ) throw new CmpStrValidationError (
+            `Invalid option <${name}>: expected non-empty string`, { name, value }
+        );
+
+        if ( ! has( value ) ) throw new CmpStrValidationError (
+            `${name === 'metric' ? 'Metric' : 'Phonetic algorithm'} <${value}> is not registered`,
+            { name, value, available: list() }
+        );
+    }
+
+    /**
      * Validate boolean-like values.
      * 
      * @param {unknown} value - The value to validate
