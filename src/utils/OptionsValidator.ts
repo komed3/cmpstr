@@ -45,6 +45,16 @@ export class OptionsValidator {
     } as const;
 
     /**
+     * Internal helper to convert a Set to a string for error messages.
+     * 
+     * @param {Set< string >} set - The set to convert
+     * @returns {string} - A string representation of the set
+     */
+    private static set2string ( set: Set< string > ) : string {
+        return Array.from( set ).join( ' | ' );
+    }
+
+    /**
      * Internal helper to validate primitive types.
      * 
      * @param {unknown} value - The value to validate.
@@ -68,17 +78,16 @@ export class OptionsValidator {
      * 
      * @param {unknown} value - The value to validate.
      * @param {string} name - The name of the option (for error messages).
-     * @param {Set<string>} set - The set of allowed values.
-     * @param {string} setStr - A string representation of the allowed values (for error messages).
+     * @param {Set< string >} set - The set of allowed values.
      * @throws {CmpStrValidationError} If the value is not a string or is not in the allowed set.
      */
-    private static validateEnum ( value: unknown, name: string, set: Set< string >, setStr: string ) : void {
+    private static validateEnum ( value: unknown, name: string, set: Set< string > ) : void {
         if ( value === undefined ) return;
 
         if ( typeof value !== 'string' || ! set.has( value ) ) {
             throw new CmpStrValidationError (
-                `Invalid option <${name}>: expected ${setStr}`,
-                { [name]: value }
+                `Invalid option <${name}>: expected ${ this.set2string( set ) }`,
+                { name, value }
             );
         }
     }
