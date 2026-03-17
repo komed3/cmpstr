@@ -102,7 +102,7 @@ export class CmpStrAsync< R = MetricRaw > extends CmpStr< R > {
      * @returns {Promise< MetricInput >} - The filtered string(s)
      */
     protected async filterAsync ( input: MetricInput, hook: FilterHooks ) : Promise< MetricInput > {
-        return Filter.applyAsync( hook, input as string );
+        return Filter.applyAsync( hook, input );
     }
 
     /**
@@ -378,6 +378,8 @@ export class CmpStrAsync< R = MetricRaw > extends CmpStr< R > {
     /**
      * Asynchronously computes a similarity matrix for the given input array.
      * 
+     * Only works for symmetric metrics.
+     * 
      * @param {string[]} input - The input array
      * @param {CmpStrOptions} [opt] - Optional options
      * @returns {Promise< number[][] >} - The similarity matrix
@@ -388,15 +390,17 @@ export class CmpStrAsync< R = MetricRaw > extends CmpStr< R > {
         const n = arr.length;
         const out = Array.from( { length: n }, () => new Array< number >( n ).fill( 0 ) );
 
-        for ( let i = 0; i < n; i++ ) for ( let j = i; j < n; j++ ) {
-            if ( i === j ) { out[ i ][ j ] = 1 } else {
-                const score = ( await this.computeAsync< MetricResultSingle< R > >(
-                    arr[ i ], arr[ j ], resolved, 'single', true, true
-                ) ).res;
+        for ( let i = 0; i < n; i++ ) {
+            await Promise.all( Array.from( { length: n - i }, ( _, k ) => i + k ).map( async j => {
+                if ( i === j ) { out[ i ][ j ] = 1 } else {
+                    const score = ( await this.computeAsync< MetricResultSingle< R > >(
+                        arr[ i ], arr[ j ], resolved, 'single', true, true
+                    ) ).res;
 
-                out[ i ][ j ] = score;
-                out[ j ][ i ] = score;
-            }
+                    out[ i ][ j ] = score;
+                    out[ j ][ i ] = score;
+                }
+            } ) );
         }
 
         return out;
