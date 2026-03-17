@@ -306,19 +306,32 @@ export class OptionsValidator {
         }
     }
 
+    /**
+     * Validate the provided CmpStr options object.
+     * 
+     * This method performs a comprehensive validation of the options object passed to CmpStr.
+     * It checks for the presence and validity of all supported options, including primitive
+     * types, enum-like values, registry-based names, and nested processor options.
+     * 
+     * If any validation check fails, a CmpStrValidationError is thrown with a descriptive
+     * message and relevant details about the invalid option.
+     * 
+     * @param {CmpStrOptions} [opt] - The options object to validate
+     * @throws {CmpStrValidationError} - If any validation check fails
+     */
     public static validateOptions ( opt?: CmpStrOptions ) : void {
         if ( ! opt ) return;
 
-        if ( 'raw' in opt ) this.validateBoolean( opt.raw, 'raw' );
-        if ( 'removeZero' in opt ) this.validateBoolean( opt.removeZero, 'removeZero' );
-        if ( 'safeEmpty' in opt ) this.validateBoolean( opt.safeEmpty, 'safeEmpty' );
+        if ( 'raw' in opt ) OptionsValidator.validateBoolean( opt.raw, 'raw' );
+        if ( 'removeZero' in opt ) OptionsValidator.validateBoolean( opt.removeZero, 'removeZero' );
+        if ( 'safeEmpty' in opt ) OptionsValidator.validateBoolean( opt.safeEmpty, 'safeEmpty' );
 
-        if ( 'flags' in opt ) this.validateFlags( opt.flags );
-        if ( 'metric' in opt ) this.validateMetricName( opt.metric );
-        if ( 'output' in opt ) this.validateOutput( opt.output );
+        if ( 'flags' in opt ) OptionsValidator.validateFlags( opt.flags );
+        if ( 'metric' in opt ) OptionsValidator.validateMetricName( opt.metric );
+        if ( 'output' in opt ) OptionsValidator.validateOutput( opt.output );
 
-        if ( 'opt' in opt ) this.validateMetricOptions( opt.opt );
-        if ( 'processors' in opt ) this.validateProcessors( opt.processors );
+        if ( 'opt' in opt ) OptionsValidator.validateMetricOptions( opt.opt );
+        if ( 'processors' in opt ) OptionsValidator.validateProcessors( opt.processors );
     }
 
 }
