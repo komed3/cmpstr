@@ -278,6 +278,18 @@ export class OptionsValidator {
         OptionsValidator.validateMap( opt, OptionsValidator.PHONETIC_OPT_MAP );
     }
 
+    /**
+     * Validate processor options.
+     * 
+     * This method iterates over the keys in the provided processor options and dispatches
+     * validation to the corresponding function in the PROCESSORS table.
+     * 
+     * If an invalid processor type is found, a CmpStrValidationError is thrown indicating
+     * the invalid type and the expected processor types.
+     * 
+     * @param {unknown} opt - The processor options to validate
+     * @throws {CmpStrValidationError} - If any processor type is invalid
+     */
     public static validateProcessors ( opt?: CmpStrProcessors ) : void {
         if ( ! opt ) return;
 
