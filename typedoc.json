@@ -13,7 +13,7 @@
   "excludeInternal": false,
   "excludeExternals": true,
   "name": "CmpStr",
-  "customFooterHtml": "<b>CmpStr v3.2</b> — Copyright © 2023–2026 Paul Köhler (komed3) <br /> Distributed under the MIT license.",
+  "customFooterHtml": "<b>CmpStr v3.3</b> — Copyright © 2023–2026 Paul Köhler (komed3) <br /> Distributed under the MIT license.",
   "hideGenerator": true,
   "favicon": "favicon.ico",
   "headings": {
