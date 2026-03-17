@@ -44,6 +44,27 @@ export class OptionsValidator {
         phonetic: ( opt: CmpStrProcessors[ 'phonetic' ] ) => OptionsValidator.validatePhonetic( opt )
     } as const;
 
+    /** Metric options validation dispatch table */
+    private static readonly METRIC_OPT_MAP = {
+        mode:      ( v: unknown ) => OptionsValidator.validateMode( v ),
+        delimiter: ( v: unknown ) => OptionsValidator.validateString( v, 'opt.delimiter' ),
+        pad:       ( v: unknown ) => OptionsValidator.validateString( v, 'opt.pad' ),
+        q:         ( v: unknown ) => OptionsValidator.validateNumber( v, 'opt.q' ),
+        match:     ( v: unknown ) => OptionsValidator.validateNumber( v, 'opt.match' ),
+        mismatch:  ( v: unknown ) => OptionsValidator.validateNumber( v, 'opt.mismatch' ),
+        gap:       ( v: unknown ) => OptionsValidator.validateNumber( v, 'opt.gap' )
+    } as const;
+
+    /** Phonetic algorithm options validation dispatch table */
+    private static readonly PHONETIC_OPT_MAP = {
+        map:       ( v: unknown ) => OptionsValidator.validateString( v, 'opt.map' ),
+        delimiter: ( v: unknown ) => OptionsValidator.validateString( v, 'opt.delimiter' ),
+        length:    ( v: unknown ) => OptionsValidator.validateNumber( v, 'opt.length' ),
+        pad:       ( v: unknown ) => OptionsValidator.validateString( v, 'opt.pad' ),
+        dedupe:    ( v: unknown ) => OptionsValidator.validateBoolean( v, 'opt.dedupe' ),
+        fallback:  ( v: unknown ) => OptionsValidator.validateString( v, 'opt.fallback' )
+    } as const;
+
     /**
      * Internal helper to convert a Set to a string for error messages.
      * 
@@ -86,9 +107,28 @@ export class OptionsValidator {
 
         if ( typeof value !== 'string' || ! set.has( value ) ) {
             throw new CmpStrValidationError (
-                `Invalid option <${name}>: expected ${ this.set2string( set ) }`,
+                `Invalid option <${name}>: expected ${ OptionsValidator.set2string( set ) }`,
                 { name, value }
             );
+        }
+    }
+
+    /**
+     * Internal helper to validate objects against a dispatch table of validation functions.
+     * 
+     * @param {unknown} opt - The object to validate.
+     * @param {Object} map - A dispatch table mapping keys to validation functions.
+     * @throws {CmpStrValidationError} If any property in the object fails validation.
+     */
+    private static validateMap ( opt: unknown, map:
+        | typeof OptionsValidator.METRIC_OPT_MAP
+        | typeof OptionsValidator.PHONETIC_OPT_MAP
+    ) : void {
+        if ( ! opt ) return;
+
+        for ( const k in opt ) {
+            const fn = map[ k as keyof typeof map ];
+            if ( fn ) fn( ( opt as any )[ k ] );
         }
     }
 
@@ -124,7 +164,7 @@ export class OptionsValidator {
      * @throws {CmpStrValidationError} - If the value is not a boolean
      */
     public static validateBoolean ( value: unknown, name: string ) : void {
-        this.validateType( value, name, 'boolean' );
+        OptionsValidator.validateType( value, name, 'boolean' );
     }
 
     /**
@@ -135,7 +175,7 @@ export class OptionsValidator {
      * @throws {CmpStrValidationError} - If the value is not a number or is NaN
      */
     public static validateNumber ( value: unknown, name: string ) : void {
-        this.validateType( value, name, 'number' );
+        OptionsValidator.validateType( value, name, 'number' );
     }
 
     /**
@@ -146,7 +186,7 @@ export class OptionsValidator {
      * @throws {CmpStrValidationError} - If the value is not a string
      */
     public static validateString ( value: unknown, name: string ) : void {
-        this.validateType( value, name, 'string' );
+        OptionsValidator.validateType( value, name, 'string' );
     }
 
     /**
@@ -165,9 +205,10 @@ export class OptionsValidator {
         for ( let i = 0; i < value.length; i++ ) {
             const ch = value[ i ];
 
-            if ( ! this.ALLOWED_FLAGS.has( ch ) ) throw new CmpStrValidationError (
-                `Invalid normalization flag <${ch}> in <flags>: expected ${ this.set2string( this.ALLOWED_FLAGS ) }`,
-                { flags: value, invalid: ch }
+            if ( ! OptionsValidator.ALLOWED_FLAGS.has( ch ) ) throw new CmpStrValidationError (
+                `Invalid normalization flag <${ch}> in <flags>: expected ${
+                    OptionsValidator.set2string( OptionsValidator.ALLOWED_FLAGS )
+                }`, { flags: value, invalid: ch }
             );
         }
     }
@@ -179,7 +220,7 @@ export class OptionsValidator {
      * @throws {CmpStrValidationError} - If the output mode is not a string or not allowed
      */
     public static validateOutput ( value: unknown ) : void {
-        this.validateEnum( value, 'output', this.ALLOWED_OUTPUT );
+        OptionsValidator.validateEnum( value, 'output', OptionsValidator.ALLOWED_OUTPUT );
     }
 
     /**
@@ -189,7 +230,7 @@ export class OptionsValidator {
      * @throws {CmpStrValidationError} - If the comparison mode is not a string or not allowed
      */
     public static validateMode ( value: unknown ) : void {
-        this.validateEnum( value, 'mode', this.ALLOWED_MODES );
+        OptionsValidator.validateEnum( value, 'mode', OptionsValidator.ALLOWED_MODES );
     }
 
     /**
@@ -199,7 +240,7 @@ export class OptionsValidator {
      * @throws {CmpStrValidationError} - If the metric is not a string or not registered
      */
     public static validateMetricName ( value: unknown ) : void {
-        this.validateRegistryName( value, 'metric', MetricRegistry.has, MetricRegistry.list );
+        OptionsValidator.validateRegistryName( value, 'metric', MetricRegistry.has, MetricRegistry.list );
     }
 
     /**
@@ -209,7 +250,27 @@ export class OptionsValidator {
      * @throws {CmpStrValidationError} - If the phonetic algorithm is not a string or not registered
      */
     public static validatePhoneticName ( value: unknown ) : void {
-        this.validateRegistryName( value, 'phonetic', PhoneticRegistry.has, PhoneticRegistry.list );
+        OptionsValidator.validateRegistryName( value, 'phonetic', PhoneticRegistry.has, PhoneticRegistry.list );
+    }
+
+    /**
+     * Validate metric options.
+     * 
+     * @param {MetricOptions} opt - The metric options to validate
+     * @throws {CmpStrValidationError} - If any metric option is invalid
+     */
+    public static validateMetricOptions ( opt?: MetricOptions ) : void {
+        OptionsValidator.validateMap( opt, OptionsValidator.METRIC_OPT_MAP );
+    }
+
+    /**
+     * Validate phonetic options.
+     * 
+     * @param {PhoneticOptions} opt - The phonetic options to validate
+     * @throws {CmpStrValidationError} - If any phonetic option is invalid
+     */
+    public static validatePhoneticOptions ( opt?: PhoneticOptions ) : void {
+        OptionsValidator.validateMap( opt, OptionsValidator.PHONETIC_OPT_MAP );
     }
 
 }
