@@ -56,7 +56,30 @@ export class OptionsValidator {
         if ( value === undefined ) return;
 
         if ( typeof value !== type || ( type === 'number' && Number.isNaN( value ) ) ) {
-            throw new CmpStrValidationError ( `Invalid option <${name}>: expected ${type}`, { name, value } );
+            throw new CmpStrValidationError (
+                `Invalid option <${name}>: expected ${type}`,
+                { name, value }
+            );
+        }
+    }
+
+    /**
+     * Internal helper to validate enum-like values.
+     * 
+     * @param {unknown} value - The value to validate.
+     * @param {string} name - The name of the option (for error messages).
+     * @param {Set<string>} set - The set of allowed values.
+     * @param {string} setStr - A string representation of the allowed values (for error messages).
+     * @throws {CmpStrValidationError} If the value is not a string or is not in the allowed set.
+     */
+    private static validateEnum ( value: unknown, name: string, set: Set< string >, setStr: string ) : void {
+        if ( value === undefined ) return;
+
+        if ( typeof value !== 'string' || ! set.has( value ) ) {
+            throw new CmpStrValidationError (
+                `Invalid option <${name}>: expected ${setStr}`,
+                { [name]: value }
+            );
         }
     }
 
