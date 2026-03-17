@@ -17,7 +17,7 @@
 
 'use strict';
 
-import type { CmpStrOptions, CmpStrProcessors, MetricOptions, PhoneticOptions } from './Types';
+import type { CmpStrOptions, CmpStrProcessors, MetricOptions, PhoneticOptions, ValidatorFn } from './Types';
 
 import { CmpStrValidationError } from './Errors';
 import { MetricRegistry } from '../metric';
@@ -139,15 +139,11 @@ export class OptionsValidator {
      * @param {Object} map - A dispatch table mapping keys to validation functions.
      * @throws {CmpStrValidationError} If any property in the object fails validation.
      */
-    private static validateMap ( opt: unknown, map:
-        | typeof OptionsValidator.METRIC_OPT_MAP
-        | typeof OptionsValidator.PHONETIC_OPT_MAP
-        | typeof OptionsValidator.CMPSTR_OPT_MAP
-    ) : void {
+    private static validateMap< T extends Record< string, ValidatorFn > > ( opt: unknown, map: T ) : void {
         if ( ! opt ) return;
 
         for ( const k in opt ) {
-            const fn: Function = map[ k as keyof typeof map ];
+            const fn = map[ k as keyof typeof map ];
             if ( fn ) fn( ( opt as any )[ k ] );
         }
     }
