@@ -41,7 +41,12 @@ export class OptionsValidator {
 
     /** Processor dispatch table */
     private static readonly PROCESSORS = {
-        phonetic: ( opt: CmpStrProcessors[ 'phonetic' ] ) => OptionsValidator.validatePhonetic( opt )
+        phonetic: ( opt: CmpStrProcessors[ 'phonetic' ] ) : void => {
+            if ( ! opt ) return;
+
+            OptionsValidator.validatePhoneticName( opt.algo );
+            OptionsValidator.validatePhoneticOptions( opt.opt );
+        }
     } as const;
 
     /** Metric options validation dispatch table */
@@ -271,6 +276,22 @@ export class OptionsValidator {
      */
     public static validatePhoneticOptions ( opt?: PhoneticOptions ) : void {
         OptionsValidator.validateMap( opt, OptionsValidator.PHONETIC_OPT_MAP );
+    }
+
+    public static validateProcessors ( opt?: CmpStrProcessors ) : void {
+        if ( ! opt ) return;
+
+        for ( const key in opt ) {
+            const fn = OptionsValidator.PROCESSORS[ key as keyof typeof OptionsValidator.PROCESSORS ];
+
+            if ( ! fn ) throw new CmpStrValidationError (
+                `Invalid processor type <${key}> in <processors>: expected ${
+                    Object.keys( OptionsValidator.PROCESSORS ).join( ' | ' )
+                }`, { processors: opt, invalid: key }
+            );
+
+            fn( ( opt as any )[ key ] );
+        }
     }
 
 }
