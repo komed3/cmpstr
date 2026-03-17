@@ -131,6 +131,20 @@ export interface PoolBuffer< T > {
 
 /**
  * ================================================================================
+ * VALIDATION
+ * ================================================================================
+ * 
+ * Types for option validation.
+ */
+
+/**
+ * ValidatorFn defines the signature for a validation function.
+ * It takes an unknown value and either returns void if valid or throws an error if invalid.
+ */
+export type ValidatorFn = ( v: unknown ) => void;
+
+/**
+ * ================================================================================
  * NORMALIZATION & FILTERING
  * ================================================================================
  * 
