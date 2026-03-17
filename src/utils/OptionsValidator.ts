@@ -44,4 +44,53 @@ export class OptionsValidator {
         phonetic: ( opt: CmpStrProcessors[ 'phonetic' ] ) => OptionsValidator.validatePhonetic( opt )
     } as const;
 
+    /**
+     * Internal helper to validate primitive types.
+     * 
+     * @param {unknown} value - The value to validate.
+     * @param {string} name - The name of the option (for error messages).
+     * @param {'boolean' | 'number' | 'string'} type - The expected type of the value.
+     * @throws {CmpStrValidationError} If the value is not of the expected type or is NaN (for numbers).
+     */
+    private static validateType ( value: unknown, name: string, type: 'boolean' | 'number' | 'string' ) : void {
+        if ( value === undefined ) return;
+
+        if ( typeof value !== type || ( type === 'number' && Number.isNaN( value ) ) ) {
+            throw new CmpStrValidationError ( `Invalid option <${name}>: expected ${type}`, { name, value } );
+        }
+    }
+
+    /**
+     * Validate boolean-like values.
+     * 
+     * @param {unknown} value - The value to validate
+     * @param {string} name - The name of the option (for error messages)
+     * @throws {CmpStrValidationError} - If the value is not a boolean
+     */
+    public static validateBoolean ( value: unknown, name: string ) {
+        this.validateType( value, name, 'boolean' );
+    }
+
+    /**
+     * Validate number-like values.
+     * 
+     * @param {unknown} value - The value to validate
+     * @param {string} name - The name of the option (for error messages)
+     * @throws {CmpStrValidationError} - If the value is not a number or is NaN
+     */
+    public static validateNumber ( value: unknown, name: string ) {
+        this.validateType( value, name, 'number' );
+    }
+
+    /**
+     * Validate string-like values.
+     * 
+     * @param {unknown} value - The value to validate
+     * @param {string} name - The name of the option (for error messages)
+     * @throws {CmpStrValidationError} - If the value is not a string
+     */
+    public static validateString ( value: unknown, name: string ) {
+        this.validateType( value, name, 'string' );
+    }
+
 }
