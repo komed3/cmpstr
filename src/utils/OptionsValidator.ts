@@ -192,4 +192,24 @@ export class OptionsValidator {
         this.validateEnum( value, 'mode', this.ALLOWED_MODES );
     }
 
+    /**
+     * Validate metric name against the MetricRegistry.
+     * 
+     * @param {unknown} value - The metric name to validate
+     * @throws {CmpStrValidationError} - If the metric is not a string or not registered
+     */
+    public static validateMetricName ( value: unknown ) : void {
+        this.validateRegistryName( value, 'metric', MetricRegistry.has, MetricRegistry.list );
+    }
+
+    /**
+     * Validate phonetic algorithm name against the PhoneticRegistry.
+     * 
+     * @param {unknown} value - The phonetic algorithm name to validate
+     * @throws {CmpStrValidationError} - If the phonetic algorithm is not a string or not registered
+     */
+    public static validatePhoneticName ( value: unknown ) : void {
+        this.validateRegistryName( value, 'phonetic', PhoneticRegistry.has, PhoneticRegistry.list );
+    }
+
 }
