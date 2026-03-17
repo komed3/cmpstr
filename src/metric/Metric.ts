@@ -80,7 +80,9 @@ export abstract class Metric< R = MetricRaw > {
     /**
      * Static method to clear the cache of metric computations.
      */
-    public static clear = () : void => this.cache.clear();
+    public static clear () : void {
+        this.cache.clear();
+    }
 
     /**
      * Swaps two strings and their lengths if the first is longer than the second.
@@ -91,9 +93,9 @@ export abstract class Metric< R = MetricRaw > {
      * @param {number} n - Length of the second string
      * @returns {[ string, string, number, number ]} - Swapped strings and lengths
      */
-    protected static swap = ( a: string, b: string, m: number, n: number ) : [
-        string, string, number, number
-    ] => m > n ? [ b, a, n, m ] : [ a, b, m, n ];
+    protected static swap ( a: string, b: string, m: number, n: number ) : [ string, string, number, number ] {
+        return m > n ? [ b, a, n, m ] : [ a, b, m, n ];
+    }
 
     /**
      * Clamps the similarity result between 0 and 1.
@@ -101,7 +103,9 @@ export abstract class Metric< R = MetricRaw > {
      * @param {number} res - The input similarity to clamp
      * @returns {number} - The clamped similarity (0 to 1)
      */
-    protected static clamp = ( res: number ) : number => Math.max( 0, Math.min( 1, res ) );
+    protected static clamp ( res: number ) : number {
+        return Math.max( 0, Math.min( 1, res ) );
+    }
 
     /**
      * Constructor for the Metric class.
@@ -327,7 +331,9 @@ export abstract class Metric< R = MetricRaw > {
      * 
      * @returns {boolean} - True if either input is an array with more than one element
      */
-    public isBatch = () : boolean => this.a.length > 1 || this.b.length > 1;
+    public isBatch () : boolean {
+        return this.a.length > 1 || this.b.length > 1;
+    }
 
     /**
      * Check if the inputs are in single mode.
@@ -337,7 +343,9 @@ export abstract class Metric< R = MetricRaw > {
      * 
      * @returns {boolean} - True if both inputs are single strings
      */
-    public isSingle = () : boolean => ! this.isBatch();
+    public isSingle () : boolean {
+        return ! this.isBatch();
+    }
 
     /**
      * Check if the inputs are in pairwise mode.
@@ -363,7 +371,9 @@ export abstract class Metric< R = MetricRaw > {
      * 
      * @returns {boolean} - True if the metric is symmetric
      */
-    public isSymmetrical = () : boolean => this.symmetric;
+    public isSymmetrical () : boolean {
+        return this.symmetric;
+    }
 
     /**
      * Determine which mode to run the metric in.
@@ -374,7 +384,9 @@ export abstract class Metric< R = MetricRaw > {
      * @param {MetricMode} [mode] - The mode to run the metric in (optional)
      * @returns {MetricMode} - The determined mode
      */
-    public whichMode = ( mode?: MetricMode ) : MetricMode => mode ?? this.options?.mode ?? 'default';
+    public whichMode ( mode?: MetricMode ) : MetricMode {
+        return mode ?? this.options?.mode ?? 'default';
+    }
 
     /**
      * Clear the cached results of the metric.
@@ -383,7 +395,9 @@ export abstract class Metric< R = MetricRaw > {
      * any previously computed results. It can be useful for re-running the metric
      * with new inputs or options.
      */
-    public clear = () : void => this.results = undefined;
+    public clear () : void {
+        this.results = undefined;
+    }
 
     /**
      * Run the metric computation based on the specified mode.
@@ -441,7 +455,9 @@ export abstract class Metric< R = MetricRaw > {
      * 
      * @returns {string} - The name of the metric
      */
-    public getMetricName = () : string => this.metric;
+    public getMetricName () : string {
+        return this.metric;
+    }
 
     /**
      * Get the result of the metric computation.
