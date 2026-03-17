@@ -17,7 +17,10 @@
 
 'use strict';
 
-import type { CmpStrOptions, CmpStrProcessors, MetricOptions, PhoneticOptions, ValidatorFn } from './Types';
+import type {
+    CmpStrOptions, CmpStrProcessors, MetricOptions, PhoneticOptions,
+    StructuredDataOptions, ValidatorFn
+} from './Types';
 
 import { CmpStrValidationError } from './Errors';
 import { MetricRegistry } from '../metric';
@@ -38,6 +41,8 @@ export class OptionsValidator {
     private static readonly ALLOWED_OUTPUT = new Set ( [ 'orig', 'prep' ] );
     /** Allowed comparison modes */
     private static readonly ALLOWED_MODES = new Set ( [ 'default', 'batch', 'single', 'pairwise' ] );
+    /** Allowed sort modes */
+    private static readonly ALLOWED_SORT = new Set ( [ 'asc', 'desc' ] );
 
     /** Processor dispatch table */
     private static readonly PROCESSORS = {
@@ -72,16 +77,19 @@ export class OptionsValidator {
 
     /** CmpStr options validation dispatch table */
     private static readonly CMPSTR_OPT_MAP = {
-        raw:        ( v: unknown ) => OptionsValidator.validateBoolean( v, 'raw' ),
-        removeZero: ( v: unknown ) => OptionsValidator.validateBoolean( v, 'removeZero' ),
-        safeEmpty:  ( v: unknown ) => OptionsValidator.validateBoolean( v, 'safeEmpty' ),
+        raw:         ( v: unknown ) => OptionsValidator.validateBoolean( v, 'raw' ),
+        removeZero:  ( v: unknown ) => OptionsValidator.validateBoolean( v, 'removeZero' ),
+        safeEmpty:   ( v: unknown ) => OptionsValidator.validateBoolean( v, 'safeEmpty' ),
 
-        flags:      ( v: unknown ) => OptionsValidator.validateFlags( v ),
-        metric:     ( v: unknown ) => OptionsValidator.validateMetricName( v ),
-        output:     ( v: unknown ) => OptionsValidator.validateOutput( v ),
+        flags:       ( v: unknown ) => OptionsValidator.validateFlags( v ),
+        metric:      ( v: unknown ) => OptionsValidator.validateMetricName( v ),
+        output:      ( v: unknown ) => OptionsValidator.validateOutput( v ),
 
-        opt:        ( v: any ) => OptionsValidator.validateMetricOptions( v ),
-        processors: ( v: any ) => OptionsValidator.validateProcessors( v )
+        opt:         ( v: any ) => OptionsValidator.validateMetricOptions( v ),
+        processors:  ( v: any ) => OptionsValidator.validateProcessors( v ),
+
+        sort:        ( v: unknown ) => OptionsValidator.validateSort( v, 'sort' ),
+        objectsOnly: ( v: unknown ) => OptionsValidator.validateBoolean( v, 'objectsOnly' )
     } as const;
 
     /**
@@ -255,6 +263,18 @@ export class OptionsValidator {
     }
 
     /**
+     * Validate CmpStr structured data sort mode.
+     * 
+     * @param {unknown} value - The sort mode to validate
+     * @param {string} name - The name of the option (for error messages)
+     * @throws {CmpStrValidationError} - If the sort mode is neither 'asc', 'desc', nor a boolean
+     */
+    public static validateSort ( value: unknown, name: string ): void {
+        if ( value === undefined || typeof value === 'boolean' ) return;
+        OptionsValidator.validateEnum( value, name, OptionsValidator.ALLOWED_SORT );
+    }
+
+    /**
      * Validate metric name against the MetricRegistry.
      * 
      * @param {unknown} value - The metric name to validate
@@ -332,10 +352,10 @@ export class OptionsValidator {
      * If any validation check fails, a CmpStrValidationError is thrown with a descriptive
      * message and relevant details about the invalid option.
      * 
-     * @param {CmpStrOptions} [opt] - The options object to validate
+     * @param {CmpStrOptions | StructuredDataOptions} [opt] - The options object to validate
      * @throws {CmpStrValidationError} - If any validation check fails
      */
-    public static validateOptions ( opt?: CmpStrOptions ) : void {
+    public static validateOptions ( opt?: CmpStrOptions | StructuredDataOptions ) : void {
         OptionsValidator.validateMap( opt, OptionsValidator.CMPSTR_OPT_MAP );
     }
 
