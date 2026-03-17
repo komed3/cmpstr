@@ -6,8 +6,8 @@ Only the latest **major version** of CmpStr is actively supported with security 
 
 | Version | Supported |
 | ------- | --------- |
-| 3.2.x   | ✅ Yes     |
-| < 3.2   | ❌ No      |
+| 3.3.x   | ✅ Yes     |
+| < 3.3   | ❌ No      |
 
 If you are using an unsupported version, please upgrade before reporting a security issue.
 
