@@ -62,12 +62,26 @@ export class OptionsValidator {
 
     /** Phonetic algorithm options validation dispatch table */
     private static readonly PHONETIC_OPT_MAP = {
-        map:       ( v: unknown ) => OptionsValidator.validateString( v, 'opt.map' ),
-        delimiter: ( v: unknown ) => OptionsValidator.validateString( v, 'opt.delimiter' ),
-        length:    ( v: unknown ) => OptionsValidator.validateNumber( v, 'opt.length' ),
-        pad:       ( v: unknown ) => OptionsValidator.validateString( v, 'opt.pad' ),
-        dedupe:    ( v: unknown ) => OptionsValidator.validateBoolean( v, 'opt.dedupe' ),
-        fallback:  ( v: unknown ) => OptionsValidator.validateString( v, 'opt.fallback' )
+        map:       ( v: unknown ) => OptionsValidator.validateString( v, 'processors.phonetic.opt.map' ),
+        delimiter: ( v: unknown ) => OptionsValidator.validateString( v, 'processors.phonetic.opt.delimiter' ),
+        length:    ( v: unknown ) => OptionsValidator.validateNumber( v, 'processors.phonetic.opt.length' ),
+        pad:       ( v: unknown ) => OptionsValidator.validateString( v, 'processors.phonetic.opt.pad' ),
+        dedupe:    ( v: unknown ) => OptionsValidator.validateBoolean( v, 'processors.phonetic.opt.dedupe' ),
+        fallback:  ( v: unknown ) => OptionsValidator.validateString( v, 'processors.phonetic.opt.fallback' )
+    } as const;
+
+    /** CmpStr options validation dispatch table */
+    private static readonly CMPSTR_OPT_MAP = {
+        raw:        ( v: unknown ) => OptionsValidator.validateBoolean( v, 'raw' ),
+        removeZero: ( v: unknown ) => OptionsValidator.validateBoolean( v, 'removeZero' ),
+        safeEmpty:  ( v: unknown ) => OptionsValidator.validateBoolean( v, 'safeEmpty' ),
+
+        flags:      ( v: unknown ) => OptionsValidator.validateFlags( v ),
+        metric:     ( v: unknown ) => OptionsValidator.validateMetricName( v ),
+        output:     ( v: unknown ) => OptionsValidator.validateOutput( v ),
+
+        opt:        ( v: any ) => OptionsValidator.validateMetricOptions( v ),
+        processors: ( v: any ) => OptionsValidator.validateProcessors( v )
     } as const;
 
     /**
@@ -128,11 +142,12 @@ export class OptionsValidator {
     private static validateMap ( opt: unknown, map:
         | typeof OptionsValidator.METRIC_OPT_MAP
         | typeof OptionsValidator.PHONETIC_OPT_MAP
+        | typeof OptionsValidator.CMPSTR_OPT_MAP
     ) : void {
         if ( ! opt ) return;
 
         for ( const k in opt ) {
-            const fn = map[ k as keyof typeof map ];
+            const fn: Function = map[ k as keyof typeof map ];
             if ( fn ) fn( ( opt as any )[ k ] );
         }
     }
@@ -320,18 +335,7 @@ export class OptionsValidator {
      * @throws {CmpStrValidationError} - If any validation check fails
      */
     public static validateOptions ( opt?: CmpStrOptions ) : void {
-        if ( ! opt ) return;
-
-        if ( 'raw' in opt ) OptionsValidator.validateBoolean( opt.raw, 'raw' );
-        if ( 'removeZero' in opt ) OptionsValidator.validateBoolean( opt.removeZero, 'removeZero' );
-        if ( 'safeEmpty' in opt ) OptionsValidator.validateBoolean( opt.safeEmpty, 'safeEmpty' );
-
-        if ( 'flags' in opt ) OptionsValidator.validateFlags( opt.flags );
-        if ( 'metric' in opt ) OptionsValidator.validateMetricName( opt.metric );
-        if ( 'output' in opt ) OptionsValidator.validateOutput( opt.output );
-
-        if ( 'opt' in opt ) OptionsValidator.validateMetricOptions( opt.opt );
-        if ( 'processors' in opt ) OptionsValidator.validateProcessors( opt.processors );
+        OptionsValidator.validateMap( opt, OptionsValidator.CMPSTR_OPT_MAP );
     }
 
 }
