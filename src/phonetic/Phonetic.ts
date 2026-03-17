@@ -106,9 +106,7 @@ export abstract class Phonetic {
 
         // Set the options by merging the default options with the provided ones
         this.options = DeepMerge.merge( DeepMerge.merge( defaults, map.options ?? {} ), opt );
-        this.optKey = Hasher.fastFNV1a( JSON.stringify(
-            this.options, Object.keys( this.options ).sort()
-        ) ).toString();
+        this.optKey = Hasher.fastFNV1a( JSON.stringify( this.options, Object.keys( this.options ).sort() ) ).toString();
 
         // Set the algorithm name and mapping
         this.algo = algo;
@@ -344,7 +342,8 @@ export abstract class Phonetic {
             // Loop over each word in the input array
             for ( const word of words ) {
                 // Generate a cache key based on the algorithm and word
-                const key = Phonetic.cache.key( this.algo, [ word ] ) + this.optKey;
+                let key = Phonetic.cache.key( this.algo, [ word ] );
+                if ( key ) key += this.optKey;
 
                 // If the key exists in the cache, return the cached result
                 // Otherwise, encode the word using the algorithm
