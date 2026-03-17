@@ -99,7 +99,7 @@ export class OptionsValidator {
      * @param {string} name - The name of the option (for error messages)
      * @throws {CmpStrValidationError} - If the value is not a boolean
      */
-    public static validateBoolean ( value: unknown, name: string ) {
+    public static validateBoolean ( value: unknown, name: string ) : void {
         this.validateType( value, name, 'boolean' );
     }
 
@@ -110,7 +110,7 @@ export class OptionsValidator {
      * @param {string} name - The name of the option (for error messages)
      * @throws {CmpStrValidationError} - If the value is not a number or is NaN
      */
-    public static validateNumber ( value: unknown, name: string ) {
+    public static validateNumber ( value: unknown, name: string ) : void {
         this.validateType( value, name, 'number' );
     }
 
@@ -121,31 +121,51 @@ export class OptionsValidator {
      * @param {string} name - The name of the option (for error messages)
      * @throws {CmpStrValidationError} - If the value is not a string
      */
-    public static validateString ( value: unknown, name: string ) {
+    public static validateString ( value: unknown, name: string ) : void {
         this.validateType( value, name, 'string' );
     }
 
     /**
      * Validate normalization flags.
      * 
-     * @param {unknown} flags - The flags to validate
+     * @param {unknown} value - The flags to validate
      * @throws {CmpStrValidationError} - If the flags are not a string or contain invalid characters
      */
-    public static validateFlags ( flags: unknown ) : void {
-        if ( flags === undefined ) return;
+    public static validateFlags ( value: unknown ) : void {
+        if ( value === undefined ) return;
 
-        if ( typeof flags !== 'string' ) throw new CmpStrValidationError (
-            `Invalid option <flags>: expected string`, { flags }
+        if ( typeof value !== 'string' ) throw new CmpStrValidationError (
+            `Invalid option <flags>: expected string`, { flags: value }
         );
 
-        for ( let i = 0; i < flags.length; i++ ) {
-            const ch = flags[ i ];
+        for ( let i = 0; i < value.length; i++ ) {
+            const ch = value[ i ];
 
             if ( ! this.ALLOWED_FLAGS.has( ch ) ) throw new CmpStrValidationError (
                 `Invalid normalization flag <${ch}> in <flags>: expected ${ this.set2string( this.ALLOWED_FLAGS ) }`,
-                { flags, invalid: ch }
+                { flags: value, invalid: ch }
             );
         }
+    }
+
+    /**
+     * Validate CmpStr output mode.
+     * 
+     * @param {unknown} value - The output mode to validate
+     * @throws {CmpStrValidationError} - If the output mode is not a string or not allowed
+     */
+    public static validateOutput ( value: unknown ) : void {
+        this.validateEnum( value, 'output', this.ALLOWED_OUTPUT );
+    }
+
+    /**
+     * Validate CmpStr comparison mode.
+     * 
+     * @param {unknown} value - The comparison mode to validate
+     * @throws {CmpStrValidationError} - If the comparison mode is not a string or not allowed
+     */
+    public static validateMode ( value: unknown ) : void {
+        this.validateEnum( value, 'mode', this.ALLOWED_MODES );
     }
 
 }
