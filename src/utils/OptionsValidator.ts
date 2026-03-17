@@ -125,4 +125,27 @@ export class OptionsValidator {
         this.validateType( value, name, 'string' );
     }
 
+    /**
+     * Validate normalization flags.
+     * 
+     * @param {unknown} flags - The flags to validate
+     * @throws {CmpStrValidationError} - If the flags are not a string or contain invalid characters
+     */
+    public static validateFlags ( flags: unknown ) : void {
+        if ( flags === undefined ) return;
+
+        if ( typeof flags !== 'string' ) throw new CmpStrValidationError (
+            `Invalid option <flags>: expected string`, { flags }
+        );
+
+        for ( let i = 0; i < flags.length; i++ ) {
+            const ch = flags[ i ];
+
+            if ( ! this.ALLOWED_FLAGS.has( ch ) ) throw new CmpStrValidationError (
+                `Invalid normalization flag <${ch}> in <flags>: expected ${ this.set2string( this.ALLOWED_FLAGS ) }`,
+                { flags, invalid: ch }
+            );
+        }
+    }
+
 }
