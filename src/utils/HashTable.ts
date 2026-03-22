@@ -131,7 +131,7 @@ export class HashTable< K extends string, T > {
         }
 
         // Optionally sort the hashes to create a consistent key regardless of input order
-        if ( sorted ) hashes.sort( ( a, b )=> a - b );
+        if ( sorted ) hashes.sort( ( a, b ) => a - b );
 
         // Create the final key by concatenating the label and the hashes
         let key: string = label;
