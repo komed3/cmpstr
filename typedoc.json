@@ -28,6 +28,7 @@
     "Support": "https://ko-fi.com/komed3",
     "Example": "https://onecompiler.com/nodejs/43qr6trny"
   },
-  "plugin": [ "typedoc-github-theme" ],
+  "visibilityFilters": {},
+  "plugin": [ "typedoc-plugin-missing-exports", "typedoc-github-theme" ],
   "theme": "typedoc-github-theme"
 }
