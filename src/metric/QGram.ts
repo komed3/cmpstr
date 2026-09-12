@@ -20,7 +20,7 @@
 
 'use strict';
 
-import type { MetricCompute, MetricInput, MetricOptions } from '../utils/Types';
+import type { Buffer, MetricCompute, MetricInput, MetricOptions } from '../utils/Types';
 
 import { Pool } from '../utils/Pool';
 import { Metric, MetricRegistry } from './Metric';
@@ -59,11 +59,11 @@ export class QGramSimilarity extends Metric< QGramRaw > {
      * @param {number} q - The length of each q-gram
      * @return {Set< string >} - Set of q-grams
      */
-    private _qGrams ( str: string, q: number ) : Set< string > {
+    private _qGrams ( str: string, q: number ) : Buffer< Set< string > > {
         const len = Math.max( 0, str.length - q + 1 );
         const grams = Pool.acquire< Set< string > >( 'set', len );
 
-        for ( let i = 0; i < len; i++ ) grams.add( str.slice( i, i + q ) );
+        for ( let i = 0; i < len; i++ ) grams.buffer.add( str.slice( i, i + q ) );
         return grams;
     }
 
@@ -79,7 +79,8 @@ export class QGramSimilarity extends Metric< QGramRaw > {
         const { q = 2 } = this.options;
 
         // Generate q-gram sets for both strings
-        const setA = this._qGrams( a, q ), setB = this._qGrams( b, q );
+        const setAWrapped = this._qGrams( a, q ), setBWrapped = this._qGrams( b, q );
+        const [ { buffer: setA }, { buffer: setB } ] = [ setAWrapped, setBWrapped ];
         const sizeA = setA.size, sizeB = setB.size;
 
         try {
@@ -97,8 +98,8 @@ export class QGramSimilarity extends Metric< QGramRaw > {
             };
         } finally {
             // Release sets back to the pool
-            Pool.release( 'set', setA, sizeA );
-            Pool.release( 'set', setB, sizeB );
+            Pool.release( 'set', setAWrapped );
+            Pool.release( 'set', setBWrapped );
         }
     }
 

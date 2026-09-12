@@ -22,7 +22,7 @@
 
 'use strict';
 
-import type { MetricCompute, MetricInput, MetricOptions } from '../utils/Types';
+import type { Buffer, MetricCompute, MetricInput, MetricOptions } from '../utils/Types';
 
 import { Pool } from '../utils/Pool';
 import { Metric, MetricRegistry } from './Metric';
@@ -60,12 +60,12 @@ export class DiceSorensenCoefficient extends Metric< DiceRaw > {
      * @param {string} str - The input string
      * @return {Set< string >} - A set of bigrams (two-character sequences) from the string
      */
-    private _bigrams ( str: string ) : Set< string > {
+    private _bigrams ( str: string ) : Buffer< Set< string > > {
         const len = str.length - 1;
         const bigrams = Pool.acquire< Set< string > >( 'set', len );
 
         // Generate bigrams by iterating through the string
-        for ( let i = 0; i < len; i++ ) bigrams.add( str.substring( i, i + 2 ) );
+        for ( let i = 0; i < len; i++ ) bigrams.buffer.add( str.substring( i, i + 2 ) );
         return bigrams;
     }
 
@@ -78,7 +78,8 @@ export class DiceSorensenCoefficient extends Metric< DiceRaw > {
      */
     protected override compute ( a: string, b: string ) : MetricCompute< DiceRaw > {
         // Generate bigrams for both strings
-        const setA = this._bigrams( a ), setB = this._bigrams( b );
+        const setAWrapped = this._bigrams( a ), setBWrapped = this._bigrams( b );
+        const [ { buffer: setA }, { buffer: setB } ] = [ setAWrapped, setBWrapped ];
         const sizeA = setA.size, sizeB = setB.size;
 
         try {
@@ -96,8 +97,8 @@ export class DiceSorensenCoefficient extends Metric< DiceRaw > {
             };
         } finally {
             // Release sets back to the pool
-            Pool.release( 'set', setA, sizeA );
-            Pool.release( 'set', setB, sizeB );
+            Pool.release( 'set', setAWrapped );
+            Pool.release( 'set', setBWrapped );
         }
     }
 

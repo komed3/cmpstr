@@ -20,7 +20,7 @@
 
 'use strict';
 
-import type { PoolBuffer, PoolConfig, PoolType } from './Types';
+import type { Buffer, PoolBuffer, PoolConfig, PoolType } from './Types';
 import { CmpStrUsageError, ErrorUtil } from './Errors';
 
 
@@ -39,6 +39,12 @@ class RingPool< T > {
 
     /** The current pointer for acquiring buffers */
     private pointer: number = 0;
+
+    /** Largest buffer ID in the pool */
+    private lastID: number = 0;
+
+    /** The set of buffer IDs in use */
+    private buffersInUse: Set<number> = new Set();
 
     /**
      * Creates a new RingPool with a specified maximum size.
@@ -65,10 +71,12 @@ class RingPool< T > {
                 const idx = ( this.pointer + i ) % len;
                 const item = buffers[ idx ];
                 const size = item.size;
+                const inUse = this.buffersInUse.has(item.id);
 
                 // Get buffer that exactly matches the requested size and move pointer
-                if ( size >= minSize && ( allowOversize || size === minSize ) ) {
+                if ( !inUse && size >= minSize && ( allowOversize || size === minSize ) ) {
                     this.pointer = ( idx + 1 ) % len;
+                    this.buffersInUse.add(item.id);
                     return item;
                 }
             }
@@ -84,13 +92,24 @@ class RingPool< T > {
      * @param {PoolBuffer< T >} item - The buffer to release back to the pool
      * @throws {CmpStrUsageError} - Throws an error if the release process fails
      */
-    public release ( item: PoolBuffer< T > ) : void {
+    public release ( item: Buffer< T > ) : void {
         ErrorUtil.wrap< void >( () => {
             const buffers = this.buffers;
-            if ( buffers.length < this.maxSize ) { buffers.push( item ); return }
 
-            buffers[ this.pointer ] = item;
-            this.pointer = ( this.pointer + 1 ) % this.maxSize;
+            if ( !("id" in item) ) {
+                (item as PoolBuffer< T >).id = ++this.lastID;
+
+                if ( buffers.length < this.maxSize ) { 
+                    buffers.push( item as PoolBuffer< T >);
+                    return
+                }
+
+                buffers[ this.pointer ] = item as PoolBuffer< T >;
+                this.pointer = ( this.pointer + 1 ) % this.maxSize;
+                return;
+            }
+
+            this.buffersInUse.delete(item.id);
         }, `Failed to release buffer back to pool`, { item } );
     }
 
@@ -101,6 +120,8 @@ class RingPool< T > {
     public clear () : void {
         this.buffers = [];
         this.pointer = 0;
+        this.lastID = 0;
+        this.buffersInUse.clear();
     }
 
 }
@@ -160,12 +181,12 @@ export class Pool {
      * @return {T} - The acquired buffer of the specified type
      * @throws {CmpStrUsageError} - Throws an error if the pool type is unsupported
      */
-    public static acquire< T = any > ( type: PoolType, size: number ) : T {
+    public static acquire< T = any > ( type: PoolType, size: number ) : Buffer< T > {
         const CONFIG = this.CONFIG[ type ];
         if ( ! CONFIG ) throw new CmpStrUsageError ( `Unsupported pool type <${type}>`, { type } );
 
         // If the requested size exceeds the maximum item size, allocate a new buffer
-        if ( size > CONFIG.maxItemSize ) return this.allocate( type, size );
+        if ( size > CONFIG.maxItemSize ) return { buffer: this.allocate( type, size ), size };
 
         // Try to acquire a buffer from the pool ring
         // If a suitable buffer is found, return it (subarray for uint16)
@@ -173,11 +194,11 @@ export class Pool {
 
         // If the type is 'int32', return a subarray of the buffer
         if ( item ) return type === 'int32'
-            ? ( item.buffer as Int32Array ).subarray( 0, size ) as T
-            : item.buffer;
+            ? { ...item, buffer: ( item.buffer as Int32Array ).subarray( 0, size ) as T }
+            : item;
 
         // If no suitable buffer is found, allocate a new one
-        return this.allocate( type, size );
+        return { buffer: this.allocate( type, size ), size };
     }
 
     /**
@@ -187,8 +208,8 @@ export class Pool {
      * @param {number[]} sizes - An array of sizes for each buffer to acquire
      * @return {T[]} - An array of acquired buffers of the specified type
      */
-    public static acquireMany< T = any > ( type: PoolType, sizes: number[] ) : T[] {
-        const out = new Array< T >( sizes.length );
+    public static acquireMany< T = any > ( type: PoolType, sizes: number[] ) : Buffer< T >[] {
+        const out = new Array< Buffer< T > >( sizes.length );
         for ( let i = 0; i < sizes.length; i++ ) out[ i ] = this.acquire< T >( type, sizes[ i ] );
 
         return out;
@@ -204,10 +225,10 @@ export class Pool {
      * @param {number} size - The size of the buffer
      * @throws {CmpStrUsageError} - Throws an error if the pool type is unsupported
      */
-    public static release< T = any > ( type: PoolType, buffer: T, size: number ) : void {
+    public static release< T = any > ( type: PoolType, buffer: Buffer< T > ) : void {
         const CONFIG = this.CONFIG[ type ];
         if ( ! CONFIG ) throw new CmpStrUsageError ( `Unsupported pool type <${type}>`, { type } );
-        if ( size <= CONFIG.maxItemSize ) this.POOLS[ type ].release( { buffer, size } );
+        if ( buffer.size <= CONFIG.maxItemSize ) this.POOLS[ type ].release( buffer );
     }
 
 }

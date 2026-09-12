@@ -61,7 +61,8 @@ export class JaccardIndex extends Metric< JaccardRaw > {
      */
     protected override compute ( a: string, b: string, m: number, n: number ) : MetricCompute< JaccardRaw > {
         // Acquire two sets from the Pool
-        const [ setA, setB ] = Pool.acquireMany< Set< string > >( 'set', [ m, n ] );
+        const [ setAWrapped, setBWrapped ] = Pool.acquireMany< Set< string > >( 'set', [ m, n ] );
+        const [ { buffer: setA }, { buffer: setB } ] = [ setAWrapped, setBWrapped ];
 
         try {
             // Fill setA and setB with unique characters from a and b
@@ -82,8 +83,8 @@ export class JaccardIndex extends Metric< JaccardRaw > {
             };
         } finally {
             // Release sets back to the pool
-            Pool.release( 'set', setA, m );
-            Pool.release( 'set', setB, n );
+            Pool.release( 'set', setAWrapped );
+            Pool.release( 'set', setBWrapped );
         }
     }
 

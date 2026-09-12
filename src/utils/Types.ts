@@ -118,16 +118,28 @@ export interface PoolConfig {
 }
 
 /**
- * PoolBuffer represents a buffer and its size in the pool.
+ * RawBuffer represents a buffer and its size before it is assigned an ID
  * 
  * @template T - The buffer type
  */
-export interface PoolBuffer< T > {
+export interface RawBuffer< T > {
     // The buffer instance
     buffer: T;
     // The size of the buffer
     size: number;
 }
+
+/**
+ * PoolBuffer represents a buffer and its size in the pool.
+ * 
+ * @template T - The buffer type
+ */
+export interface PoolBuffer< T > extends RawBuffer< T > {
+    //The ID of the buffer in the pool
+    id: number;
+}
+
+export type Buffer< T > = RawBuffer< T > | PoolBuffer< T >;
 
 /**
  * ================================================================================

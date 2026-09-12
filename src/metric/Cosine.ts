@@ -20,7 +20,7 @@
 
 'use strict';
 
-import type { MetricCompute, MetricInput, MetricOptions } from '../utils/Types';
+import type { Buffer, MetricCompute, MetricInput, MetricOptions } from '../utils/Types';
 
 import { Pool } from '../utils/Pool';
 import { Metric, MetricRegistry } from './Metric';
@@ -60,11 +60,11 @@ export class CosineSimilarity extends Metric< CosineRaw > {
      * @param {string} delimiter - The delimiter to split terms
      * @return {Map< string, number >} - Term frequency object
      */
-    private _termFreq ( str: string, delimiter: string ) : Map< string, number > {
+    private _termFreq ( str: string, delimiter: string ) : Buffer< Map< string, number > > {
         const terms = str.split( delimiter );
         const freq = Pool.acquire< Map< string, number > >( 'map', terms.length );
 
-        for ( const term of terms ) freq.set( term, ( freq.get( term ) || 0 ) + 1 );
+        for ( const term of terms ) freq.buffer.set( term, ( freq.buffer.get( term ) || 0 ) + 1 );
         return freq;
     }
 
@@ -79,8 +79,9 @@ export class CosineSimilarity extends Metric< CosineRaw > {
         const { delimiter = ' ' } = this.options;
 
         // Compute term frequency vectors
-        const termsA = this._termFreq( a, delimiter );
-        const termsB = this._termFreq( b, delimiter );
+        const termsAWrapped = this._termFreq( a, delimiter );
+        const termsBWrapped = this._termFreq( b, delimiter );
+        const [ { buffer: termsA }, { buffer: termsB } ] = [ termsAWrapped, termsBWrapped ];
 
         try {
             // Calculate dot product and magnitudes
@@ -106,8 +107,8 @@ export class CosineSimilarity extends Metric< CosineRaw > {
             };
         } finally {
             // Release maps back to the pool
-            Pool.release( 'map', termsA, termsA.size );
-            Pool.release( 'map', termsB, termsB.size );
+            Pool.release( 'map', termsAWrapped );
+            Pool.release( 'map', termsBWrapped );
         }
     }
 
