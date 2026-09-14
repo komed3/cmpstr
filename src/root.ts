@@ -16,27 +16,29 @@
 
 'use strict';
 
+
 // Include the main CmpStr exports
 export * from './index';
 
+
 /**
- * Export utils to implement new metrics
- * 
+ * Export build-in metrics and utils to implement new metrics:
  *  - Metric: Abstract class representing a generic string metric.
  *  - MetricCls: Type definition for a class constructor that extends the Metric class.
  *  - MetricRegistry: Metric registry service for managing metric implementations.
  */
-export { Metric, MetricCls, MetricRegistry } from './metric';
+export * from './metric';
+
 
 /**
- * Export utils to implement new phonetic algorithms
- * 
+ * Export build-in phonetic algorithms and utils to implement new phonetic algorithms:
  *  - Phonetic: Abstract class representing a generic phonetic algorithm.
  *  - PhoneticCls: Type definition for a class constructor that extends the Phonetic class.
  *  - PhoneticMappingRegistry: Registry for managing phonetic character mappings.
  *  - PhoneticRegistry: Phonetic registry service for managing phonetic algorithm implementations.
  */
-export { Phonetic, PhoneticCls, PhoneticMappingRegistry, PhoneticRegistry } from './phonetic';
+export * from './phonetic';
+
 
 // Export additional utilities and components
 export { DeepMerge } from './utils/DeepMerge';

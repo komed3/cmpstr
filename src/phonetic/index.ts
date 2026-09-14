@@ -29,8 +29,8 @@
 'use strict';
 
 
-// Export all built-in phonetics and their types
-// Side-effect: Each phonetic registers itself in the registry
+// Export all built-in phonetic algorithms and their types
+// Side-effect: Each phonetic algorithm registers itself in the registry
 export * from './Caverphone';
 export * from './Cologne';
 export * from './Metaphone';
