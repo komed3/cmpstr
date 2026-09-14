@@ -83,8 +83,10 @@ export class Caverphone extends Phonetic {
   }
 }
 
+
 // Register the Caverphone algorithm in the phonetic registry
 PhoneticRegistry.add( 'caverphone', Caverphone );
+
 
 // Register the Caverphone 1.0 phonetic mapping for English
 PhoneticMappingRegistry.add( 'caverphone', 'en1', {
@@ -145,6 +147,7 @@ PhoneticMappingRegistry.add( 'caverphone', 'en1', {
     { pattern: /[hlrwy23]/g, replace: '' }
   ]
 } );
+
 
 // Register the Caverphone 2.0 phonetic mapping for English
 PhoneticMappingRegistry.add( 'caverphone', 'en2', {
