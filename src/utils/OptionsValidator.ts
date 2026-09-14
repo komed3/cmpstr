@@ -23,8 +23,8 @@ import type {
   StructuredDataOptions, ValidatorFn
 } from './Types';
 
-import { MetricRegistry } from '../metric';
-import { PhoneticRegistry } from '../phonetic';
+import { MetricRegistry as M } from '../metric';
+import { PhoneticRegistry as P } from '../phonetic';
 import { CmpStrValidationError } from './Errors';
 
 
@@ -37,16 +37,16 @@ import { CmpStrValidationError } from './Errors';
 export class OptionsValidator {
 
   /** Allowed normalization flags */
-  private static readonly ALLOWED_FLAGS = new Set ( [ 'd', 'u', 'x', 'w', 't', 'r', 's', 'k', 'n', 'i' ] );
+  private static readonly ALLOWED_FLAGS = new Set( [ 'd', 'u', 'x', 'w', 't', 'r', 's', 'k', 'n', 'i' ] );
 
   /** Allowed output modes */
-  private static readonly ALLOWED_OUTPUT = new Set ( [ 'orig', 'prep' ] );
+  private static readonly ALLOWED_OUTPUT = new Set( [ 'orig', 'prep' ] );
 
   /** Allowed comparison modes */
-  private static readonly ALLOWED_MODES = new Set ( [ 'default', 'batch', 'single', 'pairwise' ] );
+  private static readonly ALLOWED_MODES = new Set( [ 'default', 'batch', 'single', 'pairwise' ] );
 
   /** Allowed sort modes */
-  private static readonly ALLOWED_SORT = new Set ( [ 'asc', 'desc' ] );
+  private static readonly ALLOWED_SORT = new Set( [ 'asc', 'desc' ] );
 
   /** Processor dispatch table */
   private static readonly PROCESSORS = {
@@ -145,7 +145,7 @@ export class OptionsValidator {
    * @param {Object} map - A dispatch table mapping keys to validation functions.
    * @throws {CmpStrValidationError} If any property in the object fails validation.
    */
-  private static validateMap< T extends Record< string, ValidatorFn > > ( opt: unknown, map: T ) : void {
+  private static validateMap < T extends Record< string, ValidatorFn > > ( opt: unknown, map: T ) : void {
     if ( ! opt ) return;
 
     for ( const k in opt ) {
@@ -170,11 +170,13 @@ export class OptionsValidator {
   ) : void {
     if ( value === undefined ) return;
 
-    if ( typeof value !== 'string' || value.length === 0 )
-      throw new CmpStrValidationError( `Invalid option <${ name }>: expected non-empty string`, { name, value } );
+    if ( typeof value !== 'string' || value.length === 0 ) throw new CmpStrValidationError(
+      `Invalid option <${ name }>: expected non-empty string`, { name, value }
+    );
 
-    if ( ! has( value ) )
-      throw new CmpStrValidationError( `${ label } <${ value }> is not registered`, { name, value, available: list() } );
+    if ( ! has( value ) ) throw new CmpStrValidationError(
+      `${ label } <${ value }> is not registered`, { name, value, available: list() }
+    );
   }
 
   /**
@@ -219,8 +221,9 @@ export class OptionsValidator {
   public static validateFlags ( value: unknown ) : void {
     if ( value === undefined ) return;
 
-    if ( typeof value !== 'string' )
-      throw new CmpStrValidationError( `Invalid option <flags>: expected string`, { flags: value } );
+    if ( typeof value !== 'string' ) throw new CmpStrValidationError(
+      `Invalid option <flags>: expected string`, { flags: value }
+    );
 
     for ( let i = 0; i < value.length; i++ ) {
       const ch = value[ i ];
@@ -272,10 +275,7 @@ export class OptionsValidator {
    * @throws {CmpStrValidationError} - If the metric is not a string or not registered
    */
   public static validateMetricName ( value: unknown ) : void {
-    OptionsValidator.validateRegistryName(
-      value, 'metric', 'Comparison metric',
-      MetricRegistry.has, MetricRegistry.list
-    );
+    OptionsValidator.validateRegistryName( value, 'metric', 'Comparison metric', M.has, M.list );
   }
 
   /**
@@ -285,10 +285,7 @@ export class OptionsValidator {
    * @throws {CmpStrValidationError} - If the phonetic algorithm is not a string or not registered
    */
   public static validatePhoneticName ( value: unknown ) : void {
-    OptionsValidator.validateRegistryName(
-      value, 'phonetic', 'Phonetic algorithm',
-      PhoneticRegistry.has, PhoneticRegistry.list
-    );
+    OptionsValidator.validateRegistryName( value, 'phonetic', 'Phonetic algorithm', P.has, P.list );
   }
 
   /**
@@ -330,7 +327,7 @@ export class OptionsValidator {
       const fn = OptionsValidator.PROCESSORS[ key as keyof typeof OptionsValidator.PROCESSORS ];
 
       if ( ! fn ) throw new CmpStrValidationError(
-        `Invalid processor type <${key}> in <processors>: expected ${
+        `Invalid processor type <${ key }> in <processors>: expected ${
           Object.keys( OptionsValidator.PROCESSORS ).join( ' | ' )
         }`, { processors: opt, invalid: key }
       );
