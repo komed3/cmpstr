@@ -26,6 +26,7 @@
 
 'use strict';
 
+
 import type {
   PhoneticMap, PhoneticMapping, PhoneticMappingService,
   PhoneticOptions, RegistryService
@@ -90,7 +91,7 @@ export abstract class Phonetic {
    * @param {PhoneticOptions} [opt] - Options for the phonetic algorithm
    * @throws {CmpStrNotFoundError} - If no mapping is specified or if the requested mapping is not declared
    */
-  constructor ( algo: string, opt: PhoneticOptions = {} ) {
+  public constructor ( algo: string, opt: PhoneticOptions = {} ) {
     // Get the phonetic default options
     const defaults = ( this.constructor as any ).default ?? {};
 
@@ -104,7 +105,9 @@ export abstract class Phonetic {
     const map = PhoneticMappingRegistry.get( algo, mapId );
 
     // If the mapping is not defined, throw an error
-    if ( map === undefined ) throw new CmpStrNotFoundError( `Requested mapping <${mapId}> is not declared`, { algo, mapId } );
+    if ( map === undefined ) throw new CmpStrNotFoundError(
+      `Requested mapping <${ mapId }> is not declared`, { algo, mapId }
+    );
 
     // Set the options by merging the default options with the provided ones
     this.options = DeepMerge.merge( DeepMerge.merge( defaults, map.options ?? {} ), opt );
@@ -189,19 +192,13 @@ export abstract class Phonetic {
       if ( rule.next2Not && rule.next2Not.includes( next2 ) ) continue;
 
       // Special case: Beginning of a word
-      if ( rule.leading && ! rule.leading.includes(
-        str.slice( 0, rule.leading.length )
-      ) ) continue;
+      if ( rule.leading && ! rule.leading.includes( str.slice( 0, rule.leading.length ) ) ) continue;
 
       // Special case: end of word
-      if ( rule.trailing && ! rule.trailing.includes(
-        str.slice( -rule.trailing.length )
-      ) ) continue;
+      if ( rule.trailing && ! rule.trailing.includes( str.slice( -rule.trailing.length ) ) ) continue;
 
       // Check multiple characters (e.g. bigram/trigram)
-      if ( rule.match && ! rule.match.every(
-        ( c, j ) => chars[ i + j ] === c
-      ) ) continue;
+      if ( rule.match && ! rule.match.every( ( c, j ) => chars[ i + j ] === c ) ) continue;
 
       // If all conditions met, return the rule code
       return rule.code;
