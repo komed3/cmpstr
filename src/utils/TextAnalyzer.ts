@@ -39,9 +39,9 @@ export class TextAnalyzer {
   private sentences: string[] = [];
 
   /** Frequency maps for characters and words */
-  private charFrequency = new Map< string, number > ();
-  private wordHistogram = new Map< string, number > ();
-  private syllableCache = new Map< string, number > ();
+  private charFrequency = new Map< string, number >();
+  private wordHistogram = new Map< string, number >();
+  private syllableCache = new Map< string, number >();
 
   /** Cached syllable stats */
   private syllableStats?: { total: number, mono: number, perWord: number[], avg: number, median: number };
@@ -51,7 +51,7 @@ export class TextAnalyzer {
    * 
    * @param {string} input - The text to analyze
    */
-  constructor ( input: string ) {
+  public constructor ( input: string ) {
     this.text = input.trim();
 
     this.tokenize();
@@ -76,10 +76,8 @@ export class TextAnalyzer {
    * Computes character and word frequencies from the tokenized text.
    */
   private computeFrequencies () : void {
-    for ( const char of this.text ) this.charFrequency.set( char, (
-      this.charFrequency.get( char ) ?? 0 ) + 1 );
-    for ( const word of this.words ) this.wordHistogram.set( word, (
-      this.wordHistogram.get( word ) ?? 0 ) + 1 );
+    for ( const char of this.text ) this.charFrequency.set( char, ( this.charFrequency.get( char ) ?? 0 ) + 1 );
+    for ( const word of this.words ) this.wordHistogram.set( word, ( this.wordHistogram.get( word ) ?? 0 ) + 1 );
   }
 
   /**
@@ -164,7 +162,7 @@ export class TextAnalyzer {
    * @return {number} - Average length of sentences
    */
   public getAvgSentenceLength () : number {
-      return this.sentences.length ? this.words.length / this.sentences.length : 0;
+    return this.sentences.length ? this.words.length / this.sentences.length : 0;
   }
 
   /**
@@ -366,9 +364,9 @@ export class TextAnalyzer {
     const asw: number = y / w;
 
     switch ( metric ) {
-      case 'flesch': return 206.835 - ( 1.015 * asl ) - ( 84.6 * asw );
-      case 'fleschde': return 180 - asl - ( 58.5 * asw );
-      case 'kincaid': return ( 0.39 * asl ) + ( 11.8 * asw ) - 15.59;
+      case 'flesch':    return 206.835 - ( 1.015 * asl ) - ( 84.6 * asw );
+      case 'fleschde':  return 180 - asl - ( 58.5 * asw );
+      case 'kincaid':   return ( 0.39 * asl ) + ( 11.8 * asw ) - 15.59;
     }
   }
 
