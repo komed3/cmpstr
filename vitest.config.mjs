@@ -1,7 +1,7 @@
 /**
  * Vitest Configuration for CmpStr
  * vitest.config.ts
- *
+ * 
  * This configuration file sets up Vitest for testing the CmpStr library.
  * 
  * While running on GitHub Actions, it uses the `tap-flat` reporter for compact output and
@@ -18,10 +18,10 @@
 
 import { defineConfig } from 'vitest/config';
 
+
 export default defineConfig( {
-    test: {
-        reporters: process.env.GITHUB_ACTIONS
-            ? [ 'tap-flat', 'github-actions' ]
-            : [ 'verbose' ]
-    }
+  include: [ './test/**/*.test.ts' ],
+  test: { reporters: process.env.GITHUB_ACTIONS ? [ 'tap-flat', 'github-actions' ] : [ 'verbose' ] },
+  logHeapUsage: true,
+  isolate: false
 } );
