@@ -18,6 +18,7 @@
 
 'use strict';
 
+
 import type { MetricCompute, MetricInput, MetricOptions } from '../utils/Types';
 
 import { CmpStrUsageError } from '../utils/Errors';
@@ -45,7 +46,7 @@ export class HammingDistance extends Metric< HammingRaw > {
    * @param {MetricInput} b - Second input string or array of strings
    * @param {MetricOptions} opt - Options for the metric computation
    */
-  constructor ( a: MetricInput, b: MetricInput, opt: MetricOptions = {} ) {
+  public constructor ( a: MetricInput, b: MetricInput, opt: MetricOptions = {} ) {
     super( 'hamming', a, b, opt, true );
   }
 
