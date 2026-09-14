@@ -15,8 +15,9 @@
 
 'use strict';
 
-import type { FilterEntry, FilterFn, FilterHooks, FilterOptions } from './Types';
+
 import { ErrorUtil } from './Errors';
+import type { FilterEntry, FilterFn, FilterHooks, FilterOptions } from './Types';
 
 
 /**
@@ -24,241 +25,237 @@ import { ErrorUtil } from './Errors';
  */
 export class Filter {
 
-    /** Filter function that returns the input string unchanged */
-    private static readonly IDENTITY: FilterFn = s => s;
+  /** Filter function that returns the input string unchanged */
+  private static readonly IDENTITY: FilterFn = s => s;
 
-    /**
-     * A static map to hold all filters.
-     * The key is the hook name, and the value is an Map of FilterEntry objects.
-     */
-    private static filters = new Map< FilterHooks, Map< string, FilterEntry > > ();
+  /**
+   * A static map to hold all filters.
+   * The key is the hook name, and the value is an Map of FilterEntry objects.
+   */
+  private static filters = new Map< FilterHooks, Map< string, FilterEntry > >();
 
-    /**
-     * A map that holds the pipeline of filters to be applied.
-     * The key is the hook name, and the value is the compiled function.
-     */
-    private static pipeline = new Map< FilterHooks, FilterFn > ();
+  /**
+   * A map that holds the pipeline of filters to be applied.
+   * The key is the hook name, and the value is the compiled function.
+   */
+  private static pipeline = new Map< FilterHooks, FilterFn >();
 
-    /**
-     * Retrieves the compiled filter function for a given hook.
-     * If the function is not cached, it compiles it from the active filters.
-     * 
-     * @param {FilterHooks} hook - The name of the hook
-     * @param {boolean} [force=false] - If true, forces recompilation of the pipeline even if it is cached
-     * @returns {FilterFn} - The compiled filter function for the hook
-     * @throws {CmpStrInternalError} - Throws an error if the pipeline compilation fails
-     */
-    private static getPipeline ( hook: FilterHooks, force: boolean = false ) : FilterFn {
-        return ErrorUtil.wrap< FilterFn >( () => {
-            // Return the cached pipeline if it exists
-            if ( ! force ) {
-                const cached = Filter.pipeline.get( hook );
-                if ( cached ) return cached;
-            }
+  /**
+   * Retrieves the compiled filter function for a given hook.
+   * If the function is not cached, it compiles it from the active filters.
+   * 
+   * @param {FilterHooks} hook - The name of the hook
+   * @param {boolean} [force=false] - If true, forces recompilation of the pipeline even if it is cached
+   * @returns {FilterFn} - The compiled filter function for the hook
+   * @throws {CmpStrInternalError} - Throws an error if the pipeline compilation fails
+   */
+  private static getPipeline ( hook: FilterHooks, force: boolean = false ) : FilterFn {
+    return ErrorUtil.wrap< FilterFn >( () => {
+      // Return the cached pipeline if it exists
+      if ( ! force ) {
+        const cached = Filter.pipeline.get( hook );
+        if ( cached ) return cached;
+      }
 
-            // Get the filters for the specified hook
-            const filter = Filter.filters.get( hook );
+      // Get the filters for the specified hook
+      const filter = Filter.filters.get( hook );
 
-            // If no filters exist for the hook, cache and return the identity function
-            if ( ! filter ) {
-                Filter.pipeline.set( hook, Filter.IDENTITY );
-                return Filter.IDENTITY;
-            }
+      // If no filters exist for the hook, cache and return the identity function
+      if ( ! filter ) {
+        Filter.pipeline.set( hook, Filter.IDENTITY );
+        return Filter.IDENTITY;
+      }
 
-            // Compile the pipeline from active filters sorted by priority
-            const pipeline: FilterEntry[] = [];
+      // Compile the pipeline from active filters sorted by priority
+      const pipeline: FilterEntry[] = [];
+      for ( const f of filter.values() ) if ( f.active ) pipeline.push( f );
+      pipeline.sort( ( a, b ) => a.priority - b.priority );
 
-            for ( const f of filter.values() ) if ( f.active ) pipeline.push( f );
-            pipeline.sort( ( a, b ) => a.priority - b.priority );
+      const fn: FilterFn = pipeline.length === 0 ? Filter.IDENTITY : ( input: string ) => {
+        let v = input;
+        for ( let i = 0; i < pipeline.length; i++ ) v = pipeline[ i ].fn( v );
+        return v;
+      };
 
-            const fn: FilterFn = pipeline.length === 0 ? Filter.IDENTITY : ( input: string ) => {
-                let v = input;
-                for ( let i = 0; i < pipeline.length; i++ ) v = pipeline[ i ].fn( v );
+      // Cache and return the compiled pipeline
+      Filter.pipeline.set( hook, fn );
+      return fn;
+    }, `Error compiling filter pipeline for hook <${ hook }>`, { hook } );
+  }
 
-                return v;
-            };
+  /**
+   * Checks if a filter exists for a given hook and id.
+   * 
+   * @param {FilterHooks} hook - The name of the hook
+   * @param {string} id - The id of the filter
+   * @returns {boolean} - Returns true if the filter exists, false otherwise
+   */
+  public static has ( hook: FilterHooks, id: string ) : boolean {
+    return !! ( Filter.filters.get( hook )?.has( id ) );
+  }
 
-            // Cache and return the compiled pipeline
-            Filter.pipeline.set( hook, fn );
-            return fn;
-        }, `Error compiling filter pipeline for hook <${hook}>`, { hook } );
-    }
+  /**
+   * Adds a filter to the specified hook.
+   * 
+   * @param {FilterHooks} hook - The name of the hook
+   * @param {string} id - The id of the filter
+   * @param {FilterFn} fn - The filter function
+   * @param {FilterOptions} [opt] - Additional options for the filter
+   * @returns {boolean} - Returns true if the filter was added, false if it was not added due to override restrictions
+   * @throws {CmpStrInternalError} - Throws an error if there is an issue adding the filter
+   */
+  public static add ( hook: FilterHooks, id: string, fn: FilterFn, opt: FilterOptions = {} ) : boolean {
+    return ErrorUtil.wrap< boolean >( () => {
+      const { priority = 10, active = true, overrideable = true } = opt;
 
-    /**
-     * Checks if a filter exists for a given hook and id.
-     * 
-     * @param {FilterHooks} hook - The name of the hook
-     * @param {string} id - The id of the filter
-     * @returns {boolean} - Returns true if the filter exists, false otherwise
-     */
-    public static has ( hook: FilterHooks, id: string ) : boolean {
-        return !! ( Filter.filters.get( hook )?.has( id ) );
-    }
+      // Check if the filter already exists
+      const filter = Filter.filters.get( hook ) ?? new Map< string, FilterEntry >();
+      const index = filter.get( id );
 
-    /**
-     * Adds a filter to the specified hook.
-     * 
-     * @param {FilterHooks} hook - The name of the hook
-     * @param {string} id - The id of the filter
-     * @param {FilterFn} fn - The filter function
-     * @param {FilterOptions} [opt] - Additional options for the filter
-     * @returns {boolean} - Returns true if the filter was added,
-     *                      false if it was not added due to override restrictions
-     * @throws {CmpStrInternalError} - Throws an error if there is an issue adding the filter
-     */
-    public static add ( hook: FilterHooks, id: string, fn: FilterFn, opt: FilterOptions = {} ) : boolean {
-        return ErrorUtil.wrap< boolean >( () => {
-            const { priority = 10, active = true, overrideable = true } = opt;
+      // If the filter already exists and is not overrideable, return false
+      if ( index && ! index.overrideable ) return false;
+      // If the filter already exists and has the same properties, return true (no change)
+      if ( index && index.fn === fn && index.priority === priority && index.active === active ) return true;
 
-            // Check if the filter already exists
-            const filter = Filter.filters.get( hook ) ?? new Map< string, FilterEntry >();
-            const index = filter.get( id );
+      // Add or update the filter entry
+      filter.set( id, { id, fn, priority, active, overrideable } );
+      Filter.filters.set( hook, filter );
+      Filter.getPipeline( hook, true );
 
-            // If the filter already exists and is not overrideable, return false
-            if ( index && ! index.overrideable ) return false;
-            // If the filter already exists and has the same properties, return true (no change)
-            if ( index && index.fn === fn && index.priority === priority && index.active === active ) return true;
+      return true;
+    }, `Error adding filter <${ id }> to hook <${ hook }>`, { hook, id, opt } );
+  }
 
-            // Add or update the filter entry
-            filter.set( id, { id, fn, priority, active, overrideable } );
-            Filter.filters.set( hook, filter );
-            Filter.getPipeline( hook, true );
+  /**
+   * Removes a filter from the specified hook by its id.
+   * 
+   * @param {FilterHooks} hook - The name of the hook
+   * @param {string} id - The id of the filter
+   * @returns {boolean} - Returns true if the filter was removed, false if it was not found
+   */
+  public static remove ( hook: FilterHooks, id: string ) : boolean {
+    const filter = Filter.filters.get( hook );
+    if ( ! filter || ! filter.delete( id ) ) return false;
 
-            return true;
-        }, `Error adding filter <${id}> to hook <${hook}>`, { hook, id, opt } );
-    }
+    Filter.getPipeline( hook, true );
+    return true;
+  }
 
-    /**
-     * Removes a filter from the specified hook by its id.
-     * 
-     * @param {FilterHooks} hook - The name of the hook
-     * @param {string} id - The id of the filter
-     * @returns {boolean} - Returns true if the filter was removed, false if it was not found
-     */
-    public static remove ( hook: FilterHooks, id: string ) : boolean {
-        const filter = Filter.filters.get( hook );
-        if ( ! filter || ! filter.delete( id ) ) return false;
+  /**
+   * Pauses a filter by its hook and id.
+   * 
+   * @param {FilterHooks} hook - The name of the hook
+   * @param {string} id - The id of the filter
+   * @returns {boolean} - Returns true if the filter was paused, false if it was not found
+   */
+  public static pause ( hook: FilterHooks, id: string ) : boolean {
+    const filter = Filter.filters.get( hook );
+    if ( ! filter ) return false;
 
-        Filter.getPipeline( hook, true );
-        return true;
-    }
+    const f = filter.get( id );
+    if ( ! f || ! f.active ) return false;
 
-    /**
-     * Pauses a filter by its hook and id.
-     * 
-     * @param {FilterHooks} hook - The name of the hook
-     * @param {string} id - The id of the filter
-     * @returns {boolean} - Returns true if the filter was paused, false if it was not found
-     */
-    public static pause ( hook: FilterHooks, id: string ) : boolean {
-        const filter = Filter.filters.get( hook );
-        if ( ! filter ) return false;
+    f.active = false;
+    Filter.getPipeline( hook, true );
+    return true;
+  }
 
-        const f = filter.get( id );
-        if ( ! f || ! f.active ) return false;
+  /**
+   * Resumes a filter by its hook and id.
+   * 
+   * @param {FilterHooks} hook - The name of the hook
+   * @param {string} id - The id of the filter
+   * @returns {boolean} - Returns true if the filter was resumed, false if it was not found
+   */
+  public static resume ( hook: FilterHooks, id: string ) : boolean {
+    const filter = Filter.filters.get( hook );
+    if ( ! filter ) return false;
 
-        f.active = false;
-        Filter.getPipeline( hook, true );
-        return true;
-    }
+    const f = filter.get( id );
+    if ( ! f || f.active ) return false;
 
-    /**
-     * Resumes a filter by its hook and id.
-     * 
-     * @param {FilterHooks} hook - The name of the hook
-     * @param {string} id - The id of the filter
-     * @returns {boolean} - Returns true if the filter was resumed, false if it was not found
-     */
-    public static resume ( hook: FilterHooks, id: string ) : boolean {
-        const filter = Filter.filters.get( hook );
-        if ( ! filter ) return false;
+    f.active = true;
+    Filter.getPipeline( hook, true );
+    return true;
+  }
 
-        const f = filter.get( id );
-        if ( ! f || f.active ) return false;
+  /**
+   * Lists all filters for a given hook.
+   * 
+   * @param {FilterHooks} hook - The name of the hook
+   * @param {boolean} active - If true, only list active filters
+   * @returns {string[]} - An array of filter ids
+   */
+  public static list ( hook: FilterHooks, active: boolean = false ) : string[] {
+    const filter = Filter.filters.get( hook );
+    if ( ! filter ) return [];
 
-        f.active = true;
-        Filter.getPipeline( hook, true );
-        return true;
-    }
+    const out: string[] = [];
+    for ( const f of filter.values() ) if ( ! active || f.active ) out.push( f.id );
+    return out;
+  }
 
-    /**
-     * Lists all filters for a given hook.
-     * 
-     * @param {FilterHooks} hook - The name of the hook
-     * @param {boolean} active - If true, only list active filters
-     * @returns {string[]} - An array of filter ids
-     */
-    public static list ( hook: FilterHooks, active: boolean = false ) : string[] {
-        const filter = Filter.filters.get( hook );
-        if ( ! filter ) return [];
+  /**
+   * Applies all active filters for a given hook to the input string(s).
+   * 
+   * @param {FilterHooks} hook - The name of the hook
+   * @param {string | string[]} input - The input string(s) to be filtered
+   * @returns {string | string[]} - The filtered string(s)
+   * @throws {CmpStrInternalError} - Throws an error if there is an issue applying the filters
+   */
+  public static apply ( hook: FilterHooks, input: string | string[] ) : string | string[] {
+    return ErrorUtil.wrap< string | string[] >( () => {
+      const fn = Filter.getPipeline( hook );
+      if ( typeof input === 'string' ) return fn( input );
 
-        const out: string[] = [];
-        for ( const f of filter.values() ) if ( ! active || f.active ) out.push( f.id );
-        return out;
-    }
+      const arr = input as string[];
+      const out = new Array( arr.length );
 
-    /**
-     * Applies all active filters for a given hook to the input string(s).
-     * 
-     * @param {FilterHooks} hook - The name of the hook
-     * @param {string | string[]} input - The input string(s) to be filtered
-     * @returns {string | string[]} - The filtered string(s)
-     * @throws {CmpStrInternalError} - Throws an error if there is an issue applying the filters
-     */
-    public static apply ( hook: FilterHooks, input: string | string[] ) : string | string[] {
-        return ErrorUtil.wrap< string | string[] >( () => {
-            const fn = Filter.getPipeline( hook );
-            if ( typeof input === 'string' ) return fn( input );
+      for ( let i = 0; i < arr.length; i++ ) out[ i ] = fn( arr[ i ] );
+      return out;
+    }, `Error applying filters for hook <${ hook }>`, { hook, input } );
+  }
 
-            const arr = input as string[];
-            const out = new Array( arr.length );
+  /**
+   * Applies all active filters for a given hook to the input string(s) asynchronously.
+   * Each filter function may return a Promise or a plain string; all are awaited in order.
+   * 
+   * @param {FilterHooks} hook - The name of the hook
+   * @param {string | string[]} input - The input string(s) to be filtered
+   * @returns {Promise< string | string[] >} - The filtered string(s)
+   * @throws {CmpStrInternalError} - Throws an error if there is an issue applying the filters
+   */
+  public static async applyAsync ( hook: FilterHooks, input: string | string[] ) : Promise< string | string[] > {
+    return ErrorUtil.wrapAsync< string | string[] >( async () => {
+      const fn = Filter.getPipeline( hook );
+      if ( typeof input === 'string' ) return Promise.resolve( fn( input ) );
 
-            for ( let i = 0; i < arr.length; i++ ) out[ i ] = fn( arr[ i ] );
-            return out;
-        }, `Error applying filters for hook <${hook}>`, { hook, input } );
-    }
+      const arr = input as string[];
+      const out = new Array( arr.length );
 
-    /**
-     * Applies all active filters for a given hook to the input string(s) asynchronously.
-     * Each filter function may return a Promise or a plain string; all are awaited in order.
-     * 
-     * @param {FilterHooks} hook - The name of the hook
-     * @param {string | string[]} input - The input string(s) to be filtered
-     * @returns {Promise< string | string[] >} - The filtered string(s)
-     * @throws {CmpStrInternalError} - Throws an error if there is an issue applying the filters
-     */
-    public static async applyAsync ( hook: FilterHooks, input: string | string[] ) : Promise< string | string[] > {
-        return ErrorUtil.wrapAsync< string | string[] >( async () => {
-            const fn = Filter.getPipeline( hook );
-            if ( typeof input === 'string' ) return Promise.resolve( fn( input ) );
+      for ( let i = 0; i < arr.length; i++ ) out[ i ] = Promise.resolve( fn( arr[ i ] ) );
+      return Promise.all( out );
+    }, `Error applying filters for hook <${ hook }>`, { hook, input } );
+  }
 
-            const arr = input as string[];
-            const out = new Array( arr.length );
+  /**
+   * Clears all filters or filters for a specific hook.
+   * If no hook is provided, clear all filters
+   * 
+   * @param {FilterHooks} [hook] - Optional name of the hook to clear filters for
+   */
+  public static clear ( hook?: FilterHooks ) : void {
+    Filter.clearPipeline();
 
-            for ( let i = 0; i < arr.length; i++ ) out[ i ] = Promise.resolve( fn( arr[ i ] ) );
-            return Promise.all( out );
-        }, `Error applying filters for hook <${hook}>`, { hook, input } );
-    }
+    if ( hook ) Filter.filters.delete( hook );
+    else Filter.filters.clear();
+  }
 
-    /**
-     * Clears all filters or filters for a specific hook.
-     * If no hook is provided, clear all filters
-     * 
-     * @param {FilterHooks} [hook] - Optional name of the hook to clear filters for
-     */
-    public static clear ( hook?: FilterHooks ) : void {
-        Filter.clearPipeline();
-
-        if ( hook ) Filter.filters.delete( hook );
-        else Filter.filters.clear();
-    }
-
-    /**
-     * Clears the entire filter pipeline cache.
-     * This forces recompilation of all pipelines on next application.
-     */
-    public static clearPipeline () : void {
-        Filter.pipeline.clear();
-    }
-
+  /**
+   * Clears the entire filter pipeline cache.
+   * This forces recompilation of all pipelines on next application.
+   */
+  public static clearPipeline () : void {
+    Filter.pipeline.clear();
+  }
 }

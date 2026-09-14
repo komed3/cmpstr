@@ -19,14 +19,15 @@
 
 'use strict';
 
+
 import type { MetricCompute, MetricInput, MetricOptions } from '../utils/Types';
 
 import { Pool } from '../utils/Pool';
 import { Metric, MetricRegistry } from './Metric';
 
 export interface LevenshteinRaw {
-    dist: number;
-    maxLen: number;
+  dist: number;
+  maxLen: number;
 }
 
 
@@ -35,84 +36,84 @@ export interface LevenshteinRaw {
  */
 export class LevenshteinDistance extends Metric< LevenshteinRaw > {
 
-    /**
-     * Constructor for the Levenshtein class.
-     * 
-     * Initializes the Levenshtein metric with two input strings
-     * or arrays of strings and optional options.
-     * 
-     * Metric is symmetrical.
-     * 
-     * @param {MetricInput} a - First input string or array of strings
-     * @param {MetricInput} b - Second input string or array of strings
-     * @param {MetricOptions} [opt] - Options for the metric computation
-     */
-    constructor ( a: MetricInput, b: MetricInput, opt: MetricOptions = {} ) {
-        super ( 'levenshtein', a, b, opt, true );
-    }
+  /**
+   * Constructor for the Levenshtein class.
+   * 
+   * Initializes the Levenshtein metric with two input strings
+   * or arrays of strings and optional options.
+   * 
+   * Metric is symmetrical.
+   * 
+   * @param {MetricInput} a - First input string or array of strings
+   * @param {MetricInput} b - Second input string or array of strings
+   * @param {MetricOptions} [opt] - Options for the metric computation
+   */
+  public constructor ( a: MetricInput, b: MetricInput, opt: MetricOptions = {} ) {
+    super( 'levenshtein', a, b, opt, true );
+  }
 
-    /**
-     * Calculates the Levenshtein distance between two strings.
-     * 
-     * @param {string} a - First string
-     * @param {string} b - Second string
-     * @param {number} m - Length of the first string
-     * @param {number} n - Length of the second string
-     * @param {number} maxLen - Maximum length of the strings
-     * @return {MetricCompute< LevenshteinRaw >} - Object containing the similarity result and raw distance
-     */
-    protected override compute (
-        a: string, b: string, m: number, n: number, maxLen: number
-    ) : MetricCompute< LevenshteinRaw > {
-        // Get two reusable arrays from the Pool for the DP rows
-        const len: number = m + 1;
-        const [ prevWrapped, currWrapped ] = Pool.acquireMany< Int32Array >( 'int32', [ len, len ] );
-        const [ { buffer: prev }, { buffer: curr } ] = [ prevWrapped, currWrapped ];
+  /**
+   * Calculates the Levenshtein distance between two strings.
+   * 
+   * @param {string} a - First string
+   * @param {string} b - Second string
+   * @param {number} m - Length of the first string
+   * @param {number} n - Length of the second string
+   * @param {number} maxLen - Maximum length of the strings
+   * @return {MetricCompute< LevenshteinRaw >} - Object containing the similarity result and raw distance
+   */
+  protected override compute (
+    a: string, b: string, m: number, n: number, maxLen: number
+  ) : MetricCompute< LevenshteinRaw > {
+    // Get two reusable arrays from the Pool for the DP rows
+    const len: number = m + 1;
+    const [ prevWrapped, currWrapped ] = Pool.acquireMany< Int32Array >( 'int32', [ len, len ] );
+    const [ { buffer: prev }, { buffer: curr } ] = [ prevWrapped, currWrapped ];
 
-        try {
-            // Initialize the first row (edit distances from empty string to a)
-            for ( let i = 0; i <= m; i++ ) prev[ i ] = i;
+    try {
+      // Initialize the first row (edit distances from empty string to a)
+      for ( let i = 0; i <= m; i++ ) prev[ i ] = i;
 
-            // Fill the DP matrix row by row (over the longer string)
-            for ( let j = 1; j <= n; j++ ) {
-                // Cost of transforming empty string to b[0..j]
-                curr[ 0 ] = j;
+      // Fill the DP matrix row by row (over the longer string)
+      for ( let j = 1; j <= n; j++ ) {
+        // Cost of transforming empty string to b[0..j]
+        curr[ 0 ] = j;
 
-                // Get the character code of the current character in b
-                const cb = b.charCodeAt( j - 1 );
+        // Get the character code of the current character in b
+        const cb = b.charCodeAt( j - 1 );
 
-                for ( let i = 1; i <= m; i++ ) {
-                    // Cost is 0 if characters match, 1 otherwise
-                    const cost = a.charCodeAt( i - 1 ) === cb ? 0 : 1;
+        for ( let i = 1; i <= m; i++ ) {
+          // Cost is 0 if characters match, 1 otherwise
+          const cost = a.charCodeAt( i - 1 ) === cb ? 0 : 1;
 
-                    // Calculate the minimum edit distance for current cell
-                    curr[ i ] = Math.min(
-                        curr[ i - 1 ] + 1,      // Insertion
-                        prev[ i ] + 1,          // Deletion
-                        prev[ i - 1 ] + cost    // Substitution
-                    );
-                }
-
-                // Copy current row to previous for next iteration
-                prev.set( curr );
-            }
-
-            // The last value in prev is the Levenshtein distance
-            const dist = prev[ m ];
-
-            // Return the result as a MetricCompute object
-            return {
-                res: maxLen === 0 ? 1 : Metric.clamp( 1 - dist / maxLen ),
-                raw: { dist, maxLen }
-            };
-        } finally {
-            // Release arrays back to the pool
-            Pool.release( 'int32', prevWrapped );
-            Pool.release( 'int32', currWrapped );
+          // Calculate the minimum edit distance for current cell
+          curr[ i ] = Math.min(
+            curr[ i - 1 ] + 1,    // Insertion
+            prev[ i ] + 1,        // Deletion
+            prev[ i - 1 ] + cost  // Substitution
+          );
         }
-    }
 
+        // Copy current row to previous for next iteration
+        prev.set( curr );
+      }
+
+      // The last value in prev is the Levenshtein distance
+      const dist = prev[ m ];
+
+      // Return the result as a MetricCompute object
+      return {
+        res: maxLen === 0 ? 1 : Metric.clamp( 1 - dist / maxLen ),
+        raw: { dist, maxLen }
+      };
+    } finally {
+      // Release arrays back to the pool
+      Pool.release( 'int32', prevWrapped );
+      Pool.release( 'int32', currWrapped );
+    }
+  }
 }
+
 
 // Register the Levenshtein distance in the metric registry
 MetricRegistry.add( 'levenshtein', LevenshteinDistance );

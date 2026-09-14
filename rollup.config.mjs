@@ -80,112 +80,112 @@ const preamble = `/**
  */`;
 
 const plugins = [
-    commonjs(), cleanup( { comments: 'istanbul', extensions: [ 'js', 'ts' ] } ),
-    nodeResolve( { extensions: [ '.js', '.ts' ] } ),
-    typescript( { tsconfig: './tsconfig.rollup.json', sourceMap: false } )
+  commonjs(), cleanup( { comments: 'istanbul', extensions: [ 'js', 'ts' ] } ),
+  nodeResolve( { extensions: [ '.js', '.ts' ] } ),
+  typescript( { tsconfig: './tsconfig.rollup.json', sourceMap: false } )
 ];
 
 const beautify = prettier( {
-    parser: 'babel',
-    tabWidth: 2,
-    bracketSpacing: true,
-    bracketSameLine: true,
-    singleQuote: true,
-    jsxSingleQuote: true,
-    trailingComma: 'none',
-    objectWrap: 'collapse'
+  parser: 'babel',
+  tabWidth: 2,
+  bracketSpacing: true,
+  bracketSameLine: true,
+  singleQuote: true,
+  jsxSingleQuote: true,
+  trailingComma: 'none',
+  objectWrap: 'collapse'
 } );
 
 const minify = terser( {
-    format: { comments: false, preamble },
-    compress: { passes: 6 }
+  format: { comments: false, preamble },
+  compress: { passes: 6 }
 } );
+
 
 console.log( `-`.repeat( 80 ) );
 console.log( `\x1b[36m[BUILD] \x1b[33m${build}\x1b[0m` );
 console.log( `-`.repeat( 80 ) );
 
+
 export default [
-
-    // ESM Build
-    {
-        input: [ 'src/index.ts', 'src/root.ts' ],
-        output: {
-            dir: 'dist/esm',
-            format: 'esm',
-            entryFileNames: '[name].mjs',
-            preserveModules: true,
-            preserveModulesRoot: 'src',
-            sourcemap: false,
-            banner
-        },
-        plugins: [ ...plugins, beautify ]
+  // ESM Build
+  {
+    input: [ 'src/index.ts', 'src/root.ts' ],
+    output: {
+      dir: 'dist/esm',
+      format: 'esm',
+      entryFileNames: '[name].mjs',
+      preserveModules: true,
+      preserveModulesRoot: 'src',
+      sourcemap: false,
+      banner
     },
+    plugins: [ ...plugins, beautify ]
+  },
 
-    // CJS Build
-    {
-        input: [ 'src/index.ts', 'src/root.ts' ],
-        output: {
-            dir: 'dist/cjs',
-            format: 'cjs',
-            entryFileNames: '[name].cjs',
-            exports: 'auto',
-            preserveModules: true,
-            preserveModulesRoot: 'src',
-            sourcemap: false,
-            banner
-        },
-        plugins: [ ...plugins, beautify ]
+  // CJS Build
+  {
+    input: [ 'src/index.ts', 'src/root.ts' ],
+    output: {
+      dir: 'dist/cjs',
+      format: 'cjs',
+      entryFileNames: '[name].cjs',
+      exports: 'auto',
+      preserveModules: true,
+      preserveModulesRoot: 'src',
+      sourcemap: false,
+      banner
     },
+    plugins: [ ...plugins, beautify ]
+  },
 
-    // Browser Build (UMD)
-    {
-        input: 'src/root.ts',
-        output: {
-            file: 'dist/CmpStr.umd.js',
-            format: 'umd',
-            name: 'CmpStr',
-            sourcemap: false,
-            banner: preamble
-        },
-        plugins: [ ...plugins, beautify ]
+  // Browser Build (UMD)
+  {
+    input: 'src/root.ts',
+    output: {
+      file: 'dist/CmpStr.umd.js',
+      format: 'umd',
+      name: 'CmpStr',
+      sourcemap: false,
+      banner: preamble
     },
+    plugins: [ ...plugins, beautify ]
+  },
 
-    // Minified Browser Build (UMD)
-    {
-        input: 'src/root.ts',
-        output: {
-            file: 'dist/CmpStr.umd.min.js',
-            format: 'umd',
-            name: 'CmpStr',
-            plugins: [ minify ],
-            sourcemap: false
-        },
-        plugins: [ ...plugins ]
+  // Minified Browser Build (UMD)
+  {
+    input: 'src/root.ts',
+    output: {
+      file: 'dist/CmpStr.umd.min.js',
+      format: 'umd',
+      name: 'CmpStr',
+      plugins: [ minify ],
+      sourcemap: false
     },
+    plugins: [ ...plugins ]
+  },
 
-    // Browser Build (EMS)
-    {
-        input: 'src/root.ts',
-        output: {
-            file: 'dist/CmpStr.esm.js',
-            format: 'es',
-            sourcemap: false,
-            banner: preamble
-        },
-        plugins: [ ...plugins, beautify ]
+  // Browser Build (EMS)
+  {
+    input: 'src/root.ts',
+    output: {
+      file: 'dist/CmpStr.esm.js',
+      format: 'es',
+      sourcemap: false,
+      banner: preamble
     },
+    plugins: [ ...plugins, beautify ]
+  },
 
-    // Minified Browser Build (EMS)
-    {
-        input: 'src/root.ts',
-        output: {
-            file: 'dist/CmpStr.esm.min.js',
-            format: 'esm',
-            plugins: [ minify ],
-            sourcemap: false
-        },
-        plugins: [ ...plugins ]
-    }
-
+  // Minified Browser Build (EMS)
+  {
+    input: 'src/root.ts',
+    output: {
+      file: 'dist/CmpStr.esm.min.js',
+      format: 'esm',
+      plugins: [ minify ],
+      sourcemap: false
+    },
+    plugins: [ ...plugins ]
+  }
 ];

@@ -31,16 +31,21 @@
 
 'use strict';
 
-import './Cosine';
-import './DamerauLevenshtein';
-import './DiceSorensen';
-import './Hamming';
-import './Jaccard';
-import './JaroWinkler';
-import './LCS';
-import './Levenshtein';
-import './NeedlemanWunsch';
-import './QGram';
-import './SmithWaterman';
 
-export { Metric, MetricCls, MetricRegistry } from './Metric';
+// Export all built-in metrics and their types
+// Side-effect: Each metric registers itself in the registry
+export * from './Cosine';
+export * from './DamerauLevenshtein';
+export * from './DiceSorensen';
+export * from './Hamming';
+export * from './Jaccard';
+export * from './JaroWinkler';
+export * from './LCS';
+export * from './Levenshtein';
+export * from './NeedlemanWunsch';
+export * from './QGram';
+export * from './SmithWaterman';
+
+
+// Export the Metric class and registry
+export * from './Metric';

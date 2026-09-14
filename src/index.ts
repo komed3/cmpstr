@@ -7,7 +7,7 @@
  * filtering, and text analysis. It is designed for both high-level application development
  * and research, offering a unified API for single, batch, and pairwise operations.
  * 
- * Version: 3.3.0
+ * Version: 3.4.0
  * Author: Paul Köhler (komed3)
  * License: MIT
  * 
@@ -41,18 +41,19 @@
  * For asynchronous workloads, use `CmpStrAsync`, which provides the same API with
  * Promise-based, non-blocking methods for large-scale or I/O-bound operations.
  * 
- * @version 3.3.0
+ * @version 3.4.0
  * @author Paul Köhler (komed3)
  * @license MIT
  */
 
 'use strict';
 
+
 // Export the types and interfaces for the library
 export * from './utils/Types';
 export type {
-    CmpStrError, CmpStrValidationError, CmpStrNotFoundError,
-    CmpStrUsageError, CmpStrInternalError, ErrorCode
+  CmpStrError, CmpStrValidationError, CmpStrNotFoundError,
+  CmpStrUsageError, CmpStrInternalError, ErrorCode
 } from './utils/Errors';
 
 // Export the main CmpStr class and its async variant

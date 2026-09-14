@@ -2,7 +2,7 @@
   "name": "cmpstr",
   "description": "CmpStr is a lightweight, fast and well performing package for calculating string similarity",
   "license": "MIT",
-  "version": "3.3.0",
+  "version": "3.4.0",
   "author": {
     "name": "komed3 (Paul Köhler)",
     "email": "webmaster@komed3.de",
@@ -96,7 +96,8 @@
     "./bundle/min": {
       "import": "./dist/CmpStr.esm.min.js",
       "default": "./dist/CmpStr.esm.min.js"
-    }
+    },
+    "./package.json": "./package.json"
   },
   "scripts": {
     "clean": "shx rm -rf dist",

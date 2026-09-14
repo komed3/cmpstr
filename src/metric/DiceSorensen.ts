@@ -22,14 +22,15 @@
 
 'use strict';
 
+
 import type { Buffer, MetricCompute, MetricInput, MetricOptions } from '../utils/Types';
 
 import { Pool } from '../utils/Pool';
 import { Metric, MetricRegistry } from './Metric';
 
 export interface DiceRaw {
-    intersection: number;
-    size: number;
+  intersection: number;
+  size: number;
 }
 
 
@@ -38,71 +39,70 @@ export interface DiceRaw {
  */
 export class DiceSorensenCoefficient extends Metric< DiceRaw > {
 
-    /**
-     * Constructor for the DiceSorensen class.
-     * 
-     * Initializes the DiceSorensen metric with two input strings or
-     * arrays of strings and optional options.
-     * 
-     * Metric is symmetrical.
-     * 
-     * @param {MetricInput} a - First input string or array of strings
-     * @param {MetricInput} b - Second input string or array of strings
-     * @param {MetricOptions} [opt] - Options for the metric computation
-     */
-    constructor ( a: MetricInput, b: MetricInput, opt: MetricOptions = {} ) {
-        super ( 'dice', a, b, opt, true );
+  /**
+   * Constructor for the DiceSorensen class.
+   * 
+   * Initializes the DiceSorensen metric with two input strings or
+   * arrays of strings and optional options.
+   * 
+   * Metric is symmetrical.
+   * 
+   * @param {MetricInput} a - First input string or array of strings
+   * @param {MetricInput} b - Second input string or array of strings
+   * @param {MetricOptions} [opt] - Options for the metric computation
+   */
+  public constructor ( a: MetricInput, b: MetricInput, opt: MetricOptions = {} ) {
+    super( 'dice', a, b, opt, true );
+  }
+
+  /**
+   * Computes the bigrams of a given string.
+   * 
+   * @param {string} str - The input string
+   * @return {Set< string >} - A set of bigrams (two-character sequences) from the string
+   */
+  private bigrams ( str: string ) : Buffer< Set< string > > {
+    const len = str.length - 1, bigrams = Pool.acquire< Set< string > >( 'set', len );
+
+    // Generate bigrams by iterating through the string
+    for ( let i = 0; i < len; i++ ) bigrams.buffer.add( str.substring( i, i + 2 ) );
+    return bigrams;
+  }
+
+  /**
+   * Calculates the Dice-Sørensen coefficient between two strings.
+   * 
+   * @param {string} a - First string
+   * @param {string} b - Second string
+   * @return {MetricCompute< DiceRaw >} - Object containing the similarity result and raw distance
+   */
+  protected override compute ( a: string, b: string ) : MetricCompute< DiceRaw > {
+    // Generate bigrams for both strings
+    const setAWrapped = this.bigrams( a ), setBWrapped = this.bigrams( b );
+    const [ { buffer: setA }, { buffer: setB } ] = [ setAWrapped, setBWrapped ];
+    const sizeA = setA.size, sizeB = setB.size;
+
+    try {
+      // Calculate the intersection of bigrams
+      let intersection = 0;
+      for ( const bigram of setA ) if ( setB.has( bigram ) ) intersection++;
+
+      // Calculate the size of the union of both sets
+      const size = sizeA + sizeB;
+
+      // Return the result as a MetricCompute object
+      return {
+        res: size === 0 ? 1 : Metric.clamp( ( 2 * intersection ) / size ),
+        raw: { intersection, size }
+      };
+    } finally {
+      // Release sets back to the pool
+      Pool.release( 'set', setAWrapped );
+      Pool.release( 'set', setBWrapped );
     }
-
-    /**
-     * Computes the bigrams of a given string.
-     * 
-     * @param {string} str - The input string
-     * @return {Set< string >} - A set of bigrams (two-character sequences) from the string
-     */
-    private _bigrams ( str: string ) : Buffer< Set< string > > {
-        const len = str.length - 1;
-        const bigrams = Pool.acquire< Set< string > >( 'set', len );
-
-        // Generate bigrams by iterating through the string
-        for ( let i = 0; i < len; i++ ) bigrams.buffer.add( str.substring( i, i + 2 ) );
-        return bigrams;
-    }
-
-    /**
-     * Calculates the Dice-Sørensen coefficient between two strings.
-     * 
-     * @param {string} a - First string
-     * @param {string} b - Second string
-     * @return {MetricCompute< DiceRaw >} - Object containing the similarity result and raw distance
-     */
-    protected override compute ( a: string, b: string ) : MetricCompute< DiceRaw > {
-        // Generate bigrams for both strings
-        const setAWrapped = this._bigrams( a ), setBWrapped = this._bigrams( b );
-        const [ { buffer: setA }, { buffer: setB } ] = [ setAWrapped, setBWrapped ];
-        const sizeA = setA.size, sizeB = setB.size;
-
-        try {
-            // Calculate the intersection of bigrams
-            let intersection = 0;
-            for ( const bigram of setA ) if ( setB.has( bigram ) ) intersection++;
-
-            // Calculate the size of the union of both sets
-            const size = sizeA + sizeB;
-
-            // Return the result as a MetricCompute object
-            return {
-                res: size === 0 ? 1 : Metric.clamp( ( 2 * intersection ) / size ),
-                raw: { intersection, size }
-            };
-        } finally {
-            // Release sets back to the pool
-            Pool.release( 'set', setAWrapped );
-            Pool.release( 'set', setBWrapped );
-        }
-    }
-
+  }
 }
+
 
 // Register the Dice-Sørensen coefficient in the metric registry
 MetricRegistry.add( 'dice', DiceSorensenCoefficient );
