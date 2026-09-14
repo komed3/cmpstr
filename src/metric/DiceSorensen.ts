@@ -22,6 +22,7 @@
 
 'use strict';
 
+
 import type { Buffer, MetricCompute, MetricInput, MetricOptions } from '../utils/Types';
 
 import { Pool } from '../utils/Pool';
@@ -50,7 +51,7 @@ export class DiceSorensenCoefficient extends Metric< DiceRaw > {
    * @param {MetricInput} b - Second input string or array of strings
    * @param {MetricOptions} [opt] - Options for the metric computation
    */
-  constructor ( a: MetricInput, b: MetricInput, opt: MetricOptions = {} ) {
+  public constructor ( a: MetricInput, b: MetricInput, opt: MetricOptions = {} ) {
     super( 'dice', a, b, opt, true );
   }
 
@@ -60,9 +61,8 @@ export class DiceSorensenCoefficient extends Metric< DiceRaw > {
    * @param {string} str - The input string
    * @return {Set< string >} - A set of bigrams (two-character sequences) from the string
    */
-  private _bigrams ( str: string ) : Buffer< Set< string > > {
-    const len = str.length - 1;
-    const bigrams = Pool.acquire< Set< string > >( 'set', len );
+  private bigrams ( str: string ) : Buffer< Set< string > > {
+    const len = str.length - 1, bigrams = Pool.acquire< Set< string > >( 'set', len );
 
     // Generate bigrams by iterating through the string
     for ( let i = 0; i < len; i++ ) bigrams.buffer.add( str.substring( i, i + 2 ) );
@@ -78,7 +78,7 @@ export class DiceSorensenCoefficient extends Metric< DiceRaw > {
    */
   protected override compute ( a: string, b: string ) : MetricCompute< DiceRaw > {
     // Generate bigrams for both strings
-    const setAWrapped = this._bigrams( a ), setBWrapped = this._bigrams( b );
+    const setAWrapped = this.bigrams( a ), setBWrapped = this.bigrams( b );
     const [ { buffer: setA }, { buffer: setB } ] = [ setAWrapped, setBWrapped ];
     const sizeA = setA.size, sizeB = setB.size;
 
