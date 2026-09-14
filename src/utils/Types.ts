@@ -34,22 +34,22 @@ export type CmpStrErrorMeta = Record< string, any > | undefined;
  * Structured format for CmpStr errors when serialized to JSON.
  */
 export interface CmpStrErrorJSON {
-    // The name of the error class
+  // The name of the error class
+  name: string;
+  // The error message
+  code: string;
+  // The error message
+  message: string;
+  // Optional structured metadata
+  meta?: CmpStrErrorMeta;
+  // Timestamp when the error was created (ISO 8601)
+  when: string;
+  // Optional cause (serialized if it's an Error-like object)
+  cause?: {
     name: string;
-    // The error message
-    code: string;
-    // The error message
     message: string;
-    // Optional structured metadata
-    meta?: CmpStrErrorMeta;
-    // Timestamp when the error was created (ISO 8601)
-    when: string;
-    // Optional cause (serialized if it's an Error-like object)
-    cause?: {
-        name: string;
-        message: string;
-        stack?: string;
-    } | unknown;
+    stack?: string;
+  } | unknown;
 }
 
 /**
@@ -67,14 +67,14 @@ export interface CmpStrErrorJSON {
  * @template T - The type of the profiled result
  */
 export interface ProfilerEntry< T > {
-    // Execution time in milliseconds
-    time: number;
-    // Memory usage in bytes
-    mem: number;
-    // The result returned by the profiled function
-    res: T;
-    // Optional metadata associated with this entry
-    meta?: Record< string, any >;
+  // Execution time in milliseconds
+  time: number;
+  // Memory usage in bytes
+  mem: number;
+  // The result returned by the profiled function
+  res: T;
+  // Optional metadata associated with this entry
+  meta?: Record< string, any >;
 }
 
 /**
@@ -84,18 +84,18 @@ export interface ProfilerEntry< T > {
  * @template T - The type of the profiled result
  */
 export interface ProfilerService< T > {
-    // Enables the profiler
-    enable: () => void;
-    // Disables the profiler
-    disable: () => void;
-    // Clears all profiling entries
-    clear: () => void;
-    // Returns all profiling entries as an array
-    report: () => ProfilerEntry< T >[];
-    // Returns the last profiling entry, if any
-    last: () => ProfilerEntry< T > | undefined;
-    // Returns the total time and memory usage
-    total: () => { time: number, mem: number };
+  // Enables the profiler
+  enable: () => void;
+  // Disables the profiler
+  disable: () => void;
+  // Clears all profiling entries
+  clear: () => void;
+  // Returns all profiling entries as an array
+  report: () => ProfilerEntry< T >[];
+  // Returns the last profiling entry, if any
+  last: () => ProfilerEntry< T > | undefined;
+  // Returns the total time and memory usage
+  total: () => { time: number, mem: number };
 }
 
 /**
@@ -107,14 +107,14 @@ export type PoolType = 'int32' | 'arr[]' | 'number[]' | 'string[]' | 'set' | 'ma
  * PoolConfig defines the configuration for a buffer pool.
  */
 export interface PoolConfig {
-    // The type of buffer managed by the pool
-    type: PoolType;
-    // Maximum number of buffers in the pool
-    maxSize: number;
-    // Maximum allowed size for a single buffer
-    maxItemSize: number;
-    // Whether to allow allocation of buffers larger than maxItemSize
-    allowOversize: boolean;
+  // The type of buffer managed by the pool
+  type: PoolType;
+  // Maximum number of buffers in the pool
+  maxSize: number;
+  // Maximum allowed size for a single buffer
+  maxItemSize: number;
+  // Whether to allow allocation of buffers larger than maxItemSize
+  allowOversize: boolean;
 }
 
 /**
@@ -123,10 +123,10 @@ export interface PoolConfig {
  * @template T - The buffer type
  */
 export interface RawBuffer< T > {
-    // The buffer instance
-    buffer: T;
-    // The size of the buffer
-    size: number;
+  // The buffer instance
+  buffer: T;
+  // The size of the buffer
+  size: number;
 }
 
 /**
@@ -135,8 +135,8 @@ export interface RawBuffer< T > {
  * @template T - The buffer type
  */
 export interface PoolBuffer< T > extends RawBuffer< T > {
-    //The ID of the buffer in the pool
-    id: number;
+  //The ID of the buffer in the pool
+  id: number;
 }
 
 export type Buffer< T > = RawBuffer< T > | PoolBuffer< T >;
@@ -191,28 +191,28 @@ export type FilterFn = ( input: string ) => string;
  * FilterOptions configures the behavior of a filter entry.
  */
 export interface FilterOptions {
-    // Priority for filter execution order (lower runs first)
-    priority?: number;
-    // Whether the filter is currently active
-    active?: boolean;
-    // Whether the filter can be overridden by another filter
-    overrideable?: boolean;
+  // Priority for filter execution order (lower runs first)
+  priority?: number;
+  // Whether the filter is currently active
+  active?: boolean;
+  // Whether the filter can be overridden by another filter
+  overrideable?: boolean;
 }
 
 /**
  * FilterEntry represents a single filter in the filter system.
  */
 export interface FilterEntry {
-    // Unique identifier for the filter
-    id: string;
-    // The filter function
-    fn: FilterFn;
-    // Execution priority
-    priority: number;
-    // Whether the filter is active
-    active: boolean;
-    // Whether the filter is overrideable
-    overrideable: boolean;
+  // Unique identifier for the filter
+  id: string;
+  // The filter function
+  fn: FilterFn;
+  // Execution priority
+  priority: number;
+  // Whether the filter is active
+  active: boolean;
+  // Whether the filter is overrideable
+  overrideable: boolean;
 }
 
 /**
@@ -236,16 +236,16 @@ export type RegistryConstructor< T > = abstract new ( ...args: any[] ) => T;
  * @template T - The class type managed by the registry
  */
 export interface RegistryService< T > {
-    // Adds a class to the registry
-    add: ( name: string, cls: RegistryConstructor< T >, update?: boolean ) => void;
-    // Removes a class from the registry by name
-    remove: ( name: string ) => void;
-    // Checks if a class exists in the registry
-    has: ( name: string ) => boolean;
-    // Retrieves a class constructor by name
-    get: ( name: string ) => RegistryConstructor< T >;
-    // Lists all registered class names
-    list: () => string[];
+  // Adds a class to the registry
+  add: ( name: string, cls: RegistryConstructor< T >, update?: boolean ) => void;
+  // Removes a class from the registry by name
+  remove: ( name: string ) => void;
+  // Checks if a class exists in the registry
+  has: ( name: string ) => boolean;
+  // Retrieves a class constructor by name
+  get: ( name: string ) => RegistryConstructor< T >;
+  // Lists all registered class names
+  list: () => string[];
 }
 
 /**
@@ -275,20 +275,20 @@ export type MetricMode = 'default' | 'batch' | 'single' | 'pairwise';
  * MetricOptions configures the behavior of metric computations.
  */
 export interface MetricOptions {
-    // The computation mode
-    mode?: MetricMode;
-    // Delimiter for tokenization (if applicable)
-    delimiter?: string;
-    // Padding character for alignment algorithms
-    pad?: string;
-    // q-gram length for q-gram metrics
-    q?: number;
-    // Match score for alignment metrics
-    match?: number;
-    // Mismatch penalty for alignment metrics
-    mismatch?: number;
-    // Gap penalty for alignment metrics
-    gap?: number;
+  // The computation mode
+  mode?: MetricMode;
+  // Delimiter for tokenization (if applicable)
+  delimiter?: string;
+  // Padding character for alignment algorithms
+  pad?: string;
+  // q-gram length for q-gram metrics
+  q?: number;
+  // Match score for alignment metrics
+  match?: number;
+  // Mismatch penalty for alignment metrics
+  mismatch?: number;
+  // Gap penalty for alignment metrics
+  gap?: number;
 }
 
 /**
@@ -302,10 +302,10 @@ export type MetricRaw = Record< string, any >;
  * @template R - The type of the raw result
  */
 export interface MetricCompute< R = MetricRaw > {
-    // The normalized similarity score (0..1)
-    res: number;
-    // Optional raw metric-specific data
-    raw?: R;
+  // The normalized similarity score (0..1)
+  res: number;
+  // Optional raw metric-specific data
+  raw?: R;
 }
 
 /**
@@ -314,15 +314,15 @@ export interface MetricCompute< R = MetricRaw > {
  * @template R - The type of the raw result
  */
 export interface MetricResultSingle< R = MetricRaw > {
-    // The metric algorithm name
-    metric: string;
-    // The source and target strings
-    a: string;
-    b: string;
-    // The normalized similarity score (0..1)
-    res: number;
-    // Optional raw metric-specific data
-    raw?: R;
+  // The metric algorithm name
+  metric: string;
+  // The source and target strings
+  a: string;
+  b: string;
+  // The normalized similarity score (0..1)
+  res: number;
+  // Optional raw metric-specific data
+  raw?: R;
 }
 
 /**
@@ -358,10 +358,10 @@ export type IndexedResult< R = MetricRaw > = MetricResultSingle< R > & { __idx?:
  * CmpStrResult represents a simplified result for user-facing API methods.
  */
 export interface CmpStrResult {
-    // The source and target strings
-    source: string; target: string;
-    // The similarity score (0..1)
-    match: number;
+  // The source and target strings
+  source: string; target: string;
+  // The similarity score (0..1)
+  match: number;
 }
 
 /**
@@ -397,76 +397,76 @@ export type CmpFnResult< R > = MetricResultSingle< R >[] | ( CmpStrResult & { ra
  * PhoneticOptions configures the behavior of phonetic algorithms.
  */
 export interface PhoneticOptions {
-    // Mapping identifier
-    map?: string;
-    // Delimiter for splitting input
-    delimiter?: string;
-    // Fixed length for phonetic codes
-    length?: number;
-    // Padding character for codes
-    pad?: string;
-    // Whether to deduplicate codes
-    dedupe?: boolean;
-    // Fallback character for missing mappings
-    fallback?: string | undefined;
+  // Mapping identifier
+  map?: string;
+  // Delimiter for splitting input
+  delimiter?: string;
+  // Fixed length for phonetic codes
+  length?: number;
+  // Padding character for codes
+  pad?: string;
+  // Whether to deduplicate codes
+  dedupe?: boolean;
+  // Fallback character for missing mappings
+  fallback?: string | undefined;
 }
 
 /**
  * PhoneticRule defines a single rule for phonetic mapping.
  */
 export interface PhoneticRule {
-    // The character to match
-    char: string;
-    // The code to assign
-    code: string;
-    // Position in the word (start, middle, end)
-    position?: 'start' | 'middle' | 'end';
-    // Previous character(s) required
-    prev?: string[];
-    prevNot?: string[];
-    // Two characters before required
-    prev2?: string[];
-    prev2Not?: string[];
-    // Next character(s) required
-    next?: string[];
-    nextNot?: string[];
-    // Two characters after required
-    next2?: string[];
-    next2Not?: string[];
-    // Leading substring required
-    leading?: string;
-    // Trailing substring required
-    trailing?: string;
-    // Additional match patterns
-    match?: string[];
+  // The character to match
+  char: string;
+  // The code to assign
+  code: string;
+  // Position in the word (start, middle, end)
+  position?: 'start' | 'middle' | 'end';
+  // Previous character(s) required
+  prev?: string[];
+  prevNot?: string[];
+  // Two characters before required
+  prev2?: string[];
+  prev2Not?: string[];
+  // Next character(s) required
+  next?: string[];
+  nextNot?: string[];
+  // Two characters after required
+  next2?: string[];
+  next2Not?: string[];
+  // Leading substring required
+  leading?: string;
+  // Trailing substring required
+  trailing?: string;
+  // Additional match patterns
+  match?: string[];
 }
 
 /**
  * PhoneticPattern defines a single pattern for phonetic mapping.
  */
 export interface PhoneticPattern {
-    // The pattern to match
-    pattern: RegExp;
-    // The replacement string
-    replace: string;
-    // If true, replaceAll will be used
-    all?: boolean;
+  // The pattern to match
+  pattern: RegExp;
+  // The replacement string
+  replace: string;
+  // If true, replaceAll will be used
+  all?: boolean;
 }
 
 /**
  * PhoneticMap defines a mapping for a specific phonetic algorithm and language.
  */
 export interface PhoneticMap {
-    // Character-to-code mapping
-    map: Record< string, string >;
-    // Optional set of phonetic patterns
-    patterns?: PhoneticPattern[];
-    // Optional set of phonetic rules
-    ruleset?: PhoneticRule[];
-    // Characters to ignore
-    ignore?: string[];
-    // Optional options for the mapping
-    options?: PhoneticOptions;
+  // Character-to-code mapping
+  map: Record< string, string >;
+  // Optional set of phonetic patterns
+  patterns?: PhoneticPattern[];
+  // Optional set of phonetic rules
+  ruleset?: PhoneticRule[];
+  // Characters to ignore
+  ignore?: string[];
+  // Optional options for the mapping
+  options?: PhoneticOptions;
 }
 
 /**
@@ -478,16 +478,16 @@ export type PhoneticMapping = Record< string, PhoneticMap >;
  * PhoneticMappingService defines the API for managing phonetic mappings.
  */
 export interface PhoneticMappingService {
-    // Adds a phonetic mapping for an algorithm and ID
-    add: ( algo: string, id: string, map: PhoneticMap, update?: boolean ) => void;
-    // Removes a phonetic mapping by algorithm and ID
-    remove: ( algo: string, id: string ) => void;
-    // Checks if a mapping exists for algorithm and ID
-    has: ( algo: string, id: string ) => boolean;
-    // Retrieves a phonetic map by algorithm and ID
-    get: ( algo: string, id: string ) => PhoneticMap | undefined;
-    // Lists all mapping IDs for an algorithm
-    list: ( algo: string ) => string[];
+  // Adds a phonetic mapping for an algorithm and ID
+  add: ( algo: string, id: string, map: PhoneticMap, update?: boolean ) => void;
+  // Removes a phonetic mapping by algorithm and ID
+  remove: ( algo: string, id: string ) => void;
+  // Checks if a mapping exists for algorithm and ID
+  has: ( algo: string, id: string ) => boolean;
+  // Retrieves a phonetic map by algorithm and ID
+  get: ( algo: string, id: string ) => PhoneticMap | undefined;
+  // Lists all mapping IDs for an algorithm
+  list: ( algo: string ) => string[];
 }
 
 /**
@@ -509,75 +509,75 @@ export type DiffMode = 'line' | 'word';
  * DiffOptions configures the behavior of the DiffChecker utility.
  */
 export interface DiffOptions {
-    // Diff granularity: 'line' or 'word'
-    mode?: DiffMode;
-    // Whether to ignore case
-    caseInsensitive?: boolean;
-    // Number of context lines to include
-    contextLines?: number;
-    // Whether to group adjacent changes
-    groupedLines?: boolean;
-    // Whether to expand all lines
-    expandLines?: boolean;
-    // Show change magnitude in output
-    showChangeMagnitude?: boolean;
-    // Maximum number of magnitude symbols
-    maxMagnitudeSymbols?: number;
-    // Line break character(s) for output
-    lineBreak?: string;
+  // Diff granularity: 'line' or 'word'
+  mode?: DiffMode;
+  // Whether to ignore case
+  caseInsensitive?: boolean;
+  // Number of context lines to include
+  contextLines?: number;
+  // Whether to group adjacent changes
+  groupedLines?: boolean;
+  // Whether to expand all lines
+  expandLines?: boolean;
+  // Show change magnitude in output
+  showChangeMagnitude?: boolean;
+  // Maximum number of magnitude symbols
+  maxMagnitudeSymbols?: number;
+  // Line break character(s) for output
+  lineBreak?: string;
 }
 
 /**
  * DiffEntry represents a single change (insertion or deletion) in a diff.
  */
 export interface DiffEntry {
-    // Position in the original and modified text
-    posA: number;
-    posB: number;
-    // Deleted and inserted strings
-    del: string;
-    ins: string;
-    // Size difference (ins.length - del.length)
-    size: number;
+  // Position in the original and modified text
+  posA: number;
+  posB: number;
+  // Deleted and inserted strings
+  del: string;
+  ins: string;
+  // Size difference (ins.length - del.length)
+  size: number;
 }
 
 /**
  * DiffLine represents the diff for a single line, including all changes.
  */
 export interface DiffLine {
-    // Line number
-    line: number;
-    // Array of diff entries for this line
-    diffs: DiffEntry[];
-    // Total deleted / inserted characters
-    delSize: number;
-    insSize: number;
-    // Total size difference
-    totalSize: number;
-    // Base length for normalization
-    baseLen: number;
-    // Magnitude string (e.g., `++-`)
-    magnitude: string;
+  // Line number
+  line: number;
+  // Array of diff entries for this line
+  diffs: DiffEntry[];
+  // Total deleted / inserted characters
+  delSize: number;
+  insSize: number;
+  // Total size difference
+  totalSize: number;
+  // Base length for normalization
+  baseLen: number;
+  // Magnitude string (e.g., `++-`)
+  magnitude: string;
 }
 
 /**
  * DiffGroup represents a group of adjacent changed lines in a diff.
  */
 export interface DiffGroup {
-    // Line number of the first changed line
-    line: number;
-    // Start / end lines of the group
-    start: number;
-    end: number;
-    // Array of DiffLine entries in this group
-    entries: DiffLine[];
-    // Total deleted / inserted characters in the group
-    delSize: number;
-    insSize: number;
-    // Total size difference in the group
-    totalSize: number;
-    // Magnitude string for the group
-    magnitude: string;
+  // Line number of the first changed line
+  line: number;
+  // Start / end lines of the group
+  start: number;
+  end: number;
+  // Array of DiffLine entries in this group
+  entries: DiffLine[];
+  // Total deleted / inserted characters in the group
+  delSize: number;
+  insSize: number;
+  // Total size difference in the group
+  totalSize: number;
+  // Magnitude string for the group
+  magnitude: string;
 }
 
 /**
@@ -592,35 +592,35 @@ export interface DiffGroup {
  * CmpStrProcessors defines pre-processors for input strings before comparison.
  */
 export interface CmpStrProcessors {
-    // Phonetic indexing
-    phonetic?: {
-        // Phonetic algorithm name
-        algo: string;
-        // Options for the phonetic algorithm
-        opt?: PhoneticOptions;
-    };
+  // Phonetic indexing
+  phonetic?: {
+    // Phonetic algorithm name
+    algo: string;
+    // Options for the phonetic algorithm
+    opt?: PhoneticOptions;
+  };
 }
 
 /**
  * CmpStrOptions configures the behavior of a CmpStr instance.
  */
 export interface CmpStrOptions {
-    // Whether to return raw metric results
-    raw?: boolean;
-    // Remove zero results from batch output
-    removeZero?: boolean;
-    // Normalization flags
-    flags?: NormalizeFlags;
-    // Metric algorithm name
-    metric?: string;
-    // Options for the metric algorithm
-    opt?: MetricOptions;
-    // Pre-processors for input preparation
-    processors?: CmpStrProcessors;
-    // Select the string output mode
-    output?: 'orig' | 'prep';
-    // Safe mode: return empty array for empty inputs
-    safeEmpty?: boolean;
+  // Whether to return raw metric results
+  raw?: boolean;
+  // Remove zero results from batch output
+  removeZero?: boolean;
+  // Normalization flags
+  flags?: NormalizeFlags;
+  // Metric algorithm name
+  metric?: string;
+  // Options for the metric algorithm
+  opt?: MetricOptions;
+  // Pre-processors for input preparation
+  processors?: CmpStrProcessors;
+  // Select the string output mode
+  output?: 'orig' | 'prep';
+  // Safe mode: return empty array for empty inputs
+  safeEmpty?: boolean;
 }
 
 /**
@@ -638,14 +638,14 @@ export interface CmpStrOptions {
  * @template R - The type of the metric raw result
  */
 export interface StructuredDataResult< T = any, R = MetricRaw > {
-    // The original object
-    obj: T;
-    // The property key that was compared
-    key: keyof T;
-    // The comparison result (CmpStrResult format)
-    result: CmpStrResult;
-    // Optional raw metric data
-    raw?: R;
+  // The original object
+  obj: T;
+  // The property key that was compared
+  key: keyof T;
+  // The comparison result (CmpStrResult format)
+  result: CmpStrResult;
+  // Optional raw metric data
+  raw?: R;
 }
 
 /**
@@ -668,8 +668,8 @@ export type StructuredResultLike< T = any, R = MetricRaw > = StructuredDataBatch
  * StructuredDataOptions configures the lookup behavior.
  */
 export interface StructuredDataOptions extends Omit< CmpStrOptions, 'raw' > {
-    // Sort results by match score (desc by default)
-    sort?: boolean | 'asc' | 'desc';
-    // Return only the original objects without metadata (minimal structure)
-    objectsOnly?: boolean;
+  // Sort results by match score (desc by default)
+  sort?: boolean | 'asc' | 'desc';
+  // Return only the original objects without metadata (minimal structure)
+  objectsOnly?: boolean;
 }
