@@ -28,6 +28,7 @@
 
 'use strict';
 
+
 import type {
   MetricCompute, MetricInput, MetricMode, MetricOptions, MetricRaw, MetricResult,
   MetricResultBatch, MetricResultSingle, RegistryService
@@ -52,7 +53,7 @@ const profiler = Profiler.getInstance();
 export abstract class Metric< R = MetricRaw > {
 
   /** Cache for metric computations to avoid redundant calculations */
-  private static cache: HashTable< string, MetricCompute< any > > = new HashTable ();
+  private static cache: HashTable< string, MetricCompute< any > > = new HashTable();
 
   /** Metric name for identification */
   private readonly metric: string;
@@ -119,7 +120,7 @@ export abstract class Metric< R = MetricRaw > {
    * @param {boolean} [symmetric=false] - Whether the metric is symmetric (same result for inputs in any order)
    * @throws {CmpStrUsageError} - If the inputs are empty or invalid
    */
-  constructor (
+  public constructor (
     metric: string, a: MetricInput, b: MetricInput,
     opt: MetricOptions = {}, symmetric: boolean = false
   ) {
@@ -194,8 +195,8 @@ export abstract class Metric< R = MetricRaw > {
   private runSingle ( i: number, j: number ) : MetricResultSingle< R > {
     return ErrorUtil.wrap< MetricResultSingle< R > >( () => {
       // Type safety: convert inputs to strings
-      let a = String ( this.a[ i ] ), A = a;
-      let b = String ( this.b[ j ] ), B = b;
+      let a = String( this.a[ i ] ), A = a;
+      let b = String( this.b[ j ] ), B = b;
 
       // Get lengths
       let m = A.length, n = B.length;
@@ -431,7 +432,7 @@ export abstract class Metric< R = MetricRaw > {
    * 
    * @param {MetricMode} [mode] - The mode to run the metric in (optional)
    * @param {boolean} [clear=true] - Whether to clear previous results before running
-   * @returns {Promise<void>} - A promise that resolves when the metric computation is complete
+   * @returns {Promise< void >} - A promise that resolves when the metric computation is complete
    * @throws {CmpStrInternalError} - If an unsupported mode is specified
    */
   public async runAsync ( mode?: MetricMode, clear: boolean = true ) : Promise< void > {
