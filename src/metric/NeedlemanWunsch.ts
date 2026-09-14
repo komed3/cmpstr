@@ -66,7 +66,8 @@ export class NeedlemanWunschDistance extends Metric< NeedlemanRaw > {
 
         // Get two reusable arrays from the Pool for the DP rows
         const len = m + 1;
-        const [ prev, curr ] = Pool.acquireMany< Int32Array >( 'int32', [ len, len ] );
+        const [ prevWrapped, currWrapped ] = Pool.acquireMany< Int32Array >( 'int32', [ len, len ] );
+        const [ { buffer: prev }, { buffer: curr } ] = [ prevWrapped, currWrapped ];
 
         try {
             // Initialize the first row (gap penalties)
@@ -108,8 +109,8 @@ export class NeedlemanWunschDistance extends Metric< NeedlemanRaw > {
             };
         } finally {
             // Release arrays back to the pool
-            Pool.release( 'int32', prev, len );
-            Pool.release( 'int32', curr, len );
+            Pool.release( 'int32', prevWrapped );
+            Pool.release( 'int32', currWrapped );
         }
     }
 

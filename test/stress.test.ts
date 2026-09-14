@@ -132,13 +132,13 @@ describe( 'CmpStr > Stress Tests', () => {
 
     it( 'Zero-Result Removal on Large Dataset', () => {
         const cmp = CmpStr.create( { metric: 'levenshtein', removeZero: true } );
-        const strings = Array.from( { length: 500 }, ( _, i ) => i % 2 === 0 ? `match_${i}` : `nomatch_${i}` );
+        const strings = Array.from( { length: 500 }, ( _, i ) => i % 2 === 0 ? `even_${i}` : `odd_${i}` );
 
         const startTime = performance.now();
-        const res = cmp.batchTest( strings, 'match_1' );
+        const res = cmp.batchTest( strings, 'odd' );
         const endTime = performance.now();
 
-        expect( res.length ).toBeLessThan( strings.length );
+        expect( res.length ).toEqual( (strings.length - (strings.length % 2)) / 2 );
         expect( res.every( ( r: any ) => r.match > 0 ) ).toBe( true );
         expect( endTime - startTime ).toBeLessThan( 100 );
     } );

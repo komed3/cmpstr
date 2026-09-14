@@ -105,7 +105,7 @@ export class StructuredData< T = any, R = MetricRaw > {
      * Type guard to check if a value is CmpStrResult & { raw?: R }.
      * 
      * @param {unknown} v - The value to check
-     * @returns {v is CmpStrResult & { raw?: R }
+     * @returns {v is CmpStrResult & { raw?: R }}
      */
     private isCmpStrResult ( v: unknown ) : v is CmpStrResult & { raw?: R } {
         return typeof v === 'object' && v !== null && 'source' in v && 'target' in v && 'match' in v;
@@ -170,8 +170,10 @@ export class StructuredData< T = any, R = MetricRaw > {
         removeZero?: boolean, objectsOnly?: boolean
     ) : StructuredDataResult< T, R >[] | T[] {
         const m = extractedStrings.length, n = results.length;
-        const stringToIndices = Pool.acquire< Map< string, number[] > >( 'map', m );
-        const occurrenceCount = Pool.acquire< Map< string, number > >( 'map', n );
+        const stringToIndicesWrapped = Pool.acquire< Map< string, number[] > >( 'map', m );
+        const occurrenceCountWrapped = Pool.acquire< Map< string, number > >( 'map', n );
+        const [ { buffer: stringToIndices }, { buffer: occurrenceCount } ] = [ stringToIndicesWrapped, occurrenceCountWrapped ];
+
         const output = new Array< StructuredDataResult< T, R > | T >( n );
 
         stringToIndices.clear();
@@ -231,8 +233,8 @@ export class StructuredData< T = any, R = MetricRaw > {
             output.length = out;
             return output as StructuredDataResult< T, R >[] | T[];
         } finally {
-            Pool.release< Map< string, number[] > >( 'map', stringToIndices, m );
-            Pool.release< Map< string, number > >( 'map', occurrenceCount, n );
+            Pool.release< Map< string, number[] > >( 'map', stringToIndicesWrapped );
+            Pool.release< Map< string, number > >( 'map', occurrenceCountWrapped );
         }
     }
 
@@ -317,7 +319,7 @@ export class StructuredData< T = any, R = MetricRaw > {
         const b = this.extract();
 
         try { return this.performLookup( () => fn( query, b, opt ), b, opt ) }
-        finally { Pool.release( 'string[]', b, b.length ) }
+        finally { Pool.release( 'string[]', { buffer: b, size: b.length } ) }
     }
 
     /**
@@ -335,7 +337,7 @@ export class StructuredData< T = any, R = MetricRaw > {
         const b = this.extract();
 
         try { return await this.performLookupAsync( () => fn( query, b, opt ), b, opt ) }
-        finally { Pool.release( 'string[]', b, b.length ) }
+        finally { Pool.release( 'string[]', { buffer: b, size: b.length } ) }
     }
 
     /**
@@ -357,8 +359,8 @@ export class StructuredData< T = any, R = MetricRaw > {
 
         try { return this.performLookup( () => fn( a, b, opt ), a, opt ) }
         finally {
-            Pool.release( 'string[]', a, a.length );
-            Pool.release( 'string[]', b, b.length );
+            Pool.release( 'string[]', { buffer: a, size: a.length } );
+            Pool.release( 'string[]', { buffer: b, size: b.length } );
         }
     }
 
@@ -381,8 +383,8 @@ export class StructuredData< T = any, R = MetricRaw > {
 
         try { return await this.performLookupAsync( () => fn( a, b, opt ), a, opt ) }
         finally {
-            Pool.release( 'string[]', a, a.length );
-            Pool.release( 'string[]', b, b.length );
+            Pool.release( 'string[]', { buffer: a, size: a.length } );
+            Pool.release( 'string[]', { buffer: b, size: b.length } );
         }
     }
 
