@@ -19,6 +19,7 @@
 
 'use strict';
 
+
 import type { CmpStrErrorJSON, CmpStrErrorMeta } from './Types';
 
 
@@ -203,7 +204,7 @@ export class ErrorUtil {
    */
   public static format ( err: unknown ) : string {
     if ( err instanceof CmpStrError ) return err.toString();
-    if ( err instanceof Error ) return `${err.name}: ${err.message}`;
+    if ( err instanceof Error ) return `${ err.name }: ${ err.message }`;
     return String( err );
   }
 

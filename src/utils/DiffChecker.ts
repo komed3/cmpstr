@@ -28,6 +28,7 @@
 
 'use strict';
 
+
 import type { DiffEntry, DiffGroup, DiffLine, DiffOptions } from './Types';
 
 
@@ -296,11 +297,8 @@ export class DiffChecker {
     // Helper function to add a group to the grouped array
     const addGroup = ( group: DiffLine[], start: number, end: number ) : void => {
       // Calculate total sizes and base length for the group
-      const [ delSize, insSize, totalSize, baseLen ] = [
-        'delSize', 'insSize', 'totalSize', 'baseLen'
-      ].map( k => group.reduce(
-        ( sum, e ) => sum + ( e as any )[ k ], 0
-      ) );
+      const [ delSize, insSize, totalSize, baseLen ] = [ 'delSize', 'insSize', 'totalSize', 'baseLen' ]
+        .map( k => group.reduce( ( sum, e ) => sum + ( e as any )[ k ], 0 ) );
 
       // Push the group to the grouped array
       this.grouped.push( {
@@ -379,7 +377,7 @@ export class DiffChecker {
     const linePad = Math.max( 4, maxLen.toString().length );
 
     // Helper functions for coloring and formatting (ASCII or CLI colored)
-    const highlight = ( s: string, ansi: string ) : string => cli ? `\x1b[${ansi}m${s}\x1b[0m` : s;
+    const highlight = ( s: string, ansi: string ) : string => cli ? `\x1b[${ ansi }m${ s }\x1b[0m` : s;
 
     const cy = ( s: string ) : string => highlight( s, '36' );
     const gy = ( s: string ) : string => highlight( s, '90' );
@@ -387,8 +385,8 @@ export class DiffChecker {
     const rd = ( s: string ) : string => highlight( s, '31' );
     const ye = ( s: string ) : string => highlight( s, '33' );
 
-    const del = ( s: string ) : string => cli ? `\x1b[37;41m${s}\x1b[31;49m` : `-[${s}]`;
-    const ins = ( s: string ) : string => cli ? `\x1b[37;42m${s}\x1b[32;49m` : `+[${s}]`;
+    const del = ( s: string ) : string => cli ? `\x1b[37;41m${ s }\x1b[31;49m` : `-[${ s }]`;
+    const ins = ( s: string ) : string => cli ? `\x1b[37;42m${ s }\x1b[32;49m` : `+[${ s }]`;
 
     // Function to output a block of lines with optional header
     const block = ( start: number, end: number, forced?: number, headerEntry?: DiffGroup | DiffLine ) : void => {
@@ -403,7 +401,7 @@ export class DiffChecker {
     // Function to output a header for a group or line
     const header = ( e: DiffGroup | DiffLine ) : void => {
       out.push( `${ ( ' '.repeat( linePad ) ) }   ${ (
-        cy( `@@ -${ ( e.line + 1 ) },${e.delSize} +${( e.line + 1 ) },${e.insSize} @@` )
+        cy( `@@ -${ ( e.line + 1 ) },${ e.delSize } +${ ( e.line + 1 ) },${ e.insSize } @@` )
       ) } ${ ( showChangeMagnitude ? ye( e.magnitude ) : '' ) }` );
     };
 
@@ -419,11 +417,11 @@ export class DiffChecker {
 
         if ( entry && forced === i ) {
           // If there is an entry, output the line with diff highlighting
-          out.push( `${lineNo} ${ rd( `- ${ mark( linesA[ i ], entry.diffs, 'del' ) }` ) }` );
+          out.push( `${ lineNo } ${ rd( `- ${ mark( linesA[ i ], entry.diffs, 'del' ) }` ) }` );
           out.push( `${ ' '.repeat( linePad ) } ${ gn( `+ ${ mark( linesB[ i ], entry.diffs, 'ins' ) }` ) }` );
         } else {
           // If no entry, just output the line without diff (context lines)
-          out.push( `${lineNo}   ${ gy( linesA[ i ] ) }` );
+          out.push( `${ lineNo }   ${ gy( linesA[ i ] ) }` );
         }
       }
     };
@@ -464,15 +462,12 @@ export class DiffChecker {
         break;
 
       case groupedLines: // For groupedLines, output each group with its start and end
-        for ( const group of this.grouped ) block(
-          group.start, group.end, undefined, group
-        );
+        for ( const group of this.grouped ) block( group.start, group.end, undefined, group );
         break;
 
       default: // For individual lines, output each entry with context lines
-        for ( const entry of this.entries ) block(
-          entry.line - contextLines, entry.line + contextLines, entry.line, entry
-        );
+        for ( const entry of this.entries )
+          block( entry.line - contextLines, entry.line + contextLines, entry.line, entry );
         break;
     }
 
