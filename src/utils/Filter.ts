@@ -68,14 +68,12 @@ export class Filter {
 
       // Compile the pipeline from active filters sorted by priority
       const pipeline: FilterEntry[] = [];
-
       for ( const f of filter.values() ) if ( f.active ) pipeline.push( f );
       pipeline.sort( ( a, b ) => a.priority - b.priority );
 
       const fn: FilterFn = pipeline.length === 0 ? Filter.IDENTITY : ( input: string ) => {
         let v = input;
         for ( let i = 0; i < pipeline.length; i++ ) v = pipeline[ i ].fn( v );
-
         return v;
       };
 
