@@ -51,8 +51,8 @@
 // Export the types and interfaces for the library
 export * from './utils/Types';
 export type {
-    CmpStrError, CmpStrValidationError, CmpStrNotFoundError,
-    CmpStrUsageError, CmpStrInternalError, ErrorCode
+  CmpStrError, CmpStrValidationError, CmpStrNotFoundError,
+  CmpStrUsageError, CmpStrInternalError, ErrorCode
 } from './utils/Errors';
 
 // Export the main CmpStr class and its async variant

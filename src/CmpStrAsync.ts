@@ -24,9 +24,9 @@
 'use strict';
 
 import type {
-    BatchResultLike, CmpStrOptions, CmpStrProcessors, CmpStrResult, FilterHooks, MetricInput,
-    MetricMode, MetricRaw, MetricResult, MetricResultBatch, MetricResultSingle, NormalizeFlags,
-    PhoneticOptions, ResultLike, StructuredDataOptions, StructuredResultLike
+  BatchResultLike, CmpStrOptions, CmpStrProcessors, CmpStrResult, FilterHooks, MetricInput,
+  MetricMode, MetricRaw, MetricResult, MetricResultBatch, MetricResultSingle, NormalizeFlags,
+  PhoneticOptions, ResultLike, StructuredDataOptions, StructuredResultLike
 } from './utils/Types';
 
 import { ErrorUtil } from './utils/Errors';
@@ -48,501 +48,501 @@ import { CmpStr } from './CmpStr';
  */
 export class CmpStrAsync< R = MetricRaw > extends CmpStr< R > {
 
-    /**
-     * ================================================================================
-     * Instanciate the CmpStrAsync class
-     * ================================================================================
-     * 
-     * Methods to create a new CmpStrAsync instance with the given options.
-     * Using the static `create` method is recommended to ensure proper instantiation.
-     */
+  /**
+   * ================================================================================
+   * Instanciate the CmpStrAsync class
+   * ================================================================================
+   * 
+   * Methods to create a new CmpStrAsync instance with the given options.
+   * Using the static `create` method is recommended to ensure proper instantiation.
+   */
 
-    /**
-     * Creates a new CmpStrAsync instance with the given options.
-     * 
-     * @param {string | CmpStrOptions} [opt] - Optional serialized or options object
-     * @returns {CmpStrAsync< R >} - A new CmpStrAsync instance
-     */
-    public static override create< R = MetricRaw > ( opt?: string | CmpStrOptions ) : CmpStrAsync< R > {
-        return new CmpStrAsync ( opt );
+  /**
+   * Creates a new CmpStrAsync instance with the given options.
+   * 
+   * @param {string | CmpStrOptions} [opt] - Optional serialized or options object
+   * @returns {CmpStrAsync< R >} - A new CmpStrAsync instance
+   */
+  public static override create< R = MetricRaw > ( opt?: string | CmpStrOptions ) : CmpStrAsync< R > {
+    return new CmpStrAsync ( opt );
+  }
+
+  /**
+   * Creates a new CmpStrAsync instance calliing the super constructor.
+   * 
+   * @param {string | CmpStrOptions} [opt] - Optional serialized or options object
+   */
+  protected constructor ( opt?: string | CmpStrOptions ) { super ( opt ) }
+
+  /**
+   * ================================================================================-
+   * Protected asynchronously utility methods for internal use
+   * ================================================================================-
+   * 
+   * These methods provide asynchronous normalization, filtering, and metric
+   * computation capabilities, allowing for non-blocking operations.
+   */
+
+  /**
+   * Asynchronously normalizes the input string or array using the configured or provided flags.
+   * 
+   * @param {MetricInput} input - The input string or array
+   * @param {NormalizeFlags} [flags] - Normalization flags
+   * @returns {Promise< MetricInput >} - The normalized input
+   */
+  protected async normalizeAsync ( input: MetricInput, flags?: NormalizeFlags ) : Promise< MetricInput > {
+    return Normalizer.normalizeAsync( input, flags ?? this.options.flags ?? '' );
+  }
+
+  /**
+   * Asynchronously applies all active filters to the input string or array.
+   * 
+   * @param {MetricInput} input - The input string or array
+   * @param {FilterHooks} [hook='input'] - The filter hook
+   * @returns {Promise< MetricInput >} - The filtered string(s)
+   */
+  protected async filterAsync ( input: MetricInput, hook: FilterHooks ) : Promise< MetricInput > {
+    return Filter.applyAsync( hook, input );
+  }
+
+  /**
+   * Asynchronously prepares the input by normalizing and filtering.
+   * 
+   * @param {MetricInput} [input] - The input string or array
+   * @param {CmpStrOptions} [opt] - Optional options to use
+   * @returns {Promise< MetricInput >} - The prepared input
+   */
+  protected async prepareAsync ( input: MetricInput, opt?: CmpStrOptions ) : Promise< MetricInput > {
+    const { flags, processors } = opt ?? this.options;
+
+    // Normalize the input using flags (i.e., 'itw')
+    if ( flags?.length ) input = await this.normalizeAsync( input, flags );
+
+    // Filter the input using hooked up filters
+    input = await this.filterAsync( input, 'input' );
+
+    // Apply phonetic processors if configured
+    if ( processors?.phonetic ) input = await this.indexAsync( input, processors.phonetic );
+
+    return input;
+  }
+
+  /**
+   * Asynchronously computes the phonetic index for the given input using
+   * the specified phonetic algorithm.
+   * 
+   * @param {MetricInput} input - The input string or array
+   * @param {{ algo: string, opt?: PhoneticOptions }} options - The phonetic algorithm and options
+   * @returns {Promise< MetricInput >} - The phonetic index for the given input
+   */
+  protected async indexAsync ( input: MetricInput, { algo, opt }: {
+    algo: string, opt?: PhoneticOptions
+  } ) : Promise< MetricInput > {
+    this.assert( 'phonetic', algo );
+    const phonetic: Phonetic = factory[ 'phonetic' ]( algo, opt );
+    const delimiter = opt?.delimiter ?? ' ';
+
+    return Array.isArray( input )
+      ? Promise.all( input.map( s => phonetic.getIndexAsync( s ).then( r => r.join( delimiter ) ) ) )
+      : phonetic.getIndexAsync( input ).then( r => r.join( delimiter ) );
+  }
+
+  /**
+   * Asynchronously computes the metric result for the given inputs, applying
+   * normalization and filtering as configured.
+   * 
+   * @template T - The type of the metric result
+   * @param {MetricInput} a - The first input string or array
+   * @param {MetricInput} b - The second input string or array
+   * @param {CmpStrOptions} [opt] - Optional options to use
+   * @param {MetricMode} [mode='single'] - The metric mode to use
+   * @param {boolean} [raw=false] - Whether to return raw results
+   * @param {boolean} [skip=false] - Whether to skip normalization and filtering
+   * @returns {Promise< T >} - The computed metric result
+   * @throws {CmpStrValidationError} - If the options are invalid
+   * @throws {CmpStrInternalError} - If the computation fails due to internal errors
+   */
+  protected async computeAsync< T extends MetricResult< R > | CmpStrResult | CmpStrResult[] > (
+    a: MetricInput, b: MetricInput, opt?: CmpStrOptions,
+    mode?: MetricMode, raw?: boolean, skip?: boolean
+  ) : Promise< T > {
+    const resolved = this.resolveOptions( opt );
+    this.assert( 'metric', resolved.metric );
+
+    return ErrorUtil.wrapAsync< T >(
+      async () => {
+
+        // Prepare the input
+        const A = skip ? a : await this.prepareAsync( a, resolved );
+        const B = skip ? b : await this.prepareAsync( b, resolved );
+
+        // If the inputs are empty and safeEmpty is enabled, return an empty array
+        if ( resolved.safeEmpty && (
+          ( Array.isArray( A ) && A.length === 0 ) ||
+          ( Array.isArray( B ) && B.length === 0 ) ||
+          A === '' || B === ''
+        ) ) { return ( [] as unknown ) as T }
+
+        // Get the metric class
+        const metric: Metric< R > = factory[ 'metric' ]( resolved.metric!, A, B, resolved.opt );
+
+        // Pass the original inputs to the metric
+        if ( resolved.output !== 'prep' ) metric.setOriginal( a, b );
+
+        // Compute the metric result
+        await metric.runAsync( mode );
+
+        // Post-process the results and concat the original inputs
+        const result = this.postProcess( metric.getResults(), resolved );
+
+        // Resolve and return the result based on the raw flag
+        return this.output< T >( result, raw ?? resolved.raw );
+      },
+      `Failed to compute metric <${opt?.metric ?? this.options.metric}> for the given inputs`,
+      { a, b, opt }
+    );
+  }
+
+  /**
+   * ================================================================================-
+   * Public asynchronously core methods for string comparison
+   * ================================================================================-
+   * 
+   * These methods provide the asynchronous core functionality for string comparison,
+   * phonetic indexing and text search, allowing for non-blocking operations.
+   */
+
+  /**
+   * Asynchronously performs a single metric comparison.
+   * 
+   * @template T - The type of the metric result
+   * @param {string} a - The source string
+   * @param {string} b - The target string
+   * @param {CmpStrOptions} [opt] - Optional options
+   * @returns {Promise< T >} - The metric result
+   */
+  public async testAsync< T extends ResultLike< R > = any> (
+    a: string, b: string, opt?: CmpStrOptions
+  ) : Promise< T > {
+    return this.computeAsync< T >( a, b, opt, 'single' );
+  }
+
+  /**
+   * Asynchronously performs a single metric comparison returning the numeric score.
+   * 
+   * @param {string} a - The source string
+   * @param {string} b - The target string
+   * @param {CmpStrOptions} [opt] - Optional options
+   * @returns {Promise< number >} - The similarity score (0..1)
+   */
+  public async compareAsync ( a: string, b: string, opt?: CmpStrOptions ) : Promise< number > {
+    return ( await this.computeAsync< MetricResultSingle< R > >( a, b, opt, 'single', true ) ).res;
+  }
+
+  /**
+   * Asynchronously performs a batch metric comparison between source and target
+   * strings or array of strings.
+   * 
+   * @template T - The type of the metric result
+   * @param {MetricInput} a - The source string or array of strings
+   * @param {MetricInput} b - The target string or array of strings
+   * @param {CmpStrOptions} [opt] - Optional options
+   * @returns {Promise< T >} - The batch metric results
+   */
+  public async batchTestAsync< T extends BatchResultLike< R > = any > (
+    a: MetricInput, b: MetricInput, opt?: CmpStrOptions
+  ) : Promise< T > {
+    return this.computeAsync< T >( a, b, opt, 'batch' );
+  }
+
+  /**
+   * Asynchronously performs a batch metric comparison and returns results sorted by score.
+   * 
+   * @template T - The type of the metric result
+   * @param {MetricInput} a - The source string or array of strings
+   * @param {MetricInput} b - The target string or array of strings
+   * @param {'desc' | 'asc'} [dir='desc'] - Sort direction (desc, asc)
+   * @param {CmpStrOptions} [opt] - Optional options
+   * @returns {Promise< T >} - The sorted batch results
+   */
+  public async batchSortedAsync< T extends BatchResultLike< R > = any > (
+    a: MetricInput, b: MetricInput, dir: 'desc' | 'asc' = 'desc', opt?: CmpStrOptions
+  ) : Promise< T > {
+    const res = await this.computeAsync< MetricResultBatch< R > >( a, b, opt, 'batch', true );
+
+    return this.output< T >(
+      res.sort( ( a, b ) => dir === 'asc' ? a.res - b.res : b.res - a.res ),
+      opt?.raw ?? this.options.raw
+    );
+  }
+
+  /**
+   * Asynchronously performs a pairwise metric comparison between source and target
+   * strings or array of strings.
+   * 
+   * Input arrays needs of the same length to perform pairwise comparison,
+   * otherwise the method will throw an error.
+   * 
+   * @template T - The type of the metric result
+   * @param {MetricInput} a - The source string or array of strings
+   * @param {MetricInput} b - The target string or array of strings
+   * @param {CmpStrOptions} [opt] - Optional options
+   * @returns {Promise< T >} - The pairwise metric results
+   */
+  public async pairsAsync< T extends BatchResultLike< R > = any > (
+    a: MetricInput, b: MetricInput, opt?: CmpStrOptions
+  ) : Promise< T > {
+    return this.computeAsync< T >( a, b, opt, 'pairwise' );
+  }
+
+  /**
+   * Asynchronously performs a batch comparison and returns only results above the threshold.
+   * 
+   * @template T - The type of the metric result
+   * @param {MetricInput} a - The source string or array of strings
+   * @param {MetricInput} b - The target string or array of strings
+   * @param {number} threshold - The similarity threshold (0..1)
+   * @param {CmpStrOptions} [opt] - Optional options
+   * @returns {Promise< T >} - The filtered batch results
+   */
+  public async matchAsync< T extends BatchResultLike< R > = any > (
+    a: MetricInput, b: MetricInput, threshold: number, opt?: CmpStrOptions
+  ) : Promise< T > {
+    const res = await this.computeAsync< MetricResultBatch< R > >( a, b, opt, 'batch', true );
+
+    return this.output< T >(
+      res.filter( r => r.res >= threshold ).sort( ( a, b ) => b.res - a.res ),
+      opt?.raw ?? this.options.raw
+    );
+  }
+
+  /**
+   * Asynchronously returns the n closest matches from a batch comparison.
+   * 
+   * @template T - The type of the metric result
+   * @param {MetricInput} a - The source string or array of strings
+   * @param {MetricInput} b - The target string or array of strings
+   * @param {number} [n=1] - Number of closest matches
+   * @param {CmpStrOptions} [opt] - Optional options
+   * @returns {Promise< T >} - The closest matches
+   */
+  public async closestAsync< T extends BatchResultLike< R > = any > (
+    a: MetricInput, b: MetricInput, n: number = 1, opt?: CmpStrOptions
+  ) : Promise< T > {
+    return ( await this.batchSortedAsync( a, b, 'desc', opt ) ).slice( 0, n );
+  }
+
+  /**
+   * Asynchronously returns the n furthest matches from a batch comparison.
+   * 
+   * @template T - The type of the metric result
+   * @param {MetricInput} a - The source string or array of strings
+   * @param {MetricInput} b - The target string or array of strings
+   * @param {number} [n=1] - Number of furthest matches
+   * @param {CmpStrOptions} [opt] - Optional options
+   * @returns {Promise<T>} - The furthest matches
+   */
+  public async furthestAsync< T extends BatchResultLike< R > = any > (
+    a: MetricInput, b: MetricInput, n: number = 1, opt?: CmpStrOptions
+  ) : Promise< T > {
+    return ( await this.batchSortedAsync( a, b, 'asc', opt ) ).slice( 0, n );
+  }
+
+  /**
+   * Asynchronously performs a normalized and filtered substring search.
+   * 
+   * @param {string} needle - The search string
+   * @param {string[]} haystack - The array to search in
+   * @param {NormalizeFlags} [flags] - Normalization flags
+   * @param {CmpStrProcessors} [processors] - Pre-processors to apply
+   * @returns {Promise< string[] >} - Array of matching entries
+   */
+  public async searchAsync (
+    needle: string, haystack: string[], flags?: NormalizeFlags, processors?: CmpStrProcessors
+  ) : Promise< string[] > {
+    const resolved = this.resolveOptions( { flags, processors } );
+
+    // Prepare the needle and haystack, normalizing and filtering them
+    const test = await this.prepareAsync( needle, resolved ) as string;
+    const hstk = await this.prepareAsync( haystack, resolved ) as string[];
+
+    // Filter the haystack based on the normalized test string
+    const out: string[] = [];
+    for ( let i = 0; i < hstk.length; i++ ) {
+      if ( hstk[ i ].includes( test ) ) out.push( haystack[ i ] );
     }
 
-    /**
-     * Creates a new CmpStrAsync instance calliing the super constructor.
-     * 
-     * @param {string | CmpStrOptions} [opt] - Optional serialized or options object
-     */
-    protected constructor ( opt?: string | CmpStrOptions ) { super ( opt ) }
+    return out;
+  }
 
-    /**
-     * ================================================================================-
-     * Protected asynchronously utility methods for internal use
-     * ================================================================================-
-     * 
-     * These methods provide asynchronous normalization, filtering, and metric
-     * computation capabilities, allowing for non-blocking operations.
-     */
+  /**
+   * Asynchronously computes a similarity matrix for the given input array.
+   * 
+   * Only works for symmetric metrics.
+   * 
+   * @param {string[]} input - The input array
+   * @param {CmpStrOptions} [opt] - Optional options
+   * @returns {Promise< number[][] >} - The similarity matrix
+   */
+  public async matrixAsync ( input: string[], opt?: CmpStrOptions ) : Promise< number[][] > {
+    const resolved = this.resolveOptions( opt );
+    const arr = await this.prepareAsync( input, resolved ) as string[];
+    const n = arr.length;
+    const out = Array.from( { length: n }, () => new Array< number >( n ).fill( 0 ) );
 
-    /**
-     * Asynchronously normalizes the input string or array using the configured or provided flags.
-     * 
-     * @param {MetricInput} input - The input string or array
-     * @param {NormalizeFlags} [flags] - Normalization flags
-     * @returns {Promise< MetricInput >} - The normalized input
-     */
-    protected async normalizeAsync ( input: MetricInput, flags?: NormalizeFlags ) : Promise< MetricInput > {
-        return Normalizer.normalizeAsync( input, flags ?? this.options.flags ?? '' );
-    }
+    for ( let i = 0; i < n; i++ ) {
+      await Promise.all( Array.from( { length: n - i }, ( _, k ) => i + k ).map( async j => {
+        if ( i === j ) { out[ i ][ j ] = 1 } else {
+          const score = ( await this.computeAsync< MetricResultSingle< R > >(
+            arr[ i ], arr[ j ], resolved, 'single', true, true
+          ) ).res;
 
-    /**
-     * Asynchronously applies all active filters to the input string or array.
-     * 
-     * @param {MetricInput} input - The input string or array
-     * @param {FilterHooks} [hook='input'] - The filter hook
-     * @returns {Promise< MetricInput >} - The filtered string(s)
-     */
-    protected async filterAsync ( input: MetricInput, hook: FilterHooks ) : Promise< MetricInput > {
-        return Filter.applyAsync( hook, input );
-    }
-
-    /**
-     * Asynchronously prepares the input by normalizing and filtering.
-     * 
-     * @param {MetricInput} [input] - The input string or array
-     * @param {CmpStrOptions} [opt] - Optional options to use
-     * @returns {Promise< MetricInput >} - The prepared input
-     */
-    protected async prepareAsync ( input: MetricInput, opt?: CmpStrOptions ) : Promise< MetricInput > {
-        const { flags, processors } = opt ?? this.options;
-
-        // Normalize the input using flags (i.e., 'itw')
-        if ( flags?.length ) input = await this.normalizeAsync( input, flags );
-
-        // Filter the input using hooked up filters
-        input = await this.filterAsync( input, 'input' );
-
-        // Apply phonetic processors if configured
-        if ( processors?.phonetic ) input = await this.indexAsync( input, processors.phonetic );
-
-        return input;
-    }
-
-    /**
-     * Asynchronously computes the phonetic index for the given input using
-     * the specified phonetic algorithm.
-     * 
-     * @param {MetricInput} input - The input string or array
-     * @param {{ algo: string, opt?: PhoneticOptions }} options - The phonetic algorithm and options
-     * @returns {Promise< MetricInput >} - The phonetic index for the given input
-     */
-    protected async indexAsync ( input: MetricInput, { algo, opt }: {
-        algo: string, opt?: PhoneticOptions
-    } ) : Promise< MetricInput > {
-        this.assert( 'phonetic', algo );
-        const phonetic: Phonetic = factory[ 'phonetic' ]( algo, opt );
-        const delimiter = opt?.delimiter ?? ' ';
-
-        return Array.isArray( input )
-            ? Promise.all( input.map( s => phonetic.getIndexAsync( s ).then( r => r.join( delimiter ) ) ) )
-            : phonetic.getIndexAsync( input ).then( r => r.join( delimiter ) );
-    }
-
-    /**
-     * Asynchronously computes the metric result for the given inputs, applying
-     * normalization and filtering as configured.
-     * 
-     * @template T - The type of the metric result
-     * @param {MetricInput} a - The first input string or array
-     * @param {MetricInput} b - The second input string or array
-     * @param {CmpStrOptions} [opt] - Optional options to use
-     * @param {MetricMode} [mode='single'] - The metric mode to use
-     * @param {boolean} [raw=false] - Whether to return raw results
-     * @param {boolean} [skip=false] - Whether to skip normalization and filtering
-     * @returns {Promise< T >} - The computed metric result
-     * @throws {CmpStrValidationError} - If the options are invalid
-     * @throws {CmpStrInternalError} - If the computation fails due to internal errors
-     */
-    protected async computeAsync< T extends MetricResult< R > | CmpStrResult | CmpStrResult[] > (
-        a: MetricInput, b: MetricInput, opt?: CmpStrOptions,
-        mode?: MetricMode, raw?: boolean, skip?: boolean
-    ) : Promise< T > {
-        const resolved = this.resolveOptions( opt );
-        this.assert( 'metric', resolved.metric );
-
-        return ErrorUtil.wrapAsync< T >(
-            async () => {
-
-                // Prepare the input
-                const A = skip ? a : await this.prepareAsync( a, resolved );
-                const B = skip ? b : await this.prepareAsync( b, resolved );
-
-                // If the inputs are empty and safeEmpty is enabled, return an empty array
-                if ( resolved.safeEmpty && (
-                    ( Array.isArray( A ) && A.length === 0 ) ||
-                    ( Array.isArray( B ) && B.length === 0 ) ||
-                    A === '' || B === ''
-                ) ) { return ( [] as unknown ) as T }
-
-                // Get the metric class
-                const metric: Metric< R > = factory[ 'metric' ]( resolved.metric!, A, B, resolved.opt );
-
-                // Pass the original inputs to the metric
-                if ( resolved.output !== 'prep' ) metric.setOriginal( a, b );
-
-                // Compute the metric result
-                await metric.runAsync( mode );
-
-                // Post-process the results and concat the original inputs
-                const result = this.postProcess( metric.getResults(), resolved );
-
-                // Resolve and return the result based on the raw flag
-                return this.output< T >( result, raw ?? resolved.raw );
-            },
-            `Failed to compute metric <${opt?.metric ?? this.options.metric}> for the given inputs`,
-            { a, b, opt }
-        );
-    }
-
-    /**
-     * ================================================================================-
-     * Public asynchronously core methods for string comparison
-     * ================================================================================-
-     * 
-     * These methods provide the asynchronous core functionality for string comparison,
-     * phonetic indexing and text search, allowing for non-blocking operations.
-     */
-
-    /**
-     * Asynchronously performs a single metric comparison.
-     * 
-     * @template T - The type of the metric result
-     * @param {string} a - The source string
-     * @param {string} b - The target string
-     * @param {CmpStrOptions} [opt] - Optional options
-     * @returns {Promise< T >} - The metric result
-     */
-    public async testAsync< T extends ResultLike< R > = any> (
-        a: string, b: string, opt?: CmpStrOptions
-    ) : Promise< T > {
-        return this.computeAsync< T >( a, b, opt, 'single' );
-    }
-
-    /**
-     * Asynchronously performs a single metric comparison returning the numeric score.
-     * 
-     * @param {string} a - The source string
-     * @param {string} b - The target string
-     * @param {CmpStrOptions} [opt] - Optional options
-     * @returns {Promise< number >} - The similarity score (0..1)
-     */
-    public async compareAsync ( a: string, b: string, opt?: CmpStrOptions ) : Promise< number > {
-        return ( await this.computeAsync< MetricResultSingle< R > >( a, b, opt, 'single', true ) ).res;
-    }
-
-    /**
-     * Asynchronously performs a batch metric comparison between source and target
-     * strings or array of strings.
-     * 
-     * @template T - The type of the metric result
-     * @param {MetricInput} a - The source string or array of strings
-     * @param {MetricInput} b - The target string or array of strings
-     * @param {CmpStrOptions} [opt] - Optional options
-     * @returns {Promise< T >} - The batch metric results
-     */
-    public async batchTestAsync< T extends BatchResultLike< R > = any > (
-        a: MetricInput, b: MetricInput, opt?: CmpStrOptions
-    ) : Promise< T > {
-        return this.computeAsync< T >( a, b, opt, 'batch' );
-    }
-
-    /**
-     * Asynchronously performs a batch metric comparison and returns results sorted by score.
-     * 
-     * @template T - The type of the metric result
-     * @param {MetricInput} a - The source string or array of strings
-     * @param {MetricInput} b - The target string or array of strings
-     * @param {'desc' | 'asc'} [dir='desc'] - Sort direction (desc, asc)
-     * @param {CmpStrOptions} [opt] - Optional options
-     * @returns {Promise< T >} - The sorted batch results
-     */
-    public async batchSortedAsync< T extends BatchResultLike< R > = any > (
-        a: MetricInput, b: MetricInput, dir: 'desc' | 'asc' = 'desc', opt?: CmpStrOptions
-    ) : Promise< T > {
-        const res = await this.computeAsync< MetricResultBatch< R > >( a, b, opt, 'batch', true );
-
-        return this.output< T >(
-            res.sort( ( a, b ) => dir === 'asc' ? a.res - b.res : b.res - a.res ),
-            opt?.raw ?? this.options.raw
-        );
-    }
-
-    /**
-     * Asynchronously performs a pairwise metric comparison between source and target
-     * strings or array of strings.
-     * 
-     * Input arrays needs of the same length to perform pairwise comparison,
-     * otherwise the method will throw an error.
-     * 
-     * @template T - The type of the metric result
-     * @param {MetricInput} a - The source string or array of strings
-     * @param {MetricInput} b - The target string or array of strings
-     * @param {CmpStrOptions} [opt] - Optional options
-     * @returns {Promise< T >} - The pairwise metric results
-     */
-    public async pairsAsync< T extends BatchResultLike< R > = any > (
-        a: MetricInput, b: MetricInput, opt?: CmpStrOptions
-    ) : Promise< T > {
-        return this.computeAsync< T >( a, b, opt, 'pairwise' );
-    }
-
-    /**
-     * Asynchronously performs a batch comparison and returns only results above the threshold.
-     * 
-     * @template T - The type of the metric result
-     * @param {MetricInput} a - The source string or array of strings
-     * @param {MetricInput} b - The target string or array of strings
-     * @param {number} threshold - The similarity threshold (0..1)
-     * @param {CmpStrOptions} [opt] - Optional options
-     * @returns {Promise< T >} - The filtered batch results
-     */
-    public async matchAsync< T extends BatchResultLike< R > = any > (
-        a: MetricInput, b: MetricInput, threshold: number, opt?: CmpStrOptions
-    ) : Promise< T > {
-        const res = await this.computeAsync< MetricResultBatch< R > >( a, b, opt, 'batch', true );
-
-        return this.output< T >(
-            res.filter( r => r.res >= threshold ).sort( ( a, b ) => b.res - a.res ),
-            opt?.raw ?? this.options.raw
-        );
-    }
-
-    /**
-     * Asynchronously returns the n closest matches from a batch comparison.
-     * 
-     * @template T - The type of the metric result
-     * @param {MetricInput} a - The source string or array of strings
-     * @param {MetricInput} b - The target string or array of strings
-     * @param {number} [n=1] - Number of closest matches
-     * @param {CmpStrOptions} [opt] - Optional options
-     * @returns {Promise< T >} - The closest matches
-     */
-    public async closestAsync< T extends BatchResultLike< R > = any > (
-        a: MetricInput, b: MetricInput, n: number = 1, opt?: CmpStrOptions
-    ) : Promise< T > {
-        return ( await this.batchSortedAsync( a, b, 'desc', opt ) ).slice( 0, n );
-    }
-
-    /**
-     * Asynchronously returns the n furthest matches from a batch comparison.
-     * 
-     * @template T - The type of the metric result
-     * @param {MetricInput} a - The source string or array of strings
-     * @param {MetricInput} b - The target string or array of strings
-     * @param {number} [n=1] - Number of furthest matches
-     * @param {CmpStrOptions} [opt] - Optional options
-     * @returns {Promise<T>} - The furthest matches
-     */
-    public async furthestAsync< T extends BatchResultLike< R > = any > (
-        a: MetricInput, b: MetricInput, n: number = 1, opt?: CmpStrOptions
-    ) : Promise< T > {
-        return ( await this.batchSortedAsync( a, b, 'asc', opt ) ).slice( 0, n );
-    }
-
-    /**
-     * Asynchronously performs a normalized and filtered substring search.
-     * 
-     * @param {string} needle - The search string
-     * @param {string[]} haystack - The array to search in
-     * @param {NormalizeFlags} [flags] - Normalization flags
-     * @param {CmpStrProcessors} [processors] - Pre-processors to apply
-     * @returns {Promise< string[] >} - Array of matching entries
-     */
-    public async searchAsync (
-        needle: string, haystack: string[], flags?: NormalizeFlags, processors?: CmpStrProcessors
-    ) : Promise< string[] > {
-        const resolved = this.resolveOptions( { flags, processors } );
-
-        // Prepare the needle and haystack, normalizing and filtering them
-        const test = await this.prepareAsync( needle, resolved ) as string;
-        const hstk = await this.prepareAsync( haystack, resolved ) as string[];
-
-        // Filter the haystack based on the normalized test string
-        const out: string[] = [];
-        for ( let i = 0; i < hstk.length; i++ ) {
-            if ( hstk[ i ].includes( test ) ) out.push( haystack[ i ] );
+          out[ i ][ j ] = score;
+          out[ j ][ i ] = score;
         }
-
-        return out;
+      } ) );
     }
 
-    /**
-     * Asynchronously computes a similarity matrix for the given input array.
-     * 
-     * Only works for symmetric metrics.
-     * 
-     * @param {string[]} input - The input array
-     * @param {CmpStrOptions} [opt] - Optional options
-     * @returns {Promise< number[][] >} - The similarity matrix
-     */
-    public async matrixAsync ( input: string[], opt?: CmpStrOptions ) : Promise< number[][] > {
-        const resolved = this.resolveOptions( opt );
-        const arr = await this.prepareAsync( input, resolved ) as string[];
-        const n = arr.length;
-        const out = Array.from( { length: n }, () => new Array< number >( n ).fill( 0 ) );
+    return out;
+  }
 
-        for ( let i = 0; i < n; i++ ) {
-            await Promise.all( Array.from( { length: n - i }, ( _, k ) => i + k ).map( async j => {
-                if ( i === j ) { out[ i ][ j ] = 1 } else {
-                    const score = ( await this.computeAsync< MetricResultSingle< R > >(
-                        arr[ i ], arr[ j ], resolved, 'single', true, true
-                    ) ).res;
+  /**
+   * Asynchronously computes the phonetic index for a string using the
+   * configured or given algorithm.
+   * 
+   * @param {string} [input] - The input string
+   * @param {string} [algo] - The phonetic algorithm to use
+   * @param {PhoneticOptions} [opt] - Optional phonetic options
+   * @returns {Promise<string>} - The phonetic index as a string
+   */
+  public async phoneticIndexAsync ( input: string, algo?: string, opt?: PhoneticOptions ) : Promise< string > {
+    const { algo: a, opt: o } = this.options.processors?.phonetic ?? {};
+    return this.indexAsync( input, { algo: ( algo ?? a )!, opt: opt ?? o } ) as Promise< string >;
+  }
 
-                    out[ i ][ j ] = score;
-                    out[ j ][ i ] = score;
-                }
-            } ) );
-        }
+  /**
+   * ================================================================================-
+   * Public asynchronous methods for structured data comparison
+   * ================================================================================-
+   * 
+   * These methods provide asynchronous interfaces for comparing arrays of
+   * structured objects by extracting and comparing specific properties.
+   */
 
-        return out;
-    }
+  /**
+   * Asynchronously performs a batch comparison against structured data by extracting
+   * a specific property and returning results with original objects attached.
+   * 
+   * @template T - The type of objects in the data array
+   * @param {string} query - The query string to compare against
+   * @param {T[]} data - The array of structured objects
+   * @param {keyof T} key - The property key to extract for comparison
+   * @param {StructuredDataOptions} [opt] - Optional lookup options
+   * @returns {Promise< StructuredResultLike< T, R > >} - Async batch results with original objects
+   */
+  public async structuredLookupAsync< T = any > (
+    query: string, data: T[], key: keyof T, opt?: StructuredDataOptions
+  ) : Promise< StructuredResultLike< T, R > > {
+    return await this.structured< T >( data, key ).lookupAsync(
+      ( q, items, options ) => this.batchTestAsync< MetricResultBatch< R > >(
+        q, items, options
+      ),
+      query, opt
+    );
+  }
 
-    /**
-     * Asynchronously computes the phonetic index for a string using the
-     * configured or given algorithm.
-     * 
-     * @param {string} [input] - The input string
-     * @param {string} [algo] - The phonetic algorithm to use
-     * @param {PhoneticOptions} [opt] - Optional phonetic options
-     * @returns {Promise<string>} - The phonetic index as a string
-     */
-    public async phoneticIndexAsync ( input: string, algo?: string, opt?: PhoneticOptions ) : Promise< string > {
-        const { algo: a, opt: o } = this.options.processors?.phonetic ?? {};
-        return this.indexAsync( input, { algo: ( algo ?? a )!, opt: opt ?? o } ) as Promise< string >;
-    }
+  /**
+   * Asynchronously performs a batch comparison and returns only results above
+   * the threshold for structured data.
+   * 
+   * @template T - The type of objects in the data array
+   * @param {string} query - The query string to compare against
+   * @param {T[]} data - The array of structured objects
+   * @param {keyof T} key - The property key to extract for comparison
+   * @param {number} threshold - The similarity threshold (0..1)
+   * @param {StructuredDataLookupOptions} [opt] - Optional lookup options
+   * @returns {Promise< StructuredResultLike< T, R > >} - Async filtered batch results
+   */
+  public async structuredMatchAsync< T = any > (
+    query: string, data: T[], key: keyof T, threshold: number, opt?: StructuredDataOptions
+  ) : Promise< StructuredResultLike< T, R > > {
+    return await this.structured< T >( data, key ).lookupAsync(
+      ( q, items, options ) => this.matchAsync< MetricResultBatch< R > >(
+        q, items, threshold, options
+      ),
+      query, { ...opt, sort: 'desc' }
+    );
+  }
 
-    /**
-     * ================================================================================-
-     * Public asynchronous methods for structured data comparison
-     * ================================================================================-
-     * 
-     * These methods provide asynchronous interfaces for comparing arrays of
-     * structured objects by extracting and comparing specific properties.
-     */
+  /**
+   * Asynchronously returns the n closest matches from a batch comparison
+   * of structured data.
+   * 
+   * @template T - The type of objects in the data array
+   * @param {string} query - The query string to compare against
+   * @param {T[]} data - The array of structured objects
+   * @param {keyof T} key - The property key to extract for comparison
+   * @param {number} [n=1] - Number of closest matches
+   * @param {StructuredDataOptions} [opt] - Optional lookup options
+   * @returns {Promise< StructuredResultLike< T, R > >} - Async closest matches
+   */
+  public async structuredClosestAsync< T = any > (
+    query: string, data: T[], key: keyof T, n: number = 1, opt?: StructuredDataOptions
+  ) : Promise< StructuredResultLike< T, R > > {
+    return await this.structured< T >( data, key ).lookupAsync(
+      ( q, items, options ) => this.closestAsync< MetricResultBatch< R > >(
+        q, items, n, options
+      ),
+      query, { ...opt, sort: 'desc' }
+    );
+  }
 
-    /**
-     * Asynchronously performs a batch comparison against structured data by extracting
-     * a specific property and returning results with original objects attached.
-     * 
-     * @template T - The type of objects in the data array
-     * @param {string} query - The query string to compare against
-     * @param {T[]} data - The array of structured objects
-     * @param {keyof T} key - The property key to extract for comparison
-     * @param {StructuredDataOptions} [opt] - Optional lookup options
-     * @returns {Promise< StructuredResultLike< T, R > >} - Async batch results with original objects
-     */
-    public async structuredLookupAsync< T = any > (
-        query: string, data: T[], key: keyof T, opt?: StructuredDataOptions
-    ) : Promise< StructuredResultLike< T, R > > {
-        return await this.structured< T >( data, key ).lookupAsync(
-            ( q, items, options ) => this.batchTestAsync< MetricResultBatch< R > >(
-                q, items, options
-            ),
-            query, opt
-        );
-    }
+  /**
+   * Asynchronously returns the n furthest matches from a batch comparison
+   * of structured data.
+   * 
+   * @template T - The type of objects in the data array
+   * @param {string} query - The query string to compare against
+   * @param {T[]} data - The array of structured objects
+   * @param {keyof T} key - The property key to extract for comparison
+   * @param {number} [n=1] - Number of furthest matches
+   * @param {StructuredDataOptions} [opt] - Optional lookup options
+   * @returns {Promise< StructuredResultLike< T, R > >} - Async furthest matches
+   */
+  public async structuredFurthestAsync< T = any > (
+    query: string, data: T[], key: keyof T, n: number = 1,
+    opt?: StructuredDataOptions
+  ) : Promise< StructuredResultLike< T, R > > {
+    return await this.structured< T >( data, key ).lookupAsync(
+      ( q, items, options ) => this.furthestAsync< MetricResultBatch< R > >(
+        q, items, n, options
+      ),
+      query, { ...opt, sort: 'asc' }
+    );
+  }
 
-    /**
-     * Asynchronously performs a batch comparison and returns only results above
-     * the threshold for structured data.
-     * 
-     * @template T - The type of objects in the data array
-     * @param {string} query - The query string to compare against
-     * @param {T[]} data - The array of structured objects
-     * @param {keyof T} key - The property key to extract for comparison
-     * @param {number} threshold - The similarity threshold (0..1)
-     * @param {StructuredDataLookupOptions} [opt] - Optional lookup options
-     * @returns {Promise< StructuredResultLike< T, R > >} - Async filtered batch results
-     */
-    public async structuredMatchAsync< T = any > (
-        query: string, data: T[], key: keyof T, threshold: number, opt?: StructuredDataOptions
-    ) : Promise< StructuredResultLike< T, R > > {
-        return await this.structured< T >( data, key ).lookupAsync(
-            ( q, items, options ) => this.matchAsync< MetricResultBatch< R > >(
-                q, items, threshold, options
-            ),
-            query, { ...opt, sort: 'desc' }
-        );
-    }
-
-    /**
-     * Asynchronously returns the n closest matches from a batch comparison
-     * of structured data.
-     * 
-     * @template T - The type of objects in the data array
-     * @param {string} query - The query string to compare against
-     * @param {T[]} data - The array of structured objects
-     * @param {keyof T} key - The property key to extract for comparison
-     * @param {number} [n=1] - Number of closest matches
-     * @param {StructuredDataOptions} [opt] - Optional lookup options
-     * @returns {Promise< StructuredResultLike< T, R > >} - Async closest matches
-     */
-    public async structuredClosestAsync< T = any > (
-        query: string, data: T[], key: keyof T, n: number = 1, opt?: StructuredDataOptions
-    ) : Promise< StructuredResultLike< T, R > > {
-        return await this.structured< T >( data, key ).lookupAsync(
-            ( q, items, options ) => this.closestAsync< MetricResultBatch< R > >(
-                q, items, n, options
-            ),
-            query, { ...opt, sort: 'desc' }
-        );
-    }
-
-    /**
-     * Asynchronously returns the n furthest matches from a batch comparison
-     * of structured data.
-     * 
-     * @template T - The type of objects in the data array
-     * @param {string} query - The query string to compare against
-     * @param {T[]} data - The array of structured objects
-     * @param {keyof T} key - The property key to extract for comparison
-     * @param {number} [n=1] - Number of furthest matches
-     * @param {StructuredDataOptions} [opt] - Optional lookup options
-     * @returns {Promise< StructuredResultLike< T, R > >} - Async furthest matches
-     */
-    public async structuredFurthestAsync< T = any > (
-        query: string, data: T[], key: keyof T, n: number = 1,
-        opt?: StructuredDataOptions
-    ) : Promise< StructuredResultLike< T, R > > {
-        return await this.structured< T >( data, key ).lookupAsync(
-            ( q, items, options ) => this.furthestAsync< MetricResultBatch< R > >(
-                q, items, n, options
-            ),
-            query, { ...opt, sort: 'asc' }
-        );
-    }
-
-    /**
-     * Asynchronously performs a pairwise comparison between two arrays of structured objects
-     * by extracting specific properties and returning results with original objects attached.
-     * 
-     * @template T - The type of objects in the arrays
-     * @template O - The type of objects in the other array
-     * @param {T[]} data - The array of structured objects
-     * @param {keyof T} key - The property key to extract for comparison
-     * @param {T[]} other - The other array of structured objects
-     * @param {keyof T} otherKey - The property key to extract from other array
-     * @param {StructuredDataOptions} [opt] - Optional lookup options
-     * @returns {Promise< StructuredResultLike< T, R > >} - Async pairwise results with original objects
-     */
-    public async structuredPairsAsync< T = any, O = any > (
-        data: T[], key: keyof T, other: O[], otherKey: keyof O, opt?: StructuredDataOptions
-    ) : Promise< StructuredResultLike< T, R > > {
-        return await this.structured< T >( data, key ).lookupPairsAsync< O >(
-            ( items, otherItems, options ) => this.pairsAsync< MetricResultBatch< R > >(
-                items, otherItems, options
-            ),
-            other, otherKey, opt
-        );
-    }
+  /**
+   * Asynchronously performs a pairwise comparison between two arrays of structured objects
+   * by extracting specific properties and returning results with original objects attached.
+   * 
+   * @template T - The type of objects in the arrays
+   * @template O - The type of objects in the other array
+   * @param {T[]} data - The array of structured objects
+   * @param {keyof T} key - The property key to extract for comparison
+   * @param {T[]} other - The other array of structured objects
+   * @param {keyof T} otherKey - The property key to extract from other array
+   * @param {StructuredDataOptions} [opt] - Optional lookup options
+   * @returns {Promise< StructuredResultLike< T, R > >} - Async pairwise results with original objects
+   */
+  public async structuredPairsAsync< T = any, O = any > (
+    data: T[], key: keyof T, other: O[], otherKey: keyof O, opt?: StructuredDataOptions
+  ) : Promise< StructuredResultLike< T, R > > {
+    return await this.structured< T >( data, key ).lookupPairsAsync< O >(
+      ( items, otherItems, options ) => this.pairsAsync< MetricResultBatch< R > >(
+        items, otherItems, options
+      ),
+      other, otherKey, opt
+    );
+  }
 
 }
