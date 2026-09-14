@@ -18,6 +18,7 @@
 
 'use strict';
 
+
 import type { MetricCompute, MetricInput, MetricOptions } from '../utils/Types';
 
 import { Pool } from '../utils/Pool';
@@ -46,7 +47,7 @@ export class JaccardIndex extends Metric< JaccardRaw > {
    * @param {MetricInput} b - Second input string or array of strings
    * @param {MetricOptions} [opt] - Options for the metric computation
    */
-  constructor ( a: MetricInput, b: MetricInput, opt: MetricOptions = {} ) {
+  public constructor ( a: MetricInput, b: MetricInput, opt: MetricOptions = {} ) {
     super( 'jaccard', a, b, opt, true );
   }
 

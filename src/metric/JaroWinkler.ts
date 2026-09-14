@@ -17,6 +17,7 @@
 
 'use strict';
 
+
 import type { MetricCompute, MetricInput, MetricOptions } from '../utils/Types';
 
 import { Pool } from '../utils/Pool';
@@ -48,7 +49,7 @@ export class JaroWinklerDistance extends Metric< JaroWinklerRaw > {
    * @param {MetricInput} b - Second input string or array of strings
    * @param {MetricOptions} [opt] - Options for the metric computation
    */
-  constructor ( a: MetricInput, b: MetricInput, opt: MetricOptions = {} ) {
+  public constructor ( a: MetricInput, b: MetricInput, opt: MetricOptions = {} ) {
     super( 'jaroWinkler', a, b, opt, true );
   }
 
@@ -76,15 +77,12 @@ export class JaroWinklerDistance extends Metric< JaroWinklerRaw > {
 
       // Find matches within the match window
       let matches = 0;
+
       for ( let i = 0; i < m; i++ ) {
-        const start = Math.max( 0, i - matchWindow );
-        const end = Math.min( i + matchWindow + 1, n );
+        const start = Math.max( 0, i - matchWindow ), end = Math.min( i + matchWindow + 1, n );
 
         for ( let j = start; j < end; j++ ) if ( ! matchB[ j ] && a[ i ] === b[ j ] ) {
-          matchA[ i ] = 1;
-          matchB[ j ] = 1;
-          matches++;
-
+          matchA[ i ] = 1, matchB[ j ] = 1, matches++;
           break;
         }
       }
@@ -96,6 +94,7 @@ export class JaroWinklerDistance extends Metric< JaroWinklerRaw > {
       if ( matches > 0 ) {
         // Count transpositions
         let k = 0;
+
         for ( let i = 0; i < m; i++ ) if ( matchA[ i ] ) {
           while ( ! matchB[ k ] ) k++;
           if ( a[ i ] !== b[ k ] ) transpos++;
