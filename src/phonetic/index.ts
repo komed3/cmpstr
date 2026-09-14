@@ -29,12 +29,13 @@
 'use strict';
 
 
-// Side-effect imports to register all built-in phonetic algorithms
-import './Caverphone';
-import './Cologne';
-import './Metaphone';
-import './Soundex';
+// Export all built-in phonetics and their types
+// Side-effect: Each phonetic registers itself in the registry
+export * from './Caverphone';
+export * from './Cologne';
+export * from './Metaphone';
+export * from './Soundex';
 
 
 // Export the Phonetic base class and registry
-export { Phonetic, PhoneticCls, PhoneticMappingRegistry, PhoneticRegistry } from './Phonetic';
+export * from './Phonetic';

@@ -47,5 +47,5 @@ export * from './QGram';
 export * from './SmithWaterman';
 
 
-// Export the Metric classes and registry
+// Export the Metric class and registry
 export * from './Metric';
