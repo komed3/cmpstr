@@ -20,8 +20,8 @@
 
 import type { MetricCompute, MetricInput, MetricOptions } from '../utils/Types';
 
-import { Metric, MetricRegistry } from './Metric';
 import { CmpStrUsageError } from '../utils/Errors';
+import { Metric, MetricRegistry } from './Metric';
 
 export interface HammingRaw {
   dist: number;
