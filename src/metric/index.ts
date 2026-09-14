@@ -31,6 +31,7 @@
 
 'use strict';
 
+
 // Side-effect imports to register all built-in metrics with the MetricRegistry
 import './Cosine';
 import './DamerauLevenshtein';
@@ -43,6 +44,7 @@ import './Levenshtein';
 import './NeedlemanWunsch';
 import './QGram';
 import './SmithWaterman';
+
 
 // Export the Metric classes and registry for external use
 export { Metric, MetricCls, MetricRegistry } from './Metric';
