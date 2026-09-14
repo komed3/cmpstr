@@ -26,6 +26,7 @@
 
 'use strict';
 
+
 import type { PhoneticOptions } from '../utils/Types';
 import { Phonetic, PhoneticMappingRegistry, PhoneticRegistry } from './Phonetic';
 
@@ -47,7 +48,9 @@ export class Soundex extends Phonetic {
    * 
    * @param {PhoneticOptions} [opt] - Options for the Soundex phonetic algorithm
    */
-  constructor ( opt: PhoneticOptions = {} ) { super( 'soundex', opt ) }
+  public constructor ( opt: PhoneticOptions = {} ) {
+    super( 'soundex', opt );
+  }
 
   /**
    * Adjusts the phonetic code by removing leading zeros and ensuring the
