@@ -16,6 +16,7 @@
 
 'use strict';
 
+
 import type { MetricCompute, MetricInput, MetricOptions } from '../utils/Types';
 
 import { Pool } from '../utils/Pool';
@@ -44,7 +45,7 @@ export class NeedlemanWunschDistance extends Metric< NeedlemanRaw > {
    * @param {MetricInput} b - Second input string or array of strings
    * @param {MetricOptions} [opt] - Options for the metric computation
    */
-  constructor ( a: MetricInput, b: MetricInput, opt: MetricOptions = {} ) {
+  public constructor ( a: MetricInput, b: MetricInput, opt: MetricOptions = {} ) {
     super( 'needlemanWunsch', a, b, opt, true );
   }
 
@@ -86,9 +87,9 @@ export class NeedlemanWunschDistance extends Metric< NeedlemanRaw > {
 
           // Calculate the maximum score for current cell
           curr[ i ] = Math.max(
-            prev[ i - 1 ] + score,   // Diagonal (match/mismatch)
-            prev[ i ] + gap,     // Up (gap)
-            curr[ i - 1 ] + gap    // Left (gap)
+            prev[ i - 1 ] + score,  // Diagonal (match/mismatch)
+            prev[ i ] + gap,        // Up (gap)
+            curr[ i - 1 ] + gap     // Left (gap)
           );
         }
 
