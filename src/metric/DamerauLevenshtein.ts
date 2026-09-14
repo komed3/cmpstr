@@ -19,6 +19,7 @@
 
 'use strict';
 
+
 import type { MetricCompute, MetricInput, MetricOptions } from '../utils/Types';
 
 import { Pool } from '../utils/Pool';
@@ -47,7 +48,7 @@ export class DamerauLevenshteinDistance extends Metric< DamerauRaw > {
    * @param {MetricInput} b - Second input string or array of strings
    * @param {MetricOptions} [opt] - Options for the metric computation
    */
-  constructor ( a: MetricInput, b: MetricInput, opt: MetricOptions = {} ) {
+  public constructor ( a: MetricInput, b: MetricInput, opt: MetricOptions = {} ) {
     super( 'damerau', a, b, opt, true );
   }
 
@@ -89,11 +90,7 @@ export class DamerauLevenshteinDistance extends Metric< DamerauRaw > {
           const cost = ca === cb ? 0 : 1;
 
           // Calculate minimum of deletion, insertion, substitution
-          let val = Math.min(
-            curr[ i - 1 ] + 1,    // Insertion
-            prev[ i ] + 1,        // Deletion
-            prev[ i - 1 ] + cost  // Substitution
-          );
+          let val = Math.min( curr[ i - 1 ] + 1, prev[ i ] + 1, prev[ i - 1 ] + cost );
 
           // Check for transposition
           if ( i > 1 && j > 1 && ca === b.charCodeAt( j - 2 ) && cb === a.charCodeAt( i - 2 ) )
