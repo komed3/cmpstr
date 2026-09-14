@@ -22,6 +22,7 @@
 
 'use strict';
 
+
 import type { PhoneticOptions } from '../utils/Types';
 import { Phonetic, PhoneticMappingRegistry, PhoneticRegistry } from './Phonetic';
 
@@ -49,7 +50,9 @@ export class Metaphone extends Phonetic {
    * 
    * @param {PhoneticOptions} [opt] - Options for the Metaphone phonetic algorithm
    */
-  constructor ( opt: PhoneticOptions = {} ) { super( 'metaphone', opt ) }
+  public constructor ( opt: PhoneticOptions = {} ) {
+    super( 'metaphone', opt );
+  }
 
   /**
    * Generates the Metaphone code for a given word.
