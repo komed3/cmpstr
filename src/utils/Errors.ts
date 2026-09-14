@@ -65,7 +65,7 @@ export class CmpStrError extends Error {
    * @param {CmpStrErrorMeta} [meta] - Optional structured metadata for the error
    * @param {unknown} [cause] - Optional cause (native JS Error chaining)
    */
-  constructor ( code: string, message: string, meta?: CmpStrErrorMeta, cause?: unknown ) {
+  public constructor ( code: string, message: string, meta?: CmpStrErrorMeta, cause?: unknown ) {
     super( message, cause !== undefined ? { cause } : undefined );
 
     this.name = this.constructor.name;
@@ -107,14 +107,10 @@ export class CmpStrError extends Error {
    */
   public toJSON ( stack: boolean = false ) : CmpStrErrorJSON {
     return {
-      name: this.name,
-      code: this.code,
-      message: this.message,
-      meta: this.meta,
-      when: this.when,
+      name: this.name, code: this.code, message: this.message,
+      meta: this.meta, when: this.when,
       cause: this.cause instanceof Error ? {
-        name: this.cause.name,
-        message: this.cause.message,
+        name: this.cause.name, message: this.cause.message,
         stack: stack && this.cause.stack
       } : this.cause
     };
@@ -126,7 +122,7 @@ export class CmpStrError extends Error {
  * Error thrown when user input (options, arguments) is invalid.
  */
 export class CmpStrValidationError extends CmpStrError {
-  constructor ( message: string, meta?: CmpStrErrorMeta, cause?: unknown ) {
+  public constructor ( message: string, meta?: CmpStrErrorMeta, cause?: unknown ) {
     super( ErrorCode.VALIDATION, message, meta, cause );
   }
 }
@@ -136,7 +132,7 @@ export class CmpStrValidationError extends CmpStrError {
  * Error thrown when a requested resource is missing or not found.
  */
 export class CmpStrNotFoundError extends CmpStrError {
-  constructor ( message: string, meta?: CmpStrErrorMeta, cause?: unknown ) {
+  public constructor ( message: string, meta?: CmpStrErrorMeta, cause?: unknown ) {
     super( ErrorCode.NOT_FOUND, message, meta, cause );
   }
 }
@@ -146,7 +142,7 @@ export class CmpStrNotFoundError extends CmpStrError {
  * Error thrown for incorrect usage or invalid state (assertions).
  */
 export class CmpStrUsageError extends CmpStrError {
-  constructor ( message: string, meta?: CmpStrErrorMeta, cause?: unknown ) {
+  public constructor ( message: string, meta?: CmpStrErrorMeta, cause?: unknown ) {
     super( ErrorCode.USAGE, message, meta, cause );
   }
 }
@@ -156,7 +152,7 @@ export class CmpStrUsageError extends CmpStrError {
  * Error thrown for internal failures that should not happen under normal usage.
  */
 export class CmpStrInternalError extends CmpStrError {
-  constructor ( message: string, meta?: CmpStrErrorMeta, cause?: unknown ) {
+  public constructor ( message: string, meta?: CmpStrErrorMeta, cause?: unknown ) {
     super( ErrorCode.INTERNAL, message, meta, cause );
   }
 }
@@ -220,7 +216,7 @@ export class ErrorUtil {
    * @return {T} The result of the function if it executes successfully
    * @throws {CmpStrInternalError} - If the function throws an error, it will be wrapped and re-thrown as a `CmpStrInternalError`
    */
-  public static wrap< T > ( fn: () => T, message: string, meta?: CmpStrErrorMeta ) : T {
+  public static wrap < T > ( fn: () => T, message: string, meta?: CmpStrErrorMeta ) : T {
     try { return fn() } catch ( err ) {
       if ( err instanceof CmpStrError ) throw err;
       throw new CmpStrInternalError( message, meta, err );
@@ -236,7 +232,7 @@ export class ErrorUtil {
    * @return {Promise< T >} A promise that resolves to the result of the function if it executes successfully
    * @throws {CmpStrInternalError} - If the function throws an error, it will be wrapped and re-thrown as a `CmpStrInternalError`
    */
-  public static async wrapAsync< T > ( fn: () => Promise< T >, message: string, meta?: CmpStrErrorMeta ) : Promise< T > {
+  public static async wrapAsync < T > ( fn: () => Promise< T >, message: string, meta?: CmpStrErrorMeta ) : Promise< T > {
     try { return await fn() } catch ( err ) {
       if ( err instanceof CmpStrError ) throw err;
       throw new CmpStrInternalError( message, meta, err );
