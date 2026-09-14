@@ -22,8 +22,8 @@ import { Pool } from '../utils/Pool';
 import { Metric, MetricRegistry } from './Metric';
 
 export interface NeedlemanRaw {
-    score: number;
-    denum: number;
+  score: number;
+  denum: number;
 }
 
 
@@ -32,88 +32,87 @@ export interface NeedlemanRaw {
  */
 export class NeedlemanWunschDistance extends Metric< NeedlemanRaw > {
 
-    /**
-     * Constructor for the NeedlemanWunsch class.
-     * 
-     * Initializes the Needleman-Wunsch metric with two input strings or
-     * arrays of strings and optional options.
-     * 
-     * Metric is symmetrical.
-     * 
-     * @param {MetricInput} a - First input string or array of strings
-     * @param {MetricInput} b - Second input string or array of strings
-     * @param {MetricOptions} [opt] - Options for the metric computation
-     */
-    constructor ( a: MetricInput, b: MetricInput, opt: MetricOptions = {} ) {
-        super ( 'needlemanWunsch', a, b, opt, true );
-    }
+  /**
+   * Constructor for the NeedlemanWunsch class.
+   * 
+   * Initializes the Needleman-Wunsch metric with two input strings or
+   * arrays of strings and optional options.
+   * 
+   * Metric is symmetrical.
+   * 
+   * @param {MetricInput} a - First input string or array of strings
+   * @param {MetricInput} b - Second input string or array of strings
+   * @param {MetricOptions} [opt] - Options for the metric computation
+   */
+  constructor ( a: MetricInput, b: MetricInput, opt: MetricOptions = {} ) {
+    super( 'needlemanWunsch', a, b, opt, true );
+  }
 
-    /**
-     * Calculates the Needleman-Wunsch global alignment score between two strings.
-     * 
-     * @param {string} a - First string
-     * @param {string} b - Second string
-     * @param {number} m - Length of the first string
-     * @param {number} n - Length of the second string
-     * @param {number} maxLen - Maximum length of the strings
-     * @return {MetricCompute< NeedlemanRaw >} - Object containing the similarity result and raw score
-     */
-    protected override compute (
-        a: string, b: string, m: number, n: number, maxLen: number
-    ) : MetricCompute< NeedlemanRaw > {
-        // Scoring parameters (can be customized via options if needed)
-        const { match = 1, mismatch = -1, gap = -1 } = this.options;
+  /**
+   * Calculates the Needleman-Wunsch global alignment score between two strings.
+   * 
+   * @param {string} a - First string
+   * @param {string} b - Second string
+   * @param {number} m - Length of the first string
+   * @param {number} n - Length of the second string
+   * @param {number} maxLen - Maximum length of the strings
+   * @return {MetricCompute< NeedlemanRaw >} - Object containing the similarity result and raw score
+   */
+  protected override compute (
+    a: string, b: string, m: number, n: number, maxLen: number
+  ) : MetricCompute< NeedlemanRaw > {
+    // Scoring parameters (can be customized via options if needed)
+    const { match = 1, mismatch = -1, gap = -1 } = this.options;
 
-        // Get two reusable arrays from the Pool for the DP rows
-        const len = m + 1;
-        const [ prevWrapped, currWrapped ] = Pool.acquireMany< Int32Array >( 'int32', [ len, len ] );
-        const [ { buffer: prev }, { buffer: curr } ] = [ prevWrapped, currWrapped ];
+    // Get two reusable arrays from the Pool for the DP rows
+    const len = m + 1;
+    const [ prevWrapped, currWrapped ] = Pool.acquireMany< Int32Array >( 'int32', [ len, len ] );
+    const [ { buffer: prev }, { buffer: curr } ] = [ prevWrapped, currWrapped ];
 
-        try {
-            // Initialize the first row (gap penalties)
-            prev[ 0 ] = 0; for ( let i = 1; i <= m; i++ ) prev[ i ] = prev[ i - 1 ] + gap;
+    try {
+      // Initialize the first row (gap penalties)
+      prev[ 0 ] = 0; for ( let i = 1; i <= m; i++ ) prev[ i ] = prev[ i - 1 ] + gap;
 
-            // Fill the DP matrix row by row (over the longer string)
-            for ( let j = 1; j <= n; j++ ) {
-                curr[ 0 ] = prev[ 0 ] + gap;
+      // Fill the DP matrix row by row (over the longer string)
+      for ( let j = 1; j <= n; j++ ) {
+        curr[ 0 ] = prev[ 0 ] + gap;
 
-                // Get the character code of the current character in b
-                const cb = b.charCodeAt( j - 1 );
+        // Get the character code of the current character in b
+        const cb = b.charCodeAt( j - 1 );
 
-                for ( let i = 1; i <= m; i++ ) {
-                    // Score for match / mismatch
-                    const score = a.charCodeAt( i - 1 ) === cb ? match : mismatch;
+        for ( let i = 1; i <= m; i++ ) {
+          // Score for match / mismatch
+          const score = a.charCodeAt( i - 1 ) === cb ? match : mismatch;
 
-                    // Calculate the maximum score for current cell
-                    curr[ i ] = Math.max(
-                        prev[ i - 1 ] + score,   // Diagonal (match/mismatch)
-                        prev[ i ] + gap,         // Up (gap)
-                        curr[ i - 1 ] + gap      // Left (gap)
-                    );
-                }
-
-                // Copy current row to previous for next iteration
-                prev.set( curr );
-            }
-
-            // The last value in prev is the Needleman-Wunsch score
-            const score = prev[ m ];
-
-            // Use the maximum possible score for the longer string (global alignment)
-            const denum = maxLen * match;
-
-            // Return the result as a MetricCompute object
-            return {
-                res: denum === 0 ? 0 : Metric.clamp( score / denum ),
-                raw: { score, denum }
-            };
-        } finally {
-            // Release arrays back to the pool
-            Pool.release( 'int32', prevWrapped );
-            Pool.release( 'int32', currWrapped );
+          // Calculate the maximum score for current cell
+          curr[ i ] = Math.max(
+            prev[ i - 1 ] + score,   // Diagonal (match/mismatch)
+            prev[ i ] + gap,     // Up (gap)
+            curr[ i - 1 ] + gap    // Left (gap)
+          );
         }
-    }
 
+        // Copy current row to previous for next iteration
+        prev.set( curr );
+      }
+
+      // The last value in prev is the Needleman-Wunsch score
+      const score = prev[ m ];
+
+      // Use the maximum possible score for the longer string (global alignment)
+      const denum = maxLen * match;
+
+      // Return the result as a MetricCompute object
+      return {
+        res: denum === 0 ? 0 : Metric.clamp( score / denum ),
+        raw: { score, denum }
+      };
+    } finally {
+      // Release arrays back to the pool
+      Pool.release( 'int32', prevWrapped );
+      Pool.release( 'int32', currWrapped );
+    }
+  }
 }
 
 // Register the Needleman-Wunsch algorithm in the metric registry
