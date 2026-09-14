@@ -25,6 +25,7 @@
 
 'use strict';
 
+
 import type { PhoneticOptions } from '../utils/Types';
 import { Phonetic, PhoneticMappingRegistry, PhoneticRegistry } from './Phonetic';
 
@@ -46,7 +47,9 @@ export class Cologne extends Phonetic {
    * 
    * @param {PhoneticOptions} [opt] - Options for the Cologne phonetic algorithm
    */
-  constructor ( opt: PhoneticOptions = {} ) { super( 'cologne', opt ) }
+  public constructor ( opt: PhoneticOptions = {} ) {
+    super( 'cologne', opt );
+  }
 
   /**
    * Adjusts the phonetic code by removing all '0's except the first character.
