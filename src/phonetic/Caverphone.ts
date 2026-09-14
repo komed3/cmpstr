@@ -20,6 +20,7 @@
 
 'use strict';
 
+
 import type { PhoneticOptions } from '../utils/Types';
 import { Phonetic, PhoneticMappingRegistry, PhoneticRegistry } from './Phonetic';
 
@@ -46,7 +47,9 @@ export class Caverphone extends Phonetic {
    * 
    * @param {PhoneticOptions} [opt] - Options for the Caverphone phonetic algorithm
    */
-  constructor ( opt: PhoneticOptions = {} ) { super( 'caverphone', opt ) }
+  public constructor ( opt: PhoneticOptions = {} ) {
+    super( 'caverphone', opt );
+  }
 
   /**
    * Generates the Caverphone code for a given word.
