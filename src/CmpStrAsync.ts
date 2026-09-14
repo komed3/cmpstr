@@ -23,6 +23,7 @@
 
 'use strict';
 
+
 import type {
   BatchResultLike, CmpStrOptions, CmpStrProcessors, CmpStrResult, FilterHooks, MetricInput,
   MetricMode, MetricRaw, MetricResult, MetricResultBatch, MetricResultSingle, NormalizeFlags,
@@ -63,8 +64,8 @@ export class CmpStrAsync< R = MetricRaw > extends CmpStr< R > {
    * @param {string | CmpStrOptions} [opt] - Optional serialized or options object
    * @returns {CmpStrAsync< R >} - A new CmpStrAsync instance
    */
-  public static override create< R = MetricRaw > ( opt?: string | CmpStrOptions ) : CmpStrAsync< R > {
-    return new CmpStrAsync ( opt );
+  public static override create < R = MetricRaw > ( opt?: string | CmpStrOptions ) : CmpStrAsync< R > {
+    return new CmpStrAsync( opt );
   }
 
   /**
@@ -72,7 +73,9 @@ export class CmpStrAsync< R = MetricRaw > extends CmpStr< R > {
    * 
    * @param {string | CmpStrOptions} [opt] - Optional serialized or options object
    */
-  protected constructor ( opt?: string | CmpStrOptions ) { super ( opt ) }
+  protected constructor ( opt?: string | CmpStrOptions ) {
+    super( opt );
+  }
 
   /**
    * ================================================================================-
@@ -162,7 +165,7 @@ export class CmpStrAsync< R = MetricRaw > extends CmpStr< R > {
    * @throws {CmpStrValidationError} - If the options are invalid
    * @throws {CmpStrInternalError} - If the computation fails due to internal errors
    */
-  protected async computeAsync< T extends MetricResult< R > | CmpStrResult | CmpStrResult[] > (
+  protected async computeAsync < T extends MetricResult< R > | CmpStrResult | CmpStrResult[] > (
     a: MetricInput, b: MetricInput, opt?: CmpStrOptions,
     mode?: MetricMode, raw?: boolean, skip?: boolean
   ) : Promise< T > {
@@ -198,7 +201,7 @@ export class CmpStrAsync< R = MetricRaw > extends CmpStr< R > {
         // Resolve and return the result based on the raw flag
         return this.output< T >( result, raw ?? resolved.raw );
       },
-      `Failed to compute metric <${opt?.metric ?? this.options.metric}> for the given inputs`,
+      `Failed to compute metric <${ resolved.metric }> for the given inputs`,
       { a, b, opt }
     );
   }
@@ -221,7 +224,7 @@ export class CmpStrAsync< R = MetricRaw > extends CmpStr< R > {
    * @param {CmpStrOptions} [opt] - Optional options
    * @returns {Promise< T >} - The metric result
    */
-  public async testAsync< T extends ResultLike< R > = any> (
+  public async testAsync < T extends ResultLike< R > = any> (
     a: string, b: string, opt?: CmpStrOptions
   ) : Promise< T > {
     return this.computeAsync< T >( a, b, opt, 'single' );
@@ -249,7 +252,7 @@ export class CmpStrAsync< R = MetricRaw > extends CmpStr< R > {
    * @param {CmpStrOptions} [opt] - Optional options
    * @returns {Promise< T >} - The batch metric results
    */
-  public async batchTestAsync< T extends BatchResultLike< R > = any > (
+  public async batchTestAsync < T extends BatchResultLike< R > = any > (
     a: MetricInput, b: MetricInput, opt?: CmpStrOptions
   ) : Promise< T > {
     return this.computeAsync< T >( a, b, opt, 'batch' );
@@ -265,7 +268,7 @@ export class CmpStrAsync< R = MetricRaw > extends CmpStr< R > {
    * @param {CmpStrOptions} [opt] - Optional options
    * @returns {Promise< T >} - The sorted batch results
    */
-  public async batchSortedAsync< T extends BatchResultLike< R > = any > (
+  public async batchSortedAsync < T extends BatchResultLike< R > = any > (
     a: MetricInput, b: MetricInput, dir: 'desc' | 'asc' = 'desc', opt?: CmpStrOptions
   ) : Promise< T > {
     const res = await this.computeAsync< MetricResultBatch< R > >( a, b, opt, 'batch', true );
@@ -289,7 +292,7 @@ export class CmpStrAsync< R = MetricRaw > extends CmpStr< R > {
    * @param {CmpStrOptions} [opt] - Optional options
    * @returns {Promise< T >} - The pairwise metric results
    */
-  public async pairsAsync< T extends BatchResultLike< R > = any > (
+  public async pairsAsync < T extends BatchResultLike< R > = any > (
     a: MetricInput, b: MetricInput, opt?: CmpStrOptions
   ) : Promise< T > {
     return this.computeAsync< T >( a, b, opt, 'pairwise' );
@@ -305,7 +308,7 @@ export class CmpStrAsync< R = MetricRaw > extends CmpStr< R > {
    * @param {CmpStrOptions} [opt] - Optional options
    * @returns {Promise< T >} - The filtered batch results
    */
-  public async matchAsync< T extends BatchResultLike< R > = any > (
+  public async matchAsync < T extends BatchResultLike< R > = any > (
     a: MetricInput, b: MetricInput, threshold: number, opt?: CmpStrOptions
   ) : Promise< T > {
     const res = await this.computeAsync< MetricResultBatch< R > >( a, b, opt, 'batch', true );
@@ -326,7 +329,7 @@ export class CmpStrAsync< R = MetricRaw > extends CmpStr< R > {
    * @param {CmpStrOptions} [opt] - Optional options
    * @returns {Promise< T >} - The closest matches
    */
-  public async closestAsync< T extends BatchResultLike< R > = any > (
+  public async closestAsync < T extends BatchResultLike< R > = any > (
     a: MetricInput, b: MetricInput, n: number = 1, opt?: CmpStrOptions
   ) : Promise< T > {
     return ( await this.batchSortedAsync( a, b, 'desc', opt ) ).slice( 0, n );
@@ -342,7 +345,7 @@ export class CmpStrAsync< R = MetricRaw > extends CmpStr< R > {
    * @param {CmpStrOptions} [opt] - Optional options
    * @returns {Promise<T>} - The furthest matches
    */
-  public async furthestAsync< T extends BatchResultLike< R > = any > (
+  public async furthestAsync < T extends BatchResultLike< R > = any > (
     a: MetricInput, b: MetricInput, n: number = 1, opt?: CmpStrOptions
   ) : Promise< T > {
     return ( await this.batchSortedAsync( a, b, 'asc', opt ) ).slice( 0, n );
@@ -368,9 +371,9 @@ export class CmpStrAsync< R = MetricRaw > extends CmpStr< R > {
 
     // Filter the haystack based on the normalized test string
     const out: string[] = [];
-    for ( let i = 0; i < hstk.length; i++ ) {
+
+    for ( let i = 0; i < hstk.length; i++ )
       if ( hstk[ i ].includes( test ) ) out.push( haystack[ i ] );
-    }
 
     return out;
   }
@@ -386,8 +389,7 @@ export class CmpStrAsync< R = MetricRaw > extends CmpStr< R > {
    */
   public async matrixAsync ( input: string[], opt?: CmpStrOptions ) : Promise< number[][] > {
     const resolved = this.resolveOptions( opt );
-    const arr = await this.prepareAsync( input, resolved ) as string[];
-    const n = arr.length;
+    const arr = await this.prepareAsync( input, resolved ) as string[], n = arr.length;
     const out = Array.from( { length: n }, () => new Array< number >( n ).fill( 0 ) );
 
     for ( let i = 0; i < n; i++ ) {
@@ -440,13 +442,11 @@ export class CmpStrAsync< R = MetricRaw > extends CmpStr< R > {
    * @param {StructuredDataOptions} [opt] - Optional lookup options
    * @returns {Promise< StructuredResultLike< T, R > >} - Async batch results with original objects
    */
-  public async structuredLookupAsync< T = any > (
+  public async structuredLookupAsync < T = any > (
     query: string, data: T[], key: keyof T, opt?: StructuredDataOptions
   ) : Promise< StructuredResultLike< T, R > > {
     return await this.structured< T >( data, key ).lookupAsync(
-      ( q, items, options ) => this.batchTestAsync< MetricResultBatch< R > >(
-        q, items, options
-      ),
+      ( q, items, options ) => this.batchTestAsync< MetricResultBatch< R > >( q, items, options ),
       query, opt
     );
   }
@@ -463,13 +463,11 @@ export class CmpStrAsync< R = MetricRaw > extends CmpStr< R > {
    * @param {StructuredDataLookupOptions} [opt] - Optional lookup options
    * @returns {Promise< StructuredResultLike< T, R > >} - Async filtered batch results
    */
-  public async structuredMatchAsync< T = any > (
+  public async structuredMatchAsync < T = any > (
     query: string, data: T[], key: keyof T, threshold: number, opt?: StructuredDataOptions
   ) : Promise< StructuredResultLike< T, R > > {
     return await this.structured< T >( data, key ).lookupAsync(
-      ( q, items, options ) => this.matchAsync< MetricResultBatch< R > >(
-        q, items, threshold, options
-      ),
+      ( q, items, options ) => this.matchAsync< MetricResultBatch< R > >( q, items, threshold, options ),
       query, { ...opt, sort: 'desc' }
     );
   }
@@ -486,13 +484,11 @@ export class CmpStrAsync< R = MetricRaw > extends CmpStr< R > {
    * @param {StructuredDataOptions} [opt] - Optional lookup options
    * @returns {Promise< StructuredResultLike< T, R > >} - Async closest matches
    */
-  public async structuredClosestAsync< T = any > (
+  public async structuredClosestAsync < T = any > (
     query: string, data: T[], key: keyof T, n: number = 1, opt?: StructuredDataOptions
   ) : Promise< StructuredResultLike< T, R > > {
     return await this.structured< T >( data, key ).lookupAsync(
-      ( q, items, options ) => this.closestAsync< MetricResultBatch< R > >(
-        q, items, n, options
-      ),
+      ( q, items, options ) => this.closestAsync< MetricResultBatch< R > >( q, items, n, options ),
       query, { ...opt, sort: 'desc' }
     );
   }
@@ -509,14 +505,12 @@ export class CmpStrAsync< R = MetricRaw > extends CmpStr< R > {
    * @param {StructuredDataOptions} [opt] - Optional lookup options
    * @returns {Promise< StructuredResultLike< T, R > >} - Async furthest matches
    */
-  public async structuredFurthestAsync< T = any > (
+  public async structuredFurthestAsync < T = any > (
     query: string, data: T[], key: keyof T, n: number = 1,
     opt?: StructuredDataOptions
   ) : Promise< StructuredResultLike< T, R > > {
     return await this.structured< T >( data, key ).lookupAsync(
-      ( q, items, options ) => this.furthestAsync< MetricResultBatch< R > >(
-        q, items, n, options
-      ),
+      ( q, items, options ) => this.furthestAsync< MetricResultBatch< R > >( q, items, n, options ),
       query, { ...opt, sort: 'asc' }
     );
   }
@@ -534,15 +528,12 @@ export class CmpStrAsync< R = MetricRaw > extends CmpStr< R > {
    * @param {StructuredDataOptions} [opt] - Optional lookup options
    * @returns {Promise< StructuredResultLike< T, R > >} - Async pairwise results with original objects
    */
-  public async structuredPairsAsync< T = any, O = any > (
+  public async structuredPairsAsync < T = any, O = any > (
     data: T[], key: keyof T, other: O[], otherKey: keyof O, opt?: StructuredDataOptions
   ) : Promise< StructuredResultLike< T, R > > {
     return await this.structured< T >( data, key ).lookupPairsAsync< O >(
-      ( items, otherItems, options ) => this.pairsAsync< MetricResultBatch< R > >(
-        items, otherItems, options
-      ),
+      ( items, otherItems, options ) => this.pairsAsync< MetricResultBatch< R > >( items, otherItems, options ),
       other, otherKey, opt
     );
   }
-
 }
