@@ -24,6 +24,7 @@
 
 'use strict';
 
+
 import type {
   BatchResultLike, CmpStrOptions, CmpStrProcessors, CmpStrResult, DiffOptions, FilterHooks,
   MetricInput, MetricMode, MetricRaw, MetricResult, MetricResultBatch, MetricResultSingle,
@@ -47,6 +48,7 @@ import { Phonetic, PhoneticMappingRegistry, PhoneticRegistry } from './phonetic'
 
 // Import the Profiler instance for global profiling
 const profiler = Profiler.getInstance();
+
 
 /**
  * The main CmpStr class that provides a unified interface for string comparison,
@@ -133,7 +135,9 @@ export class CmpStr< R = MetricRaw > {
    * @param {string} [input] - The input string
    * @returns {TextAnalyzer} - The text analyzer
    */
-  public static analyze = ( input: string ) : TextAnalyzer => new TextAnalyzer ( input );
+  public static analyze ( input: string ) : TextAnalyzer {
+    return new TextAnalyzer( input );
+  }
 
   /**
    * Returns a DiffChecker instance for computing the unified diff between two texts.
@@ -143,7 +147,9 @@ export class CmpStr< R = MetricRaw > {
    * @param {DiffOptions} [opt] - Optional diff configuration
    * @returns {DiffChecker} - The diff checker instance
    */
-  public static diff = ( a: string, b: string, opt?: DiffOptions ) : DiffChecker => new DiffChecker ( a, b, opt );
+  public static diff ( a: string, b: string, opt?: DiffOptions ) : DiffChecker {
+    return new DiffChecker( a, b, opt );
+  }
 
   /**
    * ================================================================================
@@ -160,8 +166,8 @@ export class CmpStr< R = MetricRaw > {
    * @param {string | CmpStrOptions} [opt] - Optional serialized or options object
    * @returns {CmpStr< R >} - A new CmpStr instance
    */
-  public static create< R = MetricRaw > ( opt?: string | CmpStrOptions ) : CmpStr< R > {
-    return new CmpStr ( opt );
+  public static create < R = MetricRaw > ( opt?: string | CmpStrOptions ) : CmpStr< R > {
+    return new CmpStr( opt );
   }
 
   // The options object that holds the configuration for this CmpStr instance
@@ -196,7 +202,7 @@ export class CmpStr< R = MetricRaw > {
    */
   protected assert ( cond: string, test?: any ) : void {
     switch ( cond ) {
-      default: throw new CmpStrInternalError( `Cmpstr condition <${cond}> unknown` );
+      default: throw new CmpStrInternalError( `Cmpstr condition <${ cond }> unknown` );
       case 'metric': OptionsValidator.validateMetricName( test ); break;
       case 'phonetic': OptionsValidator.validatePhoneticName( test ); break;
     }
@@ -309,7 +315,7 @@ export class CmpStr< R = MetricRaw > {
    * @param {keyof T} key - The property key to compare
    * @returns {StructuredData< T, R >} - The lookup instance
    */
-  protected structured< T = any > ( data: T[], key: keyof T ) : StructuredData< T, R > {
+  protected structured < T = any > ( data: T[], key: keyof T ) : StructuredData< T, R > {
     return StructuredData.create< T, R >( data, key );
   }
 
@@ -328,7 +334,7 @@ export class CmpStr< R = MetricRaw > {
    * @throws {CmpStrValidationError} - If the options are invalid
    * @throws {CmpStrInternalError} - If the computation fails due to internal errors
    */
-  protected compute< T extends MetricResult< R > | CmpStrResult | CmpStrResult[] > (
+  protected compute < T extends MetricResult< R > | CmpStrResult | CmpStrResult[] > (
     a: MetricInput, b: MetricInput, opt?: CmpStrOptions,
     mode?: MetricMode, raw?: boolean, skip?: boolean
   ) : T {
@@ -337,7 +343,6 @@ export class CmpStr< R = MetricRaw > {
 
     return ErrorUtil.wrap< T >(
       () => {
-
         // Prepare the input
         const A = skip ? a : this.prepare( a, resolved );
         const B = skip ? b : this.prepare( b, resolved );
@@ -347,7 +352,7 @@ export class CmpStr< R = MetricRaw > {
           ( Array.isArray( A ) && A.length === 0 ) ||
           ( Array.isArray( B ) && B.length === 0 ) ||
           A === '' || B === ''
-        ) ) { return ( [] as unknown ) as T }
+        ) ) { return [] as unknown as T }
 
         // Get the metric class
         const metric: Metric< R > = factory[ 'metric' ]( resolved.metric!, A, B, resolved.opt );
@@ -364,7 +369,7 @@ export class CmpStr< R = MetricRaw > {
         // Resolve and return the result based on the raw flag
         return this.output< T >( result, raw ?? resolved.raw );
       },
-      `Failed to compute metric <${resolved.metric}> for the given inputs`,
+      `Failed to compute metric <${ resolved.metric }> for the given inputs`,
       { a, b, options: opt }
     );
   }
@@ -378,7 +383,7 @@ export class CmpStr< R = MetricRaw > {
    * @returns {T} - The resolved result
    * @throws {CmpStrInternalError} - If the output format cannot be resolved
    */
-  protected output< T extends MetricResult< R > | CmpStrResult | CmpStrResult[] > (
+  protected output < T extends MetricResult< R > | CmpStrResult | CmpStrResult[] > (
     result: MetricResult< R >, raw?: boolean
   ) : T {
     return ErrorUtil.wrap< T >( () => ( raw ?? this.options.raw ? result : Array.isArray( result )
@@ -465,6 +470,7 @@ export class CmpStr< R = MetricRaw > {
         `Failed to parse serialized options, invalid JSON string`,
         { opt, error: err instanceof Error ? err.message : String( err ) }
       );
+
       throw err;
     }
   }
@@ -598,7 +604,7 @@ export class CmpStr< R = MetricRaw > {
    * @param {CmpStrOptions} [opt] - Optional options
    * @returns {T} - The metric result
    */
-  public test< T extends ResultLike< R > = any > ( a: string, b: string, opt?: CmpStrOptions ) : T {
+  public test < T extends ResultLike< R > = any > ( a: string, b: string, opt?: CmpStrOptions ) : T {
     return this.compute< T >( a, b, opt, 'single' );
   }
 
@@ -624,7 +630,7 @@ export class CmpStr< R = MetricRaw > {
    * @param {CmpStrOptions} [opt] - Optional options
    * @returns {T} - The batch metric results
    */
-  public batchTest< T extends BatchResultLike< R > = any > (
+  public batchTest < T extends BatchResultLike< R > = any > (
     a: MetricInput, b: MetricInput, opt?: CmpStrOptions
   ) : T {
     return this.compute< T >( a, b, opt, 'batch' );
@@ -640,12 +646,12 @@ export class CmpStr< R = MetricRaw > {
    * @param {CmpStrOptions} [opt] - Optional options
    * @returns {T} - The sorted batch results
    */
-  public batchSorted< T extends BatchResultLike< R > = any > (
+  public batchSorted < T extends BatchResultLike< R > = any > (
     a: MetricInput, b: MetricInput, dir: 'desc' | 'asc' = 'desc', opt?: CmpStrOptions
   ) : T {
     return this.output< T >(
       this.compute< MetricResultBatch< R > >( a, b, opt, 'batch', true )
-        .sort( ( a, b ) => dir === 'asc' ? a.res - b.res : b.res - a.res ),
+          .sort( ( a, b ) => dir === 'asc' ? a.res - b.res : b.res - a.res ),
       opt?.raw ?? this.options.raw
     );
   }
@@ -663,7 +669,7 @@ export class CmpStr< R = MetricRaw > {
    * @param {CmpStrOptions} [opt] - Optional options
    * @returns {T} - The pairwise metric results
    */
-  public pairs< T extends BatchResultLike< R > = any > (
+  public pairs < T extends BatchResultLike< R > = any > (
     a: MetricInput, b: MetricInput, opt?: CmpStrOptions
   ) : T {
     return this.compute< T >( a, b, opt, 'pairwise' );
@@ -679,12 +685,12 @@ export class CmpStr< R = MetricRaw > {
    * @param {CmpStrOptions} [opt] - Optional options
    * @returns {T} - The filtered batch results
    */
-  public match< T extends BatchResultLike< R > = any > (
+  public match < T extends BatchResultLike< R > = any > (
     a: MetricInput, b: MetricInput, threshold: number, opt?: CmpStrOptions
   ) : T {
     return this.output< T >(
       this.compute< MetricResultBatch< R > >( a, b, opt, 'batch', true )
-        .filter( r => r.res >= threshold ).sort( ( a, b ) => b.res - a.res ),
+          .filter( r => r.res >= threshold ).sort( ( a, b ) => b.res - a.res ),
       opt?.raw ?? this.options.raw
     );
   }
@@ -699,7 +705,7 @@ export class CmpStr< R = MetricRaw > {
    * @param {CmpStrOptions} [opt] - Optional options
    * @returns {T} - The closest matches
    */
-  public closest< T extends BatchResultLike< R > = any > (
+  public closest < T extends BatchResultLike< R > = any > (
     a: MetricInput, b: MetricInput, n: number = 1, opt?: CmpStrOptions
   ) : T {
     return this.batchSorted( a, b, 'desc', opt ).slice( 0, n );
@@ -715,7 +721,7 @@ export class CmpStr< R = MetricRaw > {
    * @param {CmpStrOptions} [opt] - Optional options
    * @returns {T} - The furthest matches
    */
-  public furthest< T extends BatchResultLike< R > = any > (
+  public furthest < T extends BatchResultLike< R > = any > (
     a: MetricInput, b: MetricInput, n: number = 1, opt?: CmpStrOptions
   ) : T {
     return this.batchSorted( a, b, 'asc', opt ).slice( 0, n );
@@ -741,9 +747,9 @@ export class CmpStr< R = MetricRaw > {
 
     // Filter the haystack based on the normalized test string
     const out: string[] = [];
-    for ( let i = 0, len = hstk.length; i < len; i++ ) {
+
+    for ( let i = 0, len = hstk.length; i < len; i++ )
       if ( hstk[ i ].includes( test ) ) out.push( haystack[ i ] );
-    }
 
     return out;
   }
@@ -759,8 +765,7 @@ export class CmpStr< R = MetricRaw > {
    */
   public matrix ( input: string[], opt?: CmpStrOptions ) : number[][] {
     const resolved = this.resolveOptions( opt );
-    const arr = this.prepare( input, resolved ) as string[];
-    const n = arr.length;
+    const arr = this.prepare( input, resolved ) as string[], n = arr.length;
     const out = Array.from( { length: n }, () => new Array< number >( n ).fill( 0 ) );
 
     for ( let i = 0; i < n; i++ ) for ( let j = i; j < n; j++ ) {
@@ -811,7 +816,7 @@ export class CmpStr< R = MetricRaw > {
    * @param {StructuredDataOptions} [opt] - Optional lookup options
    * @returns {StructuredResultLike< T, R >} - Batch results with original objects
    */
-  public structuredLookup< T = any > (
+  public structuredLookup < T = any > (
     query: string, data: T[], key: keyof T, opt?: StructuredDataOptions
   ) : StructuredResultLike< T, R > {
     return this.structured< T >( data, key ).lookup(
@@ -832,7 +837,7 @@ export class CmpStr< R = MetricRaw > {
    * @param {StructuredDataOptions} [opt] - Optional lookup options
    * @returns {StructuredResultLike< T, R >} - Filtered batch results with objects
    */
-  public structuredMatch< T = any > (
+  public structuredMatch < T = any > (
     query: string, data: T[], key: keyof T, threshold: number, opt?: StructuredDataOptions
   ) : StructuredResultLike< T, R > {
     return this.structured< T >( data, key ).lookup(
@@ -852,7 +857,7 @@ export class CmpStr< R = MetricRaw > {
    * @param {StructuredDataOptions} [opt] - Optional lookup options
    * @returns {StructuredResultLike< T, R >} - Closest matches with objects
    */
-  public structuredClosest< T = any > (
+  public structuredClosest < T = any > (
     query: string, data: T[], key: keyof T, n: number = 1, opt?: StructuredDataOptions
   ) : StructuredResultLike< T, R > {
     return this.structured< T >( data, key ).lookup(
@@ -872,7 +877,7 @@ export class CmpStr< R = MetricRaw > {
    * @param {StructuredDataOptions} [opt] - Optional lookup options
    * @returns {StructuredResultLike< T, R >} - Furthest matches with objects
    */
-  public structuredFurthest< T = any > (
+  public structuredFurthest < T = any > (
     query: string, data: T[], key: keyof T, n: number = 1, opt?: StructuredDataOptions
   ) : StructuredResultLike< T, R > {
     return this.structured< T >( data, key ).lookup(
@@ -894,7 +899,7 @@ export class CmpStr< R = MetricRaw > {
    * @param {StructuredDataOptions} [opt] - Optional lookup options
    * @returns {StructuredResultLike< T, R >} - Pairwise results with original objects
    */
-  public structuredPairs< T = any, O = any > (
+  public structuredPairs < T = any, O = any > (
     data: T[], key: keyof T, other: O[], otherKey: keyof O, opt?: StructuredDataOptions
   ) : StructuredResultLike< T, R > {
     return this.structured< T >( data, key ).lookupPairs< O >(
@@ -904,5 +909,4 @@ export class CmpStr< R = MetricRaw > {
       other, otherKey, opt
     );
   }
-
 }
