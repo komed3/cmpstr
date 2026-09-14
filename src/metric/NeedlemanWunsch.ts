@@ -115,5 +115,6 @@ export class NeedlemanWunschDistance extends Metric< NeedlemanRaw > {
   }
 }
 
+
 // Register the Needleman-Wunsch algorithm in the metric registry
 MetricRegistry.add( 'needlemanWunsch', NeedlemanWunschDistance );

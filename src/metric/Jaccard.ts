@@ -89,5 +89,6 @@ export class JaccardIndex extends Metric< JaccardRaw > {
   }
 }
 
+
 // Register the Jaccard index in the metric registry
 MetricRegistry.add( 'jaccard', JaccardIndex );

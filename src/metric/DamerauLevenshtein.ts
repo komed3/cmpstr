@@ -124,5 +124,6 @@ export class DamerauLevenshteinDistance extends Metric< DamerauRaw > {
   }
 }
 
+
 // Register the Damerau-Levenshtein distance in the metric registry
 MetricRegistry.add( 'damerau', DamerauLevenshteinDistance );

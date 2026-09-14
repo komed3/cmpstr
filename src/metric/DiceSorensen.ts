@@ -103,5 +103,6 @@ export class DiceSorensenCoefficient extends Metric< DiceRaw > {
   }
 }
 
+
 // Register the Dice-Sørensen coefficient in the metric registry
 MetricRegistry.add( 'dice', DiceSorensenCoefficient );

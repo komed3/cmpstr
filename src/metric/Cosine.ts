@@ -113,5 +113,6 @@ export class CosineSimilarity extends Metric< CosineRaw > {
   }
 }
 
+
 // Register the Cosine similarity in the metric registry
 MetricRegistry.add( 'cosine', CosineSimilarity );

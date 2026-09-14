@@ -108,5 +108,6 @@ export class LCSMetric extends Metric< LCSRaw > {
   }
 }
 
+
 // Register the Longest Common Subsequence (LCS) in the metric registry
 MetricRegistry.add( 'lcs', LCSMetric );

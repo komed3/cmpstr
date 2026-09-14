@@ -104,5 +104,6 @@ export class QGramSimilarity extends Metric< QGramRaw > {
   }
 }
 
+
 // Register the q-Gram similariry in the metric registry
 MetricRegistry.add( 'qGram', QGramSimilarity );

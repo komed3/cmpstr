@@ -42,6 +42,7 @@ import { Registry } from '../utils/Registry';
 // Get the singleton profiler instance for performance monitoring
 const profiler = Profiler.getInstance();
 
+
 /**
  * Abstract class representing a generic string metric.
  * 
@@ -475,6 +476,7 @@ export abstract class Metric< R = MetricRaw > {
   }
 }
 
+
 /**
  * Metric registry service for managing metric implementations.
  * 
@@ -482,6 +484,7 @@ export abstract class Metric< R = MetricRaw > {
  * enabling the use of various string similarity metrics in a consistent manner.
  */
 export const MetricRegistry: RegistryService< Metric< MetricRaw > > = Registry( 'metric', Metric );
+
 
 /**
  * Type definition for a class constructor that extends the Metric class.

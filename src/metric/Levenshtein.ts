@@ -113,5 +113,6 @@ export class LevenshteinDistance extends Metric< LevenshteinRaw > {
   }
 }
 
+
 // Register the Levenshtein distance in the metric registry
 MetricRegistry.add( 'levenshtein', LevenshteinDistance );

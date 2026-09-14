@@ -130,5 +130,6 @@ export class JaroWinklerDistance extends Metric< JaroWinklerRaw > {
   }
 }
 
+
 // Register the Jaro-Winkler distance in the metric registry
 MetricRegistry.add( 'jaroWinkler', JaroWinklerDistance );

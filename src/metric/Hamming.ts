@@ -91,5 +91,6 @@ export class HammingDistance extends Metric< HammingRaw > {
   }
 }
 
+
 // Register the Hamming distance in the metric registry
 MetricRegistry.add( 'hamming', HammingDistance );
