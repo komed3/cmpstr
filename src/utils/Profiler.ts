@@ -66,7 +66,7 @@ export class Profiler {
    */
   public static getInstance ( enable?: boolean ) : Profiler {
     if ( ! Profiler.ENV ) Profiler.detectEnv();
-    return Profiler.instance ||= new Profiler ( enable );
+    return Profiler.instance ||= new Profiler( enable );
   }
 
   /**
@@ -99,7 +99,6 @@ export class Profiler {
    */
   private storeRes < T > ( entry: ProfilerEntry< T > ) : void {
     this.store.push( this.last = entry );
-
     this.totalTime += entry.time;
     this.totalMem += entry.mem;
   }
@@ -128,7 +127,6 @@ export class Profiler {
   public clear () : void {
     this.store.length = 0;
     this.last = undefined;
-
     this.totalTime = 0;
     this.totalMem = 0;
   }

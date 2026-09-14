@@ -51,7 +51,7 @@ export class StructuredData< T = any, R = MetricRaw > {
    * @param {keyof T} key - The property key to extract for comparison
    * @returns {StructuredData< T, R >} - A new class instance
    */
-  public static create< T = any, R = MetricRaw > ( data: T[], key: keyof T ) : StructuredData< T, R > {
+  public static create < T = any, R = MetricRaw > ( data: T[], key: keyof T ) : StructuredData< T, R > {
     return new StructuredData ( data, key );
   }
 
@@ -354,8 +354,7 @@ export class StructuredData< T = any, R = MetricRaw > {
     fn: ( a: string[], b: string[], opt?: CmpStrOptions ) => CmpFnResult< R >,
     other: O[], otherKey: keyof O, opt?: StructuredDataOptions
   ) : StructuredDataBatchResult< T, R > | T[] {
-    const a = this.extract();
-    const b = this.extractFrom< O >( other, otherKey );
+    const a = this.extract(), b = this.extractFrom< O >( other, otherKey );
 
     try { return this.performLookup( () => fn( a, b, opt ), a, opt ) }
     finally {
@@ -378,8 +377,7 @@ export class StructuredData< T = any, R = MetricRaw > {
     fn: ( a: string[], b: string[], opt?: CmpStrOptions ) => Promise< CmpFnResult< R > >,
     other: O[], otherKey: keyof O, opt?: StructuredDataOptions
   ) : Promise< StructuredDataBatchResult< T, R > | T[] > {
-    const a = this.extract();
-    const b = this.extractFrom< O >( other, otherKey );
+    const a = this.extract(), b = this.extractFrom< O >( other, otherKey );
 
     try { return await this.performLookupAsync( () => fn( a, b, opt ), a, opt ) }
     finally {

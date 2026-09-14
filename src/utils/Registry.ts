@@ -49,7 +49,7 @@ export const factory: Record< string, ( cls: string, ...args: any[] ) =>
  * @returns {RegistryService< T >} - An object with methods to register, remove, check, get, and list classes
  * @throws {Error} - If the registry already exists (overwriting is forbidden)
  */
-export function Registry< T > ( reg: string, ctor: RegistryConstructor< T > ) : RegistryService< T > {
+export function Registry < T > ( reg: string, ctor: RegistryConstructor< T > ) : RegistryService< T > {
 
   /** Throws an error if the registry already exists */
   ErrorUtil.assert(
@@ -141,7 +141,7 @@ export function Registry< T > ( reg: string, ctor: RegistryConstructor< T > ) : 
  * @returns {T | undefined} - The class constructor if found, otherwise undefined
  * @throws {CmpStrNotFoundError} - If the registry or class does not exist
  */
-export function resolveCls< T extends RegistryConstructor< any > > ( reg: string, cls: T | string ) : T {
+export function resolveCls < T extends RegistryConstructor< any > > ( reg: string, cls: T | string ) : T {
   if ( ! ( reg in registry ) ) throw new CmpStrNotFoundError( `Registry <${ reg }> does not exist`, { registry: reg } );
   return ( typeof cls === 'string' ? registry[ reg ].get( cls ) : cls ) as T;
 }
@@ -156,7 +156,7 @@ export function resolveCls< T extends RegistryConstructor< any > > ( reg: string
  * @returns {T} - An instance of the class
  * @throws {CmpStrInternalError} - If instantiation fails due to an internal error
  */
-export function createFromRegistry< T extends RegistryConstructor< any > >(
+export function createFromRegistry < T extends RegistryConstructor< any > >(
   reg: string, cls: T | string, ...args: any[]
 ) : InstanceType< T > {
   const ctor = resolveCls< T >( reg, cls ) as unknown as new ( ...args: any[] ) => InstanceType< T >;
