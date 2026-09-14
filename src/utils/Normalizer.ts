@@ -70,7 +70,7 @@ export class Normalizer {
    * @returns {NormalizeFlags} - The canonicalized flags
    */
   private static canonicalFlags ( flags: NormalizeFlags ) : NormalizeFlags {
-    return Array.from( new Set ( flags ) ).sort().join( '' ) as NormalizeFlags;
+    return Array.from( new Set( flags ) ).sort().join( '' ) as NormalizeFlags;
   }
 
   /**
@@ -110,7 +110,6 @@ export class Normalizer {
       const fn: NormalizerFn = ( input: string ) => {
         let v = input;
         for ( let i = 0; i < steps.length; i++ ) v = steps[ i ]( v );
-
         return v;
       };
 
@@ -130,7 +129,7 @@ export class Normalizer {
    * @returns {string | string[]} - The normalized string(s)
    * @throws {CmpStrInternalError} - Throws an error if the normalization process fails
    */
-  static normalize (
+  public static normalize (
     input: string | string[], flags: NormalizeFlags, normalizedFlags?: NormalizeFlags
   ) : string | string[] {
     return ErrorUtil.wrap< string | string[] >( () => {
@@ -172,7 +171,7 @@ export class Normalizer {
    * @returns {Promise< string | string[] >} - A promise that resolves to the normalized string(s)
    * @throws {CmpStrInternalError} - Throws an error if the normalization process fails
    */
-  static async normalizeAsync ( input: string | string[], flags: NormalizeFlags ) : Promise< string | string[] > {
+  public static async normalizeAsync ( input: string | string[], flags: NormalizeFlags ) : Promise< string | string[] > {
     return await ErrorUtil.wrapAsync< string | string[] >( async () => {
       if ( ! flags || typeof flags !== 'string' || ! input ) return input;
 
@@ -188,7 +187,7 @@ export class Normalizer {
    * Clears the normalization pipeline and cache.
    * This is useful for resetting the state of the Normalizer.
    */
-  static clear () : void {
+  public static clear () : void {
     Normalizer.pipeline.clear();
     Normalizer.cache.clear();
   }
