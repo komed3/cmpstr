@@ -1,4 +1,4 @@
-import { describe, it, expect } from 'vitest';
+import { describe, expect, it } from 'vitest';
 import { CmpStr, type CmpStrResult } from '../src';
 
 /**
@@ -8,138 +8,136 @@ import { CmpStr, type CmpStrResult } from '../src';
  * metrics implemented in the CmpStr library.
  */
 describe( 'CmpStr > Metric', () => {
+  it( 'Levenshtein Distance', () => {
+    const cmp = CmpStr.create().setMetric( 'levenshtein' );
+    const res = cmp.test<CmpStrResult>( 'kitten', 'sitting' );
 
-    it( 'Levenshtein Distance', () => {
-        const cmp = CmpStr.create().setMetric( 'levenshtein' );
-        const res = cmp.test<CmpStrResult>( 'kitten', 'sitting' );
+    expect( res.match ).toBeGreaterThan( 0.4 );
+  } );
 
-        expect( res.match ).toBeGreaterThan( 0.4 );
+  it( 'Dice-Sørensen Coefficient', () => {
+    const cmp = CmpStr.create();
+    const res = cmp.closest( 'hello', [ 'Hallo', 'hola', 'hey' ], 1, { flags: 'i', metric: 'dice' } );
+
+    expect( res ).toEqual( [ { source: 'hello', target: 'Hallo', match: 0.5 } ] );
+  } );
+
+  it( 'Hamming Distance', () => {
+    const cmp = CmpStr.create( '{ "metric": "hamming", "opt": { "pad": "0" } }' );
+    const res = cmp.compare( 'kitten', 'sittings' );
+
+    expect( res ).toBeCloseTo( 0.5 );
+  } );
+
+  it( 'Needleman-Wunsch Distance', () => {
+    const cmp = CmpStr.create().setMetric( 'needlemanWunsch' );
+    const res = cmp.test( 'GATTACA', 'GTCGACGCA', { raw: true, opt: { gap: -2 } } );
+
+    expect( res ).toEqual( {
+      metric: 'needlemanWunsch', a: 'GATTACA', b: 'GTCGACGCA',
+      res: 0, raw: { score: -3, denum: 9 }
     } );
+  } );
 
-    it( 'Dice-Sørensen Coefficient', () => {
-        const cmp = CmpStr.create();
-        const res = cmp.closest( 'hello', [ 'Hallo', 'hola', 'hey' ], 1, { flags: 'i', metric: 'dice' } );
+  it( 'Jaccard Index', () => {
+    const cmp = CmpStr.create().setMetric( 'jaccard' );
+    const res = cmp.match( [ 'Meyer', 'Müller', 'Miller', 'Meyers', 'Meier' ], 'Maier', 0.6 );
 
-        expect( res ).toEqual( [ { source: 'hello', target: 'Hallo', match: 0.5 } ] );
-    } );
+    expect( res ).toHaveLength( 2 );
+  } );
 
-    it( 'Hamming Distance', () => {
-        const cmp = CmpStr.create( '{ "metric": "hamming", "opt": { "pad": "0" } }' );
-        const res = cmp.compare( 'kitten', 'sittings' );
+  it( 'Jaro-Winkler Distance', () => {
+    const cmp = CmpStr.create().setMetric( 'jaroWinkler' ).setFlags( 'i' );
+    const res = cmp.pairs( [ 'heLLo', 'hi', 'Hola' ], [ 'hallo', 'Allo', 'hey' ] );
 
-        expect( res ).toBeCloseTo( 0.5 );
-    } );
+    expect( res ).toEqual( [
+      { source: 'heLLo', target: 'hallo', match: 0.88 },
+      { source: 'hi', target: 'Allo', match: 0 },
+      { source: 'Hola', target: 'hey', match: 0.575 }
+    ] );
 
-    it( 'Needleman-Wunsch Distance', () => {
-        const cmp = CmpStr.create().setMetric( 'needlemanWunsch' );
-        const res = cmp.test( 'GATTACA', 'GTCGACGCA', { raw: true, opt: { gap: -2 } } );
+    expect( () => { cmp.pairs( [ 'heLLo', 'hi', 'Hola' ], [ 'hallo', 'allo' ] ) } ).toThrowError(
+      `Mode <pairwise> requires arrays of equal length`
+    );
+  } );
 
-        expect( res ).toEqual( {
-            metric: 'needlemanWunsch', a: 'GATTACA', b: 'GTCGACGCA',
-            res: 0, raw: { score: -3, denum: 9 }
-        } );
-    } );
+  it( 'Safe-Mode: Return [] for empty input(s)', () => {
+    const cmp = CmpStr.create( { metric: 'levenshtein', safeEmpty: true } );
 
-    it( 'Jaccard Index', () => {
-        const cmp = CmpStr.create().setMetric( 'jaccard' );
-        const res = cmp.match( [ 'Meyer', 'Müller', 'Miller', 'Meyers', 'Meier' ], 'Maier', 0.6 );
+    expect( cmp.test( '', '' ) ).toEqual( [] );
+    expect( cmp.test( 'test', '' ) ).toEqual( [] );
+    expect( cmp.test( '', 'test' ) ).toEqual( [] );
 
-        expect( res ).toHaveLength( 2 );
-    } );
+    expect( cmp.batchTest( [], [] ) ).toEqual( [] );
+    expect( cmp.batchTest( [], 'test' ) ).toEqual( [] );
 
-    it( 'Jaro-Winkler Distance', () => {
-        const cmp = CmpStr.create().setMetric( 'jaroWinkler' ).setFlags( 'i' );
-        const res = cmp.pairs( [ 'heLLo', 'hi', 'Hola' ], [ 'hallo', 'Allo', 'hey' ] );
+    expect( cmp.match( 'test', [], 0.5 ) ).toEqual( [] );
+  } );
 
-        expect( res ).toEqual( [
-            { source: 'heLLo', target: 'hallo', match: 0.88 },
-            { source: 'hi', target: 'Allo', match: 0 },
-            { source: 'Hola', target: 'hey', match: 0.575 }
-        ] );
+  it( 'Unicode and Special Characters', () => {
+    const cmp = CmpStr.create().setMetric( 'levenshtein' );
+    const res = cmp.test( '🎉🎊', '🎉🎊' );
 
-        expect( () => { cmp.pairs( [ 'heLLo', 'hi', 'Hola' ], [ 'hallo', 'allo' ] ) } ).toThrowError(
-            `Mode <pairwise> requires arrays of equal length`
-        );
-    } );
+    expect( res.match ).toBe( 1 );
+  } );
 
-    it( 'Safe-Mode: Return [] for empty input(s)', () => {
-        const cmp = CmpStr.create( { metric: 'levenshtein', safeEmpty: true } );
+  it( 'Case-Insensitive Matching', () => {
+    const cmp = CmpStr.create( { metric: 'levenshtein', flags: 'i' } );
+    const res = cmp.test( 'Hello', 'HELLO' );
 
-        expect( cmp.test( '', '' ) ).toEqual( [] );
-        expect( cmp.test( 'test', '' ) ).toEqual( [] );
-        expect( cmp.test( '', 'test' ) ).toEqual( [] );
+    expect( res.match ).toBe( 1 );
+  } );
 
-        expect( cmp.batchTest( [], [] ) ).toEqual( [] );
-        expect( cmp.batchTest( [], 'test' ) ).toEqual( [] );
+  it( 'Matrix Computation', () => {
+    const cmp = CmpStr.create( { metric: 'levenshtein' } );
+    const matrix = cmp.matrix( [ 'cat', 'bat', 'cat' ] );
 
-        expect( cmp.match( 'test', [], 0.5 ) ).toEqual( [] );
-    } );
+    expect( matrix ).toHaveLength( 3 );
+    expect( matrix[ 0 ] ).toHaveLength( 3 );
+    expect( matrix[ 0 ][ 0 ] ).toBe( 1 );
+    expect( matrix[ 0 ][ 2 ] ).toBe( 1 );
+  } );
 
-    it( 'Unicode and Special Characters', () => {
-        const cmp = CmpStr.create().setMetric( 'levenshtein' );
-        const res = cmp.test( '🎉🎊', '🎉🎊' );
+  it( 'Furthest Match', () => {
+    const cmp = CmpStr.create( { metric: 'levenshtein' } );
+    const res = cmp.furthest( 'apple', [ 'apple', 'apricot', 'orange', 'grape' ], 1 );
 
-        expect( res.match ).toBe( 1 );
-    } );
+    expect( res ).toHaveLength( 1 );
+    expect( res[ 0 ].target ).toBe( 'orange' );
+  } );
 
-    it( 'Case-Insensitive Matching', () => {
-        const cmp = CmpStr.create( { metric: 'levenshtein', flags: 'i' } );
-        const res = cmp.test( 'Hello', 'HELLO' );
+  it( 'Batch Sorted with Ascending', () => {
+    const cmp = CmpStr.create( { metric: 'levenshtein' } );
+    const res = cmp.batchSorted( [ 'test', 'testing', 'best', 'fest' ], 'Test', 'asc' );
 
-        expect( res.match ).toBe( 1 );
-    } );
+    expect( res[ 0 ].match ).toBeLessThanOrEqual( res[ res.length - 1 ].match );
+  } );
 
-    it( 'Matrix Computation', () => {
-        const cmp = CmpStr.create( { metric: 'levenshtein' } );
-        const matrix = cmp.matrix( [ 'cat', 'bat', 'cat' ] );
+  it( 'Phonetic Search Integration', () => {
+    const cmp = CmpStr.create( { metric: 'levenshtein' } );
+    const res = cmp.phoneticIndex( 'Schmidt', 'soundex' );
 
-        expect( matrix ).toHaveLength( 3 );
-        expect( matrix[ 0 ] ).toHaveLength( 3 );
-        expect( matrix[ 0 ][ 0 ] ).toBe( 1 );
-        expect( matrix[ 0 ][ 2 ] ).toBe( 1 );
-    } );
+    expect( res ).toBeDefined();
+    expect( typeof res ).toBe( 'string' );
+  } );
 
-    it( 'Furthest Match', () => {
-        const cmp = CmpStr.create( { metric: 'levenshtein' } );
-        const res = cmp.furthest( 'apple', [ 'apple', 'apricot', 'orange', 'grape' ], 1 );
+  it( 'Options Cloning and Sharing', () => {
+    const cmp1 = CmpStr.create( { metric: 'levenshtein', flags: 'i' } );
+    const cmp2 = cmp1.clone();
 
-        expect( res ).toHaveLength( 1 );
-        expect( res[ 0 ].target ).toBe( 'orange' );
-    } );
+    const opt1Before = cmp1.getOption( 'metric' );
+    expect( opt1Before ).toBe( 'levenshtein' );
 
-    it( 'Batch Sorted with Ascending', () => {
-        const cmp = CmpStr.create( { metric: 'levenshtein' } );
-        const res = cmp.batchSorted( [ 'test', 'testing', 'best', 'fest' ], 'Test', 'asc' );
+    cmp2.setMetric( 'dice' );
+    const opt2 = cmp2.getOption( 'metric' );
 
-        expect( res[ 0 ].match ).toBeLessThanOrEqual( res[ res.length - 1 ].match );
-    } );
+    expect( opt2 ).toBe( 'dice' );
+  } );
 
-    it( 'Phonetic Search Integration', () => {
-        const cmp = CmpStr.create( { metric: 'levenshtein' } );
-        const res = cmp.phoneticIndex( 'Schmidt', 'soundex' );
+  it( 'Remove Zero Results', () => {
+    const cmp = CmpStr.create( { metric: 'levenshtein', removeZero: true } );
+    const res = cmp.batchTest( [ 'abc', 'xyz', 'abc' ], 'abc' );
 
-        expect( res ).toBeDefined();
-        expect( typeof res ).toBe( 'string' );
-    } );
-
-    it( 'Options Cloning and Sharing', () => {
-        const cmp1 = CmpStr.create( { metric: 'levenshtein', flags: 'i' } );
-        const cmp2 = cmp1.clone();
-
-        const opt1Before = cmp1.getOption( 'metric' );
-        expect( opt1Before ).toBe( 'levenshtein' );
-
-        cmp2.setMetric( 'dice' );
-        const opt2 = cmp2.getOption( 'metric' );
-
-        expect( opt2 ).toBe( 'dice' );
-    } );
-
-    it( 'Remove Zero Results', () => {
-        const cmp = CmpStr.create( { metric: 'levenshtein', removeZero: true } );
-        const res = cmp.batchTest( [ 'abc', 'xyz', 'abc' ], 'abc' );
-
-        expect( res.some( ( r: any ) => r.match === 0 ) ).toBe( false );
-    } );
-
+    expect( res.some( ( r: any ) => r.match === 0 ) ).toBe( false );
+  } );
 } );
