@@ -52,7 +52,9 @@ class RingPool< T > {
    * 
    * @param {number} maxSize - The maximum number of buffers that can be stored in the pool
    */
-  public constructor ( private readonly maxSize: number ) {}
+  public constructor (
+    private readonly maxSize: number
+  ) {}
 
   /**
    * Acquires a buffer of at least the specified minimum size from the pool.
@@ -146,12 +148,12 @@ export class Pool {
 
   /** Pool Rings for each type */
   private static readonly POOLS: Record< PoolType, RingPool< any > > = {
-    'int32':    new RingPool< Int32Array >( 64 ),
-    'arr[]':    new RingPool< Array< any > >( 4 ),
-    'number[]': new RingPool< number[] >( 16 ),
-    'string[]': new RingPool< string[] >( 2 ),
-    'set':      new RingPool< Set< any > >( 8 ),
-    'map':      new RingPool< Map< any, any > >( 8 )
+    'int32':     new RingPool< Int32Array >( 64 ),
+    'arr[]':     new RingPool< Array< any > >( 4 ),
+    'number[]':  new RingPool< number[] >( 16 ),
+    'string[]':  new RingPool< string[] >( 2 ),
+    'set':       new RingPool< Set< any > >( 8 ),
+    'map':       new RingPool< Map< any, any > >( 8 )
   };
 
   /**
@@ -159,16 +161,16 @@ export class Pool {
    * 
    * @param {PoolType} type - The type of buffer to allocate
    * @param {number} size - The size of the buffer to allocate
-   * @return {any} - The newly allocated buffer
+   * @return - The newly allocated buffer
    */
-  private static allocate ( type: PoolType, size: number ) : any {
+  private static allocate ( type: PoolType, size: number ) {
     switch ( type ) {
-      case 'int32':    return new Int32Array( size );
-      case 'arr[]':    return new Array( size );
-      case 'number[]': return new Float64Array( size );
-      case 'string[]': return new Array( size );
-      case 'set':      return new Set();
-      case 'map':      return new Map();
+      case 'int32':     return new Int32Array( size );
+      case 'arr[]':     return new Array( size );
+      case 'number[]':  return new Float64Array( size );
+      case 'string[]':  return new Array( size );
+      case 'set':       return new Set();
+      case 'map':       return new Map();
     }
   }
 
@@ -176,17 +178,18 @@ export class Pool {
    * Acquires a buffer of the specified type and size from the pool.
    * If no suitable buffer is available, it allocates a new one.
    * 
+   * @template T - The type of the buffer to acquire
    * @param {PoolType} type - The type of buffer to acquire (e.g., 'int32', 'number[]', 'map')
    * @param {number} size - The size of the buffer to acquire
    * @return {T} - The acquired buffer of the specified type
    * @throws {CmpStrUsageError} - Throws an error if the pool type is unsupported
    */
-  public static acquire < T = any > ( type: PoolType, size: number ) : Buffer< T > {
+  public static acquire < T = unknown > ( type: PoolType, size: number ) : Buffer< T > {
     const CONFIG = this.CONFIG[ type ];
     if ( ! CONFIG ) throw new CmpStrUsageError( `Unsupported pool type <${ type }>`, { type } );
 
     // If the requested size exceeds the maximum item size, allocate a new buffer
-    if ( size > CONFIG.maxItemSize ) return { buffer: this.allocate( type, size ), size };
+    if ( size > CONFIG.maxItemSize ) return { buffer: this.allocate( type, size ) as T, size };
 
     // Try to acquire a buffer from the pool ring
     // If a suitable buffer is found, return it (subarray for uint16)
@@ -198,17 +201,18 @@ export class Pool {
       : item;
 
     // If no suitable buffer is found, allocate a new one
-    return { buffer: this.allocate( type, size ), size };
+    return { buffer: this.allocate( type, size ) as T, size };
   }
 
   /**
    * Acquires multiple buffers of the specified type and sizes from the pool.
    * 
+   * @template T - The type of the buffers to acquire
    * @param {PoolType} type - The type of buffers to acquire
    * @param {number[]} sizes - An array of sizes for each buffer to acquire
    * @return {T[]} - An array of acquired buffers of the specified type
    */
-  public static acquireMany < T = any > ( type: PoolType, sizes: number[] ) : Buffer< T >[] {
+  public static acquireMany < T = unknown > ( type: PoolType, sizes: number[] ) : Buffer< T >[] {
     const out = new Array< Buffer< T > >( sizes.length );
     for ( let i = 0; i < sizes.length; i++ ) out[ i ] = this.acquire< T >( type, sizes[ i ] );
 
