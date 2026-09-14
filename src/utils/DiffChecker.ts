@@ -57,7 +57,7 @@ export class DiffChecker {
    * @param {string} b - The second (modified) text
    * @param {DiffOptions} [opt] - Optional diff configuration
    */
-  constructor ( a: string, b: string, opt: DiffOptions = {} ) {
+  public constructor ( a: string, b: string, opt: DiffOptions = {} ) {
     this.a = a, this.b = b;
 
     // Merge default with user-provided options
@@ -150,14 +150,8 @@ export class DiffChecker {
     switch ( mode ) {
       case 'line': // For line mode, compare the entire lines directly
         if ( A !== B ) {
-          diffs.push( {
-            posA: 0, posB: 0,
-            del: a, ins: b,
-            size: b.length - a.length
-          } );
-
-          delSize = a.length;
-          insSize = b.length;
+          diffs.push( { posA: 0, posB: 0, del: a, ins: b, size: b.length - a.length } );
+          delSize = a.length, insSize = b.length;
         }
         break;
 
@@ -169,8 +163,7 @@ export class DiffChecker {
 
     // Add the diff entry for this line
     if ( diffs.length ) this.entries.push( {
-      line, diffs, delSize, insSize, baseLen,
-      totalSize: insSize - delSize,
+      line, diffs, delSize, insSize, baseLen, totalSize: insSize - delSize,
       magnitude: this.magnitude( delSize, insSize, baseLen )
     } );
   }
@@ -193,14 +186,10 @@ export class DiffChecker {
     );
 
     // Original and tokenized arrays, their lengths and position arrays
-    const origA = this.tokenize( a );
-    const origB = this.tokenize( b );
-    const tokenA = this.tokenize( A );
-    const tokenB = this.tokenize( B );
-    const lenA = tokenA.length;
-    const lenB = tokenB.length;
-    const posArrA = posIndex( origA );
-    const posArrB = posIndex( origB );
+    const origA = this.tokenize( a ), origB = this.tokenize( b );
+    const tokenA = this.tokenize( A ), tokenB = this.tokenize( B );
+    const lenA = tokenA.length, lenB = tokenB.length;
+    const posArrA = posIndex( origA ), posArrB = posIndex( origB );
 
     // Find all matching blocks (LCS)
     const matches: Array< { ai: number, bi: number, len: number } > = [];
@@ -212,10 +201,7 @@ export class DiffChecker {
         let len: number = 1;
 
         // Extend the match as long as tokens continue to match
-        while (
-          ai + len < lenA && bi + len < lenB &&
-          tokenA[ ai + len ] === tokenB[ bi + len ]
-        ) len++;
+        while ( ai + len < lenA && bi + len < lenB && tokenA[ ai + len ] === tokenB[ bi + len ] ) len++;
 
         matches.push( { ai, bi, len } );
         ai += len, bi += len;
@@ -250,15 +236,12 @@ export class DiffChecker {
       // If there are unmatched tokens before the match, record them
       if ( i < m.ai || j < m.bi ) {
         // Slice the original arrays to get the unmatched tokens
-        const delArr = origA.slice( i, m.ai );
-        const insArr = origB.slice( j, m.bi );
+        const delArr = origA.slice( i, m.ai ), insArr = origB.slice( j, m.bi );
 
         // Push the diff entry for unmatched tokens
         diffs.push( {
-          posA: posArrA[ i ] ?? 0,
-          posB: posArrB[ j ] ?? 0,
-          del: this.concat( delArr ),
-          ins: this.concat( insArr ),
+          posA: posArrA[ i ] ?? 0, posB: posArrB[ j ] ?? 0,
+          del: this.concat( delArr ), ins: this.concat( insArr ),
           size: insArr.join( '' ).length - delArr.join( '' ).length
         } );
       }
@@ -270,15 +253,12 @@ export class DiffChecker {
     // Tail diffs after the last match
     if ( i < lenA || j < lenB ) {
       // Slice the original arrays to get the unmatched tokens
-      const delArr = origA.slice( i );
-      const insArr = origB.slice( j );
+      const delArr = origA.slice( i ), insArr = origB.slice( j );
 
       // Push the diff entry for unmatched tokens at the end
       diffs.push( {
-        posA: posArrA[ i ] ?? 0,
-        posB: posArrB[ j ] ?? 0,
-        del: this.concat( delArr ),
-        ins: this.concat( insArr ),
+        posA: posArrA[ i ] ?? 0, posB: posArrB[ j ] ?? 0,
+        del: this.concat( delArr ), ins: this.concat( insArr ),
         size: insArr.join( '' ).length - delArr.join( '' ).length
       } );
     }
@@ -302,19 +282,16 @@ export class DiffChecker {
 
       // Push the group to the grouped array
       this.grouped.push( {
-        start, end, delSize, insSize, totalSize,
-        line: group[ 0 ].line, entries: group,
+        start, end, delSize, insSize, totalSize, line: group[ 0 ].line, entries: group,
         magnitude: this.magnitude( delSize, insSize, baseLen )
       } );
     };
 
-    let group: DiffLine[] = [];
-    let start = 0, end = 0;
+    let group: DiffLine[] = [], start = 0, end = 0;
 
     // Iterate through each diff entry to find groups
     for ( const entry of this.entries ) {
-      const s = Math.max( 0, entry.line - contextLines );
-      const e = entry.line + contextLines;
+      const s = Math.max( 0, entry.line - contextLines ), e = entry.line + contextLines;
 
       // If the group is empty or the current entry is adjacent to the last one
       if ( ! group.length || s <= end + 1 ) {
@@ -326,7 +303,6 @@ export class DiffChecker {
       } else {
         // If the group is not empty, finalize it and start a new one
         addGroup( group, start, end );
-
         group = [ entry ], start = s, end = e;
       }
     }

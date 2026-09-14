@@ -29,6 +29,7 @@ export class DeepMerge {
 
   /** Regular expression to match bracket notation in paths */
   private static readonly BRACKET_PATTERN = /\[(\d+)]/g;
+
   /** Path cache for efficient parsing */
   private static readonly PATH_CACHE = new Map< string, ( string | number )[] >();
 
@@ -45,7 +46,7 @@ export class DeepMerge {
 
     for ( let i = 0; i < keys.length; i++ ) {
       const k = keys[ i ];
-      if ( o == null || !( k in o ) ) return { exists: false };
+      if ( o == null || ! ( k in o ) ) return { exists: false };
       o = o[ k ];
     }
 
@@ -81,7 +82,7 @@ export class DeepMerge {
    * @param {string} path - The path string, e.g. `a.b.c`
    * @returns {boolean} - True if the path exists, otherwise false
    */
-  public static has< T extends Record< string, any > > ( t: T, path: string ) : boolean {
+  public static has < T extends Record< string, any > > ( t: T, path: string ) : boolean {
     return DeepMerge.walk( t, DeepMerge.parse( path ) ).exists;
   }
 
@@ -95,7 +96,7 @@ export class DeepMerge {
    * @param {any} fb - The default value to return if the path does not exist
    * @returns {R | undefined} - The value at the specified path, otherwise the default value
    */
-  public static get< T extends Record< string, any >, R = any > ( t: T, path: string, fb?: R ) : R | undefined {
+  public static get < T extends Record< string, any >, R = any > ( t: T, path: string, fb?: R ) : R | undefined {
     const r = DeepMerge.walk( t, DeepMerge.parse( path ) );
     return r.exists ? r.value : fb;
   }
@@ -110,8 +111,9 @@ export class DeepMerge {
    * @returns {T} - The modified object with the value set at the specified path
    * @throws {CmpStrUsageError} - If the path is invalid or if a non-object value is encountered along the path
    */
-  public static set< T extends Record< string, any > > ( t: T, path: string, value: any ) : T {
+  public static set < T extends Record< string, any > > ( t: T, path: string, value: any ) : T {
     if ( path === '' ) return value as T;
+
     const keys: ( string | number )[] = DeepMerge.parse( path );
 
     // Throw an error if the root object is not valid
@@ -156,7 +158,7 @@ export class DeepMerge {
    * @param {boolean} [preserveEmpty=false] - Whether to preserve empty objects/arrays
    * @returns {T} - The modified object with the value deleted at the specified path
    */
-  public static rmv< T extends Record< string, any > > ( t: T, path: string, preserveEmpty: boolean = false ) : T {
+  public static rmv < T extends Record< string, any > > ( t: T, path: string, preserveEmpty: boolean = false ) : T {
     const keys: ( string | number )[] = DeepMerge.parse( path );
 
     // Recursive function to remove the key at the specified path
@@ -177,9 +179,7 @@ export class DeepMerge {
         if ( typeof val === 'object' ) {
           if ( Array.isArray( val ) ) for ( let i = 0; i < val.length; i++ ) {
             if ( val[ i ] != null ) { empty = false; break }
-          }
-
-          else empty = false;
+          } else empty = false;
         }
 
         // Delete the key if it is an empty array or an empty object
@@ -202,7 +202,7 @@ export class DeepMerge {
    * @param {boolean} [mergeUndefined=false] - Whether to merge undefined values
    * @returns {T} - The merged object
    */
-  public static merge< T extends Record< string, any > > (
+  public static merge < T extends Record< string, any > > (
     t: T | undefined = Object.create( null ),
     o: T | undefined = Object.create( null ),
     mergeUndefined: boolean = false
@@ -225,8 +225,7 @@ export class DeepMerge {
         target[ k ] = DeepMerge.merge(
           existing !== null && typeof existing === 'object' && ! Array.isArray( existing )
             ? existing : Object.create( null ),
-          val,
-          mergeUndefined
+          val, mergeUndefined
         );
       }
 
