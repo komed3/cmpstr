@@ -96,7 +96,8 @@
     "./bundle/min": {
       "import": "./dist/CmpStr.esm.min.js",
       "default": "./dist/CmpStr.esm.min.js"
-    }
+    },
+    "./package.json": "./package.json"
   },
   "scripts": {
     "clean": "shx rm -rf dist",
