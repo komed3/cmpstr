@@ -406,6 +406,8 @@ export class DiffChecker {
     const mark = ( line: string, diffs: DiffEntry[], type: 'del' | 'ins' ) : string => {
       // If there are no diffs or the mode is line, return the line as is
       if ( ! diffs.length || mode === 'line' ) return line;
+      // If the line is undefined, return an empty string
+      if ( line === undefined ) return '';
 
       let res = '', idx = 0;
 
