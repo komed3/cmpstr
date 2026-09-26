@@ -171,15 +171,15 @@ export abstract class Metric< R = MetricRaw > {
    * 
    * @param {MetricCompute< R >} result - The result of the metric pre-computation
    * @param {number} maxLen - Maximum length of the strings
-   * @param {number} m - Length of the first string
-   * @param {number} n - Length of the second string
    * @param {string} a - First string
    * @param {string} b - Second string
+   * @param {number} m - Length of the first string
+   * @param {number} n - Length of the second string
    * @returns {MetricCompute< R >} - The result of the metric computation with raw if possible
    * @throws {CmpStrInternalError} - If the method is not overridden in a subclass
    */
-  protected getRawFromPreComputedRes ( result: MetricCompute< R >, maxLen: number, m: number, n: number, a: string, b: string ) : MetricCompute< R > {
-    void [ result, maxLen, m, n, a, b ];
+  protected getRawFromPreComputedRes ( result: MetricCompute< R >, maxLen: number, a: string, b: string, m: number, n: number ) : MetricCompute< R > {
+    void [ result, maxLen, a, b, m, n ];
     throw new CmpStrInternalError( `Method getRawFromPreComputedRes() must be overridden in a subclass` );
   }
 
@@ -227,7 +227,7 @@ export abstract class Metric< R = MetricRaw > {
 
       if ( result && raw ) {
         // Calculate raw if trivial caese were pre-computed
-        result = this.getRawFromPreComputedRes(result, maxLen, m, n, A, B);
+        result = this.getRawFromPreComputedRes(result, maxLen, A, B, m, n);
       } else if ( ! result ) {
         // If the profiler is enabled, measure; else, just run
         result = profiler.run( () : MetricCompute< R > => {

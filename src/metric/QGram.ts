@@ -109,14 +109,12 @@ export class QGramSimilarity extends Metric< QGramRaw > {
    * 
    * @param {MetricCompute< QGramRaw >} result - The result of the metric pre-computation
    * @param {number} maxLen - Maximum length of the strings
-   * @param {number} m - Length of the first string
-   * @param {number} n - Length of the second string
    * @param {string} a - First string
    * @param {string} b - Second string
    * @returns {MetricCompute< QGramRaw >} - The result of the metric computation with raw
    */
-  protected override getRawFromPreComputedRes ( result: MetricCompute< QGramRaw >, maxLen: number, m: number, n: number, a: string, b: string ) : MetricCompute< QGramRaw > {
-    void [ m, n ];
+  protected override getRawFromPreComputedRes ( result: MetricCompute< QGramRaw >, maxLen: number, a: string, b: string ) : MetricCompute< QGramRaw > {
+    void maxLen;
     if (result.raw) return result;
     let intersection = 0, size = 0;
     const { q = 2 } = this.options;

@@ -94,13 +94,11 @@ export class JaccardIndex extends Metric< JaccardRaw > {
    * 
    * @param {MetricCompute< JaccardRaw >} result - The result of the metric pre-computation
    * @param {number} maxLen - Maximum length of the strings
-   * @param {number} m - Length of the first string
-   * @param {number} n - Length of the second string
    * @param {string} a - First string
    * @param {string} b - Second string
    * @returns {MetricCompute< JaccardRaw >} - The result of the metric computation with raw
    */
-  protected override getRawFromPreComputedRes ( result: MetricCompute< JaccardRaw >, maxLen: number, m: number, n: number, a: string, b: string ) : MetricCompute< JaccardRaw > {
+  protected override getRawFromPreComputedRes ( result: MetricCompute< JaccardRaw >, maxLen: number, a: string, b: string ) : MetricCompute< JaccardRaw > {
     void maxLen;
     if (result.raw) return result;
     let intersection = 0, union = 0;

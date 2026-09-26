@@ -121,11 +121,14 @@ export class SmithWatermanDistance extends Metric< SmithWatermanRaw > {
    * 
    * @param {MetricCompute< SmithWatermanRaw >} result - The result of the metric pre-computation
    * @param {number} maxLen - Maximum length of the strings
+   * @param {string} a - First string
+   * @param {string} b - Second string
    * @param {number} m - Length of the first string
    * @param {number} n - Length of the second string
    * @returns {MetricCompute< SmithWatermanRaw >} - The result of the metric computation with raw
    */
-  protected override getRawFromPreComputedRes ( result: MetricCompute< SmithWatermanRaw >, maxLen: number, m: number, n: number ) : MetricCompute< SmithWatermanRaw > {
+  protected override getRawFromPreComputedRes ( result: MetricCompute< SmithWatermanRaw >, maxLen: number, a: string, b: string, m: number, n: number ) : MetricCompute< SmithWatermanRaw > {
+    void [ a, b ]
     if (result.raw) return result;
     const { match = 2 } = this.options;
     const denum = ( m === maxLen ? n : m ) * match;
