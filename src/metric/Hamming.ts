@@ -96,7 +96,7 @@ export class HammingDistance extends Metric< HammingRaw > {
    * 
    * @param {MetricCompute< HammingRaw >} result - The result of the metric pre-computation
    * @param {number} maxLen - Maximum length of the strings
-   * @returns {MetricCompute< HammingRaw >} - The result of the metric computation with raw if possible
+   * @returns {MetricCompute< HammingRaw >} - The result of the metric computation with raw
    */
   protected override getRawFromPreComputedRes ( result: MetricCompute< HammingRaw >, maxLen: number ) : MetricCompute< HammingRaw > {
     if (result.raw) return result;

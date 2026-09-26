@@ -97,7 +97,7 @@ export class JaccardIndex extends Metric< JaccardRaw > {
    * @param {number} m - Length of the first string
    * @param {number} n - Length of the second string
    * @param {string} a - First string
-   * @returns {MetricCompute< JaccardRaw >} - The result of the metric computation with raw if possible
+   * @returns {MetricCompute< JaccardRaw >} - The result of the metric computation with raw
    */
   protected override getRawFromPreComputedRes ( result: MetricCompute< JaccardRaw >, maxLen: number, m: number, n: number, a: string ) : MetricCompute< JaccardRaw > {
     void maxLen;

@@ -110,7 +110,7 @@ export class DiceSorensenCoefficient extends Metric< DiceRaw > {
    * @param {number} m - Length of the first string
    * @param {number} n - Length of the second string
    * @param {string} a - First string
-   * @returns {MetricCompute< DiceRaw >} - The result of the metric computation with raw if possible
+   * @returns {MetricCompute< DiceRaw >} - The result of the metric computation with raw
    */
   protected override getRawFromPreComputedRes ( result: MetricCompute< DiceRaw >, maxLen: number, m: number, n: number, a: string ) : MetricCompute< DiceRaw > {
     void maxLen;

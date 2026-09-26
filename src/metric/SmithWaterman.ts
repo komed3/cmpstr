@@ -123,7 +123,7 @@ export class SmithWatermanDistance extends Metric< SmithWatermanRaw > {
    * @param {number} maxLen - Maximum length of the strings
    * @param {number} m - Length of the first string
    * @param {number} n - Length of the second string
-   * @returns {MetricCompute< SmithWatermanRaw >} - The result of the metric computation with raw if possible
+   * @returns {MetricCompute< SmithWatermanRaw >} - The result of the metric computation with raw
    */
   protected override getRawFromPreComputedRes ( result: MetricCompute< SmithWatermanRaw >, maxLen: number, m: number, n: number ) : MetricCompute< SmithWatermanRaw > {
     if (result.raw) return result;

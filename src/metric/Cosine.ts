@@ -120,7 +120,7 @@ export class CosineSimilarity extends Metric< CosineRaw > {
    * @param {number} m - Length of the first string
    * @param {number} n - Length of the second string
    * @param {string} a - First string
-   * @returns {MetricCompute< CosineRaw >} - The result of the metric computation with raw if possible
+   * @returns {MetricCompute< CosineRaw >} - The result of the metric computation with raw
    */
   protected override getRawFromPreComputedRes ( result: MetricCompute< CosineRaw >, maxLen: number, m: number, n: number, a: string ) : MetricCompute< CosineRaw > {
     void maxLen;

@@ -125,7 +125,7 @@ export class DamerauLevenshteinDistance extends Metric< DamerauRaw > {
    * 
    * @param {MetricCompute< DamerauRaw >} result - The result of the metric pre-computation
    * @param {number} maxLen - Maximum length of the strings
-   * @returns {MetricCompute< DamerauRaw >} - The result of the metric computation with raw if possible
+   * @returns {MetricCompute< DamerauRaw >} - The result of the metric computation with raw
    */
   protected override getRawFromPreComputedRes ( result: MetricCompute< DamerauRaw >, maxLen: number ) : MetricCompute< DamerauRaw > {
     if (result.raw) return result;

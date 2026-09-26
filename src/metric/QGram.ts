@@ -112,7 +112,7 @@ export class QGramSimilarity extends Metric< QGramRaw > {
    * @param {number} m - Length of the first string
    * @param {number} n - Length of the second string
    * @param {string} a - First string
-   * @returns {MetricCompute< QGramRaw >} - The result of the metric computation with raw if possible
+   * @returns {MetricCompute< QGramRaw >} - The result of the metric computation with raw
    */
   protected override getRawFromPreComputedRes ( result: MetricCompute< QGramRaw >, maxLen: number, m: number, n: number, a: string ) : MetricCompute< QGramRaw > {
     void [ m, n ];

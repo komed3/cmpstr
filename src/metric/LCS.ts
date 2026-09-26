@@ -113,7 +113,7 @@ export class LCSMetric extends Metric< LCSRaw > {
    * 
    * @param {MetricCompute< LCSRaw >} result - The result of the metric pre-computation
    * @param {number} maxLen - Maximum length of the strings
-   * @returns {MetricCompute< LCSRaw >} - The result of the metric computation with raw if possible
+   * @returns {MetricCompute< LCSRaw >} - The result of the metric computation with raw
    */
   protected override getRawFromPreComputedRes ( result: MetricCompute< LCSRaw >, maxLen: number ) : MetricCompute< LCSRaw > {
     if (result.raw) return result;

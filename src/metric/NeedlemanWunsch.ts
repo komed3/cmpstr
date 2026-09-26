@@ -120,7 +120,7 @@ export class NeedlemanWunschDistance extends Metric< NeedlemanRaw > {
    * 
    * @param {MetricCompute< NeedlemanRaw >} result - The result of the metric pre-computation
    * @param {number} maxLen - Maximum length of the strings
-   * @returns {MetricCompute< NeedlemanRaw >} - The result of the metric computation with raw if possible
+   * @returns {MetricCompute< NeedlemanRaw >} - The result of the metric computation with raw
    */
   protected override getRawFromPreComputedRes ( result: MetricCompute< NeedlemanRaw >, maxLen: number ) : MetricCompute< NeedlemanRaw > {
     if (result.raw) return result;

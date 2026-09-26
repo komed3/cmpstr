@@ -133,7 +133,7 @@ export class JaroWinklerDistance extends Metric< JaroWinklerRaw > {
    * 
    * @param {MetricCompute< JaroWinklerRaw >} result - The result of the metric pre-computation
    * @param {number} maxLen - Maximum length of the strings
-   * @returns {MetricCompute< JaroWinklerRaw >} - The result of the metric computation with raw if possible
+   * @returns {MetricCompute< JaroWinklerRaw >} - The result of the metric computation with raw
    */
   protected override getRawFromPreComputedRes ( result: MetricCompute< JaroWinklerRaw >, maxLen: number ) : MetricCompute< JaroWinklerRaw > {
     if (result.raw) return result;
