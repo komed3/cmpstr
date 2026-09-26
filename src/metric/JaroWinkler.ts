@@ -127,6 +127,24 @@ export class JaroWinklerDistance extends Metric< JaroWinklerRaw > {
       Pool.release( 'int32', matchBWrapped );
     }
   }
+
+  /**
+   * Calculates raw result from pre-computed trivial res
+   * 
+   * @param {MetricCompute< JaroWinklerRaw >} result - The result of the metric pre-computation
+   * @param {number} maxLen - Maximum length of the strings
+   * @returns {MetricCompute< JaroWinklerRaw >} - The result of the metric computation with raw
+   */
+  protected override getRawFromPreComputedRes ( result: MetricCompute< JaroWinklerRaw >, maxLen: number ) : MetricCompute< JaroWinklerRaw > {
+    if (result.raw) return result;
+    let matchWindow = Math.max( 0, Math.floor( maxLen / 2 ) - 1 );
+    let matches = result.res * maxLen, transpos = 0, jaro = result.res;
+    let prefix = result.res * Math.min(maxLen, 4);
+    return {
+      ...result,
+      raw: { matchWindow, matches, transpos, jaro, prefix }
+    };
+  }
 }
 
 

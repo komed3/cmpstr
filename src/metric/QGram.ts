@@ -103,6 +103,38 @@ export class QGramSimilarity extends Metric< QGramRaw > {
       Pool.release( 'set', setBWrapped );
     }
   }
+
+  /**
+   * Calculates raw result from pre-computed trivial res
+   * 
+   * @param {MetricCompute< QGramRaw >} result - The result of the metric pre-computation
+   * @param {number} maxLen - Maximum length of the strings
+   * @param {string} a - First string
+   * @param {string} b - Second string
+   * @returns {MetricCompute< QGramRaw >} - The result of the metric computation with raw
+   */
+  protected override getRawFromPreComputedRes ( result: MetricCompute< QGramRaw >, maxLen: number, a: string, b: string ) : MetricCompute< QGramRaw > {
+    void maxLen;
+    if (result.raw) return result;
+    let intersection = 0, size = 0;
+    const { q = 2 } = this.options;
+    const setAWrapped = this.qGrams( a, q );
+    const { buffer: setA } = setAWrapped;
+    if (result.res === 1) {
+      intersection = result.res * setA.size;
+      size = setA.size;
+    } else if (result.res === 0) {
+      const setBWrapped = this.qGrams( b, q );
+      const { buffer: setB } = setBWrapped;
+      size = Math.max( setA.size, setB.size );
+      Pool.release( 'set', setBWrapped );
+    }
+    Pool.release( 'set', setAWrapped );
+    return {
+      ...result,
+      raw: { intersection, size }
+    };
+  }
 }
 
 
