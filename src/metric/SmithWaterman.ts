@@ -115,6 +115,26 @@ export class SmithWatermanDistance extends Metric< SmithWatermanRaw > {
       Pool.release( 'int32', currWrapped );
     }
   }
+
+  /**
+   * Calculates raw result from pre-computed trivial res
+   * 
+   * @param {MetricCompute< SmithWatermanRaw >} result - The result of the metric pre-computation
+   * @param {number} maxLen - Maximum length of the strings
+   * @param {number} m - Length of the first string
+   * @param {number} n - Length of the second string
+   * @returns {MetricCompute< SmithWatermanRaw >} - The result of the metric computation with raw if possible
+   */
+  protected override getRawFromPreComputedRes ( result: MetricCompute< SmithWatermanRaw >, maxLen: number, m: number, n: number ) : MetricCompute< SmithWatermanRaw > {
+    if (result.raw) return result;
+    const { match = 2 } = this.options;
+    const denum = ( m === maxLen ? n : m ) * match;
+    const score = result.res * denum;
+    return {
+      ...result,
+      raw: { score, denum }
+    };
+  }
 }
 
 

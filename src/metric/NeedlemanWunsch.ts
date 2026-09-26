@@ -114,6 +114,24 @@ export class NeedlemanWunschDistance extends Metric< NeedlemanRaw > {
       Pool.release( 'int32', currWrapped );
     }
   }
+
+  /**
+   * Calculates raw result from pre-computed trivial res
+   * 
+   * @param {MetricCompute< NeedlemanRaw >} result - The result of the metric pre-computation
+   * @param {number} maxLen - Maximum length of the strings
+   * @returns {MetricCompute< NeedlemanRaw >} - The result of the metric computation with raw if possible
+   */
+  protected override getRawFromPreComputedRes ( result: MetricCompute< NeedlemanRaw >, maxLen: number ) : MetricCompute< NeedlemanRaw > {
+    if (result.raw) return result;
+    const { match = 1 } = this.options;
+    const denum = maxLen * match;
+    const score = result.res * denum;
+    return {
+      ...result,
+      raw: { score, denum }
+    };
+  }
 }
 
 

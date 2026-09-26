@@ -107,6 +107,22 @@ export class LCSMetric extends Metric< LCSRaw > {
       Pool.release( 'int32', currWrapped );
     }
   }
+
+  /**
+   * Calculates raw result from pre-computed trivial res
+   * 
+   * @param {MetricCompute< LCSRaw >} result - The result of the metric pre-computation
+   * @param {number} maxLen - Maximum length of the strings
+   * @returns {MetricCompute< LCSRaw >} - The result of the metric computation with raw if possible
+   */
+  protected override getRawFromPreComputedRes ( result: MetricCompute< LCSRaw >, maxLen: number ) : MetricCompute< LCSRaw > {
+    if (result.raw) return result;
+    let lcs = result.res * maxLen;
+    return {
+      ...result,
+      raw: { lcs, maxLen }
+    };
+  }
 }
 
 

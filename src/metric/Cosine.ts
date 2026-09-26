@@ -111,6 +111,39 @@ export class CosineSimilarity extends Metric< CosineRaw > {
       Pool.release( 'map', termsBWrapped );
     }
   }
+
+  /**
+   * Calculates raw result from pre-computed trivial res
+   * 
+   * @param {MetricCompute< CosineRaw >} result - The result of the metric pre-computation
+   * @param {number} maxLen - Maximum length of the strings
+   * @param {number} m - Length of the first string
+   * @param {number} n - Length of the second string
+   * @param {string} a - First string
+   * @returns {MetricCompute< CosineRaw >} - The result of the metric computation with raw if possible
+   */
+  protected override getRawFromPreComputedRes ( result: MetricCompute< CosineRaw >, maxLen: number, m: number, n: number, a: string ) : MetricCompute< CosineRaw > {
+    void maxLen;
+    if (result.raw) return result;
+    let dotP = 0, magA = 0, magB = 0;
+    if (result.res === 1) {
+      const { delimiter = ' ' } = this.options;
+      const termsAWrapped = this.termFreq( a, delimiter );
+      const { buffer: termsA } = termsAWrapped;
+      for ( const freqA of termsA.values() ) magA += freqA * freqA;
+      dotP = magA;
+      magA = Math.sqrt( magA );
+      magB = magA;
+      Pool.release( 'map', termsAWrapped );
+    } else if (result.res === 0) {
+      magA = m > 0 ? 1 : 0;
+      magB = n > 0 ? 1 : 0;
+    }
+    return {
+      ...result,
+      raw: { dotProduct: dotP, magnitudeA: magA, magnitudeB: magB }
+    };
+  }
 }
 
 

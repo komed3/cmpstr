@@ -119,6 +119,22 @@ export class DamerauLevenshteinDistance extends Metric< DamerauRaw > {
       Pool.release( 'int32', currWrapped );
     }
   }
+
+  /**
+   * Calculates raw result from pre-computed trivial res
+   * 
+   * @param {MetricCompute< DamerauRaw >} result - The result of the metric pre-computation
+   * @param {number} maxLen - Maximum length of the strings
+   * @returns {MetricCompute< DamerauRaw >} - The result of the metric computation with raw if possible
+   */
+  protected override getRawFromPreComputedRes ( result: MetricCompute< DamerauRaw >, maxLen: number ) : MetricCompute< DamerauRaw > {
+    if (result.raw) return result;
+    let dist = ( 1 - result.res ) * maxLen;
+    return {
+      ...result,
+      raw: { dist, maxLen }
+    };
+  }
 }
 
 

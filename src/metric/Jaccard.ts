@@ -88,6 +88,32 @@ export class JaccardIndex extends Metric< JaccardRaw > {
       Pool.release( 'set', setBWrapped );
     }
   }
+
+  /**
+   * Calculates raw result from pre-computed trivial res
+   * 
+   * @param {MetricCompute< JaccardRaw >} result - The result of the metric pre-computation
+   * @param {number} maxLen - Maximum length of the strings
+   * @param {number} m - Length of the first string
+   * @param {number} n - Length of the second string
+   * @param {string} a - First string
+   * @returns {MetricCompute< JaccardRaw >} - The result of the metric computation with raw if possible
+   */
+  protected override getRawFromPreComputedRes ( result: MetricCompute< JaccardRaw >, maxLen: number, m: number, n: number, a: string ) : MetricCompute< JaccardRaw > {
+    void maxLen;
+    if (result.raw) return result;
+    let intersection = 0, union = 0;
+    if (result.res === 1) {
+      intersection = new Set([...a]).size;
+      union = intersection;
+    } else if (result.res === 0) {
+      union = m + n;
+    }
+    return {
+      ...result,
+      raw: { intersection, union }
+    };
+  }
 }
 
 
