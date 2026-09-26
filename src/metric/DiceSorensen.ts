@@ -110,21 +110,25 @@ export class DiceSorensenCoefficient extends Metric< DiceRaw > {
    * @param {number} m - Length of the first string
    * @param {number} n - Length of the second string
    * @param {string} a - First string
+   * @param {string} b - Second string
    * @returns {MetricCompute< DiceRaw >} - The result of the metric computation with raw
    */
-  protected override getRawFromPreComputedRes ( result: MetricCompute< DiceRaw >, maxLen: number, m: number, n: number, a: string ) : MetricCompute< DiceRaw > {
+  protected override getRawFromPreComputedRes ( result: MetricCompute< DiceRaw >, maxLen: number, m: number, n: number, a: string, b: string ) : MetricCompute< DiceRaw > {
     void maxLen;
     if (result.raw) return result;
     let intersection = 0, size = 0;
+    const setAWrapped = this.bigrams( a );
+    const { buffer: setA } = setAWrapped;
     if (result.res === 1) {
-      const setAWrapped = this.bigrams( a );
-      const { buffer: setA } = setAWrapped;
       intersection = result.res * setA.size;
       size = setA.size * 2;
-      Pool.release( 'set', setAWrapped );
     } else if (result.res === 0) {
-      size = m + n;
+      const setBWrapped = this.bigrams( b );
+      const { buffer: setB } = setBWrapped;
+      size = setA.size + setB.size;
+      Pool.release( 'set', setBWrapped );
     }
+    Pool.release( 'set', setAWrapped );
     return {
       ...result,
       raw: { intersection, size }
