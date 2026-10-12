@@ -361,7 +361,7 @@ export class CmpStr< R = MetricRaw > {
         if ( resolved.output !== 'prep' ) metric.setOriginal( a, b );
 
         // Compute the metric result
-        metric.run( mode );
+        metric.run( mode, true, raw ?? resolved.raw );
 
         // Post-process the results
         const result = this.postProcess( metric.getResults(), resolved );
