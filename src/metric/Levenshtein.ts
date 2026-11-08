@@ -112,6 +112,22 @@ export class LevenshteinDistance extends Metric< LevenshteinRaw > {
       Pool.release( 'int32', currWrapped );
     }
   }
+
+  /**
+   * Calculates raw result from pre-computed trivial res
+   * 
+   * @param {MetricCompute< LevenshteinRaw >} result - The result of the metric pre-computation
+   * @param {number} maxLen - Maximum length of the strings
+   * @returns {MetricCompute< LevenshteinRaw >} - The result of the metric computation with raw
+   */
+  protected override getRawFromPreComputedRes ( result: MetricCompute< LevenshteinRaw >, maxLen: number ) : MetricCompute< LevenshteinRaw > {
+    if (result.raw) return result;
+    let dist = ( 1 - result.res ) * maxLen;
+    return {
+      ...result,
+      raw: { dist, maxLen }
+    };
+  }
 }
 
 

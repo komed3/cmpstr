@@ -111,6 +111,52 @@ export class CosineSimilarity extends Metric< CosineRaw > {
       Pool.release( 'map', termsBWrapped );
     }
   }
+
+  /**
+   * Calculates raw result from pre-computed trivial res
+   * 
+   * @param {MetricCompute< CosineRaw >} result - The result of the metric pre-computation
+   * @param {number} maxLen - Maximum length of the strings
+   * @param {string} a - First string
+   * @param {string} b - Second string
+   * @param {number} m - Length of the first string
+   * @param {number} n - Length of the second string
+   * @returns {MetricCompute< CosineRaw >} - The result of the metric computation with raw
+   */
+  protected override getRawFromPreComputedRes ( result: MetricCompute< CosineRaw >, maxLen: number, a: string, b: string, m: number, n: number ) : MetricCompute< CosineRaw > {
+    void maxLen;
+    if (result.raw) return result;
+    let dotP = 0, magA = 0, magB = 0;
+    const { delimiter = ' ' } = this.options;
+    if (result.res === 1) {
+      const termsAWrapped = this.termFreq( a, delimiter );
+      const { buffer: termsA } = termsAWrapped;
+      for ( const freqA of termsA.values() ) magA += freqA * freqA;
+      dotP = magA;
+      magA = Math.sqrt( magA );
+      magB = magA;
+      Pool.release( 'map', termsAWrapped );
+    } else if (result.res === 0) {
+      if (m > 0) {
+        const termsAWrapped = this.termFreq( a, delimiter );
+        const { buffer: termsA } = termsAWrapped;
+        for ( const freqA of termsA.values() ) magA += freqA * freqA;
+        Pool.release( 'map', termsAWrapped );
+        magA = Math.sqrt( magA );
+      }
+      if (n > 0) {
+        const termsBWrapped = this.termFreq( b, delimiter );
+        const { buffer: termsB } = termsBWrapped;
+        for ( const freqB of termsB.values() ) magB += freqB * freqB;
+        Pool.release( 'map', termsBWrapped );
+        magB = Math.sqrt( magB );
+      }
+    }
+    return {
+      ...result,
+      raw: { dotProduct: dotP, magnitudeA: magA, magnitudeB: magB }
+    };
+  }
 }
 
 
