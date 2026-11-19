@@ -9,6 +9,13 @@ import { CmpStr } from '../src';
  * functionalities.
  */
 describe( 'CmpStr > Phonetics', () => {
+  it( 'Phonetic Index', () => {
+    const cmp = CmpStr.create().setProcessors( { phonetic: { algo: 'soundex' } } );
+
+    expect( cmp.phoneticIndex( 'Robert' ) ).toBe( 'R163' );
+    expect( cmp.phoneticIndex( 'Rupert' ) ).toBe( 'R163' );
+  } );
+
   it( 'Soundex', () => {
     const cmp = CmpStr.create().setProcessors( { phonetic: { algo: 'soundex', opt: { length: 2 } } } );
     const res = cmp.search( 'Rupert', [ 'Rubin', 'Robert', 'Ronny', 'Robot' ] );
