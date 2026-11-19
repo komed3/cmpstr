@@ -16,6 +16,13 @@ describe( 'CmpStr > Phonetics', () => {
     expect( cmp.phoneticIndex( 'Rupert' ) ).toBe( 'R163' );
   } );
 
+  it( 'Soundex', () => {
+    const cmp = CmpStr.create().setProcessors( { phonetic: { algo: 'soundex', opt: { length: 2 } } } );
+    const res = cmp.search( 'Rupert', [ 'Rubin', 'Robert', 'Ronny', 'Robot' ] );
+
+    expect( res ).toEqual( [ 'Rubin', 'Robert', 'Robot' ] );
+  } );
+
   it( 'Soundex H/W handling', () => {
     const cmp = CmpStr.create().setProcessors( { phonetic: { algo: 'soundex' } } );
 
@@ -24,11 +31,12 @@ describe( 'CmpStr > Phonetics', () => {
     expect( cmp.phoneticIndex( 'Bwb' ) ).toBe( 'B000' );
   } );
 
-  it( 'Soundex', () => {
-    const cmp = CmpStr.create().setProcessors( { phonetic: { algo: 'soundex', opt: { length: 2 } } } );
-    const res = cmp.search( 'Rupert', [ 'Rubin', 'Robert', 'Ronny', 'Robot' ] );
+  it( 'Soundex default options remain unchanged', () => {
+    const custom = CmpStr.create().setProcessors( { phonetic: { algo: 'soundex', opt: { length: 2 } } } );
+    expect( custom.phoneticIndex( 'Robert' ) ).toBe( 'R1' );
 
-    expect( res ).toEqual( [ 'Rubin', 'Robert', 'Robot' ] );
+    const defaults = CmpStr.create().setProcessors( { phonetic: { algo: 'soundex' } } );
+    expect( defaults.phoneticIndex( 'Robert' ) ).toBe( 'R163' );
   } );
 
   it( 'Cologne', () => {

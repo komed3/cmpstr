@@ -93,7 +93,7 @@ export abstract class Phonetic {
    */
   public constructor ( algo: string, opt: PhoneticOptions = {} ) {
     // Get the phonetic default options
-    const defaults = ( this.constructor as any ).default ?? {};
+    const defaults = { ...( ( this.constructor as any ).default ?? {} ) };
 
     // Determine phonetic map ID from options or use defaults
     const mapId = opt.map ?? defaults.map;
