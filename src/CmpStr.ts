@@ -226,7 +226,7 @@ export class CmpStr< R = MetricRaw > {
    * @throws {CmpStrValidationError} - If the merged options are invalid
    */
   protected resolveOptions ( opt?: CmpStrOptions ) : CmpStrOptions {
-    const merged = DeepMerge.merge( { ...( this.options ?? Object.create( null ) ) }, opt );
+    const merged = DeepMerge.merge( DeepMerge.merge( Object.create( null ), this.options ), opt );
     OptionsValidator.validateOptions( merged );
 
     return merged;
