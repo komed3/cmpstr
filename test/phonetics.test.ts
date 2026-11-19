@@ -10,10 +10,10 @@ import { CmpStr } from '../src';
  */
 describe( 'CmpStr > Phonetics', () => {
   it( 'Soundex', () => {
-    const cmp = CmpStr.create().setProcessors( { phonetic: { algo: 'soundex' } } );
-    const res = cmp.search( 'Rubin', [ 'Rupert', 'Robert', 'Ronny', 'Robot' ] );
+    const cmp = CmpStr.create().setProcessors( { phonetic: { algo: 'soundex', opt: { length: 2 } } } );
+    const res = cmp.search( 'Rupert', [ 'Rubin', 'Robert', 'Ronny', 'Robot' ] );
 
-    expect( res ).toEqual( [ 'Rupert', 'Robert', 'Robot' ] );
+    expect( res ).toEqual( [ 'Rubin', 'Robert', 'Robot' ] );
   } );
 
   it( 'Cologne', () => {

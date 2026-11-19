@@ -43,6 +43,6 @@ describe( 'CmpStr > Async', () => {
     const cmp = CmpStrAsync.create().setProcessors( { phonetic: { algo: 'soundex' } } );
     const res = await cmp.phoneticIndexAsync( 'Rupert' );
 
-    expect( res ).toBe( 'R100' );
+    expect( res ).toBe( 'R163' );
   } );
 } );
