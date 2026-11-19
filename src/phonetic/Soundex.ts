@@ -52,6 +52,11 @@ export class Soundex extends Phonetic {
     super( 'soundex', opt );
   }
 
+  protected override exitEarly ( code: string ) : boolean {
+    const { length = -1 } = this.options;
+    return length > 0 && code.slice( 1 ).replaceAll( '0', '' ).length >= length - 1;
+  }
+
   /**
    * Adjusts the phonetic code by removing leading zeros and ensuring the
    * first character is uppercase.
