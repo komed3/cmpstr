@@ -78,11 +78,12 @@ PhoneticRegistry.add( 'soundex', Soundex );
 //Register the Soundex phonetic mapping for English.
 PhoneticMappingRegistry.add( 'soundex', 'en', {
   map: {
-    a: '0', e: '0', h: '0', i: '0', o: '0', u: '0', w: '0', y: '0',
+    a: '0', e: '0', i: '0', o: '0', u: '0', y: '0',
     b: '1', f: '1', p: '1', v: '1',
     c: '2', g: '2', j: '2', k: '2', q: '2', s: '2', x: '2', z: '2',
     d: '3', t: '3', l: '4', m: '5', n: '5', r: '6'
-  }
+  },
+  ignore: [ 'h', 'w' ]
 } );
 
 
