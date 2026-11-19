@@ -304,7 +304,10 @@ export type MetricRaw = Record< string, any >;
 export interface MetricCompute< R = MetricRaw > {
   // The normalized similarity score (0..1)
   res: number;
-  // Optional raw metric-specific data
+  /**
+   * Optional metric-specific computation data.
+   * May be omitted when the result was produced by pre-computation.
+   */
   raw?: R;
 }
 
@@ -321,7 +324,10 @@ export interface MetricResultSingle< R = MetricRaw > {
   b: string;
   // The normalized similarity score (0..1)
   res: number;
-  // Optional raw metric-specific data
+  /**
+   * Optional metric-specific computation data.
+   * May be omitted when the result was produced by pre-computation.
+   */
   raw?: R;
 }
 
@@ -644,7 +650,10 @@ export interface StructuredDataResult< T = any, R = MetricRaw > {
   key: keyof T;
   // The comparison result (CmpStrResult format)
   result: CmpStrResult;
-  // Optional raw metric data
+  /**
+   * Optional metric-specific computation data.
+   * May be omitted when the result was produced by pre-computation.
+   */
   raw?: R;
 }
 
