@@ -16,6 +16,13 @@ describe( 'CmpStr > Phonetics', () => {
     expect( cmp.phoneticIndex( 'Rupert' ) ).toBe( 'R163' );
   } );
 
+  it( 'Soundex H/W handling', () => {
+    const cmp = CmpStr.create().setProcessors( { phonetic: { algo: 'soundex' } } );
+
+    expect( cmp.phoneticIndex( 'Ashcraft' ) ).toBe( 'A261' );
+    expect( cmp.phoneticIndex( 'Bwb' ) ).toBe( 'B000' );
+  } );
+
   it( 'Soundex', () => {
     const cmp = CmpStr.create().setProcessors( { phonetic: { algo: 'soundex', opt: { length: 2 } } } );
     const res = cmp.search( 'Rupert', [ 'Rubin', 'Robert', 'Ronny', 'Robot' ] );
