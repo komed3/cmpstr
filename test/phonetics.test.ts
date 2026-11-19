@@ -68,4 +68,18 @@ describe( 'CmpStr > Phonetics', () => {
 
     expect( res ).toBe( 'TMPSN11111' );
   } );
+
+  it( 'Per-call options do not mutate instance options', () => {
+    const cmp = CmpStr.create().setMetric( 'levenshtein' ).setProcessors( {
+      phonetic: { algo: 'soundex', opt: { length: 4 } }
+    } );
+
+    expect( cmp.phoneticIndex( 'Robert' ) ).toBe( 'R163' );
+
+    cmp.compare( 'Robert', 'Rupert', { processors: {
+      phonetic: { algo: 'soundex', opt: { length: 2 } }
+    } } );
+
+    expect( cmp.phoneticIndex( 'Robert' ) ).toBe( 'R163' );
+  } );
 } );
