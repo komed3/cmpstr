@@ -246,7 +246,7 @@ export abstract class Phonetic {
       code += mapped, lastCode = mapped;
 
       // If the code length exceeds the specified limit, exit early
-      if ( this.exitEarly( code, i ) ) break;
+      if ( this.exitEarly( this.adjustCode( code, chars ), i ) ) break;
     }
 
     // Return the adjusted phonetic code
