@@ -611,7 +611,7 @@ export interface CmpStrProcessors {
  * CmpStrOptions configures the behavior of a CmpStr instance.
  */
 export interface CmpStrOptions {
-  // Whether to return raw metric results
+  // Whether to include available raw metric results
   raw?: boolean;
   // Remove zero results from batch output
   removeZero?: boolean;
