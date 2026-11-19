@@ -20,6 +20,7 @@ describe( 'CmpStr > Phonetics', () => {
     const cmp = CmpStr.create().setProcessors( { phonetic: { algo: 'soundex' } } );
 
     expect( cmp.phoneticIndex( 'Ashcraft' ) ).toBe( 'A261' );
+    expect( cmp.phoneticIndex( 'Aswcraft' ) ).toBe( 'A261' );
     expect( cmp.phoneticIndex( 'Bwb' ) ).toBe( 'B000' );
   } );
 
